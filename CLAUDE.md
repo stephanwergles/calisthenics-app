@@ -60,6 +60,7 @@ Typo: System-Stack, Display-Stil über `font-stretch: condensed` + Uppercase (Kl
 - UI-Sprache Deutsch, Nutzeransprache **du**. Deutsche Anführungszeichen „…“ in Texten — **Achtung:** in JS-Strings niemals mit ASCII-`"` schließen (hat schon einmal 9 Syntaxfehler produziert).
 - Übungstexte folgen dem Schema: `pos` (Ausgangsposition, 1 Satz) → `exec` (Ausführung, 2–3 Sätze) → `fehler` (2–3 mit `·` getrennt) → `reg` („Leichter: … Schwerer: …").
 - Keine externen Ressourcen einbauen (einzige Ausnahme: YouTube-Links, die in neuem Tab öffnen).
+- Die Versionsnummer steht im Header (`<span>Progressionsbasiert · vX.Y.Z</span>`) und wird bei **jedem** Push erhöht (Patch für Fixes/Kleinkram, Minor für Features) — sie ist das Erkennungszeichen, welcher Stand auf dem Handy wirklich läuft.
 - Vor Abschluss: JS aus der Datei extrahieren, `node --check`, dann Smoke-Test mit DOM-Stub (Muster liegt in der bisherigen Historie: `makeEl()`-Stub, `eval(app + tests)` im selben Scope, localStorage-Mock der wirft → try/catch-Pfade testen).
 
 ## Deployment
