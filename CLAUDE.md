@@ -8,7 +8,7 @@ Calisthenics-Trainings-App. **v1 ist eine einzelne, komplett self-contained `ind
 
 ## Architektur von index.html
 
-Eine Datei, drei Abschnitte: `<style>`, HTML-Gerüst, `<script>`. Einzige Zusatzdatei im Repo: `apple-touch-icon.png` (180×180, Home-Bildschirm-Icon — iOS akzeptiert dafür keine Daten-URIs; fettes Kreide-C auf Graphit). Der Browser-Favicon ist dieselbe Grafik als Inline-SVG-Daten-URI im `<head>`. Kein Framework, Vanilla JS, komplettes Re-Rendering über `render()` bei jeder State-Änderung.
+Eine Datei, drei Abschnitte: `<style>`, HTML-Gerüst, `<script>`. Einzige Zusatzdatei im Repo: `apple-touch-icon.png` (180×180, Home-Bildschirm-Icon — iOS akzeptiert dafür keine Daten-URIs; Kreide-C auf Graphit). Der Browser-Favicon ist dieselbe Grafik als Inline-SVG-Daten-URI im `<head>`. **Bei jeder Icon-Änderung den `?v=`-Cache-Buster in der `apple-touch-icon`-URL hochzählen** — Safari cached die Datei sonst über Neuinstallationen hinweg. Kein Framework, Vanilla JS, komplettes Re-Rendering über `render()` bei jeder State-Änderung.
 
 ### Datenmodell (im Script, Konstante `PLAN`)
 
