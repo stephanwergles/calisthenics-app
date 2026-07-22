@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#14171a">
 <title>Calisthenics · 3er-Split</title>
 <style>
@@ -12,7 +12,7 @@
     --amber: #f2c94c; --amber-dim: rgba(242,201,76,.12);
     --chalk: #f4f2ea;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   html { -webkit-text-size-adjust: 100%; }
   body { background: var(--bg); color: var(--text); font: 16px/1.55 -apple-system, "Segoe UI", Roboto, sans-serif; padding-bottom: 158px; }
   .display { font-stretch: condensed; text-transform: uppercase; letter-spacing: .03em; font-weight: 700; }
@@ -85,6 +85,17 @@
   .set { min-width: 42px; height: 42px; padding: 0 6px; border-radius: 21px; border: 2px solid var(--line); background: var(--card2); color: var(--muted); font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s; }
   .set:active { transform: scale(.92); }
   .set.done { background: var(--chalk); border-color: var(--chalk); color: #14171a; box-shadow: 0 0 0 3px rgba(244,242,234,.12); }
+  .set.adj { border-style: dashed; color: var(--muted); font-size: 17px; min-width: 38px; }
+
+  .card.cur { border-color: rgba(242,201,76,.55); }
+  .card.done-c { padding: 11px 16px; cursor: pointer; }
+  .card.done-c .mini { display: flex; align-items: center; gap: 10px; }
+  .card.done-c .mini .ck { flex: 0 0 22px; height: 22px; border-radius: 50%; background: var(--chalk); color: #14171a; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px rgba(244,242,234,.12); }
+  .card.done-c .mini h3 { font-size: 15px; flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card.done-c .mini .v { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .block .br { display: flex; gap: 6px; align-items: center; }
+  .fold { border: 1px solid var(--line); background: var(--card2); color: var(--muted); border-radius: 20px; padding: 2px 9px; font-size: 10.5px; font-weight: 700; font-family: inherit; letter-spacing: .04em; cursor: pointer; }
+  .holdbtn { display: block; width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--amber); background: var(--amber-dim); color: var(--amber); font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
 
   .reset { margin: 16px 0 26px; width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: none; color: var(--muted); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; }
 
@@ -479,7 +490,7 @@ let prog = store.get("cali-prog", {});   /* slotKey -> aktueller Level-Index */
 let sess = store.get("cali-sess", null); /* { start: ts, day: di } */
 let durs = store.get("cali-durs", {});   /* datum -> { day, dur } */
 let activeTab = store.get("cali-day", 0);
-let openDetails = {};
+let openDetails = {}, openDone = {};
 
 const today = () => new Date().toISOString().slice(0, 10);
 const nSets = s => parseInt(s) || 3;
@@ -569,16 +580,37 @@ function render() {
   const sec = document.createElement("section");
   sec.className = "day active";
 
-  PLAN[di].slots.forEach((slot, si) => {
+  /* Satzzahl pro Tag (entry.n) und Erledigt-Status je Slot; erste offene Übung = aktiv */
+  const states = PLAN[di].slots.map((slot, si) => {
     const slotKey = `${di}-${si}`;
     const lvl = curLvl(slotKey);
-    const x = slot.levels[lvl];
     const logKey = logKeyOf(slotKey, lvl);
     const entry = entryFor(logKey, today(), false);
+    const setCount = entry && entry.n ? entry.n : nSets(slot.levels[lvl].reps);
+    const doneCount = entry ? entry.s.slice(0, setCount).filter(v => v).length : 0;
+    return { slotKey, lvl, logKey, entry, setCount, allDone: setCount > 0 && doneCount >= setCount };
+  });
+  const curIdx = states.findIndex(st => !st.allDone);
+
+  PLAN[di].slots.forEach((slot, si) => {
+    const { slotKey, lvl, logKey, entry, setCount, allDone } = states[si];
+    const x = slot.levels[lvl];
     const done = entry ? entry.s : [];
     const last = lastEntry(logKey);
     const unit = x.opts?.t ? "s" : "";
     const multi = slot.levels.length > 1;
+    const ready = readyToProgress(slotKey);
+
+    /* Erledigt: eingeklappte Karte (außer ein Unlock steht an) */
+    if (allDone && !ready && !openDone[slotKey]) {
+      const vals = done.filter(v => v).map(v => v[0] + unit + (v[1] ? "+" + v[1] : "")).join(" · ");
+      const mini = document.createElement("div");
+      mini.className = "card done-c";
+      mini.innerHTML = `<div class="mini"><span class="ck">✓</span><h3>${x.name}</h3><span class="v">${vals}</span></div>`;
+      mini.onclick = () => { openDone[slotKey] = true; render(); };
+      sec.appendChild(mini);
+      return;
+    }
 
     let lastLine = "";
     if (last) {
@@ -586,7 +618,7 @@ function render() {
       lastLine = `<div class="last">Zuletzt (${fmtDate(last.d)}): ${vals}</div>`;
     }
 
-    const unlock = readyToProgress(slotKey)
+    const unlock = ready
       ? `<button class="unlock" data-u="${slotKey}">↑ Freischalten: ${slot.levels[lvl + 1].name}</button>` : "";
 
     const ladder = multi ? `<div class="ladder">
@@ -602,9 +634,9 @@ function render() {
       </div>` : "";
 
     const card = document.createElement("div");
-    card.className = "card";
+    card.className = "card" + (si === curIdx ? " cur" : "");
     card.innerHTML = `
-      <div class="block ${slot.block.toLowerCase()}"><span>${slot.block}</span>${multi ? `<span class="lvl">Stufe ${lvl + 1}/${slot.levels.length}</span>` : ""}</div>
+      <div class="block ${slot.block.toLowerCase()}"><span>${slot.block}</span><span class="br">${allDone && !ready ? `<button class="fold" data-fold="${slotKey}">✓ Zuklappen</button>` : ""}${multi ? `<span class="lvl">Stufe ${lvl + 1}/${slot.levels.length}</span>` : ""}</span></div>
       <h3>${x.name}</h3>
       <div class="meta"><b>${x.reps}</b> · Pause ${fmtRest(x.rest)} ·
         <a target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(x.query)}">▶ Tutorial</a></div>
@@ -620,10 +652,10 @@ function render() {
           ${ladder}
         </div>
       </details>
-      <div class="sets">${Array.from({length: nSets(x.reps)}, (_, i2) => {
+      <div class="sets">${Array.from({length: setCount}, (_, i2) => {
         const v = done[i2];
         return `<button class="set${v ? " done" : ""}" data-k="${logKey}" data-s="${i2}">${v ? v[0] + unit + (v[1] ? "+" + v[1] : "") : i2 + 1}</button>`;
-      }).join("")}</div>`;
+      }).join("")}${setCount > 1 ? `<button class="set adj" data-rem="${logKey}">−</button>` : ""}<button class="set adj" data-add="${logKey}">+</button></div>`;
     sec.appendChild(card);
   });
 
@@ -642,8 +674,24 @@ function render() {
 
   days.querySelectorAll("details").forEach(d =>
     d.addEventListener("toggle", () => { openDetails[d.dataset.d] = d.open; }));
-  days.querySelectorAll(".set").forEach(b =>
+  days.querySelectorAll(".set[data-k]").forEach(b =>
     b.onclick = () => openEditor(b.dataset.k, +b.dataset.s));
+  days.querySelectorAll("[data-fold]").forEach(b => b.onclick = () => {
+    openDone[b.dataset.fold] = false; render();
+  });
+  days.querySelectorAll("[data-add]").forEach(b => b.onclick = () => {
+    const p = parseLogKey(b.dataset.add);
+    const e = entryFor(b.dataset.add, today(), true);
+    e.n = (e.n || nSets(p.x.reps)) + 1;
+    saveAll(); render();
+  });
+  days.querySelectorAll("[data-rem]").forEach(b => b.onclick = () => {
+    const p = parseLogKey(b.dataset.rem);
+    const e = entryFor(b.dataset.rem, today(), true);
+    e.n = Math.max(1, (e.n || nSets(p.x.reps)) - 1);
+    if (e.s.length > e.n) e.s.length = e.n;
+    saveAll(); render();
+  });
   days.querySelectorAll("[data-u]").forEach(b => b.onclick = () => {
     prog[b.dataset.u] = curLvl(b.dataset.u) + 1; saveAll(); render();
   });
@@ -657,11 +705,9 @@ function render() {
   });
 
   let total = 0, doneN = 0;
-  PLAN[di].slots.forEach((slot, si) => {
-    const lvl = curLvl(`${di}-${si}`);
-    total += nSets(slot.levels[lvl].reps);
-    const en = entryFor(logKeyOf(`${di}-${si}`, lvl), today(), false);
-    if (en) en.s.forEach(v => v && doneN++);
+  states.forEach(st => {
+    total += st.setCount;
+    if (st.entry) st.entry.s.slice(0, st.setCount).forEach(v => v && doneN++);
   });
   document.getElementById("bar").style.width = (total ? doneN / total * 100 : 0) + "%";
 }
@@ -756,6 +802,7 @@ function drawEditor() {
       ${x.opts?.w ? `<div class="stepper"><label>Zusatzgewicht (kg)</label>
         <div class="row"><button data-a="w-">−</button><div class="val">${ed.wt}</div><button data-a="w+">+</button></div></div>` : ""}
     </div>
+    ${x.opts?.t ? `<button class="holdbtn" data-a="timer">⏱ <span id="edclock">Timer ${ed.val} s</span></button>` : ""}
     <div class="editor-actions">
       ${ed.existing ? '<button class="del" data-a="del">Löschen</button>' : ""}
       <button data-a="cancel">Abbrechen</button>
@@ -773,6 +820,7 @@ function drawEditor() {
       if (!sess) { sess = { start: Date.now(), day: activeTab < 3 ? activeTab : 0 }; renderSession(); }
       saveAll(); const rest = p.x.rest; closeEditor(); startTimer(rest); render();
     }
+    else if (a === "timer") startTimer(ed.val);
     else if (a === "del") {
       const entry = entryFor(ed.logKey, today(), false);
       if (entry) { entry.s[ed.si] = null; saveAll(); }
@@ -788,21 +836,34 @@ function closeEditor() {
 }
 document.getElementById("scrim").onclick = closeEditor;
 
-/* ── Timer ── */
-let timerId = null, remaining = 0;
+/* ── Timer ──
+   Zeitstempelbasiert (timerEnd), damit die Anzeige nach App-Suspend korrekt weiterläuft */
+let timerId = null, timerEnd = 0;
 function startTimer(sec) {
-  clearInterval(timerId); remaining = sec; tick();
-  timerId = setInterval(() => {
-    remaining--; tick();
-    if (remaining <= 0) { stopTimer(); navigator.vibrate?.([200, 100, 200]); }
-  }, 1000);
+  clearInterval(timerId);
+  timerEnd = Date.now() + sec * 1000;
+  timerId = setInterval(tick, 250);
+  tick();
 }
-function stopTimer() { clearInterval(timerId); timerId = null; remaining = 0; tick(); }
+function stopTimer() { clearInterval(timerId); timerId = null; timerEnd = 0; tick(); }
 function tick() {
+  const remaining = timerEnd ? Math.max(0, Math.ceil((timerEnd - Date.now()) / 1000)) : 0;
+  if (timerId && remaining <= 0) {
+    clearInterval(timerId); timerId = null; timerEnd = 0;
+    navigator.vibrate?.([200, 100, 200]);
+  }
   const c = document.getElementById("clock");
   c.textContent = `${Math.floor(remaining/60)}:${String(remaining%60).padStart(2,"0")}`;
   c.className = "clock" + (timerId ? " on" : "");
+  const ec = document.getElementById("edclock");
+  if (ec) ec.textContent = timerId ? `${remaining} s` : `Timer ${ed ? ed.val : ""} s`;
 }
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) return;
+  tick();
+  const t = document.getElementById("sessTime");
+  if (t && sess) t.textContent = fmtDur((Date.now() - sess.start) / 1000);
+});
 
 render(); tick(); renderSession();
 </script>

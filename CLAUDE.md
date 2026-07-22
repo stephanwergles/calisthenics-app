@@ -21,7 +21,7 @@ Level = { name, reps, rest(s), query(YouTube-Suche), svg(Key in SVGS),
           opts?: { w?: 1, t?: 1 } }      // w = Zusatzgewicht-Feld, t = Sekunden statt Wdh.
 ```
 
-- **Slot** = fester Platz im Trainingsplan, **Level** = Progressionsstufe (z.B. Body Rows → Tuck Front Lever Rows). 18 Slots, 42 Levels.
+- **Slot** = fester Platz im Trainingsplan, **Level** = Progressionsstufe (z.B. Body Rows → Tuck Front Lever Rows). 23 Slots, 42 Levels.
 - `SLOTS` ist die flache Lookup-Map: `"di-si"` → Slot.
 - **LogKeys:** Level 0 loggt unter `"di-si"` (Legacy-kompatibel), Level N>0 unter `"di-si@N"`. `parseLogKey()` löst beides auf. Jede Stufe hat getrennte Historie.
 
@@ -29,7 +29,7 @@ Level = { name, reps, rest(s), query(YouTube-Suche), svg(Key in SVGS),
 
 | Key | Inhalt |
 |---|---|
-| `cali-log` | `{ logKey: [ { d: "YYYY-MM-DD", s: [ [wert, gewicht] \| null ] } ] }` |
+| `cali-log` | `{ logKey: [ { d: "YYYY-MM-DD", s: [ [wert, gewicht] \| null ], n?: Satzzahl-Override für den Tag } ] }` |
 | `cali-prog` | `{ slotKey: aktuellerLevelIndex }` |
 | `cali-sess` | laufende Session `{ start: timestamp, day: di }` oder `null` |
 | `cali-durs` | `{ datum: { day, dur(sekunden) } }` |
