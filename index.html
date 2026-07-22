@@ -140,12 +140,14 @@
   .timer button { padding: 11px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
   .timer button.go { background: var(--amber); border-color: var(--amber); color: #14171a; }
 
+  #upd { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 20px; right: 20px; z-index: 40; padding: 12px; border-radius: 12px; border: 1px solid var(--amber); background: #2a2617; color: var(--amber); font-size: 13.5px; font-weight: 700; font-family: inherit; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.45); }
+
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.4.1</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.4.2</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -864,12 +866,34 @@ function tick() {
 }
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) return;
-  tick();
+  tick(); checkUpdate();
   const t = document.getElementById("sessTime");
   if (t && sess) t.textContent = fmtDur((Date.now() - sess.start) / 1000);
 });
 
-render(); tick(); renderSession();
+/* ── Update-Check ──
+   iOS-Homescreen-Apps cachen hartnäckig: die App lädt sich bei jedem Öffnen
+   selbst frisch in den HTTP-Cache (cache:"reload"). Ist die Version im Header
+   neuer, erscheint ein Neustart-Banner; spätestens der nächste Kaltstart
+   nutzt den frischen Cache. Offline schlägt der fetch still fehl. */
+const vOf = s => (s.match(/Progressionsbasiert · v([\d.]+)/) || [])[1];
+function showUpdateBanner(v) {
+  if (document.getElementById("upd")) return;
+  const b = document.createElement("button");
+  b.id = "upd";
+  b.textContent = `Update auf v${v} geladen — tippen zum Neustart`;
+  b.onclick = () => location.reload();
+  document.body.appendChild(b);
+}
+async function checkUpdate() {
+  try {
+    const res = await fetch(location.href, { cache: "reload" });
+    const remote = vOf(await res.text());
+    if (remote && remote !== vOf(document.querySelector("header span").textContent)) showUpdateBanner(remote);
+  } catch {}
+}
+
+render(); tick(); renderSession(); checkUpdate();
 </script>
 </body>
 </html>
