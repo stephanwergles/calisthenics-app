@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14171a">
+<title>Calisthenics · 3er-Split</title>
+<style>
+  :root {
+    --bg: #14171a; --card: #1d2126; --card2: #262b31; --line: #2e343b;
+    --text: #e9e7df; --muted: #8e939b;
+    --amber: #f2c94c; --amber-dim: rgba(242,201,76,.12);
+    --chalk: #f4f2ea;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { background: var(--bg); color: var(--text); font: 16px/1.55 -apple-system, "Segoe UI", Roboto, sans-serif; padding-bottom: 158px; }
+  .display { font-stretch: condensed; text-transform: uppercase; letter-spacing: .03em; font-weight: 700; }
+
+  header { padding: 26px 20px 6px; display: flex; align-items: baseline; gap: 10px; }
+  header h1 { font-size: 28px; }
+  header span { color: var(--muted); font-size: 13px; }
+
+  .tabs { display: flex; gap: 8px; padding: 14px 20px 10px; position: sticky; top: 0; background: var(--bg); z-index: 10; }
+  .tabs button { flex: 1; padding: 10px 0 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--muted); cursor: pointer; transition: all .15s; font-size: 19px; line-height: 1.1; font-family: inherit; }
+  .tabs button small { display: block; font-size: 11px; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--muted); font-stretch: normal; }
+  .tabs button.active { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
+  .tabs button.active small { color: var(--amber); opacity: .75; }
+
+  .progress { height: 3px; background: var(--card2); margin: 0 20px; border-radius: 2px; overflow: hidden; }
+  .progress i { display: block; height: 100%; background: var(--amber); width: 0; transition: width .3s; }
+
+  .day { display: none; padding: 10px 20px 0; }
+  .day.active { display: block; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; }
+  .block { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; }
+  .block .lvl { color: var(--amber); letter-spacing: .04em; font-weight: 700; border: 1px solid var(--amber); background: var(--amber-dim); border-radius: 20px; padding: 2px 9px; font-size: 10.5px; }
+  .block.skill { color: var(--amber); }
+  .block.kraft { color: #7fb3d5; }
+  .block.core, .block.zubehör, .block.extra { color: var(--muted); }
+  .card h3 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+  .meta { color: var(--muted); font-size: 13.5px; margin: 3px 0 8px; }
+  .meta b { color: var(--text); font-weight: 600; }
+  .meta a { color: var(--amber); text-decoration: none; font-weight: 600; }
+  .last { color: var(--muted); font-size: 12.5px; margin-bottom: 9px; }
+
+  .unlock { display: block; width: 100%; margin: 0 0 11px; padding: 12px; border-radius: 10px; border: 1px solid var(--amber); background: var(--amber-dim); color: var(--amber); font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; text-align: left; }
+
+  details { margin: 0 0 11px; }
+  summary { list-style: none; cursor: pointer; color: var(--muted); font-size: 14.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; user-select: none; padding: 10px 12px; background: var(--card2); border-radius: 10px; }
+  details[open] summary { border-radius: 10px 10px 0 0; color: var(--text); }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "▸"; transition: transform .15s; display: inline-block; }
+  details[open] summary::before { transform: rotate(90deg); }
+  .detail-body { background: var(--card2); border-radius: 0 0 10px 10px; padding: 4px 14px 14px; }
+  .detail-top { display: flex; gap: 14px; align-items: center; margin-bottom: 4px; }
+  .detail-top svg { flex: 0 0 104px; height: 76px; }
+  .detail-top p, .detail-body .sec { color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+  .detail-body .sec { margin-top: 8px; }
+  .detail-body .sec b { color: var(--text); display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 2px; }
+  .detail-body .sec.warn b { color: #e59a9a; }
+  .ladder { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; }
+  .ladder-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin-bottom: 8px; }
+  .ladder .step { display: flex; gap: 10px; align-items: center; position: relative; padding: 5px 0; color: var(--muted); }
+  .ladder .step .dot {
+    flex: 0 0 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--line); background: var(--card); font-size: 11px; z-index: 1;
+  }
+  .ladder .step:not(:last-of-type) .dot::after {
+    content: ""; position: absolute; left: 11px; top: 29px; width: 2px; height: 14px; background: var(--line);
+  }
+  .ladder .step.done { color: var(--text); }
+  .ladder .step.done .dot { background: var(--chalk); border-color: var(--chalk); color: #14171a; font-weight: 700; }
+  .ladder .step.cur { color: var(--amber); font-weight: 600; }
+  .ladder .step.cur .dot { border-color: var(--amber); background: var(--amber-dim); box-shadow: 0 0 0 3px var(--amber-dim); }
+  .ladder .step.cur .dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
+  .ladder .step.locked .dot { opacity: .55; font-size: 10px; }
+  .ladder .stepname em { display: block; font-style: normal; font-size: 11px; font-weight: 500; color: var(--amber); opacity: .8; }
+  .ladder-btns { display: flex; gap: 8px; margin-top: 10px; }
+  .ladder .lvlbtn { padding: 9px 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--card); color: var(--muted); font-size: 12.5px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .ladder .lvlbtn.amber { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+
+  .sets { display: flex; gap: 9px; flex-wrap: wrap; }
+  .set { min-width: 42px; height: 42px; padding: 0 6px; border-radius: 21px; border: 2px solid var(--line); background: var(--card2); color: var(--muted); font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s; }
+  .set:active { transform: scale(.92); }
+  .set.done { background: var(--chalk); border-color: var(--chalk); color: #14171a; box-shadow: 0 0 0 3px rgba(244,242,234,.12); }
+
+  .reset { margin: 16px 0 26px; width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: none; color: var(--muted); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; }
+
+  .editor { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--card); border-top: 1px solid var(--amber); padding: 16px 20px calc(16px + env(safe-area-inset-bottom)); transform: translateY(110%); transition: transform .2s; }
+  .editor.open { transform: none; }
+  .editor h4 { font-size: 15px; font-weight: 600; }
+  .editor .sub { color: var(--muted); font-size: 12.5px; margin-bottom: 12px; }
+  .steppers { display: flex; gap: 18px; margin-bottom: 14px; }
+  .stepper { flex: 1; }
+  .stepper label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 5px; }
+  .stepper .row { display: flex; align-items: center; gap: 10px; }
+  .stepper button { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 22px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .stepper .val { flex: 1; text-align: center; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .editor-actions { display: flex; gap: 10px; }
+  .editor-actions button { flex: 1; padding: 13px; border-radius: 12px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .editor-actions .save { background: var(--amber); border-color: var(--amber); color: #14171a; flex: 2; }
+  .editor-actions .del { color: #e57373; }
+  .scrim { position: fixed; inset: 0; z-index: 25; background: rgba(0,0,0,.4); display: none; }
+  .scrim.open { display: block; }
+
+  .log-session { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; }
+  .log-session h3 { font-size: 15px; }
+  .log-session .d { color: var(--muted); font-size: 12.5px; margin-bottom: 8px; }
+  .log-session table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .log-session td { padding: 3px 0; color: var(--muted); }
+  .log-session td:last-child { text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
+  .log-actions { display: flex; gap: 10px; margin: 16px 0 26px; }
+  .log-actions button, .log-actions label { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; text-align: center; }
+  .log-empty { color: var(--muted); text-align: center; padding: 40px 20px; font-size: 14px; }
+
+  .timer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; background: rgba(29,33,38,.97); backdrop-filter: blur(8px); border-top: 1px solid var(--line); padding: 10px 20px calc(12px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+  .restrow { display: flex; align-items: center; gap: 10px; }
+  .sessrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; }
+  .sess-start { flex: 1; padding: 11px; border-radius: 10px; border: 1px dashed var(--line); background: none; color: var(--muted); font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .sess-info { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 600; }
+  .sess-info .t { font-variant-numeric: tabular-nums; font-stretch: condensed; font-size: 19px; font-weight: 700; color: var(--amber); }
+  .sess-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--amber); animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  .sess-end { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .clock { font-size: 32px; font-stretch: condensed; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 84px; line-height: 1; }
+  .clock.on { color: var(--amber); }
+  .timer button { padding: 11px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .timer button.go { background: var(--amber); border-color: var(--amber); color: #14171a; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert</span></header>
+<div class="tabs" id="tabs"></div>
+<div class="progress"><i id="bar"></i></div>
+<main id="days"></main>
+
+<div class="scrim" id="scrim"></div>
+<div class="editor" id="editor"></div>
+
+<div class="timer">
+  <div class="sessrow" id="sessbar"></div>
+  <div class="restrow">
+    <div class="clock" id="clock">0:00</div>
+    <button class="go" onclick="startTimer(90)">90s</button>
+    <button class="go" onclick="startTimer(120)">2:00</button>
+    <button class="go" onclick="startTimer(180)">3:00</button>
+    <button onclick="stopTimer()">Stopp</button>
+  </div>
+</div>
+
+<script>
+/* ── Schematische Positionsbilder ── */
+const S = (inner) => `<svg viewBox="0 0 120 90" fill="none" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const F = 'stroke="#e9e7df" stroke-width="5"';
+const A = 'stroke="#f2c94c" stroke-width="4"';
+const H = 'stroke="#e9e7df" stroke-width="5" fill="none"';
+
+const SVGS = {
+  pullupTop: S(`<line x1="14" y1="18" x2="106" y2="18" ${A}/><circle cx="60" cy="10" r="6" ${H}/><path d="M60 24 L44 18 M60 24 L76 18" ${F}/><path d="M60 24 L60 52 M60 52 L54 80 M60 52 L66 80" ${F}/>`),
+  deadhang: S(`<line x1="14" y1="14" x2="106" y2="14" ${A}/><circle cx="60" cy="28" r="6" ${H}/><path d="M48 14 L57 32 M72 14 L63 32" ${F}/><path d="M60 34 L60 58 M60 58 L55 84 M60 58 L65 84" ${F}/>`),
+  shrug: S(`<line x1="14" y1="14" x2="106" y2="14" ${A}/><path d="M88 34 L88 22 M84 26 L88 22 L92 26" ${A}/><circle cx="58" cy="28" r="6" ${H}/><path d="M46 14 L55 32 M70 14 L61 32" ${F}/><path d="M58 34 L58 58 M58 58 L53 84 M58 58 L63 84" ${F}/>`),
+  archer: S(`<line x1="14" y1="14" x2="106" y2="14" ${A}/><circle cx="46" cy="24" r="6" ${H}/><path d="M46 30 L38 14 M46 30 L88 15" ${F}/><path d="M46 30 L46 56 M46 56 L41 82 M46 56 L51 82" ${F}/>`),
+  barSupport: S(`<line x1="14" y1="36" x2="106" y2="36" ${A}/><circle cx="60" cy="12" r="6" ${H}/><path d="M60 20 L46 36 M60 20 L74 36" ${F}/><path d="M60 20 L57 48 M57 48 L50 74" ${F}/>`),
+  muTrans: S(`<line x1="14" y1="28" x2="106" y2="28" ${A}/><circle cx="74" cy="18" r="6" ${H}/><path d="M68 24 L58 30 M58 30 L48 46" ${F}/><path d="M62 28 L58 30 M74 28 L68 25" ${F}/><path d="M48 46 L40 72" ${F}/>`),
+  dipsDeep: S(`<path d="M38 38 L52 38 M68 38 L82 38" ${A}/><circle cx="60" cy="20" r="6" ${H}/><path d="M60 28 L72 24 L72 38 M60 28 L48 24 L48 38" ${F}/><path d="M60 28 L58 52 M58 52 L50 66 L54 80" ${F}/>`),
+  row: S(`<line x1="26" y1="30" x2="90" y2="30" ${A}/><line x1="14" y1="72" x2="106" y2="72" ${A}/><circle cx="38" cy="38" r="6" ${H}/><path d="M44 30 L46 42 M46 42 L94 70" ${F}/>`),
+  tuckFL: S(`<line x1="14" y1="14" x2="106" y2="14" ${A}/><circle cx="40" cy="34" r="6" ${H}/><path d="M46 14 L46 36 M72 14 L66 34" ${F}/><path d="M46 36 L66 38 M66 38 L74 50 L64 54" ${F}/>`),
+  curl: S(`<line x1="14" y1="80" x2="106" y2="80" ${A}/><circle cx="54" cy="14" r="6" ${H}/><path d="M54 20 L54 50 M54 50 L49 80 M54 50 L59 80" ${F}/><path d="M54 26 L58 42 M58 42 L72 30" ${F}/><path d="M72 30 L72 62" ${A}/>`),
+  lsit: S(`<line x1="14" y1="66" x2="106" y2="66" ${A}/><circle cx="36" cy="24" r="6" ${H}/><path d="M36 30 L36 56 M36 34 L30 66" ${F}/><path d="M36 56 L80 52 M36 58 L80 60" ${F}/>`),
+  pppu: S(`<line x1="14" y1="74" x2="106" y2="74" ${A}/><circle cx="26" cy="34" r="6" ${H}/><path d="M32 38 L92 62 M92 62 L98 74" ${F}/><path d="M38 42 L54 74" ${F}/>`),
+  tuckPl: S(`<line x1="14" y1="74" x2="106" y2="74" ${A}/><circle cx="34" cy="38" r="6" ${H}/><path d="M40 44 L62 50 M62 50 L74 60 L64 66" ${F}/><path d="M44 48 L48 74" ${F}/>`),
+  pike: S(`<line x1="14" y1="74" x2="106" y2="74" ${A}/><circle cx="30" cy="60" r="5" ${H}/><path d="M34 74 L60 32 M60 32 L92 74" ${F}/>`),
+  hspu: S(`<line x1="14" y1="80" x2="106" y2="80" ${A}/><line x1="96" y1="10" x2="96" y2="80" ${A}/><circle cx="58" cy="66" r="6" ${H}/><path d="M60 60 L62 34 M62 34 L84 20" ${F}/><path d="M60 60 L52 80 M62 40 L58 80" ${F}/>`),
+  decline: S(`<line x1="14" y1="74" x2="106" y2="74" ${A}/><rect x="84" y="54" width="22" height="20" ${A}/><circle cx="22" cy="46" r="6" ${H}/><path d="M28 50 L88 54 M34 52 L34 74" ${F}/>`),
+  fly: S(`<path d="M30 6 L30 28 M90 6 L90 28" ${A}/><circle cx="60" cy="14" r="6" ${H}/><path d="M60 22 L60 52 M60 26 L30 28 M60 26 L90 28" ${F}/><path d="M60 52 L52 80 M60 52 L68 80" ${F}/>`),
+  triceps: S(`<line x1="14" y1="80" x2="106" y2="80" ${A}/><circle cx="56" cy="16" r="6" ${H}/><path d="M56 22 L56 52 M56 52 L51 80 M56 52 L61 80" ${F}/><path d="M56 26 L68 12 M68 12 L76 24" ${F}/><path d="M76 24 L76 56" ${A}/>`),
+  pistol: S(`<line x1="14" y1="76" x2="106" y2="76" ${A}/><circle cx="64" cy="14" r="6" ${H}/><path d="M62 20 L56 44 M58 28 L84 32" ${F}/><path d="M56 44 L44 58 L52 76 M56 44 L88 50" ${F}/>`),
+  split: S(`<line x1="14" y1="76" x2="106" y2="76" ${A}/><rect x="84" y="58" width="22" height="18" ${A}/><circle cx="52" cy="14" r="6" ${H}/><path d="M52 20 L52 42" ${F}/><path d="M52 42 L44 60 L48 76 M52 42 L74 52 L90 58" ${F}/>`),
+  nordic: S(`<line x1="14" y1="70" x2="106" y2="70" ${A}/><rect x="88" y="60" width="16" height="10" ${A}/><circle cx="36" cy="30" r="6" ${H}/><path d="M40 35 L78 64 M78 64 L92 66" ${F}/><path d="M48 42 L42 58" ${F}/>`),
+  calf: S(`<line x1="14" y1="80" x2="106" y2="80" ${A}/><rect x="42" y="64" width="30" height="16" ${A}/><circle cx="58" cy="10" r="6" ${H}/><path d="M58 16 L58 44 M58 44 L56 60 M56 60 L50 56" ${F}/>`),
+  legraise: S(`<line x1="14" y1="14" x2="106" y2="14" ${A}/><circle cx="58" cy="28" r="6" ${H}/><path d="M46 14 L55 32 M70 14 L61 32" ${F}/><path d="M58 34 L58 54 M58 54 L88 50 M58 56 L88 58" ${F}/>`),
+  t2b: S(`<line x1="14" y1="14" x2="106" y2="14" ${A}/><circle cx="58" cy="30" r="6" ${H}/><path d="M46 14 L55 34 M70 14 L61 34" ${F}/><path d="M58 36 L58 50 M58 50 L78 22" ${F}/>`),
+  hollow: S(`<line x1="14" y1="66" x2="106" y2="66" ${A}/><circle cx="28" cy="46" r="5" ${H}/><path d="M32 50 L58 62 M58 62 L92 48" ${F}/><path d="M30 48 L14 40" ${F}/>`),
+  sideplank: S(`<line x1="14" y1="72" x2="106" y2="72" ${A}/><circle cx="26" cy="44" r="6" ${H}/><path d="M26 72 L44 72 M30 52 L96 72" ${F}/><path d="M36 54 L40 32" ${F}/>`)
+};
+
+/* ── Plan: Slots mit Progressionsleitern ──
+   Level: { name, reps, rest, query, svg, pos, exec, fehler, opts:{w,t}, up }
+   up = Freischalt-Schwelle pro Satz (alle Sätze in 2 Einheiten hintereinander erreicht) */
+const PLAN = [
+  { name: "Tag A", sub: "Pull · Muscle-up", slots: [
+    { block: "Skill", levels: [
+      { name: "Explosive Klimmzüge", reps: "5 × 3", rest: 180, query: "explosive pull up chest to bar tutorial", svg: "pullupTop", up: 3,
+        pos: "Schulterbreiter Obergriff, voller Hang, Schulterblätter leicht angespannt – nicht komplett passiv hängen.",
+        exec: "Aus dem Stand heraus maximal explosiv ziehen, Ellenbogen nach unten-hinten reißen, Ziel: Stange auf Brusthöhe. Oben kurz „schweben“, kontrolliert ablassen, unten komplett strecken, 1–2 Sek. sammeln, nächste Wiederholung.",
+        fehler: "Kippen/Schwungholen aus der Hüfte · nur bis zum Kinn ziehen statt zur Brust · Wiederholungen aneinanderreihen ohne volle Streckung unten.",
+        reg: "Leichter: normale Klimmzüge mit maximal explosiver Absicht oder leichtes Band. Schwerer: höher zielen (Bauchnabel zur Stange)." },
+      { name: "Muscle-up (Stange)", reps: "5 × 1–3", rest: 180, query: "first muscle up bar tutorial", svg: "muTrans", up: 3,
+        pos: "Griff etwas enger als schulterbreit, falscher Griff (Handgelenke über der Stange) hilft enorm. Kleiner, kontrollierter Vorschwung ist erlaubt.",
+        exec: "Explosiv bis zur unteren Brust ziehen, im höchsten Punkt Ellenbogen blitzschnell über die Stange kippen (Brust „über die Stange lehnen“), dann aus dem Stütz ausdrücken. Runter in umgekehrter Reihenfolge – die Negative langsam!",
+        fehler: "Zu früh umgreifen wollen (erst Höhe, dann Transition) · Hühnerflügel: ein Ellenbogen kommt zuerst · aus purer Kraft ziehen statt Zug + Lean kombinieren.",
+        reg: "Leichter: Band um die Füße oder niedrigere Stange mit Mini-Absprung. Schwerer: mehrere Wiederholungen ohne jeden Vorschwung." }
+    ]},
+    { block: "Skill", levels: [
+      { name: "Straight Bar Dips", reps: "4 × 6–8", rest: 120, query: "straight bar dips tutorial", svg: "barSupport", up: 8,
+        pos: "Stütz auf einer Stange (Hüfthöhe), Arme gestreckt, Stange an der Hüfte, Beine leicht vor dem Körper, Schultern runter.",
+        exec: "Oberkörper nach vorn über die Stange lehnen und Ellenbogen beugen, bis die Stange die untere Brust berührt. Dann zurückdrücken bis zur vollen Streckung. Die Vorlage bleibt die ganze Zeit bestehen.",
+        fehler: "Zu aufrecht bleiben (dann kippst du nach hinten weg) · Schultern hochziehen · nur halbe Tiefe.",
+        reg: "Leichter: niedrigere Stange, Füße unterstützen leicht. Schwerer: 3-Sekunden-Negative, Pause am tiefsten Punkt." },
+      { name: "Russian Dips (Barren)", reps: "4 × 5–8", rest: 120, query: "russian dips tutorial", svg: "dipsDeep", up: 8,
+        pos: "Stütz am Parallelbarren, Unterarme flach auf die Holme legen können – das ist die untere Position.",
+        exec: "Aus dem Stütz absenken bis die Unterarme aufliegen, Gewicht kurz nach hinten verlagern, dann nach vorn schieben und explosiv zurück in den Stütz drücken. Simuliert die Muscle-up-Transition am Barren.",
+        fehler: "Unkontrolliert in die Unterarme fallen · Ellenbogen nach außen flackern lassen · Schwung nur aus den Schultern statt aus der Gewichtsverlagerung.",
+        reg: "Leichter: nur den hinteren Teil üben (Unterarme ablegen und zurückdrücken). Schwerer: Übergang explosiver, ganz ohne Schwung." }
+    ]},
+    { block: "Skill", levels: [
+      { name: "Muscle-up-Transition (unterstützt)", reps: "3 × 3–5", rest: 120, query: "muscle up transition drill low bar", svg: "muTrans", up: 5,
+        pos: "Niedrige Stange oder Ringe auf Brusthöhe, Füße bleiben am Boden und tragen einen Teil des Gewichts.",
+        exec: "Zug bis zur Brust, dann in Zeitlupe: Ellenbogen von unten nach oben über die Stange rotieren, Brust legt sich über die Stange, aus dem tiefen Stütz ausdrücken. Die Füße helfen nur so viel wie nötig.",
+        fehler: "Die Transition „springen“ statt durchrotieren · Handgelenke bleiben unter der Stange (umgreifen üben!) · zu viel Beinhilfe, sodass nichts gelernt wird.",
+        reg: "Leichter: mehr Fußunterstützung, Stange höher greifen. Schwerer: nur ein Fuß hilft, Transition in Zeitlupe." },
+      { name: "Negative Muscle-ups", reps: "3 × 3–4", rest: 150, query: "negative muscle up tutorial", svg: "muTrans", up: 4,
+        pos: "Per Sprung oder Kasten in den Stütz über der Stange starten.",
+        exec: "Aus dem Stütz so langsam wie möglich rückwärts durch die Transition: Brust senkt sich, Ellenbogen rotieren nach vorn-unten, dann kontrolliert in den Hang ablassen. 3–5 Sekunden pro Negative anpeilen.",
+        fehler: "Den Transitionsmoment durchfallen lassen (genau der zählt) · Schultern hochgezogen · zu schnell.",
+        reg: "Leichter: nur den Transitionsteil langsam, den Rest normal ablassen. Schwerer: 5+ Sekunden pro Negative." }
+    ]},
+    { block: "Kraft", levels: [
+      { name: "Klimmzüge (volle ROM)", reps: "4 × 6–8", rest: 180, query: "perfect pull up form calisthenic movement", svg: "pullupTop", up: 8, opts: { w: 1 },
+        pos: "Schulterbreiter Obergriff, voller Hang, Körperspannung: Bauch fest, Beine ruhig.",
+        exec: "Zuerst Schulterblätter nach unten ziehen (Schultern weg von den Ohren), dann Ellenbogen Richtung Hüfte ziehen, bis das Kinn klar über der Stange ist. 2 Sekunden kontrolliert ablassen bis zur vollen Streckung.",
+        fehler: "Kippen und Schwungholen · halbe Wiederholungen oben oder unten · Schultern bleiben hochgezogen (dann fehlt die Scapula-Aktivierung).",
+        reg: "Leichter: Band-Unterstützung oder langsame Negative. Schwerer: Tempo 3-1-3 oder 2 Sekunden Pause oben." },
+      { name: "Klimmzüge mit Zusatzgewicht", reps: "4 × 5–8", rest: 180, query: "weighted pull ups guide", svg: "pullupTop", up: 8, opts: { w: 1 },
+        pos: "Dip-Gürtel mit Gewicht (Start: 5 kg) oder Rucksack. Ausführung identisch zur Körpergewichts-Variante.",
+        exec: "Exakt wie normale Klimmzüge – Scapula zuerst, Kinn klar über die Stange, 2 Sekunden negativ. Gewicht erst steigern, wenn alle Sätze sauber am oberen Ziel sind, dann in 2,5-kg-Schritten.",
+        fehler: "Zu früh zu schwer (Form bricht zusammen) · Gewicht schaukeln lassen · ROM verkürzen, sobald Gewicht dran hängt.",
+        reg: "Leichter: Gewicht reduzieren. Schwerer: +2,5 kg, sobald alle Sätze am oberen Ziel sind." }
+    ]},
+    { block: "Kraft", levels: [
+      { name: "Body Rows", reps: "3 × 10–12", rest: 90, query: "inverted row body row tutorial", svg: "row", up: 12,
+        pos: "Unter einer Stange oder Ringen, Fersen am Boden, Körper von Kopf bis Fuß eine Linie, Arme gestreckt.",
+        exec: "Brust zur Stange ziehen, Ellenbogen dicht am Körper, Schulterblätter am Ende zusammenziehen. Kontrolliert zurück in die volle Streckung. Schwerer machen: Füße erhöhen oder flacher hängen.",
+        fehler: "Hüfte hängt durch oder knickt ein · nur mit den Armen ziehen statt Schulterblätter arbeiten lassen · halbe Züge.",
+        reg: "Leichter: Stange höher, steilerer Körperwinkel. Schwerer: Füße erhöhen, 1 Sekunde Pause an der Stange." },
+      { name: "Tuck Front Lever Rows", reps: "3 × 6–8", rest: 120, query: "tuck front lever rows tutorial", svg: "tuckFL", up: 8,
+        pos: "An Stange oder Ringen in den Tuck hängen: Knie zur Brust gezogen, Rücken parallel zum Boden, Arme gestreckt.",
+        exec: "In der Tuck-Position halten und den Körper Richtung Stange ziehen (Hüfte zur Stange), langsam ablassen, Position nie verlieren. Das ist gleichzeitig dein Einstieg in den Front Lever.",
+        fehler: "Rücken sackt aus der Horizontalen ab · Ziehen wird zum Klimmzug (Oberkörper stellt sich auf) · Schwung aus den Beinen.",
+        reg: "Leichter: erst statische Tuck-Halte ohne Ziehen üben. Schwerer: Advanced Tuck (Rücken flach, Knie weiter vom Körper)." }
+    ]},
+    { block: "Kraft", levels: [
+      { name: "Archer Pull-ups", reps: "3 × 4–6 / Seite", rest: 120, query: "archer pull up tutorial", svg: "archer", up: 6,
+        pos: "Deutlich breiter als schulterbreiter Obergriff.",
+        exec: "Zur rechten Hand ziehen: rechter Arm macht die Arbeit, der linke bleibt fast gestreckt und „gleitet“ über die Stange. Kinn über die Stange beim ziehenden Arm, kontrolliert runter, Seite wechseln oder Seiten blockweise trainieren.",
+        fehler: "Der „gestreckte“ Arm beugt sich heimlich und hilft mit · Körper rotiert weg · zu enger Griff.",
+        reg: "Leichter: der gestreckte Arm darf spürbar mithelfen. Schwerer: gestreckter Arm nur noch mit den Fingerspitzen an der Stange." },
+      { name: "Typewriter Pull-ups", reps: "3 × 3–5 / Seite", rest: 150, query: "typewriter pull up tutorial", svg: "archer", up: 5,
+        pos: "Breiter Obergriff, wie beim Archer.",
+        exec: "Hochziehen zur rechten Hand, dann OBEN bleiben und den Körper horizontal zur linken Hand schieben, erst dort ablassen. Die horizontale Fahrt ist der Kern – langsam und unter Spannung.",
+        fehler: "Beim Rüberschieben absacken · Fahrt mit Schwung statt Kontrolle · Kinn taucht unter die Stange.",
+        reg: "Leichter: kürzere seitliche Fahrt. Schwerer: Fahrt verlangsamen und an beiden Enden pausieren." }
+    ]},
+    { block: "Zubehör", levels: [
+      { name: "Hanging Scapula Shrugs", reps: "3 × 10", rest: 60, query: "hanging scapula shrug tutorial", svg: "shrug", up: null,
+        pos: "Voller Hang an der Stange, Arme komplett gestreckt – und gestreckt bleiben sie auch.",
+        exec: "Nur die Schulterblätter nach unten-hinten ziehen: der Körper hebt sich ein paar Zentimeter, ohne dass sich die Ellenbogen beugen. Oben 1 Sekunde halten, langsam zurück in den passiven Hang.",
+        fehler: "Ellenbogen beugen (dann wird's ein Mini-Klimmzug) · zu schnell und ohne Endposition · Kopf einziehen.",
+        reg: "Leichter: Füße auf einer Box teilentlastet. Schwerer: oben 3 Sekunden halten oder Zusatzgewicht." }
+    ]},
+    { block: "Zubehör", levels: [
+      { name: "Bizeps-Curls", reps: "2 × 12–15", rest: 60, query: "biceps curls elbow health calisthenics", svg: "curl", up: null, opts: { w: 1 },
+        pos: "Aufrechter Stand, Band unter den Füßen oder Hanteln, Ellenbogen eng am Körper.",
+        exec: "Langsam aufwärts (1–2 Sek.), oben kurz anspannen, betont langsam ablassen (2–3 Sek.). Hier geht es um Sehnenqualität, nicht um Last – das Tempo ist die Übung.",
+        fehler: "Schwung aus dem Rücken · Ellenbogen wandern nach vorn · zu schwer und dafür zu schnell.",
+        reg: "Leichter: schwächeres Band. Schwerer: 3-Sekunden-Negative statt mehr Last." }
+    ]}
+  ]},
+  { name: "Tag B", sub: "Push · L-Sit", slots: [
+    { block: "Skill", levels: [
+      { name: "L-Sit (Boden)", reps: "6 × max — Σ 45–60 s", rest: 90, query: "l sit floor progression tutorial", svg: "lsit", up: 10, opts: { t: 1 },
+        pos: "Sitz auf dem Boden, Hände neben der Hüfte fest aufgesetzt (Finger nach vorn), Arme komplett gestreckt.",
+        exec: "Schultern kraftvoll nach unten drücken (weg von den Ohren), Hüfte abheben, Beine gestreckt nach vorn schieben und anheben. Position halten, ruhig weiteratmen. Zu schwer? Knie angezogen lassen (Tuck) oder nur ein Bein strecken.",
+        fehler: "Ellenbogen beugen sich · Schultern wandern zu den Ohren · Beine sinken ab und der Rücken rundet komplett ein.",
+        reg: "Leichter: Tuck (Knie angezogen) oder nur ein Bein gestreckt. Schwerer: Hände auf Büchern erhöhen, Zehen höher ziehen." },
+      { name: "L-Sit (Parallettes)", reps: "5 × 10–20 s", rest: 90, query: "l sit parallettes tutorial", svg: "lsit", up: 15, opts: { t: 1 },
+        pos: "Stütz auf Parallettes oder zwei stabilen Erhöhungen, Arme gestreckt.",
+        exec: "Wie am Boden, aber mit mehr Bewegungsfreiheit: Schultern tief, Beine gestreckt auf Hüfthöhe oder höher, Zehen angezogen. Die Haltezeiten hier zählen einzeln – Ziel sind 15–20 saubere Sekunden am Stück.",
+        fehler: "Hohlkreuz statt leicht eingerolltem Becken · Beine unter der Horizontalen „parken“ · Luft anhalten.",
+        reg: "Leichter: One-Leg-L-Sit im Wechsel. Schwerer: Beine über die Horizontale anheben." },
+      { name: "L-Sit Pull-Throughs / V-Sit-Anbahnung", reps: "4 × 8–15 s", rest: 120, query: "v sit progression tutorial", svg: "lsit", up: 12, opts: { t: 1 },
+        pos: "Parallettes, stabiler L-Sit als Ausgangsposition.",
+        exec: "Beine über die Horizontale anheben und die Hüfte leicht nach hinten kippen Richtung V-Sit. Nur so weit, wie Arme gestreckt bleiben. Alternativ: L-Sit halten und langsam Beine heben-senken.",
+        fehler: "Arme beugen, sobald die Beine steigen · Schwung statt Kompression · Rundrücken oben statt aktiver Hüftbeugung.",
+        reg: "Leichter: kleinere Kippung, kürzere Halten. Schwerer: Beine höher Richtung V, längere Halten." }
+    ]},
+    { block: "Skill", levels: [
+      { name: "Pseudo Planche Push-ups", reps: "4 × 6–8", rest: 120, query: "pseudo planche push up tutorial", svg: "pppu", up: 8,
+        pos: "Liegestützposition, aber Hände auf Hüfthöhe aufgesetzt, Fingerspitzen zeigen nach außen oder hinten.",
+        exec: "Schultern weit vor die Hände lehnen – und diese Vorlage während der ganzen Bewegung halten. Dann beugen und strecken wie ein Liegestütz. Je mehr Lean, desto härter.",
+        fehler: "Beim Beugen die Vorlage verlieren (Schultern wandern zurück) · Hüfte knickt ein · Handgelenke nicht aufgewärmt (Pflicht!).",
+        reg: "Leichter: weniger Vorlage oder auf den Knien. Schwerer: mehr Lean, Füße geschlossen." },
+      { name: "PPPU Füße erhöht", reps: "4 × 5–8", rest: 120, query: "elevated pseudo planche push up", svg: "pppu", up: 8,
+        pos: "Wie PPPU, Füße auf Box oder Bank – mehr Gewicht auf den Schultern.",
+        exec: "Identische Mechanik, die Vorlage wird durch die Erhöhung automatisch anspruchsvoller. Qualität vor Tiefe: lieber weniger tief mit gehaltenem Lean.",
+        fehler: "Kopf Richtung Boden fallen lassen statt Körperlinie · Ellenbogen voll nach außen · Lean geht beim ersten schweren Satz verloren.",
+        reg: "Leichter: niedrigere Erhöhung. Schwerer: höhere Box, unten 1 Sekunde halten." },
+      { name: "Tuck Planche Hold", reps: "5 × 5–12 s", rest: 150, query: "tuck planche tutorial", svg: "tuckPl", up: 10, opts: { t: 1 },
+        pos: "Hocke, Hände schulterbreit am Boden, Fingerspitzen leicht nach außen, Knie auf die Ellenbogen? Nein – Knie frei zur Brust gezogen.",
+        exec: "Schultern weit nach vorn lehnen, Füße vom Boden abheben, Knie eng am Körper, Rücken rund, Schulterblätter aktiv auseinandergedrückt (Protraktion). Halten und atmen.",
+        fehler: "Zu wenig Lean (Füße kommen nie hoch) · Schulterblätter zusammenfallen lassen · Knie auf den Armen abstützen.",
+        reg: "Leichter: Frog Stand (Knie auf den Ellenbogen abgestützt). Schwerer: Knie leicht vom Körper lösen (Advanced Tuck)." }
+    ]},
+    { block: "Kraft", levels: [
+      { name: "Dips (tief)", reps: "4 × 8–12", rest: 180, query: "perfect dip form calisthenic movement", svg: "dipsDeep", up: 12, opts: { w: 1 },
+        pos: "Stütz am Parallelbarren, Arme gestreckt, Schultern runter, Blick leicht nach vorn-unten, leichte Vorlage.",
+        exec: "Kontrolliert absenken, bis die Oberarme mindestens parallel zum Boden sind, Ellenbogen zeigen nach hinten. Dann kraftvoll zurück in die volle Streckung.",
+        fehler: "Halbe Tiefe · Schultern zucken zu den Ohren hoch · Ellenbogen flackern nach außen · unten „reinfallen“ statt kontrolliert abbremsen.",
+        reg: "Leichter: Band-Unterstützung oder langsame Negative. Schwerer: Tempo verlangsamen, Pause am tiefsten Punkt." },
+      { name: "Dips mit Zusatzgewicht", reps: "4 × 6–10", rest: 180, query: "weighted dips guide", svg: "dipsDeep", up: 10, opts: { w: 1 },
+        pos: "Dip-Gürtel (Start: 5–10 kg), sonst identisch.",
+        exec: "Exakt wie Körpergewichts-Dips – volle Tiefe, volle Streckung. Steigerung in 2,5-kg-Schritten, erst wenn alle Sätze am oberen Ziel sind.",
+        fehler: "Tiefe opfern fürs Gewicht · Gewicht pendeln lassen (ruhig werden vor dem ersten Zentimeter) · Aufwärmsätze überspringen.",
+        reg: "Leichter: Gewicht reduzieren. Schwerer: +2,5 kg, sobald alle Sätze am oberen Ziel sind." }
+    ]},
+    { block: "Kraft", levels: [
+      { name: "Pike Push-ups", reps: "4 × 6–10", rest: 120, query: "pike push up handstand progression", svg: "pike", up: 10,
+        pos: "Umgedrehtes V: Hände schulterbreit, Hüfte so hoch wie möglich, Beine möglichst gestreckt, Gewicht über den Schultern.",
+        exec: "Kopf senkrecht Richtung Boden zwischen die Hände senken (nicht nach vorn!), bis er fast aufsetzt, dann hochdrücken. Ellenbogen ca. 45° zum Körper.",
+        fehler: "Aus der Bewegung einen schrägen Liegestütz machen (Hüfte zu tief) · Kopf weit vor die Hände senken · Fersen-Gewicht statt Schulter-Gewicht.",
+        reg: "Leichter: Füße weiter von den Händen (flacherer Winkel). Schwerer: Füße näher heran oder Hände auf Erhöhungen (mehr Tiefe)." },
+      { name: "Pike Push-ups, Füße erhöht", reps: "4 × 5–8", rest: 120, query: "elevated pike push up tutorial", svg: "pike", up: 8,
+        pos: "Füße auf Box/Bank, Hüfte über den Schultern – je höher, desto näher am Handstand.",
+        exec: "Senkrecht abtauchen bis kurz vor Kopfkontakt, senkrecht hochdrücken. Die Hüfte bleibt gestapelt über den Schultern.",
+        fehler: "Hüfte wandert beim Drücken nach hinten · Bauch durchhängen lassen · unkontrolliertes Abtauchen.",
+        reg: "Leichter: niedrigere Box. Schwerer: höhere Box, Hüfte immer senkrechter über die Schultern." },
+      { name: "Wand-Handstand Push-ups", reps: "4 × 3–6", rest: 180, query: "wall handstand push up tutorial", svg: "hspu", up: 6,
+        pos: "Handstand mit Bauch oder Rücken zur Wand (Bauch = sauberere Linie), Hände etwas breiter als schulterbreit, ca. 15–25 cm von der Wand.",
+        exec: "Körperspannung wie im Hollow Body, kontrolliert absenken bis der Kopf den Boden leicht berührt, kraftvoll hochdrücken bis zur vollen Streckung. Erst frei üben, wenn 6+ saubere Wdh. an der Wand stehen.",
+        fehler: "Bananen-Rücken (Hohlkreuz) · unkontrolliert auf den Kopf fallen · Ellenbogen nach außen wegdrehen · ohne Abrolltechnik für den Notausstieg üben.",
+        reg: "Leichter: Teilwiederholungen auf einen Kissenstapel, Weg über Wochen vergrößern. Schwerer: Defizit-HSPU auf Parallettes." }
+    ]},
+    { block: "Kraft", levels: [
+      { name: "Liegestütze, Füße erhöht", reps: "3 × 12–15", rest: 90, query: "decline push up form", svg: "decline", up: 15,
+        pos: "Hände schulterbreit unter den Schultern, Füße auf Bank/Box, Körper eine Linie von Kopf bis Ferse.",
+        exec: "Brust kontrolliert Richtung Boden, Ellenbogen ca. 45° zum Körper, dann vollständig hochdrücken. Bauch und Po bleiben die ganze Zeit fest.",
+        fehler: "Hüfte hängt durch oder ragt hoch · Kopf nickt vor · nur halbe Tiefe bei müden Sätzen.",
+        reg: "Leichter: normale Liegestütze am Boden. Schwerer: höhere Erhöhung oder 3-Sekunden-Negative." },
+      { name: "Ring Push-ups", reps: "3 × 8–12", rest: 120, query: "ring push up tutorial", svg: "decline", up: 12,
+        pos: "Liegestützposition in Ringen knapp über dem Boden, Ringe eng am Körper.",
+        exec: "Wie ein Liegestütz, aber die Instabilität der Ringe zwingt alles zur Mitarbeit. Unten Ringe leicht nach außen drehen (RTO light), oben Ringe eindrehen und Endposition stabilisieren.",
+        fehler: "Ringe flattern lassen statt aktiv stabilisieren · Ellenbogen kleben an den Ringen · zu tiefes Absinken ohne Schulterkontrolle.",
+        reg: "Leichter: Ringe höher einstellen (steilerer Winkel). Schwerer: Füße erhöhen, Ringe unten stärker ausdrehen." }
+    ]},
+    { block: "Zubehör", levels: [
+      { name: "Ring- / Band-Flys", reps: "3 × 10–12", rest: 60, query: "ring fly tutorial", svg: "fly", up: null,
+        pos: "Schräg in Ringe gelehnt (je steiler du stehst, desto leichter), Arme vor der Brust, leicht gebeugt.",
+        exec: "Arme weit öffnen bis auf Brustlinie – die leichte Ellenbogenbeugung bleibt eingefroren – dann vor der Brust wieder zusammenführen und anspannen.",
+        fehler: "Aus dem Fly wird ein Push-up (Ellenbogen beugen sich beim Öffnen) · zu weit öffnen und Schulter überlasten · Hüfte knickt.",
+        reg: "Leichter: steiler stehen. Schwerer: flacher stehen, Füße weiter von den Ringen." }
+    ]},
+    { block: "Zubehör", levels: [
+      { name: "Trizeps-Extensions", reps: "2 × 12–15", rest: 60, query: "overhead triceps extension band", svg: "triceps", up: null,
+        pos: "Band hinter dem Körper fixiert oder unter dem Fuß, Ellenbogen über Kopf, eng neben den Ohren.",
+        exec: "Nur der Unterarm streckt nach oben, die Ellenbogen bleiben wie festgeschraubt. Langsam ablassen – die Dehnung unten ist der wertvolle Teil für die Sehne.",
+        fehler: "Ellenbogen wandern nach außen/vorn · Schwung aus der Schulter · ruckartige Endstreckung.",
+        reg: "Leichter: schwächeres Band. Schwerer: langsamere Negative statt mehr Last." }
+    ]}
+  ]},
+  { name: "Tag C", sub: "Beine · Core", slots: [
+    { block: "Skill", levels: [
+      { name: "Pistol-Squat (assistiert)", reps: "4 × 4–6 / Seite", rest: 120, query: "assisted pistol squat progression", svg: "pistol", up: 6,
+        pos: "Einbeiniger Stand, freies Bein nach vorn gestreckt, Arme nach vorn als Gegengewicht, Festhalten an Tür/Band/TRX erlaubt.",
+        exec: "Auf einem Bein tief in die Hocke – Ferse bleibt komplett am Boden – bis die Hüfte unter dem Knie ist, dann hochdrücken. Die Hilfe (Festhalten oder auf Box absetzen) nur so viel wie nötig.",
+        fehler: "Ferse hebt ab (Sprunggelenk-Mobilität üben!) · Knie kollabiert nach innen · freies Bein berührt den Boden.",
+        reg: "Leichter: Box-Pistols (kontrolliert auf einen Kasten absetzen). Schwerer: Hilfe reduzieren, nur noch Fingerspitzen zur Balance." },
+      { name: "Pistol-Squat (frei)", reps: "4 × 4–6 / Seite", rest: 120, query: "pistol squat tutorial", svg: "pistol", up: 6,
+        pos: "Wie assistiert, aber ohne Hilfe. Arme und freies Bein arbeiten aktiv als Gegengewicht nach vorn.",
+        exec: "Langsam und kontrolliert absenken – die Abwärtsphase ist die halbe Miete – unten kurz stabilisieren, ohne Schwung hochdrücken.",
+        fehler: "Nach hinten wegkippen (Gegengewicht nach vorn!) · unten „plumpsen“ und aus dem Rebound hochspringen · Rundrücken.",
+        reg: "Leichter: bei müden Sätzen zurück zur Assistenz statt Form opfern. Schwerer: 3-Sekunden-Negative, Pause am tiefsten Punkt." },
+      { name: "Pistol-Squat mit Gewicht", reps: "4 × 4–6 / Seite", rest: 150, query: "weighted pistol squat", svg: "pistol", up: 6, opts: { w: 1 },
+        pos: "Kettlebell oder Hantel vor der Brust – das Gewicht macht die Balance paradoxerweise leichter.",
+        exec: "Identisch zur freien Variante. In 2,5–5-kg-Schritten steigern.",
+        fehler: "Gewicht zu weit vom Körper halten · Tiefe reduzieren · Tempo erhöhen statt Kontrolle halten.",
+        reg: "Leichter: Gewicht reduzieren. Schwerer: +2,5 bis 5 kg." }
+    ]},
+    { block: "Kraft", levels: [
+      { name: "Bulgarian Split Squats", reps: "4 × 8–10 / Seite", rest: 120, query: "bulgarian split squat form", svg: "split", up: 10, opts: { w: 1 },
+        pos: "Ausfallschritt-Stand, hinterer Fußspann auf Bank/Box, vorderes Bein trägt. Oberkörper leicht vorgeneigt.",
+        exec: "Senkrecht absenken, bis das hintere Knie fast den Boden berührt, vorderes Knie in Richtung der Zehen. Über die ganze Fußsohle des vorderen Beins hochdrücken. Gewicht in beide Hände für Progression.",
+        fehler: "Vorderer Fuß zu nah (Knie schiebt weit über die Zehen und die Ferse hebt) · Hüfte kippt seitlich ab · hinteres Bein schiebt aktiv mit.",
+        reg: "Leichter: ohne Gewicht, eine Hand hält sich leicht fest. Schwerer: mehr Gewicht oder langsame Abwärtsphase." }
+    ]},
+    { block: "Kraft", levels: [
+      { name: "Nordic Curl Negative", reps: "3 × 4–6", rest: 120, query: "nordic hamstring curl beginner", svg: "nordic", up: 6,
+        pos: "Kniestand auf Polster, Füße/Fersen fest fixiert (Partner, Sofa, Hantelbank), Hüfte gestreckt, Körper von Knie bis Kopf eine Linie.",
+        exec: "So langsam wie irgend möglich nach vorn ablassen – die Beinbeuger bremsen. Wenn sie aufgeben, mit den Händen abfangen, kurz abdrücken, zurück in den Start. Nur die Negative zählt.",
+        fehler: "Hüfte knickt ein (dann arbeitet der Rücken statt der Beinbeuger) · zu schnell durchfallen · Fixierung zu locker.",
+        reg: "Leichter: Bewegungsweg verkürzen (früher abfangen) oder Hüfte minimal beugen. Schwerer: tiefer und langsamer, ohne Abfangen bis kurz vor dem Boden." },
+      { name: "Nordic Curl (Band-assistiert konzentrisch)", reps: "3 × 3–5", rest: 150, query: "band assisted nordic curl", svg: "nordic", up: 5,
+        pos: "Wie die Negative, zusätzlich ein starkes Widerstandsband von oben (Klimmzugstange) um die Brust.",
+        exec: "Langsame Negative wie gehabt – aber jetzt zieht das Band mit und du arbeitest dich aktiv wieder hoch, ohne Hände. Bandstärke über Wochen reduzieren.",
+        fehler: "Mit den Armen nachhelfen · Hüfte beugen, um den Weg zu verkürzen · Band zu schwach gewählt und Form geopfert.",
+        reg: "Leichter: stärkeres Band. Schwerer: Band über Wochen schwächer wählen bis ganz ohne." }
+    ]},
+    { block: "Kraft", levels: [
+      { name: "Wadenheben, einbeinig", reps: "3 × 12–15 / Seite", rest: 60, query: "single leg calf raise", svg: "calf", up: null, opts: { w: 1 },
+        pos: "Fußballen auf Stufe/Kante, Ferse frei in der Luft, Hand leicht zur Balance an der Wand.",
+        exec: "Ferse tief unter die Stufenkante sinken lassen (volle Dehnung, 1 Sek. halten), dann so hoch wie möglich auf den Ballen drücken, oben 1 Sek. anspannen. Langsames, volles Tempo.",
+        fehler: "Federn ohne Endpositionen · Knie hilft durch Beugen und Strecken mit · nur halbe Dehnung unten.",
+        reg: "Leichter: beidbeinig. Schwerer: Zusatzgewicht in der Hand." }
+    ]},
+    { block: "Core", levels: [
+      { name: "Hanging Leg Raises", reps: "4 × 8–12", rest: 90, query: "hanging leg raise strict form", svg: "legraise", up: 12,
+        pos: "Voller Hang an der Stange, Schultern aktiv (nicht passiv hängen), Beine gestreckt und geschlossen.",
+        exec: "Beine gestreckt anheben, bis sie mindestens horizontal sind – dabei das Becken einrollen (das ist der eigentliche Bauch-Anteil). Langsam und ohne Pendeln absenken.",
+        fehler: "Schwungholen aus dem Pendeln · nur aus der Hüfte heben ohne Beckenrotation · Beine beugen bei den letzten Wiederholungen (dann lieber sauber im Tuck).",
+        reg: "Leichter: Knie anziehen statt Beine strecken (Knee Raises). Schwerer: langsamer, 1 Sekunde Pause in der Horizontalen." },
+      { name: "Toes to Bar", reps: "4 × 6–10", rest: 120, query: "strict toes to bar tutorial", svg: "t2b", up: 10,
+        pos: "Wie Leg Raises, voller aktiver Hang.",
+        exec: "Gestreckte Beine so weit anheben, dass die Zehen die Stange berühren – der Rücken rollt dabei kontrolliert ein, die Hüfte kippt nach hinten. Genauso kontrolliert zurück, kein Fallenlassen.",
+        fehler: "Kipping/Schwung (das hier ist die strikte Variante) · Knie stark beugen kurz vor der Stange · unkontrolliertes Zurückschwingen.",
+        reg: "Leichter: gestreckte Beine so hoch wie möglich, auch ohne Stangenkontakt. Schwerer: extra-langsames Ablassen ohne jedes Pendeln." }
+    ]},
+    { block: "Core", levels: [
+      { name: "Hollow Body Hold", reps: "3 × 20–30 s", rest: 60, query: "hollow body hold tutorial", svg: "hollow", up: 30, opts: { t: 1 },
+        pos: "Rückenlage, Arme über Kopf gestreckt, Beine gestreckt und geschlossen.",
+        exec: "Unteren Rücken fest in den Boden pressen – das ist die eine Regel – dann Schultern und Beine so weit anheben, dass die Spannung hält. Flach atmen, Position halten. Leichter: Arme neben den Körper, Beine höher.",
+        fehler: "Unterer Rücken hebt vom Boden ab (sofort Beine höher!) · Luft anhalten · Kinn auf die Brust pressen.",
+        reg: "Leichter: Arme neben den Körper, Beine höher. Schwerer: Arme weiter über Kopf strecken, Beine tiefer halten." },
+      { name: "Hollow Body Rocks", reps: "3 × 10–15", rest: 90, query: "hollow body rocks tutorial", svg: "hollow", up: 15,
+        pos: "Perfekter Hollow Body Hold als Ausgangsposition.",
+        exec: "In der Hollow-Position vor- und zurückschaukeln wie ein Schaukelstuhl – die Körperform bleibt dabei komplett eingefroren, die Bewegung kommt nur aus dem Schwung.",
+        fehler: "Die Form „pumpt“ beim Schaukeln (Beine wippen) · Anschwung aus den Schultern statt gleichmäßigem Rollen · unterer Rücken verliert den Bodenkontakt in der Rücklage.",
+        reg: "Leichter: kleinere Schaukelbewegung. Schwerer: größerer Bewegungsbereich bei komplett eingefrorener Form." }
+    ]},
+    { block: "Core", levels: [
+      { name: "Side Plank + Rotation", reps: "2 × 8–10 / Seite", rest: 60, query: "side plank rotation", svg: "sideplank", up: null,
+        pos: "Seitstütz auf dem Unterarm, Ellenbogen unter der Schulter, Körper eine Linie, Hüfte hoch, freier Arm nach oben gestreckt.",
+        exec: "Den oberen Arm unter dem Körper durchführen (Oberkörper rotiert mit), dann kontrolliert zurück öffnen bis zur Ausgangsposition. Die Hüfte bleibt die ganze Zeit oben.",
+        fehler: "Hüfte sackt ab · Rotation nur aus dem Arm statt aus dem Rumpf · Schulter des Stützarms eingesunken.",
+        reg: "Leichter: auf dem Knie statt auf den Füßen abstützen. Schwerer: Füße auf eine Erhöhung legen." }
+    ]},
+    { block: "Extra", levels: [
+      { name: "Dead Hang", reps: "2 × max", rest: 90, query: "dead hang form benefits", svg: "deadhang", up: null, opts: { t: 1 },
+        pos: "Beidhändiger Obergriff, voller Hang, Füße frei.",
+        exec: "Einfach hängen und atmen – hier dürfen die Schultern ausnahmsweise passiv Richtung Ohren. Griffkraft, Schulterentlastung und Dekompression für die Wirbelsäule nach dem Training.",
+        fehler: "Verkrampfen statt loslassen · abspringen statt kontrolliert absteigen, wenn der Griff aufgibt.",
+        reg: "Leichter: Füße stützen einen Teil des Gewichts ab. Schwerer: Zusatzgewicht oder Handtuch über der Stange greifen." }
+    ]}
+  ]}
+];
+
+/* Lookup: slotKey -> Slot; logKey -> {slot, lvl} */
+const SLOTS = {};
+PLAN.forEach((d, di) => d.slots.forEach((s, si) => { SLOTS[`${di}-${si}`] = { ...s, di, si }; }));
+const logKeyOf = (slotKey, lvl) => lvl === 0 ? slotKey : `${slotKey}@${lvl}`;
+function parseLogKey(k) {
+  const [slotKey, lvlStr] = k.split("@");
+  const slot = SLOTS[slotKey];
+  if (!slot) return null;
+  const lvl = Math.min(lvlStr ? +lvlStr : 0, slot.levels.length - 1);
+  return { slotKey, lvl, slot, x: slot.levels[lvl] };
+}
+
+/* ── Storage ── */
+const store = {
+  get(k, f) { try { return JSON.parse(localStorage.getItem(k)) ?? f; } catch { return f; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+let log = store.get("cali-log", {});
+let prog = store.get("cali-prog", {});   /* slotKey -> aktueller Level-Index */
+let sess = store.get("cali-sess", null); /* { start: ts, day: di } */
+let durs = store.get("cali-durs", {});   /* datum -> { day, dur } */
+let activeTab = store.get("cali-day", 0);
+let openDetails = {};
+
+const today = () => new Date().toISOString().slice(0, 10);
+const nSets = s => parseInt(s) || 3;
+const fmtRest = s => s >= 60 ? (s % 60 ? `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")} min` : `${s/60} min`) : `${s} s`;
+const fmtDate = iso => new Date(iso + "T12:00").toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" });
+const curLvl = slotKey => Math.min(prog[slotKey] || 0, SLOTS[slotKey].levels.length - 1);
+
+function entryFor(logKey, date, create) {
+  log[logKey] = log[logKey] || [];
+  let e = log[logKey].find(x => x.d === date);
+  if (!e && create) { e = { d: date, s: [] }; log[logKey].push(e); }
+  return e;
+}
+function lastEntry(logKey) {
+  const arr = (log[logKey] || []).filter(x => x.d !== today() && x.s.some(v => v));
+  return arr.length ? arr[arr.length - 1] : null;
+}
+function saveAll() { store.set("cali-log", log); store.set("cali-prog", prog); store.set("cali-sess", sess); store.set("cali-durs", durs); }
+const fmtDur = s => {
+  s = Math.round(s);
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+  return h ? `${h}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}` : `${m}:${String(sec).padStart(2,"0")}`;
+};
+function startSession() {
+  sess = { start: Date.now(), day: activeTab < 3 ? activeTab : 0 };
+  saveAll(); renderSession();
+}
+function endSession() {
+  if (!sess) return;
+  const dur = (Date.now() - sess.start) / 1000;
+  if (dur >= 60) {
+    const d = today();
+    durs[d] = { day: durs[d] ? durs[d].day : sess.day, dur: (durs[d] ? durs[d].dur : 0) + dur };
+  }
+  sess = null; saveAll(); renderSession();
+}
+function renderSession() {
+  const el = document.getElementById("sessbar");
+  if (!el) return;
+  if (sess) {
+    el.innerHTML = `<div class="sess-info"><span class="sess-dot"></span><span>${PLAN[sess.day].name}</span><span class="t" id="sessTime">${fmtDur((Date.now() - sess.start) / 1000)}</span></div><button class="sess-end" id="sessEnd">Training beenden</button>`;
+    document.getElementById("sessEnd").onclick = () => { if (confirm("Training beenden und Zeit speichern?")) endSession(); };
+  } else {
+    el.innerHTML = `<button class="sess-start" id="sessStart">▶ Training starten</button>`;
+    document.getElementById("sessStart").onclick = startSession;
+  }
+}
+setInterval(() => {
+  if (!sess) return;
+  const t = document.getElementById("sessTime");
+  if (t) t.textContent = fmtDur((Date.now() - sess.start) / 1000);
+}, 1000);
+
+/* Freischalt-Logik: letzte 2 abgeschlossenen Einheiten der aktuellen Stufe
+   mit voller Satzzahl und allen Werten >= up */
+function readyToProgress(slotKey) {
+  const slot = SLOTS[slotKey];
+  const lvl = curLvl(slotKey);
+  if (lvl >= slot.levels.length - 1) return false;
+  const x = slot.levels[lvl];
+  if (!x.up) return false;
+  const need = nSets(x.reps);
+  const entries = (log[logKeyOf(slotKey, lvl)] || []).filter(e => e.s.filter(v => v).length >= need);
+  if (entries.length < 2) return false;
+  const lastTwo = entries.slice(-2);
+  return lastTwo.every(e => e.s.filter(v => v).every(v => v[0] >= x.up));
+}
+
+/* ── Render ── */
+function render() {
+  const tabs = document.getElementById("tabs");
+  const days = document.getElementById("days");
+  tabs.innerHTML = ""; days.innerHTML = "";
+
+  const tabDefs = [...PLAN.map((d, i) => ({ label: d.name, sub: d.sub, id: i })), { label: "Log", sub: "Verlauf", id: 3 }];
+  tabDefs.forEach(t => {
+    const b = document.createElement("button");
+    b.innerHTML = `<span class="display">${t.label}</span><small>${t.sub}</small>`;
+    b.className = t.id === activeTab ? "active" : "";
+    b.onclick = () => { activeTab = t.id; store.set("cali-day", t.id); render(); };
+    tabs.appendChild(b);
+  });
+
+  if (activeTab === 3) { renderLog(days); document.getElementById("bar").style.width = 0; return; }
+
+  const di = activeTab;
+  const sec = document.createElement("section");
+  sec.className = "day active";
+
+  PLAN[di].slots.forEach((slot, si) => {
+    const slotKey = `${di}-${si}`;
+    const lvl = curLvl(slotKey);
+    const x = slot.levels[lvl];
+    const logKey = logKeyOf(slotKey, lvl);
+    const entry = entryFor(logKey, today(), false);
+    const done = entry ? entry.s : [];
+    const last = lastEntry(logKey);
+    const unit = x.opts?.t ? "s" : "";
+    const multi = slot.levels.length > 1;
+
+    let lastLine = "";
+    if (last) {
+      const vals = last.s.filter(v => v).map(v => v[0] + unit + (v[1] ? `@${v[1]}kg` : "")).join(" · ");
+      lastLine = `<div class="last">Zuletzt (${fmtDate(last.d)}): ${vals}</div>`;
+    }
+
+    const unlock = readyToProgress(slotKey)
+      ? `<button class="unlock" data-u="${slotKey}">↑ Freischalten: ${slot.levels[lvl + 1].name}</button>` : "";
+
+    const ladder = multi ? `<div class="ladder">
+        <div class="ladder-title">Progression</div>
+        ${slot.levels.map((l, i) => `<div class="step ${i === lvl ? "cur" : i < lvl ? "done" : "locked"}">
+          <span class="dot">${i < lvl ? "✓" : i === lvl ? "" : "🔒"}</span>
+          <span class="stepname">${l.name}${i === lvl ? '<em>Aktuelle Stufe</em>' : ""}</span>
+        </div>`).join("")}
+        <div class="ladder-btns">
+          ${lvl > 0 ? `<button class="lvlbtn" data-down="${slotKey}">← Stufe zurück</button>` : ""}
+          ${lvl < slot.levels.length - 1 ? `<button class="lvlbtn amber" data-upm="${slotKey}">Nächste Stufe freischalten</button>` : ""}
+        </div>
+      </div>` : "";
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="block ${slot.block.toLowerCase()}"><span>${slot.block}</span>${multi ? `<span class="lvl">Stufe ${lvl + 1}/${slot.levels.length}</span>` : ""}</div>
+      <h3>${x.name}</h3>
+      <div class="meta"><b>${x.reps}</b> · Pause ${fmtRest(x.rest)} ·
+        <a target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(x.query)}">▶ Tutorial</a></div>
+      ${lastLine}
+      ${unlock}
+      <details data-d="${slotKey}"${openDetails[slotKey] ? " open" : ""}>
+        <summary>Technik</summary>
+        <div class="detail-body">
+          <div class="detail-top">${SVGS[x.svg] || ""}<p>${x.pos}</p></div>
+          <div class="sec"><b>Ausführung</b>${x.exec}</div>
+          <div class="sec warn"><b>Häufige Fehler</b>${x.fehler}</div>
+          ${x.reg ? `<div class="sec"><b>Leichter · Schwerer</b>${x.reg}</div>` : ""}
+          ${ladder}
+        </div>
+      </details>
+      <div class="sets">${Array.from({length: nSets(x.reps)}, (_, i2) => {
+        const v = done[i2];
+        return `<button class="set${v ? " done" : ""}" data-k="${logKey}" data-s="${i2}">${v ? v[0] + unit + (v[1] ? "+" + v[1] : "") : i2 + 1}</button>`;
+      }).join("")}</div>`;
+    sec.appendChild(card);
+  });
+
+  const r = document.createElement("button");
+  r.className = "reset";
+  r.textContent = `Heutige Einträge für ${PLAN[di].name} löschen`;
+  r.onclick = () => {
+    PLAN[di].slots.forEach((slot, si) => {
+      const lk = logKeyOf(`${di}-${si}`, curLvl(`${di}-${si}`));
+      if (log[lk]) log[lk] = log[lk].filter(x => x.d !== today());
+    });
+    saveAll(); render();
+  };
+  sec.appendChild(r);
+  days.appendChild(sec);
+
+  days.querySelectorAll("details").forEach(d =>
+    d.addEventListener("toggle", () => { openDetails[d.dataset.d] = d.open; }));
+  days.querySelectorAll(".set").forEach(b =>
+    b.onclick = () => openEditor(b.dataset.k, +b.dataset.s));
+  days.querySelectorAll("[data-u]").forEach(b => b.onclick = () => {
+    prog[b.dataset.u] = curLvl(b.dataset.u) + 1; saveAll(); render();
+  });
+  days.querySelectorAll("[data-upm]").forEach(b => b.onclick = () => {
+    if (confirm("Nächste Stufe freischalten? Die aktuelle Übung wird ersetzt, die Historie bleibt im Log erhalten.")) {
+      prog[b.dataset.upm] = curLvl(b.dataset.upm) + 1; saveAll(); render();
+    }
+  });
+  days.querySelectorAll("[data-down]").forEach(b => b.onclick = () => {
+    prog[b.dataset.down] = Math.max(0, curLvl(b.dataset.down) - 1); saveAll(); render();
+  });
+
+  let total = 0, doneN = 0;
+  PLAN[di].slots.forEach((slot, si) => {
+    const lvl = curLvl(`${di}-${si}`);
+    total += nSets(slot.levels[lvl].reps);
+    const en = entryFor(logKeyOf(`${di}-${si}`, lvl), today(), false);
+    if (en) en.s.forEach(v => v && doneN++);
+  });
+  document.getElementById("bar").style.width = (total ? doneN / total * 100 : 0) + "%";
+}
+
+function renderLog(days) {
+  const sec = document.createElement("section");
+  sec.className = "day active";
+
+  const byDate = {};
+  Object.entries(log).forEach(([key, entries]) => entries.forEach(en => {
+    if (!en.s.some(v => v)) return;
+    (byDate[en.d] = byDate[en.d] || []).push({ key, en });
+  }));
+  const dates = Object.keys(byDate).sort().reverse();
+
+  if (!dates.length) {
+    sec.innerHTML = `<div class="log-empty">Noch keine Einheiten geloggt.<br>Tippe im Training auf einen Satz-Kreis, um Wiederholungen einzutragen.</div>`;
+  }
+
+  dates.forEach(d => {
+    const items = byDate[d].map(it => ({ ...it, p: parseLogKey(it.key) })).filter(it => it.p);
+    if (!items.length) return;
+    const dayName = PLAN[items[0].p.slot.di].name;
+    const box = document.createElement("div");
+    box.className = "log-session";
+    box.innerHTML = `<h3>${dayName}</h3><div class="d">${fmtDate(d)}${durs[d] ? ` · ${fmtDur(durs[d].dur)} h` : ""}</div>
+      <table>${items.map(({ p, en }) => {
+        const unit = p.x.opts?.t ? "s" : "";
+        const vals = en.s.map(v => v ? v[0] + unit + (v[1] ? `@${v[1]}` : "") : "–").join(" / ");
+        return `<tr><td>${p.x.name}</td><td>${vals}</td></tr>`;
+      }).join("")}</table>`;
+    sec.appendChild(box);
+  });
+
+  const actions = document.createElement("div");
+  actions.className = "log-actions";
+  actions.innerHTML = `<button id="exportBtn">Export (JSON)</button><label for="importFile">Import</label><input type="file" id="importFile" accept=".json" style="display:none">`;
+  sec.appendChild(actions);
+  days.appendChild(sec);
+
+  document.getElementById("exportBtn").onclick = () => {
+    const blob = new Blob([JSON.stringify({ version: 3, exported: new Date().toISOString(), log, prog, durs }, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `calisthenics-log-${today()}.json`;
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+  document.getElementById("importFile").onchange = ev => {
+    const f = ev.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        const data = JSON.parse(rd.result);
+        if (data.log && typeof data.log === "object") {
+          log = data.log; prog = data.prog || {}; durs = data.durs || {}; saveAll(); render();
+        } else alert("Ungültiges Format");
+      } catch { alert("Datei konnte nicht gelesen werden"); }
+    };
+    rd.readAsText(f);
+  };
+}
+
+/* ── Satz-Editor ── */
+let ed = null;
+function openEditor(logKey, si2) {
+  const p = parseLogKey(logKey);
+  if (!p) return;
+  const x = p.x;
+  const entry = entryFor(logKey, today(), false);
+  const existing = entry && entry.s[si2];
+  const last = lastEntry(logKey);
+  let val, wt = 0;
+  if (existing) { val = existing[0]; wt = existing[1] || 0; }
+  else if (last && last.s[si2]) { val = last.s[si2][0]; wt = last.s[si2][1] || 0; }
+  else if (entry && entry.s[si2 - 1]) { val = entry.s[si2 - 1][0]; wt = entry.s[si2 - 1][1] || 0; }
+  else val = x.opts?.t ? 10 : (x.up || 8);
+  ed = { logKey, si: si2, val, wt, existing: !!existing };
+  drawEditor();
+  document.getElementById("editor").classList.add("open");
+  document.getElementById("scrim").classList.add("open");
+}
+function drawEditor() {
+  const p = parseLogKey(ed.logKey);
+  const x = p.x;
+  const unitLabel = x.opts?.t ? "Sekunden" : "Wiederholungen";
+  document.getElementById("editor").innerHTML = `
+    <h4>${x.name}</h4>
+    <div class="sub">Satz ${ed.si + 1} von ${nSets(x.reps)} · Ziel ${x.reps}</div>
+    <div class="steppers">
+      <div class="stepper"><label>${unitLabel}</label>
+        <div class="row"><button data-a="v-">−</button><div class="val">${ed.val}</div><button data-a="v+">+</button></div></div>
+      ${x.opts?.w ? `<div class="stepper"><label>Zusatzgewicht (kg)</label>
+        <div class="row"><button data-a="w-">−</button><div class="val">${ed.wt}</div><button data-a="w+">+</button></div></div>` : ""}
+    </div>
+    <div class="editor-actions">
+      ${ed.existing ? '<button class="del" data-a="del">Löschen</button>' : ""}
+      <button data-a="cancel">Abbrechen</button>
+      <button class="save" data-a="save">Speichern</button>
+    </div>`;
+  document.getElementById("editor").querySelectorAll("button").forEach(b => b.onclick = () => {
+    const a = b.dataset.a, step = p.x.opts?.t ? 5 : 1;
+    if (a === "v+") { ed.val += step; drawEditor(); }
+    else if (a === "v-") { ed.val = Math.max(1, ed.val - step); drawEditor(); }
+    else if (a === "w+") { ed.wt += 2.5; drawEditor(); }
+    else if (a === "w-") { ed.wt = Math.max(0, ed.wt - 2.5); drawEditor(); }
+    else if (a === "save") {
+      const entry = entryFor(ed.logKey, today(), true);
+      entry.s[ed.si] = [ed.val, ed.wt || 0];
+      if (!sess) { sess = { start: Date.now(), day: activeTab < 3 ? activeTab : 0 }; renderSession(); }
+      saveAll(); const rest = p.x.rest; closeEditor(); startTimer(rest); render();
+    }
+    else if (a === "del") {
+      const entry = entryFor(ed.logKey, today(), false);
+      if (entry) { entry.s[ed.si] = null; saveAll(); }
+      closeEditor(); render();
+    }
+    else closeEditor();
+  });
+}
+function closeEditor() {
+  document.getElementById("editor").classList.remove("open");
+  document.getElementById("scrim").classList.remove("open");
+  ed = null;
+}
+document.getElementById("scrim").onclick = closeEditor;
+
+/* ── Timer ── */
+let timerId = null, remaining = 0;
+function startTimer(sec) {
+  clearInterval(timerId); remaining = sec; tick();
+  timerId = setInterval(() => {
+    remaining--; tick();
+    if (remaining <= 0) { stopTimer(); navigator.vibrate?.([200, 100, 200]); }
+  }, 1000);
+}
+function stopTimer() { clearInterval(timerId); timerId = null; remaining = 0; tick(); }
+function tick() {
+  const c = document.getElementById("clock");
+  c.textContent = `${Math.floor(remaining/60)}:${String(remaining%60).padStart(2,"0")}`;
+  c.className = "clock" + (timerId ? " on" : "");
+}
+
+render(); tick(); renderSession();
+</script>
+</body>
+</html>
