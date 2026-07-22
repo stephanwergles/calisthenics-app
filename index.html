@@ -663,6 +663,10 @@ function render() {
   r.className = "reset";
   r.textContent = `Heutige Einträge für ${PLAN[di].name} löschen`;
   r.onclick = () => {
+    const msg = durs[today()]
+      ? `Heute ist bereits ein abgeschlossenes Training gespeichert. Trotzdem alle heutigen Sätze für ${PLAN[di].name} löschen? Frühere Einheiten bleiben erhalten.`
+      : `Alle heute eingetragenen Sätze für ${PLAN[di].name} löschen? Frühere Einheiten bleiben erhalten.`;
+    if (!confirm(msg)) return;
     PLAN[di].slots.forEach((slot, si) => {
       const lk = logKeyOf(`${di}-${si}`, curLvl(`${di}-${si}`));
       if (log[lk]) log[lk] = log[lk].filter(x => x.d !== today());
