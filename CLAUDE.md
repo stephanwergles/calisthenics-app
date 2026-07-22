@@ -34,6 +34,7 @@ Level = { name, reps, rest(s), query(YouTube-Suche), svg(Key in SVGS),
 | `cali-sess` | laufende Session `{ start: timestamp, day: di }` oder `null` |
 | `cali-durs` | `{ datum: { day, dur(sekunden) } }` |
 | `cali-day` | aktiver Tab (0–2 = Trainingstage, 3 = Log) |
+| `cali-exp` | Datum des letzten JSON-Exports (für die Export-Erinnerung im Log) |
 
 Alle Zugriffe über den `store`-Wrapper (try/catch, damit die Datei auch in Umgebungen ohne localStorage nicht crasht). JSON-Export/Import im Log-Tab (`version: 3`, enthält `log`, `prog`, `durs`) — **das Export-Format ist das geplante Seed-Format für die v2-Datenbank.**
 
