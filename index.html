@@ -147,7 +147,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.4.2</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.5.0</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -516,9 +516,23 @@ const fmtDur = s => {
   const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
   return h ? `${h}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}` : `${m}:${String(sec).padStart(2,"0")}`;
 };
+/* ── Wake Lock: Display bleibt an, solange eine Session läuft ──
+   iOS gibt den Lock beim App-Wechsel frei → Wiederanforderung über
+   visibilitychange. Ohne API-Support (iOS < 16.4) passiert still nichts. */
+let wakeLock = null;
+async function acquireWakeLock() {
+  try {
+    if (sess && !document.hidden && navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen");
+  } catch {}
+}
+function releaseWakeLock() {
+  try { wakeLock?.release(); } catch {}
+  wakeLock = null;
+}
+
 function startSession() {
   sess = { start: Date.now(), day: activeTab < 3 ? activeTab : 0 };
-  saveAll(); renderSession();
+  saveAll(); renderSession(); acquireWakeLock();
 }
 function endSession() {
   if (!sess) return;
@@ -527,7 +541,7 @@ function endSession() {
     const d = today();
     durs[d] = { day: durs[d] ? durs[d].day : sess.day, dur: (durs[d] ? durs[d].dur : 0) + dur };
   }
-  sess = null; saveAll(); renderSession();
+  sess = null; saveAll(); renderSession(); releaseWakeLock();
 }
 function renderSession() {
   const el = document.getElementById("sessbar");
@@ -823,7 +837,7 @@ function drawEditor() {
     else if (a === "save") {
       const entry = entryFor(ed.logKey, today(), true);
       entry.s[ed.si] = [ed.val, ed.wt || 0];
-      if (!sess) { sess = { start: Date.now(), day: activeTab < 3 ? activeTab : 0 }; renderSession(); }
+      if (!sess) startSession();
       saveAll(); const rest = p.x.rest; closeEditor(); startTimer(rest); render();
     }
     else if (a === "timer") startTimer(ed.val);
@@ -866,7 +880,7 @@ function tick() {
 }
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) return;
-  tick(); checkUpdate();
+  tick(); checkUpdate(); acquireWakeLock();
   const t = document.getElementById("sessTime");
   if (t && sess) t.textContent = fmtDur((Date.now() - sess.start) / 1000);
 });
@@ -893,7 +907,7 @@ async function checkUpdate() {
   } catch {}
 }
 
-render(); tick(); renderSession(); checkUpdate();
+render(); tick(); renderSession(); checkUpdate(); acquireWakeLock();
 </script>
 </body>
 </html>
