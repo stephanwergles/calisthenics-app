@@ -154,7 +154,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.6.2</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.6.3</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -501,7 +501,13 @@ let durs = store.get("cali-durs", {});   /* datum -> { day, dur } */
 let activeTab = store.get("cali-day", 0);
 let openDetails = {}, openDone = {};
 
-const today = () => new Date().toISOString().slice(0, 10);
+/* Lokales Datum, NICHT UTC — sonst gehört zwischen 0 und 2 Uhr morgens
+   (Sommerzeit) noch der Vortag zu „heute" und der Lösch-Button trifft
+   das gestrige Training */
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 const nSets = s => parseInt(s) || 3;
 const fmtRest = s => s >= 60 ? (s % 60 ? `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")} min` : `${s/60} min`) : `${s} s`;
 const fmtDate = iso => new Date(iso + "T12:00").toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" });
