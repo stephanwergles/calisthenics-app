@@ -50,9 +50,11 @@ Alle Zugriffe über den `store`-Wrapper (try/catch, damit die Datei auch in Umge
 Offected-Palette (seit v1.7.0): neutrales Schwarz mit Signal-Orange als einziger Signalfarbe, Kreideweiß für Erledigtes („eingekreidet", mit Staubrand-Box-Shadow). **Die CSS-Var-Namen `--amber`/`--chalk` sind historisch und bleiben** — `--amber` ist jetzt das Orange:
 
 ```
---bg #232323 · --card #2a2a2a · --card2 #323232 · --line #3d3d3d
+--bg #101010 (Offected-Schwarz) · --card #1a1a1a · --card2 #232323 · --line #2e2e2e
 --text #ededed · --muted #979797 · --amber #FF4D00 · --chalk #f4f4f4
 ```
+
+Keine blaustichigen Grautöne — alle Flächen sind neutrale Abstufungen von #101010 (auch in `rgba()`-Werten wie der Timer-Leiste darauf achten).
 
 Typo: System-Stack, Display-Stil über `font-stretch: condensed` + Uppercase (Klasse `.display`). **Bewusst keine Webfonts** — Offline-Fähigkeit schlägt Typo-Feinheit in v1. Mobile-first, `prefers-reduced-motion` respektiert, Safe-Area-Insets an fixen Leisten.
 
