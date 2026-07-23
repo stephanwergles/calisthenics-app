@@ -38,6 +38,22 @@
   .day { display: none; padding: 10px 20px 0; }
   .day.active { display: block; }
 
+  .splits { display: flex; gap: 8px; margin: 2px 0 10px; }
+  .splits .split { flex: 1; position: relative; padding: 9px 0 7px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1.15; font-family: inherit; transition: all .15s; }
+  .splits .split small { display: block; font-size: 10px; font-weight: 500; text-transform: none; letter-spacing: 0; font-stretch: normal; }
+  .splits .split.active { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
+  .splits .split.next::after { content: ""; position: absolute; top: 7px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
+  .wmeta { color: var(--muted); font-size: 12.5px; margin: 0 2px 10px; }
+
+  .cal .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .cal .cal-head span { font-size: 15px; }
+  .cal .cal-head button { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 17px; font-family: inherit; cursor: pointer; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; justify-items: center; align-items: center; }
+  .cal-w { font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-bottom: 3px; }
+  .cal-day { width: 34px; height: 34px; border-radius: 50%; border: none; background: none; color: var(--muted); font-size: 13px; font-family: inherit; display: flex; align-items: center; justify-content: center; }
+  .cal-day.trained { background: var(--amber); color: #101010; font-weight: 700; cursor: pointer; }
+  .cal-day.today:not(.trained) { box-shadow: inset 0 0 0 2px var(--amber); color: var(--text); }
+
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; }
   .block { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; }
   .block .lvl { color: var(--amber); letter-spacing: .04em; font-weight: 700; border: 1px solid var(--amber); background: var(--amber-dim); border-radius: 20px; padding: 2px 9px; font-size: 10.5px; }
@@ -138,7 +154,7 @@
   .timer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; background: rgba(16,16,16,.97); backdrop-filter: blur(8px); border-top: 1px solid var(--line); padding: 10px 20px calc(12px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
   .restrow { display: flex; align-items: center; gap: 10px; }
   .sessrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; }
-  .sess-start { flex: 1; padding: 11px; border-radius: 10px; border: 1px dashed var(--line); background: none; color: var(--muted); font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .timer .sess-start { flex: 1; padding: 12px; border-radius: 10px; border: none; background: var(--amber); color: #101010; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
   .sess-info { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 600; }
   .sess-info .t { font-variant-numeric: tabular-nums; font-stretch: condensed; font-size: 19px; font-weight: 700; color: var(--amber); }
   .sess-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--amber); animation: pulse 1.6s ease-in-out infinite; }
@@ -156,7 +172,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.7.1</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.8.0</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -500,8 +516,7 @@ let log = store.get("cali-log", {});
 let prog = store.get("cali-prog", {});   /* slotKey -> aktueller Level-Index */
 let sess = store.get("cali-sess", null); /* { start: ts, day: di } */
 let durs = store.get("cali-durs", {});   /* datum -> { day, dur } */
-let activeTab = store.get("cali-day", 0);
-let openDetails = {}, openDone = {};
+let openDetails = {}, openDone = {}, calMonth = null;
 
 /* Lokales Datum, NICHT UTC — sonst gehört zwischen 0 und 2 Uhr morgens
    (Sommerzeit) noch der Vortag zu „heute" und der Lösch-Button trifft
@@ -514,6 +529,27 @@ const nSets = s => parseInt(s) || 3;
 const fmtRest = s => s >= 60 ? (s % 60 ? `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")} min` : `${s/60} min`) : `${s} s`;
 const fmtDate = iso => new Date(iso + "T12:00").toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" });
 const curLvl = slotKey => Math.min(prog[slotKey] || 0, SLOTS[slotKey].levels.length - 1);
+
+/* ── Navigation: 2 Tabs (0 = Workout, 1 = Activity) + Split-Wahl ──
+   Der Split wird pro Tag frisch empfohlen (Rotation A→B→C nach der letzten
+   Einheit); eine explizite Wahl oder ein geloggter Satz fixiert ihn für heute. */
+let activeTab = store.get("cali-tab", null);
+const legacyDay = store.get("cali-day", null);
+if (activeTab === null) activeTab = legacyDay === 3 ? 1 : 0; /* Migration: alter Log-Tab war id 3 */
+function nextSplit() {
+  let last = null, lastDay = null;
+  Object.entries(log).forEach(([k, es]) => es.forEach(e => {
+    if (e.s && e.s.some(v => v) && (!last || e.d > last)) {
+      const p = parseLogKey(k);
+      if (p) { last = e.d; lastDay = p.slot.di; }
+    }
+  }));
+  const dd = Object.keys(durs).sort().pop();
+  if (dd && (!last || dd >= last)) lastDay = durs[dd].day;
+  return lastDay == null ? 0 : (lastDay + 1) % 3;
+}
+let activeSplit = (legacyDay && typeof legacyDay === "object" && legacyDay.d === today() && legacyDay.sp >= 0 && legacyDay.sp <= 2)
+  ? legacyDay.sp : nextSplit();
 
 function entryFor(logKey, date, create) {
   log[logKey] = log[logKey] || [];
@@ -546,7 +582,7 @@ function releaseWakeLock() {
 }
 
 function startSession() {
-  sess = { start: Date.now(), day: activeTab < 3 ? activeTab : 0 };
+  sess = { start: Date.now(), day: activeSplit };
   saveAll(); renderSession(); acquireWakeLock();
 }
 function endSession() {
@@ -562,10 +598,10 @@ function renderSession() {
   const el = document.getElementById("sessbar");
   if (!el) return;
   if (sess) {
-    el.innerHTML = `<div class="sess-info"><span class="sess-dot"></span><span>${PLAN[sess.day].name}</span><span class="t" id="sessTime">${fmtDur((Date.now() - sess.start) / 1000)}</span></div><button class="sess-end" id="sessEnd">Training beenden</button>`;
-    document.getElementById("sessEnd").onclick = () => { if (confirm("Training beenden und Zeit speichern?")) endSession(); };
+    el.innerHTML = `<div class="sess-info"><span class="sess-dot"></span><span>${PLAN[sess.day].name}</span><span class="t" id="sessTime">${fmtDur((Date.now() - sess.start) / 1000)}</span></div><button class="sess-end" id="sessEnd">Workout beenden</button>`;
+    document.getElementById("sessEnd").onclick = () => { if (confirm("Workout beenden und Zeit speichern?")) endSession(); };
   } else {
-    el.innerHTML = `<button class="sess-start" id="sessStart">▶ Training starten</button>`;
+    el.innerHTML = `<button class="sess-start" id="sessStart">▶ Workout starten</button>`;
     document.getElementById("sessStart").onclick = startSession;
   }
 }
@@ -596,20 +632,35 @@ function render() {
   const days = document.getElementById("days");
   tabs.innerHTML = ""; days.innerHTML = "";
 
-  const tabDefs = [...PLAN.map((d, i) => ({ label: d.name, sub: d.sub, id: i })), { label: "Log", sub: "Verlauf", id: 3 }];
+  const tabDefs = [
+    { label: "Workout", sub: PLAN[activeSplit].name, id: 0 },
+    { label: "Activity", sub: "Verlauf", id: 1 }
+  ];
   tabDefs.forEach(t => {
     const b = document.createElement("button");
     b.innerHTML = `<span class="display">${t.label}</span><small>${t.sub}</small>`;
     b.className = t.id === activeTab ? "active" : "";
-    b.onclick = () => { activeTab = t.id; store.set("cali-day", t.id); render(); };
+    b.onclick = () => { activeTab = t.id; store.set("cali-tab", t.id); render(); };
     tabs.appendChild(b);
   });
 
-  if (activeTab === 3) { renderLog(days); document.getElementById("bar").style.width = 0; return; }
+  if (activeTab === 1) { renderLog(days); document.getElementById("bar").style.width = 0; return; }
 
-  const di = activeTab;
+  const di = activeSplit;
   const sec = document.createElement("section");
   sec.className = "day active";
+
+  /* Split-Wahl: Empfehlung (Rotation) trägt den orangen Punkt */
+  const nx = nextSplit();
+  const picker = document.createElement("div");
+  picker.className = "splits";
+  picker.innerHTML = PLAN.map((d, i) => `<button class="split${i === di ? " active" : ""}${i === nx ? " next" : ""}" data-sp="${i}"><span class="display">${d.name}</span><small>${d.sub}</small></button>`).join("");
+  picker.querySelectorAll("[data-sp]").forEach(b => b.onclick = () => {
+    activeSplit = +b.dataset.sp;
+    store.set("cali-day", { sp: activeSplit, d: today() });
+    render();
+  });
+  sec.appendChild(picker);
 
   /* Satzzahl pro Tag (entry.n) und Erledigt-Status je Slot; erste offene Übung = aktiv */
   const states = PLAN[di].slots.map((slot, si) => {
@@ -622,6 +673,11 @@ function render() {
     return { slotKey, lvl, logKey, entry, setCount, allDone: setCount > 0 && doneCount >= setCount };
   });
   const curIdx = states.findIndex(st => !st.allDone);
+
+  const wmeta = document.createElement("div");
+  wmeta.className = "wmeta";
+  wmeta.textContent = `${PLAN[di].slots.length} Übungen · ${states.reduce((a, st) => a + st.setCount, 0)} Sätze`;
+  sec.appendChild(wmeta);
 
   PLAN[di].slots.forEach((slot, si) => {
     const { slotKey, lvl, logKey, entry, setCount, allDone } = states[si];
@@ -750,6 +806,34 @@ function render() {
   document.getElementById("bar").style.width = (total ? doneN / total * 100 : 0) + "%";
 }
 
+/* Monatskalender: orange Punkte = Trainingstage, Tap springt zur Einheit */
+function renderCal(sec, byDate) {
+  if (!calMonth) calMonth = today().slice(0, 7);
+  const [y, m] = calMonth.split("-").map(Number);
+  const first = (new Date(y, m - 1, 1).getDay() + 6) % 7; /* Wochenstart Montag */
+  const dim = new Date(y, m, 0).getDate();
+  const monName = new Date(y, m - 1, 1).toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+  let cells = "";
+  for (let i = 0; i < first; i++) cells += `<span class="cal-day off"></span>`;
+  for (let d = 1; d <= dim; d++) {
+    const ds = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    cells += `<button class="cal-day${byDate[ds] ? " trained" : ""}${ds === today() ? " today" : ""}" data-cd="${ds}">${d}</button>`;
+  }
+  const cal = document.createElement("div");
+  cal.className = "card cal";
+  cal.innerHTML = `<div class="cal-head"><button data-cal="-1">‹</button><span class="display">${monName}</span><button data-cal="1">›</button></div>
+    <div class="cal-grid">${["Mo","Di","Mi","Do","Fr","Sa","So"].map(w => `<span class="cal-w">${w}</span>`).join("")}${cells}</div>`;
+  sec.appendChild(cal);
+  cal.querySelectorAll("[data-cal]").forEach(b => b.onclick = () => {
+    let mm = m + (+b.dataset.cal), yy = y;
+    if (mm < 1) { mm = 12; yy--; }
+    if (mm > 12) { mm = 1; yy++; }
+    calMonth = `${yy}-${String(mm).padStart(2, "0")}`; render();
+  });
+  cal.querySelectorAll(".cal-day.trained").forEach(b => b.onclick = () =>
+    document.getElementById("s-" + b.dataset.cd)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+}
+
 function renderLog(days) {
   const sec = document.createElement("section");
   sec.className = "day active";
@@ -761,8 +845,13 @@ function renderLog(days) {
   }));
   const dates = Object.keys(byDate).sort().reverse();
 
+  renderCal(sec, byDate);
+
   if (!dates.length) {
-    sec.innerHTML = `<div class="log-empty">Noch keine Einheiten geloggt.<br>Tippe im Training auf einen Satz-Kreis, um Wiederholungen einzutragen.</div>`;
+    const empty = document.createElement("div");
+    empty.className = "log-empty";
+    empty.innerHTML = `Noch keine Einheiten geloggt.<br>Tippe im Workout auf einen Satz-Kreis, um Wiederholungen einzutragen.`;
+    sec.appendChild(empty);
   }
 
   dates.forEach(d => {
@@ -771,6 +860,7 @@ function renderLog(days) {
     const dayName = PLAN[items[0].p.slot.di].name;
     const box = document.createElement("div");
     box.className = "log-session";
+    box.id = "s-" + d;
     box.innerHTML = `<div class="lshead"><h3>${dayName}</h3><button class="daydel" data-dd="${d}">Löschen</button></div><div class="d">${fmtDate(d)}${durs[d] ? ` · ${fmtDur(durs[d].dur)}` : ""}</div>
       <table>${items.map(({ p, en }) => {
         const unit = p.x.opts?.t ? "s" : "";
@@ -880,6 +970,7 @@ function drawEditor() {
     else if (a === "save") {
       const entry = entryFor(ed.logKey, today(), true);
       entry.s[ed.si] = [ed.val, ed.wt || 0];
+      store.set("cali-day", { sp: activeSplit, d: today() }); /* Split für heute fixieren */
       if (!sess) startSession();
       saveAll(); const rest = p.x.rest; closeEditor(); startTimer(rest); render();
     }
