@@ -47,11 +47,11 @@ Alle Zugriffe über den `store`-Wrapper (try/catch, damit die Datei auch in Umge
 
 ## Design-Tokens
 
-Graphit/Stahl-Palette mit Bernstein als einziger Signalfarbe, Kreideweiß für Erledigtes („eingekreidet", mit Staubrand-Box-Shadow):
+Offected-Palette (seit v1.7.0): neutrales Schwarz mit Signal-Orange als einziger Signalfarbe, Kreideweiß für Erledigtes („eingekreidet", mit Staubrand-Box-Shadow). **Die CSS-Var-Namen `--amber`/`--chalk` sind historisch und bleiben** — `--amber` ist jetzt das Orange:
 
 ```
---bg #14171a · --card #1d2126 · --card2 #262b31 · --line #2e343b
---text #e9e7df (Chalk) · --muted #8e939b · --amber #f2c94c · --chalk #f4f2ea
+--bg #232323 · --card #2a2a2a · --card2 #323232 · --line #3d3d3d
+--text #ededed · --muted #979797 · --amber #FF4D00 · --chalk #f4f4f4
 ```
 
 Typo: System-Stack, Display-Stil über `font-stretch: condensed` + Uppercase (Klasse `.display`). **Bewusst keine Webfonts** — Offline-Fähigkeit schlägt Typo-Feinheit in v1. Mobile-first, `prefers-reduced-motion` respektiert, Safe-Area-Insets an fixen Leisten.

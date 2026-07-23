@@ -3,17 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#14171a">
+<meta name="theme-color" content="#232323">
 <meta name="apple-mobile-web-app-title" content="Calisthenics">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' fill='%2314171a'/><path d='M129.8 56.6 A52 52 0 1 0 129.8 123.4' stroke='%23e9e7df' stroke-width='26' fill='none' stroke-linecap='round'/></svg>">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' fill='%23232323'/><path d='M129.8 56.6 A52 52 0 1 0 129.8 123.4' stroke='%23FF4D00' stroke-width='26' fill='none' stroke-linecap='round'/></svg>">
 <title>Calisthenics · 3er-Split</title>
 <style>
+  /* Offected-Palette: Signal-Orange auf neutralem Schwarz.
+     Var-Namen (--amber, --chalk) bleiben aus Kompatibilität erhalten. */
   :root {
-    --bg: #14171a; --card: #1d2126; --card2: #262b31; --line: #2e343b;
-    --text: #e9e7df; --muted: #8e939b;
-    --amber: #f2c94c; --amber-dim: rgba(242,201,76,.12);
-    --chalk: #f4f2ea;
+    --bg: #232323; --card: #2a2a2a; --card2: #323232; --line: #3d3d3d;
+    --text: #ededed; --muted: #979797;
+    --amber: #FF4D00; --amber-dim: rgba(255,77,0,.12);
+    --chalk: #f4f4f4;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   html { -webkit-text-size-adjust: 100%; }
@@ -40,7 +42,7 @@
   .block { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; }
   .block .lvl { color: var(--amber); letter-spacing: .04em; font-weight: 700; border: 1px solid var(--amber); background: var(--amber-dim); border-radius: 20px; padding: 2px 9px; font-size: 10.5px; }
   .block.skill { color: var(--amber); }
-  .block.kraft { color: #7fb3d5; }
+  .block.kraft { color: #b8b8b8; }
   .block.core, .block.zubehör, .block.extra { color: var(--muted); }
   .card h3 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
   .meta { color: var(--muted); font-size: 13.5px; margin: 3px 0 8px; }
@@ -74,7 +76,7 @@
     content: ""; position: absolute; left: 11px; top: 29px; width: 2px; height: 14px; background: var(--line);
   }
   .ladder .step.done { color: var(--text); }
-  .ladder .step.done .dot { background: var(--chalk); border-color: var(--chalk); color: #14171a; font-weight: 700; }
+  .ladder .step.done .dot { background: var(--chalk); border-color: var(--chalk); color: #232323; font-weight: 700; }
   .ladder .step.cur { color: var(--amber); font-weight: 600; }
   .ladder .step.cur .dot { border-color: var(--amber); background: var(--amber-dim); box-shadow: 0 0 0 3px var(--amber-dim); }
   .ladder .step.cur .dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
@@ -87,13 +89,13 @@
   .sets { display: flex; gap: 9px; flex-wrap: wrap; }
   .set { min-width: 42px; height: 42px; padding: 0 6px; border-radius: 21px; border: 2px solid var(--line); background: var(--card2); color: var(--muted); font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s; }
   .set:active { transform: scale(.92); }
-  .set.done { background: var(--chalk); border-color: var(--chalk); color: #14171a; box-shadow: 0 0 0 3px rgba(244,242,234,.12); }
+  .set.done { background: var(--chalk); border-color: var(--chalk); color: #232323; box-shadow: 0 0 0 3px rgba(244,244,244,.12); }
   .set.adj { border-style: dashed; color: var(--muted); font-size: 17px; min-width: 38px; }
 
-  .card.cur { border-color: rgba(242,201,76,.55); }
+  .card.cur { border-color: rgba(255,77,0,.55); }
   .card.done-c { padding: 11px 16px; cursor: pointer; }
   .card.done-c .mini { display: flex; align-items: center; gap: 10px; }
-  .card.done-c .mini .ck { flex: 0 0 22px; height: 22px; border-radius: 50%; background: var(--chalk); color: #14171a; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px rgba(244,242,234,.12); }
+  .card.done-c .mini .ck { flex: 0 0 22px; height: 22px; border-radius: 50%; background: var(--chalk); color: #232323; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px rgba(244,244,244,.12); }
   .card.done-c .mini h3 { font-size: 15px; flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .card.done-c .mini .v { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .block .br { display: flex; gap: 6px; align-items: center; }
@@ -114,7 +116,7 @@
   .stepper .val { flex: 1; text-align: center; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .editor-actions { display: flex; gap: 10px; }
   .editor-actions button { flex: 1; padding: 13px; border-radius: 12px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; }
-  .editor-actions .save { background: var(--amber); border-color: var(--amber); color: #14171a; flex: 2; }
+  .editor-actions .save { background: var(--amber); border-color: var(--amber); color: #232323; flex: 2; }
   .editor-actions .del { color: #e57373; }
   .scrim { position: fixed; inset: 0; z-index: 25; background: rgba(0,0,0,.4); display: none; }
   .scrim.open { display: block; }
@@ -145,16 +147,16 @@
   .clock { font-size: 32px; font-stretch: condensed; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 84px; line-height: 1; }
   .clock.on { color: var(--amber); }
   .timer button { padding: 11px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
-  .timer button.go { background: var(--amber); border-color: var(--amber); color: #14171a; }
+  .timer button.go { background: var(--amber); border-color: var(--amber); color: #232323; }
 
-  #upd { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 20px; right: 20px; z-index: 40; padding: 12px; border-radius: 12px; border: 1px solid var(--amber); background: #2a2617; color: var(--amber); font-size: 13.5px; font-weight: 700; font-family: inherit; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.45); }
+  #upd { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 20px; right: 20px; z-index: 40; padding: 12px; border-radius: 12px; border: 1px solid var(--amber); background: #33231a; color: var(--amber); font-size: 13.5px; font-weight: 700; font-family: inherit; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.45); }
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.6.4</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.7.0</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -176,9 +178,9 @@
 <script>
 /* ── Schematische Positionsbilder ── */
 const S = (inner) => `<svg viewBox="0 0 120 90" fill="none" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
-const F = 'stroke="#e9e7df" stroke-width="5"';
-const A = 'stroke="#f2c94c" stroke-width="4"';
-const H = 'stroke="#e9e7df" stroke-width="5" fill="none"';
+const F = 'stroke="#ededed" stroke-width="5"';
+const A = 'stroke="#FF4D00" stroke-width="4"';
+const H = 'stroke="#ededed" stroke-width="5" fill="none"';
 
 const SVGS = {
   pullupTop: S(`<line x1="14" y1="18" x2="106" y2="18" ${A}/><circle cx="60" cy="10" r="6" ${H}/><path d="M60 24 L44 18 M60 24 L76 18" ${F}/><path d="M60 24 L60 52 M60 52 L54 80 M60 52 L66 80" ${F}/>`),
