@@ -154,7 +154,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.6.3</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.6.4</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -688,6 +688,8 @@ function render() {
     sec.appendChild(card);
   });
 
+  /* Lösch-Button nur, wenn heute überhaupt etwas geloggt ist */
+  if (states.some(st => st.entry && st.entry.s.some(v => v))) {
   const r = document.createElement("button");
   r.className = "reset";
   r.textContent = `Heutige Einträge für ${PLAN[di].name} löschen`;
@@ -703,6 +705,7 @@ function render() {
     saveAll(); render();
   };
   sec.appendChild(r);
+  }
   days.appendChild(sec);
 
   days.querySelectorAll("details").forEach(d =>
