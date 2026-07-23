@@ -47,12 +47,17 @@
 
   .cal .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .cal .cal-head span { font-size: 15px; }
-  .cal .cal-head button { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 17px; font-family: inherit; cursor: pointer; }
+  .cal .cal-head [data-cal] { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 17px; font-family: inherit; cursor: pointer; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; justify-items: center; align-items: center; }
   .cal-w { font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-bottom: 3px; }
   .cal-day { width: 34px; height: 34px; border-radius: 50%; border: none; background: none; color: var(--muted); font-size: 13px; font-family: inherit; display: flex; align-items: center; justify-content: center; }
-  .cal-day.trained { background: var(--amber); color: #101010; font-weight: 700; cursor: pointer; }
+  .cal-day { cursor: pointer; }
+  .cal-day.off { cursor: default; }
+  .cal-day.trained { background: var(--amber); color: #101010; font-weight: 700; }
   .cal-day.today:not(.trained) { box-shadow: inset 0 0 0 2px var(--amber); color: var(--text); }
+  .cal-day.sel { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--amber); }
+  .cal-ctrl { display: flex; gap: 6px; align-items: center; }
+  .cal-today { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--amber); background: var(--amber-dim); color: var(--amber); font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer; }
 
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; }
   .block { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; }
@@ -172,7 +177,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.8.0</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.8.1</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -516,7 +521,7 @@ let log = store.get("cali-log", {});
 let prog = store.get("cali-prog", {});   /* slotKey -> aktueller Level-Index */
 let sess = store.get("cali-sess", null); /* { start: ts, day: di } */
 let durs = store.get("cali-durs", {});   /* datum -> { day, dur } */
-let openDetails = {}, openDone = {}, calMonth = null;
+let openDetails = {}, openDone = {}, calMonth = null, calSel = null;
 
 /* Lokales Datum, NICHT UTC — sonst gehört zwischen 0 und 2 Uhr morgens
    (Sommerzeit) noch der Vortag zu „heute" und der Lösch-Button trifft
@@ -806,22 +811,24 @@ function render() {
   document.getElementById("bar").style.width = (total ? doneN / total * 100 : 0) + "%";
 }
 
-/* Monatskalender: orange Punkte = Trainingstage, Tap springt zur Einheit */
+/* Monatskalender: orange = Trainingstage, Tap wählt den Tag als Filter
+   für die Liste darunter; „Heute"-Button springt zurück */
 function renderCal(sec, byDate) {
   if (!calMonth) calMonth = today().slice(0, 7);
   const [y, m] = calMonth.split("-").map(Number);
   const first = (new Date(y, m - 1, 1).getDay() + 6) % 7; /* Wochenstart Montag */
   const dim = new Date(y, m, 0).getDate();
   const monName = new Date(y, m - 1, 1).toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+  const atToday = calSel === today() && calMonth === today().slice(0, 7);
   let cells = "";
   for (let i = 0; i < first; i++) cells += `<span class="cal-day off"></span>`;
   for (let d = 1; d <= dim; d++) {
     const ds = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    cells += `<button class="cal-day${byDate[ds] ? " trained" : ""}${ds === today() ? " today" : ""}" data-cd="${ds}">${d}</button>`;
+    cells += `<button class="cal-day${byDate[ds] ? " trained" : ""}${ds === today() ? " today" : ""}${ds === calSel ? " sel" : ""}" data-cd="${ds}">${d}</button>`;
   }
   const cal = document.createElement("div");
   cal.className = "card cal";
-  cal.innerHTML = `<div class="cal-head"><button data-cal="-1">‹</button><span class="display">${monName}</span><button data-cal="1">›</button></div>
+  cal.innerHTML = `<div class="cal-head"><span class="display">${monName}</span><div class="cal-ctrl">${atToday ? "" : `<button class="cal-today" data-ct>Heute</button>`}<button data-cal="-1">‹</button><button data-cal="1">›</button></div></div>
     <div class="cal-grid">${["Mo","Di","Mi","Do","Fr","Sa","So"].map(w => `<span class="cal-w">${w}</span>`).join("")}${cells}</div>`;
   sec.appendChild(cal);
   cal.querySelectorAll("[data-cal]").forEach(b => b.onclick = () => {
@@ -830,8 +837,11 @@ function renderCal(sec, byDate) {
     if (mm > 12) { mm = 1; yy++; }
     calMonth = `${yy}-${String(mm).padStart(2, "0")}`; render();
   });
-  cal.querySelectorAll(".cal-day.trained").forEach(b => b.onclick = () =>
-    document.getElementById("s-" + b.dataset.cd)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  const ct = cal.querySelector("[data-ct]");
+  if (ct) ct.onclick = () => { calSel = today(); calMonth = today().slice(0, 7); render(); };
+  cal.querySelectorAll(".cal-day[data-cd]").forEach(b => b.onclick = () => {
+    calSel = b.dataset.cd; render();
+  });
 }
 
 function renderLog(days) {
@@ -845,6 +855,7 @@ function renderLog(days) {
   }));
   const dates = Object.keys(byDate).sort().reverse();
 
+  if (!calSel) calSel = today();
   renderCal(sec, byDate);
 
   if (!dates.length) {
@@ -852,9 +863,15 @@ function renderLog(days) {
     empty.className = "log-empty";
     empty.innerHTML = `Noch keine Einheiten geloggt.<br>Tippe im Workout auf einen Satz-Kreis, um Wiederholungen einzutragen.`;
     sec.appendChild(empty);
+  } else if (!byDate[calSel]) {
+    const none = document.createElement("div");
+    none.className = "log-empty";
+    none.innerHTML = `Keine Einheit am ${fmtDate(calSel)}.<br>Orange markierte Tage haben Einträge.`;
+    sec.appendChild(none);
   }
 
-  dates.forEach(d => {
+  /* Liste zeigt nur den im Kalender gewählten Tag; Export bleibt immer vollständig */
+  (byDate[calSel] ? [calSel] : []).forEach(d => {
     const items = byDate[d].map(it => ({ ...it, p: parseLogKey(it.key) })).filter(it => it.p);
     if (!items.length) return;
     const dayName = PLAN[items[0].p.slot.di].name;
