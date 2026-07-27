@@ -14,13 +14,47 @@
   :root {
     --bg: #101010; --card: #1a1a1a; --card2: #232323; --line: #2e2e2e;
     --text: #ededed; --muted: #979797;
-    --amber: #FF4D00; --amber-dim: rgba(255,77,0,.12);
-    --chalk: #f4f4f4;
+    --amber: #FF4D00; --amber-dim: rgba(255,77,0,.12); --amber-hi: rgba(255,77,0,.22);
+    --chalk: #f4f4f4; --danger: #ff6b5e;
+    /* Radius-Skala statt Zufallswerten */
+    --r-sm: 8px; --r-md: 11px; --r-lg: 14px; --r-xl: 18px;
+    /* Mindest-Touch-Target — Gym, verschwitzte Finger, Handy in der Hand */
+    --tap: 44px;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   html { -webkit-text-size-adjust: 100%; }
   body { background: var(--bg); color: var(--text); font: 16px/1.55 -apple-system, "Segoe UI", Roboto, sans-serif; padding-bottom: 158px; }
   .display { font-stretch: condensed; text-transform: uppercase; letter-spacing: .03em; font-weight: 700; }
+
+  /* ── Button-System ────────────────────────────────────────────────
+     Varianten: primary | secondary | outline | ghost | danger, Größen: sm | icon | block.
+     Leitregel für die ganze App: Fläche oder Rand = anfassbar.
+     Statische Labels (.lvl, .wmeta) tragen deshalb bewusst keine Umrandung. */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    min-height: var(--tap); padding: 0 16px; border-radius: var(--r-md);
+    border: 1px solid transparent; background: none; color: var(--text);
+    font-family: inherit; font-size: 14px; font-weight: 600; line-height: 1.2;
+    cursor: pointer; user-select: none; white-space: nowrap;
+    transition: background .15s, border-color .15s, color .15s, transform .1s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--amber); }
+  .btn-primary { background: var(--amber); color: #101010; font-weight: 700; }
+  .btn-primary:hover { background: #ff6220; }
+  .btn-secondary { background: var(--card2); border-color: var(--line); }
+  .btn-secondary:hover { background: #2b2b2b; border-color: #3a3a3a; }
+  .btn-outline { border-color: var(--amber); background: var(--amber-dim); color: var(--amber); font-weight: 700; }
+  .btn-outline:hover { background: var(--amber-hi); }
+  /* Ghost trägt bewusst eine schwache Fläche: auf Touch gibt es keinen Hover,
+     ohne sie wäre ein Button von statischem Text nicht zu unterscheiden. */
+  .btn-ghost { color: var(--muted); background: rgba(255,255,255,.05); }
+  .btn-ghost:hover { background: rgba(255,255,255,.1); color: var(--text); }
+  .btn-danger { color: var(--danger); }
+  .btn-danger:hover { background: rgba(255,107,94,.12); }
+  .btn-sm { min-height: 36px; padding: 0 12px; font-size: 12.5px; border-radius: var(--r-sm); }
+  .btn-icon { width: var(--tap); padding: 0; font-size: 17px; }
+  .btn-block { display: flex; width: 100%; }
 
   header { padding: 26px 20px 6px; display: flex; align-items: baseline; gap: 10px; }
   header h1 { font-size: 28px; }
@@ -31,6 +65,9 @@
   .tabs button small { display: block; font-size: 11px; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--muted); font-stretch: normal; }
   .tabs button.active { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
   .tabs button.active small { color: var(--amber); opacity: .75; }
+  .tabs button:focus-visible, .splits .split:focus-visible, summary:focus-visible {
+    outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--amber);
+  }
 
   .progress { height: 3px; background: var(--card2); margin: 0 20px; border-radius: 2px; overflow: hidden; }
   .progress i { display: block; height: 100%; background: var(--amber); width: 0; transition: width .3s; }
@@ -47,7 +84,7 @@
 
   .cal .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .cal .cal-head span { font-size: 15px; }
-  .cal .cal-head [data-cal] { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 17px; font-family: inherit; cursor: pointer; }
+  .cal-ctrl { display: flex; gap: 6px; align-items: center; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; justify-items: center; align-items: center; }
   .cal-w { font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding-bottom: 3px; }
   .cal-day { width: 34px; height: 34px; border-radius: 50%; border: none; background: none; color: var(--muted); font-size: 13px; font-family: inherit; display: flex; align-items: center; justify-content: center; }
@@ -56,12 +93,14 @@
   .cal-day.trained { background: var(--amber); color: #101010; font-weight: 700; }
   .cal-day.today:not(.trained) { box-shadow: inset 0 0 0 2px var(--amber); color: var(--text); }
   .cal-day.sel { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--amber); }
-  .cal-ctrl { display: flex; gap: 6px; align-items: center; }
-  .cal-today { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--amber); background: var(--amber-dim); color: var(--amber); font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer; }
+  .cal-day:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--amber); }
 
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; }
   .block { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; }
-  .block .lvl { color: var(--amber); letter-spacing: .04em; font-weight: 700; border: 1px solid var(--amber); background: var(--amber-dim); border-radius: 20px; padding: 2px 9px; font-size: 10.5px; }
+  /* Statisches Label — bewusst ohne Rand/Fläche, damit es nicht wie ein Button wirkt.
+     Steht direkt beim Block-Namen: beides Metadaten, Aktionen liegen rechts. */
+  .block .lvl { color: var(--amber); letter-spacing: .07em; font-weight: 700; font-size: 10.5px; opacity: .8; margin-left: 9px; }
+  .block .lvl::before { content: "· "; opacity: .5; }
   .block.skill { color: var(--amber); }
   .block.kraft { color: #b8b8b8; }
   .block.core, .block.zubehör, .block.extra { color: var(--muted); }
@@ -71,7 +110,7 @@
   .meta a { color: var(--amber); text-decoration: none; font-weight: 600; }
   .last { color: var(--muted); font-size: 12.5px; margin-bottom: 9px; }
 
-  .unlock { display: block; width: 100%; margin: 0 0 11px; padding: 12px; border-radius: 10px; border: 1px solid var(--amber); background: var(--amber-dim); color: var(--amber); font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; text-align: left; }
+  .unlock { margin: 0 0 11px; justify-content: flex-start; }
 
   details { margin: 0 0 11px; }
   summary { list-style: none; cursor: pointer; color: var(--muted); font-size: 14.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; user-select: none; padding: 10px 12px; background: var(--card2); border-radius: 10px; }
@@ -103,15 +142,19 @@
   .ladder .step.cur .dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
   .ladder .step.locked .dot { opacity: .55; font-size: 10px; }
   .ladder .stepname em { display: block; font-style: normal; font-size: 11px; font-weight: 500; color: var(--amber); opacity: .8; }
-  .ladder-btns { display: flex; gap: 8px; margin-top: 10px; }
-  .ladder .lvlbtn { padding: 9px 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--card); color: var(--muted); font-size: 12.5px; font-weight: 600; font-family: inherit; cursor: pointer; }
-  .ladder .lvlbtn.amber { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+  .ladder-btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
 
-  .sets { display: flex; gap: 9px; flex-wrap: wrap; }
-  .set { min-width: 42px; height: 42px; padding: 0 6px; border-radius: 21px; border: 2px solid var(--line); background: var(--card2); color: var(--muted); font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s; }
+  /* Satz-Kreise: volle 44px Trefferfläche, Abstände so eng wie nötig,
+     damit 5 Sätze + Stepper auf 375px in eine Zeile passen. */
+  .sets { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+  .set { min-width: var(--tap); height: var(--tap); padding: 0 6px; border-radius: 999px; border: 2px solid var(--line); background: var(--card2); color: var(--muted); font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s; }
   .set:active { transform: scale(.92); }
+  .set:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--amber); }
   .set.done { background: var(--chalk); border-color: var(--chalk); color: #101010; box-shadow: 0 0 0 3px rgba(244,244,244,.12); }
-  .set.adj { border-style: dashed; color: var(--muted); font-size: 17px; min-width: 38px; }
+  /* Satzzahl-Stepper: kleiner als die Sätze selbst — sie sind eine seltene
+     Korrektur, kein Log-Vorgang. Bricht bei 5+ Sätzen sauber in die 2. Zeile. */
+  .set.adj { border-style: dashed; background: none; font-size: 18px; min-width: 36px; width: 36px; height: 36px; padding: 0; }
+  .set.adj:hover { background: var(--card2); color: var(--text); }
 
   .card.cur { border-color: rgba(255,77,0,.55); }
   .card.done-c { padding: 11px 16px; cursor: pointer; }
@@ -124,11 +167,13 @@
   .card.skip-c .mini .ck { flex: 0 0 22px; height: 22px; border-radius: 50%; border: 1px dashed var(--line); color: var(--muted); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
   .card.skip-c .mini h3 { font-size: 15px; flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .card.skip-c .mini .v { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
-  .block .br { display: flex; gap: 6px; align-items: center; }
-  .fold { border: 1px solid var(--line); background: var(--card2); color: var(--muted); border-radius: 20px; padding: 2px 9px; font-size: 10.5px; font-weight: 700; font-family: inherit; letter-spacing: .04em; cursor: pointer; }
-  .holdbtn { display: block; width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--amber); background: var(--amber-dim); color: var(--amber); font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
+  /* Kopfzeile der Karte: Aktion links vom Label, mit echtem Touch-Target.
+     Negativer Rand, damit die größere Trefferfläche das Layout nicht aufbläht. */
+  .block .br { display: flex; gap: 10px; align-items: center; margin: -6px -6px -6px 0; }
+  .fold { text-transform: none; letter-spacing: 0; font-size: 12px; font-weight: 500; }
+  .holdbtn { margin-bottom: 10px; font-size: 15px; }
 
-  .reset { margin: 16px 0 26px; width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: none; color: var(--muted); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; }
+  .reset { margin: 16px 0 26px; font-weight: 500; }
 
   .editor { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--card); border-top: 1px solid var(--amber); padding: 16px 20px calc(16px + env(safe-area-inset-bottom)); transform: translateY(110%); transition: transform .2s; }
   .editor.open { transform: none; }
@@ -138,19 +183,18 @@
   .stepper { flex: 1; }
   .stepper label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 5px; }
   .stepper .row { display: flex; align-items: center; gap: 10px; }
-  .stepper button { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 22px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .stepper .btn-icon { font-size: 22px; }
   .stepper .val { flex: 1; text-align: center; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .editor-actions { display: flex; gap: 10px; }
-  .editor-actions button { flex: 1; padding: 13px; border-radius: 12px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; }
-  .editor-actions .save { background: var(--amber); border-color: var(--amber); color: #101010; flex: 2; }
-  .editor-actions .del { color: #e57373; }
+  .editor-actions .btn { flex: 1; min-height: 50px; font-size: 15px; }
+  .editor-actions .save { flex: 2; }
   .scrim { position: fixed; inset: 0; z-index: 25; background: rgba(0,0,0,.4); display: none; }
   .scrim.open { display: block; }
 
   .log-session { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; }
   .log-session h3 { font-size: 15px; }
   .log-session .lshead { display: flex; justify-content: space-between; align-items: baseline; }
-  .daydel { border: none; background: none; color: var(--muted); font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer; padding: 2px 0 2px 12px; }
+  .daydel { margin: -6px -8px -6px 0; }
   .exp-info { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 14px; }
   .exp-info.warn { color: var(--amber); }
   .log-session .d { color: var(--muted); font-size: 12.5px; margin-bottom: 8px; }
@@ -158,31 +202,31 @@
   .log-session td { padding: 3px 0; color: var(--muted); }
   .log-session td:last-child { text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
   .log-actions { display: flex; gap: 10px; margin: 16px 0 26px; }
-  .log-actions button, .log-actions label { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; text-align: center; }
+  .log-actions .btn { flex: 1; }
   .log-empty { color: var(--muted); text-align: center; padding: 40px 20px; font-size: 14px; }
 
   .timer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; background: rgba(16,16,16,.97); backdrop-filter: blur(8px); border-top: 1px solid var(--line); padding: 10px 20px calc(12px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
   .restrow { display: flex; align-items: center; gap: 10px; }
   .sessrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; }
-  .timer .sess-start { flex: 1; padding: 12px; border-radius: 10px; border: none; background: var(--amber); color: #101010; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
+  .timer .sess-start { flex: 1; font-size: 15px; }
   .sess-info { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 600; }
   .sess-info .t { font-variant-numeric: tabular-nums; font-stretch: condensed; font-size: 19px; font-weight: 700; color: var(--amber); }
   .sess-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--amber); animation: pulse 1.6s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
-  .sess-end { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .sess-end { min-height: 40px; font-size: 13px; }
   .clock { font-size: 32px; font-stretch: condensed; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 84px; line-height: 1; }
   .clock.on { color: var(--amber); }
-  .timer button { padding: 11px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
-  .timer button.go { background: var(--amber); border-color: var(--amber); color: #101010; }
+  /* Pausen-Presets sind gleichrangig -> eine Variante, nicht drei konkurrierende Orangeflächen */
+  .restrow .btn { flex: 1; padding: 0 8px; }
 
-  #upd { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 20px; right: 20px; z-index: 40; padding: 12px; border-radius: 12px; border: 1px solid var(--amber); background: #2a1a10; color: var(--amber); font-size: 13.5px; font-weight: 700; font-family: inherit; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.45); }
+  #upd { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 20px; right: 20px; z-index: 40; background: #2a1a10; font-size: 13.5px; box-shadow: 0 6px 20px rgba(0,0,0,.45); }
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.9.0</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.10.0</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -194,10 +238,10 @@
   <div class="sessrow" id="sessbar"></div>
   <div class="restrow">
     <div class="clock" id="clock">0:00</div>
-    <button class="go" onclick="startTimer(90)">90s</button>
-    <button class="go" onclick="startTimer(120)">2:00</button>
-    <button class="go" onclick="startTimer(180)">3:00</button>
-    <button onclick="stopTimer()">Stopp</button>
+    <button class="btn btn-secondary" onclick="startTimer(90)">90s</button>
+    <button class="btn btn-secondary" onclick="startTimer(120)">2:00</button>
+    <button class="btn btn-secondary" onclick="startTimer(180)">3:00</button>
+    <button class="btn btn-ghost" onclick="stopTimer()">Stopp</button>
   </div>
 </div>
 
@@ -613,10 +657,10 @@ function renderSession() {
   const el = document.getElementById("sessbar");
   if (!el) return;
   if (sess) {
-    el.innerHTML = `<div class="sess-info"><span class="sess-dot"></span><span>${PLAN[sess.day].name}</span><span class="t" id="sessTime">${fmtDur((Date.now() - sess.start) / 1000)}</span></div><button class="sess-end" id="sessEnd">Workout beenden</button>`;
+    el.innerHTML = `<div class="sess-info"><span class="sess-dot"></span><span>${PLAN[sess.day].name}</span><span class="t" id="sessTime">${fmtDur((Date.now() - sess.start) / 1000)}</span></div><button class="btn btn-secondary sess-end" id="sessEnd">Workout beenden</button>`;
     document.getElementById("sessEnd").onclick = () => { if (confirm("Workout beenden und Zeit speichern?")) endSession(); };
   } else {
-    el.innerHTML = `<button class="sess-start" id="sessStart">▶ Workout starten</button>`;
+    el.innerHTML = `<button class="btn btn-primary sess-start" id="sessStart">▶ Workout starten</button>`;
     document.getElementById("sessStart").onclick = startSession;
   }
 }
@@ -735,7 +779,7 @@ function render() {
     }
 
     const unlock = ready
-      ? `<button class="unlock" data-u="${slotKey}">↑ Freischalten: ${slot.levels[lvl + 1].name}</button>` : "";
+      ? `<button class="btn btn-outline btn-block unlock" data-u="${slotKey}">↑ Freischalten: ${slot.levels[lvl + 1].name}</button>` : "";
 
     const ladder = multi ? `<div class="ladder">
         <div class="ladder-title">Progression</div>
@@ -744,19 +788,19 @@ function render() {
           <span class="stepname">${l.name}${i === lvl ? '<em>Aktuelle Stufe</em>' : ""}</span>
         </div>`).join("")}
         <div class="ladder-btns">
-          ${lvl > 0 ? `<button class="lvlbtn" data-down="${slotKey}">← Stufe zurück</button>` : ""}
-          ${lvl < slot.levels.length - 1 ? `<button class="lvlbtn amber" data-upm="${slotKey}">Nächste Stufe freischalten</button>` : ""}
+          ${lvl > 0 ? `<button class="btn btn-secondary btn-sm" data-down="${slotKey}">← Stufe zurück</button>` : ""}
+          ${lvl < slot.levels.length - 1 ? `<button class="btn btn-outline btn-sm" data-upm="${slotKey}">Nächste Stufe freischalten</button>` : ""}
         </div>
       </div>` : "";
 
     const card = document.createElement("div");
     card.className = "card" + (si === curIdx ? " cur" : "");
     card.innerHTML = `
-      <div class="block ${slot.block.toLowerCase()}"><span>${slot.block}</span><span class="br">${
-        skipped ? `<button class="fold" data-unskip="${logKey}">↩ Doch machen</button>`
-        : allDone && !ready ? `<button class="fold" data-fold="${slotKey}">✓ Zuklappen</button>`
-        : `<button class="fold" data-skip="${logKey}">Überspringen</button>`
-      }${multi ? `<span class="lvl">Stufe ${lvl + 1}/${slot.levels.length}</span>` : ""}</span></div>
+      <div class="block ${slot.block.toLowerCase()}"><span>${slot.block}${multi ? `<span class="lvl">Stufe ${lvl + 1}/${slot.levels.length}</span>` : ""}</span><span class="br">${
+        skipped ? `<button class="btn btn-ghost btn-sm fold" data-unskip="${logKey}">↩ Doch machen</button>`
+        : allDone && !ready ? `<button class="btn btn-ghost btn-sm fold" data-fold="${slotKey}">✓ Zuklappen</button>`
+        : `<button class="btn btn-ghost btn-sm fold" data-skip="${logKey}">Überspringen</button>`
+      }</span></div>
       <h3>${x.name}</h3>
       <div class="meta"><b>${x.reps}</b> · Pause ${fmtRest(x.rest)} ·
         <a target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(x.query)}">▶ Tutorial</a></div>
@@ -782,7 +826,7 @@ function render() {
   /* Lösch-Button nur, wenn heute überhaupt etwas geloggt ist */
   if (states.some(st => st.entry && st.entry.s.some(v => v))) {
   const r = document.createElement("button");
-  r.className = "reset";
+  r.className = "btn btn-ghost btn-block reset";
   r.textContent = `Heutige Einträge für ${PLAN[di].name} löschen`;
   r.onclick = () => {
     const msg = durs[today()]
@@ -866,7 +910,7 @@ function renderCal(sec, byDate) {
   }
   const cal = document.createElement("div");
   cal.className = "card cal";
-  cal.innerHTML = `<div class="cal-head"><span class="display">${monName}</span><div class="cal-ctrl">${atToday ? "" : `<button class="cal-today" data-ct>Heute</button>`}<button data-cal="-1">‹</button><button data-cal="1">›</button></div></div>
+  cal.innerHTML = `<div class="cal-head"><span class="display">${monName}</span><div class="cal-ctrl">${atToday ? "" : `<button class="btn btn-outline btn-sm" data-ct>Heute</button>`}<button class="btn btn-secondary btn-icon" data-cal="-1">‹</button><button class="btn btn-secondary btn-icon" data-cal="1">›</button></div></div>
     <div class="cal-grid">${["Mo","Di","Mi","Do","Fr","Sa","So"].map(w => `<span class="cal-w">${w}</span>`).join("")}${cells}</div>`;
   sec.appendChild(cal);
   cal.querySelectorAll("[data-cal]").forEach(b => b.onclick = () => {
@@ -916,7 +960,7 @@ function renderLog(days) {
     const box = document.createElement("div");
     box.className = "log-session";
     box.id = "s-" + d;
-    box.innerHTML = `<div class="lshead"><h3>${dayName}</h3><button class="daydel" data-dd="${d}">Löschen</button></div><div class="d">${fmtDate(d)}${durs[d] ? ` · ${fmtDur(durs[d].dur)}` : ""}</div>
+    box.innerHTML = `<div class="lshead"><h3>${dayName}</h3><button class="btn btn-ghost btn-sm daydel" data-dd="${d}">Löschen</button></div><div class="d">${fmtDate(d)}${durs[d] ? ` · ${fmtDur(durs[d].dur)}` : ""}</div>
       <table>${items.map(({ p, en }) => {
         const unit = p.x.opts?.t ? "s" : "";
         const vals = en.s.map(v => v ? v[0] + unit + (v[1] ? `@${v[1]}` : "") : "–").join(" / ");
@@ -940,7 +984,7 @@ function renderLog(days) {
 
   const actions = document.createElement("div");
   actions.className = "log-actions";
-  actions.innerHTML = `<button id="exportBtn">Export (JSON)</button><label for="importFile">Import</label><input type="file" id="importFile" accept=".json" style="display:none">`;
+  actions.innerHTML = `<button class="btn btn-secondary" id="exportBtn">Export (JSON)</button><label class="btn btn-secondary" for="importFile">Import</label><input type="file" id="importFile" accept=".json" style="display:none">`;
   sec.appendChild(actions);
   days.appendChild(sec);
 
@@ -1006,15 +1050,15 @@ function drawEditor() {
     <div class="sub">Satz ${ed.si + 1} von ${nSets(x.reps)} · Ziel ${x.reps}</div>
     <div class="steppers">
       <div class="stepper"><label>${unitLabel}</label>
-        <div class="row"><button data-a="v-">−</button><div class="val">${ed.val}</div><button data-a="v+">+</button></div></div>
+        <div class="row"><button class="btn btn-secondary btn-icon" data-a="v-">−</button><div class="val">${ed.val}</div><button class="btn btn-secondary btn-icon" data-a="v+">+</button></div></div>
       ${x.opts?.w ? `<div class="stepper"><label>Zusatzgewicht (kg)</label>
-        <div class="row"><button data-a="w-">−</button><div class="val">${ed.wt}</div><button data-a="w+">+</button></div></div>` : ""}
+        <div class="row"><button class="btn btn-secondary btn-icon" data-a="w-">−</button><div class="val">${ed.wt}</div><button class="btn btn-secondary btn-icon" data-a="w+">+</button></div></div>` : ""}
     </div>
-    ${x.opts?.t ? `<button class="holdbtn" data-a="timer">⏱ <span id="edclock">Timer ${ed.val} s</span></button>` : ""}
+    ${x.opts?.t ? `<button class="btn btn-outline btn-block holdbtn" data-a="timer">⏱ <span id="edclock">Timer ${ed.val} s</span></button>` : ""}
     <div class="editor-actions">
-      ${ed.existing ? '<button class="del" data-a="del">Löschen</button>' : ""}
-      <button data-a="cancel">Abbrechen</button>
-      <button class="save" data-a="save">Speichern</button>
+      ${ed.existing ? '<button class="btn btn-danger del" data-a="del">Löschen</button>' : ""}
+      <button class="btn btn-secondary" data-a="cancel">Abbrechen</button>
+      <button class="btn btn-primary save" data-a="save">Speichern</button>
     </div>`;
   document.getElementById("editor").querySelectorAll("button").forEach(b => b.onclick = () => {
     const a = b.dataset.a, step = p.x.opts?.t ? 5 : 1;
@@ -1084,6 +1128,7 @@ function showUpdateBanner(v) {
   if (document.getElementById("upd")) return;
   const b = document.createElement("button");
   b.id = "upd";
+  b.className = "btn btn-outline btn-block";
   b.textContent = `Update auf v${v} geladen — tippen zum Neustart`;
   b.onclick = () => location.reload();
   document.body.appendChild(b);

@@ -57,6 +57,23 @@ Offected-Palette (seit v1.7.0): neutrales Schwarz mit Signal-Orange als einziger
 
 Keine blaustichigen Grautöne — alle Flächen sind neutrale Abstufungen von #101010 (auch in `rgba()`-Werten wie der Timer-Leiste darauf achten).
 
+### Button-System (seit v1.10.0)
+
+Varianten-Klassen statt Einzelstile — beim Anlegen neuer Buttons **immer** `class="btn btn-<variante>"` verwenden:
+
+| Klasse | Einsatz |
+|---|---|
+| `.btn-primary` | genau eine Hauptaktion pro Kontext (Workout starten, Speichern) |
+| `.btn-secondary` | Standard-Aktionen (Abbrechen, Export, Pausen-Presets, Stepper) |
+| `.btn-outline` | betonte Sekundäraktion in Orange (Freischalten, Heute, Hold-Timer) |
+| `.btn-ghost` | Nebenaktionen (Überspringen, Löschen, Stopp) |
+| `.btn-danger` | destruktiv (Satz löschen) |
+| `.btn-sm` `.btn-icon` `.btn-block` | Größen/Breite |
+
+**Leitregel: Fläche oder Rand = anfassbar.** Statische Labels (`.lvl`, `.wmeta`) tragen deshalb bewusst weder Rand noch Fläche — vor v1.10.0 sah das Stufen-Badge exakt aus wie der Zuklappen-Button. `.btn-ghost` hat als einzige „randlose" Variante trotzdem eine schwache Fläche, weil es auf Touch keinen Hover gibt.
+
+Alle Touch-Ziele mindestens `--tap` (44px) — Gym-Kontext. Ausnahme: Satzzahl-Stepper (36px, seltene Korrektur). Fokus-Ringe über `:focus-visible` sind gesetzt und dürfen nicht entfernt werden.
+
 Typo: System-Stack, Display-Stil über `font-stretch: condensed` + Uppercase (Klasse `.display`). **Bewusst keine Webfonts** — Offline-Fähigkeit schlägt Typo-Feinheit in v1. Mobile-first, `prefers-reduced-motion` respektiert, Safe-Area-Insets an fixen Leisten.
 
 ## Konventionen
