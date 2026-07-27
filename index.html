@@ -119,6 +119,11 @@
   .card.done-c .mini .ck { flex: 0 0 22px; height: 22px; border-radius: 50%; background: var(--chalk); color: #101010; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px rgba(244,244,244,.12); }
   .card.done-c .mini h3 { font-size: 15px; flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .card.done-c .mini .v { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .card.skip-c { padding: 11px 16px; cursor: pointer; opacity: .6; }
+  .card.skip-c .mini { display: flex; align-items: center; gap: 10px; }
+  .card.skip-c .mini .ck { flex: 0 0 22px; height: 22px; border-radius: 50%; border: 1px dashed var(--line); color: var(--muted); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .card.skip-c .mini h3 { font-size: 15px; flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card.skip-c .mini .v { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
   .block .br { display: flex; gap: 6px; align-items: center; }
   .fold { border: 1px solid var(--line); background: var(--card2); color: var(--muted); border-radius: 20px; padding: 2px 9px; font-size: 10.5px; font-weight: 700; font-family: inherit; letter-spacing: .04em; cursor: pointer; }
   .holdbtn { display: block; width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--amber); background: var(--amber-dim); color: var(--amber); font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
@@ -177,7 +182,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.8.1</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.9.0</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -298,6 +303,11 @@ const PLAN = [
         reg: "Leichter: erst statische Tuck-Halte ohne Ziehen üben. Schwerer: Advanced Tuck (Rücken flach, Knie weiter vom Körper)." }
     ]},
     { block: "Kraft", levels: [
+      { name: "Uneven Pull-ups (Handtuch)", reps: "3 × 4–6 / Seite", rest: 120, query: "uneven pull ups towel tutorial", svg: "archer", up: 6,
+        pos: "Handtuch über die Stange hängen: eine Hand greift die Stange, die andere fasst das Handtuch etwa eine Handbreit tiefer.",
+        exec: "Hochziehen Richtung Stangenhand, der Handtuch-Arm hilft nur so viel wie nötig. Kinn auf Höhe der Stangenhand bringen, betont langsam ablassen. Pro Satz eine Seite, dann tauschen. Je tiefer du das Handtuch fasst, desto mehr Last liegt auf dem Stangenarm.",
+        fehler: "Der Handtuch-Arm übernimmt heimlich die Hauptarbeit · Körper dreht sich unter der Stangenhand weg · unten in die Streckung fallen lassen statt abbremsen.",
+        reg: "Leichter: Handtuch höher fassen oder Füße auf einer Box mithelfen lassen. Schwerer: Handtuch tiefer fassen, bis nur noch die Fingerspitzen mitziehen." },
       { name: "Archer Pull-ups", reps: "3 × 4–6 / Seite", rest: 120, query: "archer pull up tutorial", svg: "archer", up: 6,
         pos: "Deutlich breiter als schulterbreiter Obergriff.",
         exec: "Zur rechten Hand ziehen: rechter Arm macht die Arbeit, der linke bleibt fast gestreckt und „gleitet“ über die Stange. Kinn über die Stange beim ziehenden Arm, kontrolliert runter, Seite wechseln oder Seiten blockweise trainieren.",
@@ -675,23 +685,37 @@ function render() {
     const entry = entryFor(logKey, today(), false);
     const setCount = entry && entry.n ? entry.n : nSets(slot.levels[lvl].reps);
     const doneCount = entry ? entry.s.slice(0, setCount).filter(v => v).length : 0;
-    return { slotKey, lvl, logKey, entry, setCount, allDone: setCount > 0 && doneCount >= setCount };
+    return { slotKey, lvl, logKey, entry, setCount, skipped: !!(entry && entry.sk),
+             allDone: setCount > 0 && doneCount >= setCount };
   });
-  const curIdx = states.findIndex(st => !st.allDone);
+  const curIdx = states.findIndex(st => !st.allDone && !st.skipped);
+  const offen = states.filter(st => !st.skipped);
 
   const wmeta = document.createElement("div");
   wmeta.className = "wmeta";
-  wmeta.textContent = `${PLAN[di].slots.length} Übungen · ${states.reduce((a, st) => a + st.setCount, 0)} Sätze`;
+  const nSkip = states.length - offen.length;
+  wmeta.textContent = `${offen.length} Übungen · ${offen.reduce((a, st) => a + st.setCount, 0)} Sätze`
+    + (nSkip ? ` · ${nSkip} übersprungen` : "");
   sec.appendChild(wmeta);
 
   PLAN[di].slots.forEach((slot, si) => {
-    const { slotKey, lvl, logKey, entry, setCount, allDone } = states[si];
+    const { slotKey, lvl, logKey, entry, setCount, allDone, skipped } = states[si];
     const x = slot.levels[lvl];
     const done = entry ? entry.s : [];
     const last = lastEntry(logKey);
     const unit = x.opts?.t ? "s" : "";
     const multi = slot.levels.length > 1;
     const ready = readyToProgress(slotKey);
+
+    /* Übersprungen: eingeklappte Karte, Tap holt sie zurück in die Ansicht */
+    if (skipped && !openDone[slotKey]) {
+      const mini = document.createElement("div");
+      mini.className = "card skip-c";
+      mini.innerHTML = `<div class="mini"><span class="ck">–</span><h3>${x.name}</h3><span class="v">Übersprungen</span></div>`;
+      mini.onclick = () => { openDone[slotKey] = true; render(); };
+      sec.appendChild(mini);
+      return;
+    }
 
     /* Erledigt: eingeklappte Karte (außer ein Unlock steht an) */
     if (allDone && !ready && !openDone[slotKey]) {
@@ -728,7 +752,11 @@ function render() {
     const card = document.createElement("div");
     card.className = "card" + (si === curIdx ? " cur" : "");
     card.innerHTML = `
-      <div class="block ${slot.block.toLowerCase()}"><span>${slot.block}</span><span class="br">${allDone && !ready ? `<button class="fold" data-fold="${slotKey}">✓ Zuklappen</button>` : ""}${multi ? `<span class="lvl">Stufe ${lvl + 1}/${slot.levels.length}</span>` : ""}</span></div>
+      <div class="block ${slot.block.toLowerCase()}"><span>${slot.block}</span><span class="br">${
+        skipped ? `<button class="fold" data-unskip="${logKey}">↩ Doch machen</button>`
+        : allDone && !ready ? `<button class="fold" data-fold="${slotKey}">✓ Zuklappen</button>`
+        : `<button class="fold" data-skip="${logKey}">Überspringen</button>`
+      }${multi ? `<span class="lvl">Stufe ${lvl + 1}/${slot.levels.length}</span>` : ""}</span></div>
       <h3>${x.name}</h3>
       <div class="meta"><b>${x.reps}</b> · Pause ${fmtRest(x.rest)} ·
         <a target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(x.query)}">▶ Tutorial</a></div>
@@ -778,6 +806,16 @@ function render() {
   days.querySelectorAll("[data-fold]").forEach(b => b.onclick = () => {
     openDone[b.dataset.fold] = false; render();
   });
+  days.querySelectorAll("[data-skip]").forEach(b => b.onclick = () => {
+    entryFor(b.dataset.skip, today(), true).sk = 1;
+    openDone[parseLogKey(b.dataset.skip).slotKey] = false;
+    saveAll(); render();
+  });
+  days.querySelectorAll("[data-unskip]").forEach(b => b.onclick = () => {
+    const e = entryFor(b.dataset.unskip, today(), false);
+    if (e) delete e.sk;
+    saveAll(); render();
+  });
   days.querySelectorAll("[data-add]").forEach(b => b.onclick = () => {
     const p = parseLogKey(b.dataset.add);
     const e = entryFor(b.dataset.add, today(), true);
@@ -804,7 +842,7 @@ function render() {
   });
 
   let total = 0, doneN = 0;
-  states.forEach(st => {
+  offen.forEach(st => {
     total += st.setCount;
     if (st.entry) st.entry.s.slice(0, st.setCount).forEach(v => v && doneN++);
   });
