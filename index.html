@@ -226,7 +226,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.10.0</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.11.0</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -595,17 +595,29 @@ const curLvl = slotKey => Math.min(prog[slotKey] || 0, SLOTS[slotKey].levels.len
 let activeTab = store.get("cali-tab", null);
 const legacyDay = store.get("cali-day", null);
 if (activeTab === null) activeTab = legacyDay === 3 ? 1 : 0; /* Migration: alter Log-Tab war id 3 */
-function nextSplit() {
-  let last = null, lastDay = null;
-  Object.entries(log).forEach(([k, es]) => es.forEach(e => {
-    if (e.s && e.s.some(v => v) && (!last || e.d > last)) {
-      const p = parseLogKey(k);
-      if (p) { last = e.d; lastDay = p.slot.di; }
-    }
-  }));
-  const dd = Object.keys(durs).sort().pop();
-  if (dd && (!last || dd >= last)) lastDay = durs[dd].day;
-  return lastDay == null ? 0 : (lastDay + 1) % 3;
+/* Fester Wochenrhythmus (JS-Wochentag -> Split-Index):
+   So = Tag A, weil davor 3 Ruhetage liegen und die Muscle-up-Arbeit die meiste
+   Frische braucht · Mo = Beine/Core, folgt direkt auf Sonntag und überschneidet
+   sich dort am wenigsten · Mi = Push. Rhythmus ändern? Nur diese Map anpassen. */
+const WEEKPLAN = { 0: 0, 1: 2, 3: 1 };
+
+/* Letzter Tag mit echten Sätzen bzw. gespeicherter Dauer für einen Split */
+function lastTrained(di) {
+  let d = null;
+  Object.entries(log).forEach(([k, es]) => {
+    const p = parseLogKey(k);
+    if (!p || p.slot.di !== di) return;
+    es.forEach(e => { if (e.s && e.s.some(v => v) && (!d || e.d > d)) d = e.d; });
+  });
+  Object.entries(durs).forEach(([dd, v]) => { if (v.day === di && (!d || dd > d)) d = dd; });
+  return d;
+}
+
+function nextSplit(wd) {
+  const day = wd === undefined ? new Date().getDay() : wd;
+  if (WEEKPLAN[day] !== undefined) return WEEKPLAN[day];
+  /* Tag außerhalb des Rhythmus: der Split mit der längsten Pause (nie = zuerst) */
+  return [0, 1, 2].reduce((a, b) => (lastTrained(b) || "") < (lastTrained(a) || "") ? b : a);
 }
 let activeSplit = (legacyDay && typeof legacyDay === "object" && legacyDay.d === today() && legacyDay.sp >= 0 && legacyDay.sp <= 2)
   ? legacyDay.sp : nextSplit();

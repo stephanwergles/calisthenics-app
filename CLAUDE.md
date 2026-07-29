@@ -41,6 +41,7 @@ Alle Zugriffe über den `store`-Wrapper (try/catch, damit die Datei auch in Umge
 
 ### Kernlogik
 
+- **`nextSplit(wd?)`**: empfiehlt den Split (oranger Punkt in der Split-Wahl) über die Konstante `WEEKPLAN` — der Nutzer trainiert fest So/Mo/Mi: **So = Tag A** (3 Ruhetage davor, Muscle-up braucht Frische), **Mo = Tag C** (folgt direkt auf Sonntag, minimale Überschneidung), **Mi = Tag B**. An anderen Wochentagen greift `lastTrained()` und schlägt den Split mit der längsten Pause vor. Anderer Rhythmus = nur `WEEKPLAN` anpassen.
 - **`readyToProgress(slotKey)`**: true, wenn die letzten **2** vollständigen Einheiten der aktuellen Stufe in **allen** Sätzen ≥ `up` waren → Bernstein-Unlock-Button. `up: null` = nie automatisch (nur manuell über die Ladder im Technik-Toggle).
 - **Satz-Editor**: Tap auf Satz-Kreis → Bottom-Sheet mit Steppern. Prefill-Kaskade: heutiger Wert → gleicher Satz der letzten Einheit → vorheriger Satz heute → `up` bzw. 10s. Speichern startet den Pausen-Timer der Übung und (falls keine läuft) die Trainings-Session.
 - **Session-Timer**: Zeit über `Date.now() - start` berechnet (übersteht Reload/Display-aus). Sessions < 60 s werden verworfen, mehrere pro Tag summiert.
