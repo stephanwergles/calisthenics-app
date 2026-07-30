@@ -79,7 +79,10 @@
   .splits .split { flex: 1; position: relative; padding: 9px 0 7px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1.15; font-family: inherit; transition: all .15s; }
   .splits .split small { display: block; font-size: 10px; font-weight: 500; text-transform: none; letter-spacing: 0; font-stretch: normal; }
   .splits .split.active { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
-  .splits .split.next::after { content: ""; position: absolute; top: 7px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
+  /* Geplanter Wochentag je Split; orange = heute empfohlen (an So/Mo/Mi ist das
+     der heutige Tag, an freien Tagen der Split mit der längsten Pause) */
+  .splits .split .spwd { display: block; margin-top: 4px; font-size: 9.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; font-stretch: normal; color: var(--muted); opacity: .65; }
+  .splits .split.next .spwd { color: var(--amber); opacity: 1; }
   .wmeta { color: var(--muted); font-size: 12.5px; margin: 0 2px 10px; }
 
   .cal .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -226,7 +229,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.11.0</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.11.1</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -600,6 +603,9 @@ if (activeTab === null) activeTab = legacyDay === 3 ? 1 : 0; /* Migration: alter
    Frische braucht · Mo = Beine/Core, folgt direkt auf Sonntag und überschneidet
    sich dort am wenigsten · Mi = Push. Rhythmus ändern? Nur diese Map anpassen. */
 const WEEKPLAN = { 0: 0, 1: 2, 3: 1 };
+const WDAY = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+/* Umkehrung für die Anzeige: welche Wochentage gehören zu diesem Split? */
+const splitDays = di => Object.keys(WEEKPLAN).filter(wd => WEEKPLAN[wd] === di).map(wd => WDAY[+wd]);
 
 /* Letzter Tag mit echten Sätzen bzw. gespeicherter Dauer für einen Split */
 function lastTrained(di) {
@@ -725,7 +731,7 @@ function render() {
   const nx = nextSplit();
   const picker = document.createElement("div");
   picker.className = "splits";
-  picker.innerHTML = PLAN.map((d, i) => `<button class="split${i === di ? " active" : ""}${i === nx ? " next" : ""}" data-sp="${i}"><span class="display">${d.name}</span><small>${d.sub}</small></button>`).join("");
+  picker.innerHTML = PLAN.map((d, i) => `<button class="split${i === di ? " active" : ""}${i === nx ? " next" : ""}" data-sp="${i}"><span class="display">${d.name}</span><small>${d.sub}</small><span class="spwd">${splitDays(i).join(" · ") || "—"}</span></button>`).join("");
   picker.querySelectorAll("[data-sp]").forEach(b => b.onclick = () => {
     activeSplit = +b.dataset.sp;
     store.set("cali-day", { sp: activeSplit, d: today() });
