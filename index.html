@@ -100,6 +100,10 @@
   .rt-item.on .rt-box { background: var(--amber); border-color: var(--amber); color: #101010; }
   .rt-item.on .rt-txt b { color: var(--muted); text-decoration: line-through; }
   .rt-txt b { display: block; color: var(--text); font-size: 14px; font-weight: 600; margin-bottom: 1px; }
+  /* Cardio-Punkt öffnet den Eintrag, statt nur abzuhaken — deshalb in Signalfarbe */
+  .rt-item.rt-cardio .rt-txt b { color: var(--amber); }
+  .rt-item.rt-cardio.on .rt-txt b { text-decoration: none; }
+  .rt-item.rt-cardio .rt-box { border-radius: 50%; }
 
   .cal .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .cal .cal-head span { font-size: 15px; }
@@ -252,7 +256,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.12.0</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.13.0</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -596,6 +600,7 @@ const ROUTINES = [
       { n: "2–3 leichte Klimmzüge", d: "betont langsam, als letzte Vorbereitung" }
     ],
     cool: [
+      { n: "Cardio locker", d: "15–25 min Rad oder Laufen im Unterhaltungstempo — antippen zum Eintragen", cardio: 1 },
       { n: "Lat-Dehnung an der Stange", d: "30 s pro Seite, Hüfte weg vom Griff schieben" },
       { n: "Brust-/Bizepsdehnung an der Wand", d: "30 s pro Seite, Arm auf Schulterhöhe" },
       { n: "Unterarme dehnen", d: "je 20 s Beuger und Strecker — wichtig nach viel Griffarbeit" },
@@ -613,6 +618,7 @@ const ROUTINES = [
       { n: "2 × 8 leichte Liegestütze", d: "als letzte Vorbereitung" }
     ],
     cool: [
+      { n: "Cardio locker", d: "15–25 min Rad oder Laufen im Unterhaltungstempo — antippen zum Eintragen", cardio: 1 },
       { n: "Brustdehnung im Türrahmen", d: "30 s pro Seite, Unterarm am Rahmen, Brust nach vorn" },
       { n: "Trizeps über Kopf", d: "20 s pro Seite, Ellenbogen sanft nach hinten ziehen" },
       { n: "Handgelenke dehnen", d: "je 20 s Beuger und Strecker" },
@@ -800,18 +806,22 @@ function readyToProgress(slotKey) {
    kind "w" = Warm-up (vor den Übungen), "c" = Cool-down (danach). */
 function routineCard(di, kind) {
   const items = ROUTINES[di][kind === "w" ? "warm" : "cool"];
-  const day = rout[today()] || {};
-  const ticked = day[kind] || [];
-  const alle = ticked.length >= items.length;
-  const titel = kind === "w" ? "Warm-up" : "Cool-down & Dehnen";
+  const ticked = (rout[today()] || {})[kind] || [];
+  const heute = cardio[today()] || [];
+  /* Cardio-Punkte haken sich selbst ab, sobald für heute eine Einheit erfasst ist */
+  const fertig = (it, i) => it.cardio ? heute.length > 0 : ticked.includes(i);
+  const beschriftung = it => it.cardio && heute.length ? heute.map(fmtCardio).join(" · ") : it.d;
+  const done = items.filter(fertig).length;
+  const titel = kind === "w" ? "Warm-up"
+    : items.some(it => it.cardio) ? "Cardio &amp; Cool-down" : "Cool-down &amp; Dehnen";
   const card = document.createElement("div");
-  card.className = "card rout" + (alle ? " rout-done" : "");
+  card.className = "card rout" + (done >= items.length ? " rout-done" : "");
   card.innerHTML = `<details data-d="rt-${di}-${kind}"${openDetails["rt-" + di + "-" + kind] ? " open" : ""}>
-      <summary><span class="rt-t">${titel}</span><span class="rt-n">${ticked.length}/${items.length}</span></summary>
+      <summary><span class="rt-t">${titel}</span><span class="rt-n">${done}/${items.length}</span></summary>
       <div class="detail-body rt-body">${items.map((it, i) => `
-        <button class="rt-item${ticked.includes(i) ? " on" : ""}" data-rt="${i}">
-          <span class="rt-box">${ticked.includes(i) ? "✓" : ""}</span>
-          <span class="rt-txt"><b>${it.n}</b>${it.d}</span>
+        <button class="rt-item${fertig(it, i) ? " on" : ""}${it.cardio ? " rt-cardio" : ""}" data-rt="${i}">
+          <span class="rt-box">${fertig(it, i) ? "✓" : ""}</span>
+          <span class="rt-txt"><b>${it.n}</b>${beschriftung(it)}</span>
         </button>`).join("")}
       </div>
     </details>`;
@@ -819,6 +829,7 @@ function routineCard(di, kind) {
     openDetails["rt-" + di + "-" + kind] = e.target.open);
   card.querySelectorAll("[data-rt]").forEach(b => b.onclick = () => {
     const i = +b.dataset.rt;
+    if (items[i].cardio) { openCardio(today()); return; }  /* Eintrag statt Häkchen */
     const d = rout[today()] = rout[today()] || {};
     const arr = d[kind] = d[kind] || [];
     const at = arr.indexOf(i);
