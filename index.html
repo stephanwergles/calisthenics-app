@@ -229,7 +229,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.11.1</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.11.2</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -604,8 +604,16 @@ if (activeTab === null) activeTab = legacyDay === 3 ? 1 : 0; /* Migration: alter
    sich dort am wenigsten · Mi = Push. Rhythmus ändern? Nur diese Map anpassen. */
 const WEEKPLAN = { 0: 0, 1: 2, 3: 1 };
 const WDAY = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+/* Wochenstart Montag (wie im Kalender): So rutscht ans Ende */
+const monIdx = wd => (+wd + 6) % 7;
 /* Umkehrung für die Anzeige: welche Wochentage gehören zu diesem Split? */
-const splitDays = di => Object.keys(WEEKPLAN).filter(wd => WEEKPLAN[wd] === di).map(wd => WDAY[+wd]);
+const splitDays = di => Object.keys(WEEKPLAN).filter(wd => WEEKPLAN[wd] === di)
+  .sort((a, b) => monIdx(a) - monIdx(b)).map(wd => WDAY[+wd]);
+/* Sortierung des Split-Pickers nach Wochentag — Splits ohne festen Tag ans Ende */
+const splitOrder = () => [0, 1, 2].sort((a, b) => {
+  const key = di => { const w = Object.keys(WEEKPLAN).filter(wd => WEEKPLAN[wd] === di).map(monIdx); return w.length ? Math.min(...w) : 99; };
+  return key(a) - key(b);
+});
 
 /* Letzter Tag mit echten Sätzen bzw. gespeicherter Dauer für einen Split */
 function lastTrained(di) {
@@ -731,7 +739,7 @@ function render() {
   const nx = nextSplit();
   const picker = document.createElement("div");
   picker.className = "splits";
-  picker.innerHTML = PLAN.map((d, i) => `<button class="split${i === di ? " active" : ""}${i === nx ? " next" : ""}" data-sp="${i}"><span class="display">${d.name}</span><small>${d.sub}</small><span class="spwd">${splitDays(i).join(" · ") || "—"}</span></button>`).join("");
+  picker.innerHTML = splitOrder().map(i => `<button class="split${i === di ? " active" : ""}${i === nx ? " next" : ""}" data-sp="${i}"><span class="display">${PLAN[i].name}</span><small>${PLAN[i].sub}</small><span class="spwd">${splitDays(i).join(" · ") || "—"}</span></button>`).join("");
   picker.querySelectorAll("[data-sp]").forEach(b => b.onclick = () => {
     activeSplit = +b.dataset.sp;
     store.set("cali-day", { sp: activeSplit, d: today() });
