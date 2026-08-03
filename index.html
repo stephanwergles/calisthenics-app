@@ -85,6 +85,22 @@
   .splits .split.next .spwd { color: var(--amber); opacity: 1; }
   .wmeta { color: var(--muted); font-size: 12.5px; margin: 0 2px 10px; }
 
+  /* Warm-up / Cool-down: Checkliste, keine geloggten Sätze */
+  .card.rout { padding: 0; overflow: hidden; }
+  .card.rout details { margin: 0; }
+  .card.rout summary { background: none; padding: 13px 16px; justify-content: flex-start; gap: 9px; }
+  .card.rout .rt-t { flex: 1; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+  .card.rout .rt-n { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .card.rout-done .rt-t, .card.rout-done .rt-n { color: var(--amber); }
+  .rt-body { background: none; padding: 0 10px 8px; }
+  .rt-item { display: flex; align-items: flex-start; gap: 11px; width: 100%; min-height: var(--tap); padding: 8px 6px; border: none; background: none; color: var(--muted); font-family: inherit; font-size: 13px; line-height: 1.45; text-align: left; cursor: pointer; border-radius: var(--r-sm); }
+  .rt-item:hover { background: rgba(255,255,255,.04); }
+  .rt-item:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--amber); }
+  .rt-box { flex: 0 0 22px; height: 22px; margin-top: 1px; border-radius: 6px; border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .rt-item.on .rt-box { background: var(--amber); border-color: var(--amber); color: #101010; }
+  .rt-item.on .rt-txt b { color: var(--muted); text-decoration: line-through; }
+  .rt-txt b { display: block; color: var(--text); font-size: 14px; font-weight: 600; margin-bottom: 1px; }
+
   .cal .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .cal .cal-head span { font-size: 15px; }
   .cal-ctrl { display: flex; gap: 6px; align-items: center; }
@@ -95,6 +111,13 @@
   .cal-day.off { cursor: default; }
   .cal-day.trained { background: var(--amber); color: #101010; font-weight: 700; }
   .cal-day.today:not(.trained) { box-shadow: inset 0 0 0 2px var(--amber); color: var(--text); }
+  /* Cardio-Tage: Punkt unter der Ziffer — Krafttraining bleibt die gefüllte Fläche */
+  .cal-day { position: relative; }
+  .cal-day.cardio::after { content: ""; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--amber); }
+  .cal-day.cardio.trained::after { background: #101010; }
+  .cardio-art { display: flex; gap: 8px; margin-bottom: 14px; }
+  .cardio-art .btn { flex: 1; }
+  .log-session.cardio-s .d { margin-bottom: 0; }
   .cal-day.sel { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--amber); }
   .cal-day:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--amber); }
 
@@ -229,7 +252,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.11.2</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.12.0</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -558,6 +581,64 @@ const PLAN = [
 ];
 
 /* Lookup: slotKey -> Slot; logKey -> {slot, lvl} */
+/* ── Warm-up & Cool-down pro Tag ──
+   Bewusst Checklisten statt Slots: Mobility wird abgehakt, nicht geloggt —
+   sonst verwässern Mobilisationsübungen die Trainingsstatistik.
+   Reihenfolge = Abarbeitungsreihenfolge. */
+const ROUTINES = [
+  { /* Tag A — Pull */
+    warm: [
+      { n: "Armkreisen", d: "je 20 s vor- und rückwärts, groß und langsam" },
+      { n: "Band Pull-Aparts", d: "2 × 15 — hintere Schulter aufwecken" },
+      { n: "Scapula Pull-ups", d: "2 × 8 an der Stange, Arme bleiben gestreckt" },
+      { n: "Dead Hang locker", d: "30 s, Schultern bewusst loslassen" },
+      { n: "Ellenbogen aufwärmen", d: "20 Curls ohne Gewicht, dann 20 s Unterarme kreisen" },
+      { n: "2–3 leichte Klimmzüge", d: "betont langsam, als letzte Vorbereitung" }
+    ],
+    cool: [
+      { n: "Lat-Dehnung an der Stange", d: "30 s pro Seite, Hüfte weg vom Griff schieben" },
+      { n: "Brust-/Bizepsdehnung an der Wand", d: "30 s pro Seite, Arm auf Schulterhöhe" },
+      { n: "Unterarme dehnen", d: "je 20 s Beuger und Strecker — wichtig nach viel Griffarbeit" },
+      { n: "Passiver Dead Hang", d: "30 s, komplett hängen lassen (Dekompression)" },
+      { n: "Nacken seitlich", d: "20 s pro Seite, Schulter bleibt unten" }
+    ]
+  },
+  { /* Tag B — Push */
+    warm: [
+      { n: "Handgelenke mobilisieren", d: "60 s: kreisen, Handflächen und Handrücken am Boden wiegen — Pflicht vor PPPU" },
+      { n: "Armkreisen", d: "je 20 s vor- und rückwärts" },
+      { n: "Schulterdislokationen", d: "2 × 10 mit Band oder Besenstiel, weiter Griff" },
+      { n: "Cat-Cow", d: "10 Wiederholungen, Wirbelsäule Segment für Segment" },
+      { n: "Scapula Push-ups", d: "2 × 10 — Protraktion für Planche und L-Sit" },
+      { n: "2 × 8 leichte Liegestütze", d: "als letzte Vorbereitung" }
+    ],
+    cool: [
+      { n: "Brustdehnung im Türrahmen", d: "30 s pro Seite, Unterarm am Rahmen, Brust nach vorn" },
+      { n: "Trizeps über Kopf", d: "20 s pro Seite, Ellenbogen sanft nach hinten ziehen" },
+      { n: "Handgelenke dehnen", d: "je 20 s Beuger und Strecker" },
+      { n: "Kindhaltung mit langen Armen", d: "45 s, Achseln Richtung Boden sinken lassen" },
+      { n: "Schulter quer dehnen", d: "20 s pro Seite" }
+    ]
+  },
+  { /* Tag C — Beine & Core */
+    warm: [
+      { n: "Knöchel mobilisieren", d: "2 × 10 pro Seite: Knie über die Zehen schieben, Ferse bleibt unten — Pflicht für Pistols" },
+      { n: "Hüftkreisen", d: "je 10 pro Richtung" },
+      { n: "Beinschwingen", d: "10 pro Seite vor/zurück, dann 10 seitlich" },
+      { n: "Bodyweight Squats", d: "15 Wiederholungen, tief und kontrolliert" },
+      { n: "Glute Bridges", d: "15 Wiederholungen, oben 1 s halten" },
+      { n: "Leichte Ausfallschritte", d: "8 pro Seite" }
+    ],
+    cool: [
+      { n: "Hüftbeuger im Ausfallschritt", d: "30 s pro Seite, Becken aufrichten" },
+      { n: "Hamstrings im Sitzen", d: "30 s pro Seite, Rücken lang statt rund" },
+      { n: "Quadrizeps im Stand", d: "30 s pro Seite, Knie zeigt nach unten" },
+      { n: "Waden an der Wand", d: "30 s pro Seite, Ferse am Boden" },
+      { n: "Taubenstellung", d: "30 s pro Seite — Gesäß und Piriformis" }
+    ]
+  }
+];
+
 const SLOTS = {};
 PLAN.forEach((d, di) => d.slots.forEach((s, si) => { SLOTS[`${di}-${si}`] = { ...s, di, si }; }));
 const logKeyOf = (slotKey, lvl) => lvl === 0 ? slotKey : `${slotKey}@${lvl}`;
@@ -578,6 +659,8 @@ let log = store.get("cali-log", {});
 let prog = store.get("cali-prog", {});   /* slotKey -> aktueller Level-Index */
 let sess = store.get("cali-sess", null); /* { start: ts, day: di } */
 let durs = store.get("cali-durs", {});   /* datum -> { day, dur } */
+let cardio = store.get("cali-cardio", {}); /* datum -> [ { t: "rad"|"lauf", min, km?, hm? } ] */
+let rout = store.get("cali-rt", {});     /* datum -> { w: [idx], c: [idx] } — abgehakte Routine-Punkte */
 let openDetails = {}, openDone = {}, calMonth = null, calSel = null;
 
 /* Lokales Datum, NICHT UTC — sonst gehört zwischen 0 und 2 Uhr morgens
@@ -646,7 +729,9 @@ function lastEntry(logKey) {
   const arr = (log[logKey] || []).filter(x => x.d !== today() && x.s.some(v => v));
   return arr.length ? arr[arr.length - 1] : null;
 }
-function saveAll() { store.set("cali-log", log); store.set("cali-prog", prog); store.set("cali-sess", sess); store.set("cali-durs", durs); }
+function saveAll() { store.set("cali-log", log); store.set("cali-prog", prog); store.set("cali-sess", sess); store.set("cali-durs", durs); store.set("cali-cardio", cardio); store.set("cali-rt", rout); }
+const CARDIO_ART = { rad: "Rad", lauf: "Lauf" };
+const fmtCardio = c => [CARDIO_ART[c.t] || c.t, `${c.min} min`, c.km ? `${c.km} km` : null, c.hm ? `${c.hm} hm` : null].filter(Boolean).join(" · ");
 const fmtDur = s => {
   s = Math.round(s);
   const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
@@ -711,6 +796,40 @@ function readyToProgress(slotKey) {
   return lastTwo.every(e => e.s.filter(v => v).every(v => v[0] >= x.up));
 }
 
+/* Warm-up-/Cool-down-Karte: Checkliste, die pro Tag abgehakt wird.
+   kind "w" = Warm-up (vor den Übungen), "c" = Cool-down (danach). */
+function routineCard(di, kind) {
+  const items = ROUTINES[di][kind === "w" ? "warm" : "cool"];
+  const day = rout[today()] || {};
+  const ticked = day[kind] || [];
+  const alle = ticked.length >= items.length;
+  const titel = kind === "w" ? "Warm-up" : "Cool-down & Dehnen";
+  const card = document.createElement("div");
+  card.className = "card rout" + (alle ? " rout-done" : "");
+  card.innerHTML = `<details data-d="rt-${di}-${kind}"${openDetails["rt-" + di + "-" + kind] ? " open" : ""}>
+      <summary><span class="rt-t">${titel}</span><span class="rt-n">${ticked.length}/${items.length}</span></summary>
+      <div class="detail-body rt-body">${items.map((it, i) => `
+        <button class="rt-item${ticked.includes(i) ? " on" : ""}" data-rt="${i}">
+          <span class="rt-box">${ticked.includes(i) ? "✓" : ""}</span>
+          <span class="rt-txt"><b>${it.n}</b>${it.d}</span>
+        </button>`).join("")}
+      </div>
+    </details>`;
+  card.querySelector("details")?.addEventListener("toggle", e =>
+    openDetails["rt-" + di + "-" + kind] = e.target.open);
+  card.querySelectorAll("[data-rt]").forEach(b => b.onclick = () => {
+    const i = +b.dataset.rt;
+    const d = rout[today()] = rout[today()] || {};
+    const arr = d[kind] = d[kind] || [];
+    const at = arr.indexOf(i);
+    if (at > -1) arr.splice(at, 1); else arr.push(i);
+    if (!arr.length) delete d[kind];
+    if (!Object.keys(d).length) delete rout[today()];
+    saveAll(); render();
+  });
+  return card;
+}
+
 /* ── Render ── */
 function render() {
   const tabs = document.getElementById("tabs");
@@ -767,6 +886,7 @@ function render() {
   wmeta.textContent = `${offen.length} Übungen · ${offen.reduce((a, st) => a + st.setCount, 0)} Sätze`
     + (nSkip ? ` · ${nSkip} übersprungen` : "");
   sec.appendChild(wmeta);
+  sec.appendChild(routineCard(di, "w"));
 
   PLAN[di].slots.forEach((slot, si) => {
     const { slotKey, lvl, logKey, entry, setCount, allDone, skipped } = states[si];
@@ -848,6 +968,8 @@ function render() {
       }).join("")}${setCount > 1 ? `<button class="set adj" data-rem="${logKey}">−</button>` : ""}<button class="set adj" data-add="${logKey}">+</button></div>`;
     sec.appendChild(card);
   });
+
+  sec.appendChild(routineCard(di, "c"));
 
   /* Lösch-Button nur, wenn heute überhaupt etwas geloggt ist */
   if (states.some(st => st.entry && st.entry.s.some(v => v))) {
@@ -932,7 +1054,7 @@ function renderCal(sec, byDate) {
   for (let i = 0; i < first; i++) cells += `<span class="cal-day off"></span>`;
   for (let d = 1; d <= dim; d++) {
     const ds = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    cells += `<button class="cal-day${byDate[ds] ? " trained" : ""}${ds === today() ? " today" : ""}${ds === calSel ? " sel" : ""}" data-cd="${ds}">${d}</button>`;
+    cells += `<button class="cal-day${byDate[ds] ? " trained" : ""}${(cardio[ds] || []).length ? " cardio" : ""}${ds === today() ? " today" : ""}${ds === calSel ? " sel" : ""}" data-cd="${ds}">${d}</button>`;
   }
   const cal = document.createElement("div");
   cal.className = "card cal";
@@ -966,17 +1088,27 @@ function renderLog(days) {
   if (!calSel) calSel = today();
   renderCal(sec, byDate);
 
-  if (!dates.length) {
+  const hatEintrag = byDate[calSel] || (cardio[calSel] || []).length;
+  if (!dates.length && !Object.keys(cardio).length) {
     const empty = document.createElement("div");
     empty.className = "log-empty";
     empty.innerHTML = `Noch keine Einheiten geloggt.<br>Tippe im Workout auf einen Satz-Kreis, um Wiederholungen einzutragen.`;
     sec.appendChild(empty);
-  } else if (!byDate[calSel]) {
+  } else if (!hatEintrag) {
     const none = document.createElement("div");
     none.className = "log-empty";
     none.innerHTML = `Keine Einheit am ${fmtDate(calSel)}.<br>Orange markierte Tage haben Einträge.`;
     sec.appendChild(none);
   }
+
+  /* Cardio am gewählten Tag */
+  (cardio[calSel] || []).forEach((c, i) => {
+    const box = document.createElement("div");
+    box.className = "log-session cardio-s";
+    box.innerHTML = `<div class="lshead"><h3>${CARDIO_ART[c.t] || c.t}</h3><button class="btn btn-ghost btn-sm daydel" data-cdel="${i}">Löschen</button></div>
+      <div class="d">${fmtDate(calSel)} · ${fmtCardio(c)}</div>`;
+    sec.appendChild(box);
+  });
 
   /* Liste zeigt nur den im Kalender gewählten Tag; Export bleibt immer vollständig */
   (byDate[calSel] ? [calSel] : []).forEach(d => {
@@ -1008,11 +1140,25 @@ function renderLog(days) {
     sec.appendChild(info);
   }
 
+  const add = document.createElement("button");
+  add.className = "btn btn-outline btn-block";
+  add.style.margin = "14px 0 0";
+  add.textContent = `+ Cardio am ${fmtDate(calSel)}`;
+  add.onclick = () => openCardio(calSel);
+  sec.appendChild(add);
+
   const actions = document.createElement("div");
   actions.className = "log-actions";
   actions.innerHTML = `<button class="btn btn-secondary" id="exportBtn">Export (JSON)</button><label class="btn btn-secondary" for="importFile">Import</label><input type="file" id="importFile" accept=".json" style="display:none">`;
   sec.appendChild(actions);
   days.appendChild(sec);
+
+  sec.querySelectorAll("[data-cdel]").forEach(b => b.onclick = () => {
+    if (!confirm("Cardio-Eintrag löschen?")) return;
+    cardio[calSel].splice(+b.dataset.cdel, 1);
+    if (!cardio[calSel].length) delete cardio[calSel];
+    saveAll(); render();
+  });
 
   sec.querySelectorAll("[data-dd]").forEach(b => b.onclick = () => {
     const d = b.dataset.dd;
@@ -1026,7 +1172,7 @@ function renderLog(days) {
   });
 
   document.getElementById("exportBtn").onclick = () => {
-    const blob = new Blob([JSON.stringify({ version: 3, exported: new Date().toISOString(), log, prog, durs }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ version: 4, exported: new Date().toISOString(), log, prog, durs, cardio, rout }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `calisthenics-log-${today()}.json`;
@@ -1040,7 +1186,10 @@ function renderLog(days) {
       try {
         const data = JSON.parse(rd.result);
         if (data.log && typeof data.log === "object") {
-          log = data.log; prog = data.prog || {}; durs = data.durs || {}; saveAll(); render();
+          /* Version 3 kennt cardio/rout noch nicht — fehlende Felder werden leer */
+          log = data.log; prog = data.prog || {}; durs = data.durs || {};
+          cardio = data.cardio || {}; rout = data.rout || {};
+          saveAll(); render();
         } else alert("Ungültiges Format");
       } catch { alert("Datei konnte nicht gelesen werden"); }
     };
@@ -1108,10 +1257,49 @@ function drawEditor() {
     else closeEditor();
   });
 }
+/* ── Cardio-Editor ── */
+let cd = null;
+function openCardio(datum) {
+  cd = { d: datum, t: "rad", min: 60, km: 0, hm: 0 };
+  drawCardio();
+  document.getElementById("editor").classList.add("open");
+  document.getElementById("scrim").classList.add("open");
+}
+function drawCardio() {
+  const step = (label, key, s) => `<div class="stepper"><label>${label}</label>
+    <div class="row"><button class="btn btn-secondary btn-icon" data-c="${key}-">−</button><div class="val">${cd[key]}</div><button class="btn btn-secondary btn-icon" data-c="${key}+">+</button></div></div>`;
+  document.getElementById("editor").innerHTML = `
+    <h4>Cardio</h4>
+    <div class="sub">${fmtDate(cd.d)}</div>
+    <div class="cardio-art">${Object.entries(CARDIO_ART).map(([k, v]) =>
+      `<button class="btn ${cd.t === k ? "btn-outline" : "btn-secondary"}" data-c="art-${k}">${v}</button>`).join("")}</div>
+    <div class="steppers">${step("Minuten", "min")}${step("Kilometer", "km")}</div>
+    <div class="steppers">${step("Höhenmeter", "hm")}</div>
+    <div class="editor-actions">
+      <button class="btn btn-secondary" data-c="cancel">Abbrechen</button>
+      <button class="btn btn-primary save" data-c="save">Speichern</button>
+    </div>`;
+  document.getElementById("editor").querySelectorAll("[data-c]").forEach(b => b.onclick = () => {
+    const a = b.dataset.c;
+    if (a.startsWith("art-")) { cd.t = a.slice(4); drawCardio(); }
+    else if (a === "min+") { cd.min += 5; drawCardio(); }
+    else if (a === "min-") { cd.min = Math.max(5, cd.min - 5); drawCardio(); }
+    else if (a === "km+") { cd.km += 5; drawCardio(); }
+    else if (a === "km-") { cd.km = Math.max(0, cd.km - 5); drawCardio(); }
+    else if (a === "hm+") { cd.hm += 50; drawCardio(); }
+    else if (a === "hm-") { cd.hm = Math.max(0, cd.hm - 50); drawCardio(); }
+    else if (a === "save") {
+      (cardio[cd.d] = cardio[cd.d] || []).push({ t: cd.t, min: cd.min, km: cd.km || undefined, hm: cd.hm || undefined });
+      saveAll(); closeEditor(); render();
+    }
+    else closeEditor();
+  });
+}
+
 function closeEditor() {
   document.getElementById("editor").classList.remove("open");
   document.getElementById("scrim").classList.remove("open");
-  ed = null;
+  ed = null; cd = null;
 }
 document.getElementById("scrim").onclick = closeEditor;
 

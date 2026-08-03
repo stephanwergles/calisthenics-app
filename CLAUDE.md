@@ -35,13 +35,16 @@ Level = { name, reps, rest(s), query(YouTube-Suche), svg(Key in SVGS),
 | `cali-durs` | `{ datum: { day, dur(sekunden) } }` |
 | `cali-day` | `{ sp: 0–2, d: "YYYY-MM-DD" }` — heute gewählter Split (Legacy: Zahl 0–3, wird migriert) |
 | `cali-tab` | aktiver Tab (0 = Workout, 1 = Activity) |
+| `cali-cardio` | `{ datum: [ { t: "rad"\|"lauf", min, km?, hm? } ] }` — Ausdauereinheiten |
+| `cali-rt` | `{ datum: { w: [idx], c: [idx] } }` — abgehakte Warm-up-/Cool-down-Punkte |
 | `cali-exp` | Datum des letzten JSON-Exports (für die Export-Erinnerung im Log) |
 
-Alle Zugriffe über den `store`-Wrapper (try/catch, damit die Datei auch in Umgebungen ohne localStorage nicht crasht). JSON-Export/Import im Log-Tab (`version: 3`, enthält `log`, `prog`, `durs`) — **das Export-Format ist das geplante Seed-Format für die v2-Datenbank.**
+Alle Zugriffe über den `store`-Wrapper (try/catch, damit die Datei auch in Umgebungen ohne localStorage nicht crasht). JSON-Export/Import im Log-Tab (`version: 4`, enthält `log`, `prog`, `durs`, `cardio`, `rout`; v3-Dateien bleiben importierbar, fehlende Felder werden leer) — **das Export-Format ist das geplante Seed-Format für die v2-Datenbank.**
 
 ### Kernlogik
 
 - **`nextSplit(wd?)`**: empfiehlt den Split (oranger Punkt in der Split-Wahl) über die Konstante `WEEKPLAN` — der Nutzer trainiert fest So/Mo/Mi: **So = Tag A** (3 Ruhetage davor, Muscle-up braucht Frische), **Mo = Tag C** (folgt direkt auf Sonntag, minimale Überschneidung), **Mi = Tag B**. An anderen Wochentagen greift `lastTrained()` und schlägt den Split mit der längsten Pause vor. Anderer Rhythmus = nur `WEEKPLAN` anpassen.
+- **`ROUTINES`**: Warm-up und Cool-down pro Trainingstag als Checkliste (`routineCard()`), bewusst **ohne** Satz-Logging — Mobilisation soll die Trainingsstatistik nicht verwässern. Abhaken landet in `cali-rt`.
 - **`readyToProgress(slotKey)`**: true, wenn die letzten **2** vollständigen Einheiten der aktuellen Stufe in **allen** Sätzen ≥ `up` waren → Bernstein-Unlock-Button. `up: null` = nie automatisch (nur manuell über die Ladder im Technik-Toggle).
 - **Satz-Editor**: Tap auf Satz-Kreis → Bottom-Sheet mit Steppern. Prefill-Kaskade: heutiger Wert → gleicher Satz der letzten Einheit → vorheriger Satz heute → `up` bzw. 10s. Speichern startet den Pausen-Timer der Übung und (falls keine läuft) die Trainings-Session.
 - **Session-Timer**: Zeit über `Date.now() - start` berechnet (übersteht Reload/Display-aus). Sessions < 60 s werden verworfen, mehrere pro Tag summiert.
