@@ -14,7 +14,7 @@ Eine Datei, drei Abschnitte: `<style>`, HTML-Gerüst, `<script>`. Einzige Zusatz
 
 ```
 PLAN = [ Tag ] → Tag = { name, sub, slots: [ Slot ] }
-Slot = { block: "Skill"|"Kraft"|"Core"|"Zubehör"|"Extra", levels: [ Level ] }
+Slot = { block: "Skill"|"Kraft"|"Core"|"Zubehör"|"Extra", ord?: number, levels: [ Level ] }
 Level = { name, reps, rest(s), query(YouTube-Suche), svg(Key in SVGS),
           pos, exec, fehler, reg,        // Technik-Texte (deutsch)
           up: number|null,               // Freischalt-Schwelle pro Satz
@@ -22,6 +22,7 @@ Level = { name, reps, rest(s), query(YouTube-Suche), svg(Key in SVGS),
 ```
 
 - **Slot** = fester Platz im Trainingsplan, **Level** = Progressionsstufe (z.B. Body Rows → Tuck Front Lever Rows). 23 Slots, 43 Levels.
+- **`ord`** (optional, am Slot) verschiebt nur die **Anzeige**-Reihenfolge, nicht den slotKey — so lässt sich eine Übung im Training vorziehen, ohne die Historie zu migrieren. Bisher genutzt für Slot `0-5` (Uneven Pull-ups, `ord: 3.5`): einarmiges Ziehen als fünfte Zugübung war real nicht ausführbar.
 - `SLOTS` ist die flache Lookup-Map: `"di-si"` → Slot.
 - **LogKeys:** Level 0 loggt unter `"di-si"` (Legacy-kompatibel), Level N>0 unter `"di-si@N"`. `parseLogKey()` löst beides auf. Jede Stufe hat getrennte Historie.
 
@@ -48,6 +49,7 @@ Alle Zugriffe über den `store`-Wrapper (try/catch, damit die Datei auch in Umge
 - **`readyToProgress(slotKey)`**: true, wenn die letzten **2** vollständigen Einheiten der aktuellen Stufe in **allen** Sätzen ≥ `up` waren → Bernstein-Unlock-Button. `up: null` = nie automatisch (nur manuell über die Ladder im Technik-Toggle).
 - **Satz-Editor**: Tap auf Satz-Kreis → Bottom-Sheet mit Steppern. Prefill-Kaskade: heutiger Wert → gleicher Satz der letzten Einheit → vorheriger Satz heute → `up` bzw. 10s. Speichern startet den Pausen-Timer der Übung und (falls keine läuft) die Trainings-Session.
 - **Session-Timer**: Zeit über `Date.now() - start` berechnet (übersteht Reload/Display-aus). Sessions < 60 s werden verworfen, mehrere pro Tag summiert.
+- **Pausen-Timer-Alarm**: `navigator.vibrate` gibt es **auf iOS nicht** — deshalb Ton (Web Audio, drei Töne) plus optischer Alarm (Timer-Leiste blinkt 6 s, Uhr zeigt „FERTIG"). Der AudioContext wird in `startTimer()` geweckt, weil iOS Audio nur nach einer Nutzergeste erlaubt; bei aktivem Stummschalter bleibt der Ton trotzdem aus, das Blinken ist deshalb das verlässliche Signal.
 - **SVGs**: schematische Kreide-Strichfiguren, inline im `SVGS`-Dict, Figur = `#e9e7df`, Gerät/Boden = `#f2c94c`. Keine externen Bilder (CSP der Claude-Vorschau + Offline-Anspruch + Bildrechte).
 
 ## Design-Tokens

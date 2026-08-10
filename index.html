@@ -246,6 +246,17 @@
   .sess-end { min-height: 40px; font-size: 13px; }
   .clock { font-size: 32px; font-stretch: condensed; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 84px; line-height: 1; }
   .clock.on { color: var(--amber); }
+  /* Optischer Alarm: iOS kennt keine Vibration, der Ton kann am Stummschalter
+     scheitern — das Blinken bleibt als verlässliches Signal. */
+  .clock.done { color: var(--amber); font-size: 26px; }
+  .timer.alarm { animation: alarmflash .7s ease-in-out infinite; }
+  @keyframes alarmflash {
+    0%, 100% { background: rgba(16,16,16,.97); border-top-color: var(--line); }
+    50% { background: rgba(255,77,0,.28); border-top-color: var(--amber); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .timer.alarm { animation: none; background: rgba(255,77,0,.28); border-top-color: var(--amber); }
+  }
   /* Pausen-Presets sind gleichrangig -> eine Variante, nicht drei konkurrierende Orangeflächen */
   .restrow .btn { flex: 1; padding: 0 8px; }
 
@@ -256,7 +267,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.13.0</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.14.0</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -376,12 +387,14 @@ const PLAN = [
         fehler: "Rücken sackt aus der Horizontalen ab · Ziehen wird zum Klimmzug (Oberkörper stellt sich auf) · Schwung aus den Beinen.",
         reg: "Leichter: erst statische Tuck-Halte ohne Ziehen üben. Schwerer: Advanced Tuck (Rücken flach, Knie weiter vom Körper)." }
     ]},
-    { block: "Kraft", levels: [
-      { name: "Uneven Pull-ups (Handtuch)", reps: "3 × 4–6 / Seite", rest: 120, query: "uneven pull ups towel tutorial", svg: "archer", up: 6,
-        pos: "Handtuch über die Stange hängen: eine Hand greift die Stange, die andere fasst das Handtuch etwa eine Handbreit tiefer.",
-        exec: "Hochziehen Richtung Stangenhand, der Handtuch-Arm hilft nur so viel wie nötig. Kinn auf Höhe der Stangenhand bringen, betont langsam ablassen. Pro Satz eine Seite, dann tauschen. Je tiefer du das Handtuch fasst, desto mehr Last liegt auf dem Stangenarm.",
-        fehler: "Der Handtuch-Arm übernimmt heimlich die Hauptarbeit · Körper dreht sich unter der Stangenhand weg · unten in die Streckung fallen lassen statt abbremsen.",
-        reg: "Leichter: Handtuch höher fassen oder Füße auf einer Box mithelfen lassen. Schwerer: Handtuch tiefer fassen, bis nur noch die Fingerspitzen mitziehen." },
+    /* ord: 3.5 = direkt nach den Klimmzügen statt am Ende des Zug-Blocks.
+       Einarmiges Ziehen nach ~77 Wiederholungen war real nicht ausführbar. */
+    { block: "Kraft", ord: 3.5, levels: [
+      { name: "Uneven Pull-ups (Handtuch)", reps: "3 × 3–5 / Seite", rest: 150, query: "uneven pull ups towel tutorial", svg: "archer", up: 5,
+        pos: "Handtuch über die Stange hängen: eine Hand greift die Stange, die andere fasst das Handtuch. Die Griffhöhe am Handtuch ist deine Stellschraube.",
+        exec: "Fasse das Handtuch so hoch, dass 3 saubere Wiederholungen möglich sind — lieber zu viel Hilfe als eine gerissene Wiederholung. Hochziehen Richtung Stangenhand, Kinn auf deren Höhe, betont langsam ablassen. Pro Satz eine Seite. Erst wenn 5 sauber gehen, den Griff eine Handbreit tiefer setzen.",
+        fehler: "Zu tief gegriffen und deshalb nur noch reißen statt ziehen · Körper dreht sich unter der Stangenhand weg · unten in die Streckung fallen lassen statt abbremsen.",
+        reg: "Leichter: Handtuch höher fassen (bis fast auf Stangenhöhe) oder Füße auf einer Box mithelfen lassen. Schwerer: Griff tiefer, bis nur noch die Fingerspitzen mitziehen." },
       { name: "Archer Pull-ups", reps: "3 × 4–6 / Seite", rest: 120, query: "archer pull up tutorial", svg: "archer", up: 6,
         pos: "Deutlich breiter als schulterbreiter Obergriff.",
         exec: "Zur rechten Hand ziehen: rechter Arm macht die Arbeit, der linke bleibt fast gestreckt und „gleitet“ über die Stange. Kinn über die Stange beim ziehenden Arm, kontrolliert runter, Seite wechseln oder Seiten blockweise trainieren.",
@@ -401,11 +414,11 @@ const PLAN = [
         reg: "Leichter: Füße auf einer Box teilentlastet. Schwerer: oben 3 Sekunden halten oder Zusatzgewicht." }
     ]},
     { block: "Zubehör", levels: [
-      { name: "Bizeps-Curls", reps: "2 × 12–15", rest: 60, query: "biceps curls elbow health calisthenics", svg: "curl", up: null, opts: { w: 1 },
-        pos: "Aufrechter Stand, Band unter den Füßen oder Hanteln, Ellenbogen eng am Körper.",
-        exec: "Langsam aufwärts (1–2 Sek.), oben kurz anspannen, betont langsam ablassen (2–3 Sek.). Hier geht es um Sehnenqualität, nicht um Last – das Tempo ist die Übung.",
-        fehler: "Schwung aus dem Rücken · Ellenbogen wandern nach vorn · zu schwer und dafür zu schnell.",
-        reg: "Leichter: schwächeres Band. Schwerer: 3-Sekunden-Negative statt mehr Last." }
+      { name: "Bizeps-Curls (Stange oder Band)", reps: "2 × 12–15", rest: 60, query: "bodyweight bicep curl bar tutorial", svg: "curl", up: null, opts: { w: 1 },
+        pos: "An der tiefen Stange: Untergriff etwa schulterbreit, unter die Stange hängen, Körper gestreckt, Fersen am Boden, Oberarme zeigen nach oben. Alternativ aufrecht mit Band unter den Füßen oder Hanteln.",
+        exec: "Nur die Unterarme arbeiten: Die Oberarme bleiben wie festgeschraubt in der Luft, du ziehst die Stirn Richtung Stange – nicht die Brust. Oben kurz anspannen, betont langsam ablassen (2–3 Sek.). Hier geht es um Sehnenqualität, nicht um Last, das Tempo ist die Übung.",
+        fehler: "Die Ellenbogen sinken ab, dann wird eine Body Row daraus · Hüfte knickt ein · zu schnell hoch und unkontrolliert runter.",
+        reg: "Leichter: Füße weiter unter den Körper (steilerer Winkel) oder schwächeres Band. Schwerer: Füße weiter nach vorn, bis der Körper waagerecht liegt, oder 3-Sekunden-Negative." }
     ]}
   ]},
   { name: "Tag B", sub: "Push · L-Sit", slots: [
@@ -888,7 +901,12 @@ function render() {
     return { slotKey, lvl, logKey, entry, setCount, skipped: !!(entry && entry.sk),
              allDone: setCount > 0 && doneCount >= setCount };
   });
-  const curIdx = states.findIndex(st => !st.allDone && !st.skipped);
+  /* Anzeige-Reihenfolge: optionales `ord` am Slot sticht die Datenreihenfolge.
+     So lässt sich eine Übung im Training vorziehen, ohne die LogKeys (und damit
+     die Historie) zu verschieben. */
+  const order = PLAN[di].slots.map((s, si) => si)
+    .sort((a, b) => (PLAN[di].slots[a].ord ?? a) - (PLAN[di].slots[b].ord ?? b));
+  const curIdx = order.find(si => !states[si].allDone && !states[si].skipped);
   const offen = states.filter(st => !st.skipped);
 
   const wmeta = document.createElement("div");
@@ -899,7 +917,8 @@ function render() {
   sec.appendChild(wmeta);
   sec.appendChild(routineCard(di, "w"));
 
-  PLAN[di].slots.forEach((slot, si) => {
+  order.forEach(si => {
+    const slot = PLAN[di].slots[si];
     const { slotKey, lvl, logKey, entry, setCount, allDone, skipped } = states[si];
     const x = slot.levels[lvl];
     const done = entry ? entry.s : [];
@@ -1315,24 +1334,69 @@ function closeEditor() {
 document.getElementById("scrim").onclick = closeEditor;
 
 /* ── Timer ──
-   Zeitstempelbasiert (timerEnd), damit die Anzeige nach App-Suspend korrekt weiterläuft */
-let timerId = null, timerEnd = 0;
+   Zeitstempelbasiert (timerEnd), damit die Anzeige nach App-Suspend korrekt weiterläuft.
+   Signal am Ende: Ton + optischer Alarm. navigator.vibrate gibt es auf iOS nicht —
+   deshalb war der Timer dort bis v1.14.0 stumm. */
+let timerId = null, timerEnd = 0, alarmT = null, actx = null;
+
+/* iOS erlaubt Audio nur nach einer Nutzergeste: Kontext beim Starten des Timers
+   anlegen bzw. aufwecken, denn dahinter steckt immer ein Tap. */
+function primeAudio() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    actx = actx || new AC();
+    if (actx.state === "suspended") actx.resume();
+  } catch {}
+}
+function beep() {
+  try {
+    if (!actx) return;
+    const t0 = actx.currentTime;
+    [0, .22, .44].forEach((off, i) => {
+      const osc = actx.createOscillator(), g = actx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = i === 2 ? 1175 : 880;   /* dritter Ton höher = klares Ende */
+      osc.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(.0001, t0 + off);
+      g.gain.exponentialRampToValueAtTime(.4, t0 + off + .02);
+      g.gain.exponentialRampToValueAtTime(.0001, t0 + off + .18);
+      osc.start(t0 + off); osc.stop(t0 + off + .2);
+    });
+  } catch {}
+}
+function fireAlarm() {
+  beep();
+  navigator.vibrate?.([200, 100, 200, 100, 300]);   /* Android */
+  const bar = document.querySelector(".timer");
+  if (bar) {
+    bar.classList.add("alarm");
+    clearTimeout(alarmT);
+    alarmT = setTimeout(() => bar.classList.remove("alarm"), 6000);
+  }
+}
+function clearAlarm() {
+  clearTimeout(alarmT);
+  document.querySelector(".timer")?.classList.remove("alarm");
+}
+
 function startTimer(sec) {
-  clearInterval(timerId);
+  clearInterval(timerId); clearAlarm(); primeAudio();
   timerEnd = Date.now() + sec * 1000;
   timerId = setInterval(tick, 250);
   tick();
 }
-function stopTimer() { clearInterval(timerId); timerId = null; timerEnd = 0; tick(); }
+function stopTimer() { clearInterval(timerId); timerId = null; timerEnd = 0; clearAlarm(); tick(); }
 function tick() {
   const remaining = timerEnd ? Math.max(0, Math.ceil((timerEnd - Date.now()) / 1000)) : 0;
   if (timerId && remaining <= 0) {
     clearInterval(timerId); timerId = null; timerEnd = 0;
-    navigator.vibrate?.([200, 100, 200]);
+    fireAlarm();
   }
   const c = document.getElementById("clock");
-  c.textContent = `${Math.floor(remaining/60)}:${String(remaining%60).padStart(2,"0")}`;
-  c.className = "clock" + (timerId ? " on" : "");
+  const aus = !timerId && document.querySelector(".timer")?.classList.contains("alarm");
+  c.textContent = aus ? "FERTIG" : `${Math.floor(remaining/60)}:${String(remaining%60).padStart(2,"0")}`;
+  c.className = "clock" + (timerId ? " on" : aus ? " done" : "");
   const ec = document.getElementById("edclock");
   if (ec) ec.textContent = timerId ? `${remaining} s` : `Timer ${ed ? ed.val : ""} s`;
 }
