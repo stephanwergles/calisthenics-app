@@ -21,8 +21,8 @@ Level = { name, reps, rest(s), query(YouTube-Suche), svg(Key in SVGS),
           opts?: { w?: 1, t?: 1 } }      // w = Zusatzgewicht-Feld, t = Sekunden statt Wdh.
 ```
 
-- **Slot** = fester Platz im Trainingsplan, **Level** = Progressionsstufe (z.B. Body Rows → Tuck Front Lever Rows). 23 Slots, 43 Levels.
-- **`ord`** (optional, am Slot) verschiebt nur die **Anzeige**-Reihenfolge, nicht den slotKey — so lässt sich eine Übung im Training vorziehen, ohne die Historie zu migrieren. Bisher genutzt für Slot `0-5` (Uneven Pull-ups, `ord: 3.5`): einarmiges Ziehen als fünfte Zugübung war real nicht ausführbar.
+- **Slot** = fester Platz im Trainingsplan, **Level** = Progressionsstufe (z.B. Body Rows → Tuck Front Lever Rows). 24 Slots, 47 Levels.
+- **`ord`** (optional, am Slot) verschiebt nur die **Anzeige**-Reihenfolge, nicht den slotKey — so lässt sich eine Übung im Training vorziehen, ohne die Historie zu migrieren. Genutzt für Slot `0-5` (Uneven Pull-ups, `ord: 3.5`) — einarmiges Ziehen als fünfte Zugübung war real nicht ausführbar — und für Slot `1-7` (Handstand, `ord: -1`), der neu angehängt wurde, aber als erste Übung erscheinen soll. **Neue Slots immer ans Array-Ende hängen und über `ord` positionieren**, sonst verschieben sich die slotKeys aller folgenden Slots und die Historie hängt an der falschen Übung.
 - `SLOTS` ist die flache Lookup-Map: `"di-si"` → Slot.
 - **LogKeys:** Level 0 loggt unter `"di-si"` (Legacy-kompatibel), Level N>0 unter `"di-si@N"`. `parseLogKey()` löst beides auf. Jede Stufe hat getrennte Historie.
 
