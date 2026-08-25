@@ -197,6 +197,11 @@
   .card.skip-c .mini .ck { flex: 0 0 22px; height: 22px; border-radius: 50%; border: 1px dashed var(--line); color: var(--muted); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
   .card.skip-c .mini h3 { font-size: 15px; flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .card.skip-c .mini .v { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+  .card.paused-c { opacity: .45; }
+  .card.paused-c .mini .ck { border-style: solid; }
+  .pause-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .pause-hint { color: var(--muted); font-size: 11.5px; }
+  .wmeta-btn { border: none; background: none; padding: 0; font-family: inherit; font-size: inherit; color: var(--amber); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
   /* Kopfzeile der Karte: Aktion links vom Label, mit echtem Touch-Target.
      Negativer Rand, damit die größere Trefferfläche das Layout nicht aufbläht. */
   .block .br { display: flex; gap: 10px; align-items: center; margin: -6px -6px -6px 0; }
@@ -267,7 +272,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.15.0</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.16.0</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -705,6 +710,7 @@ let sess = store.get("cali-sess", null); /* { start: ts, day: di } */
 let durs = store.get("cali-durs", {});   /* datum -> { day, dur } */
 let cardio = store.get("cali-cardio", {}); /* datum -> [ { t: "rad"|"lauf", min, km?, hm? } ] */
 let rout = store.get("cali-rt", {});     /* datum -> { w: [idx], c: [idx] } — abgehakte Routine-Punkte */
+let off = store.get("cali-off", []);     /* pausierte slotKeys — gilt bis zum Aufheben, nicht nur heute */
 let openDetails = {}, openDone = {}, calMonth = null, calSel = null;
 
 /* Lokales Datum, NICHT UTC — sonst gehört zwischen 0 und 2 Uhr morgens
@@ -773,7 +779,7 @@ function lastEntry(logKey) {
   const arr = (log[logKey] || []).filter(x => x.d !== today() && x.s.some(v => v));
   return arr.length ? arr[arr.length - 1] : null;
 }
-function saveAll() { store.set("cali-log", log); store.set("cali-prog", prog); store.set("cali-sess", sess); store.set("cali-durs", durs); store.set("cali-cardio", cardio); store.set("cali-rt", rout); }
+function saveAll() { store.set("cali-log", log); store.set("cali-prog", prog); store.set("cali-sess", sess); store.set("cali-durs", durs); store.set("cali-cardio", cardio); store.set("cali-rt", rout); store.set("cali-off", off); }
 const CARDIO_ART = { rad: "Rad", lauf: "Lauf" };
 const fmtCardio = c => [CARDIO_ART[c.t] || c.t, `${c.min} min`, c.km ? `${c.km} km` : null, c.hm ? `${c.hm} hm` : null].filter(Boolean).join(" · ");
 const fmtDur = s => {
@@ -924,6 +930,7 @@ function render() {
     const setCount = entry && entry.n ? entry.n : nSets(slot.levels[lvl].reps);
     const doneCount = entry ? entry.s.slice(0, setCount).filter(v => v).length : 0;
     return { slotKey, lvl, logKey, entry, setCount, skipped: !!(entry && entry.sk),
+             paused: off.includes(slotKey),
              allDone: setCount > 0 && doneCount >= setCount };
   });
   /* Anzeige-Reihenfolge: optionales `ord` am Slot sticht die Datenreihenfolge.
@@ -931,26 +938,46 @@ function render() {
      die Historie) zu verschieben. */
   const order = PLAN[di].slots.map((s, si) => si)
     .sort((a, b) => (PLAN[di].slots[a].ord ?? a) - (PLAN[di].slots[b].ord ?? b));
-  const curIdx = order.find(si => !states[si].allDone && !states[si].skipped);
-  const offen = states.filter(st => !st.skipped);
+  const curIdx = order.find(si => !states[si].allDone && !states[si].skipped && !states[si].paused);
+  const offen = states.filter(st => !st.skipped && !st.paused);
 
   const wmeta = document.createElement("div");
   wmeta.className = "wmeta";
-  const nSkip = states.length - offen.length;
-  wmeta.textContent = `${offen.length} Übungen · ${offen.reduce((a, st) => a + st.setCount, 0)} Sätze`
-    + (nSkip ? ` · ${nSkip} übersprungen` : "");
+  const nSkip = states.filter(st => st.skipped).length;
+  const nPause = states.filter(st => st.paused).length;
+  wmeta.innerHTML = `${offen.length} Übungen · ${offen.reduce((a, st) => a + st.setCount, 0)} Sätze`
+    + (nSkip ? ` · ${nSkip} übersprungen` : "")
+    + (nPause ? ` · <button class="wmeta-btn" data-unpause-all>${nPause} pausiert — alle aufheben</button>` : "");
+  wmeta.querySelector("[data-unpause-all]")?.addEventListener("click", () => {
+    off = off.filter(k => !k.startsWith(di + "-"));
+    saveAll(); render();
+  });
   sec.appendChild(wmeta);
   sec.appendChild(routineCard(di, "w"));
 
   order.forEach(si => {
     const slot = PLAN[di].slots[si];
-    const { slotKey, lvl, logKey, entry, setCount, allDone, skipped } = states[si];
+    const { slotKey, lvl, logKey, entry, setCount, allDone, skipped, paused } = states[si];
     const x = slot.levels[lvl];
     const done = entry ? entry.s : [];
     const last = lastEntry(logKey);
     const unit = x.opts?.t ? "s" : "";
     const multi = slot.levels.length > 1;
-    const ready = readyToProgress(slotKey);
+    const ready = readyToProgress(slotKey) && !paused;
+
+    /* Pausiert: bleibt an ihrer Position, aber klein und still — bis sie
+       ausdrücklich wieder aufgenommen wird (Urlaub, fehlendes Gerät, Verletzung) */
+    if (paused) {
+      const mini = document.createElement("div");
+      mini.className = "card skip-c paused-c";
+      mini.innerHTML = `<div class="mini"><span class="ck">॥</span><h3>${x.name}</h3><span class="v">Pausiert</span></div>`;
+      mini.onclick = () => {
+        off = off.filter(k => k !== slotKey);
+        saveAll(); render();
+      };
+      sec.appendChild(mini);
+      return;
+    }
 
     /* Übersprungen: eingeklappte Karte, Tap holt sie zurück in die Ansicht */
     if (skipped && !openDone[slotKey]) {
@@ -1015,6 +1042,10 @@ function render() {
           <div class="sec warn"><b>Häufige Fehler</b>${x.fehler}</div>
           ${x.reg ? `<div class="sec"><b>Leichter · Schwerer</b>${x.reg}</div>` : ""}
           ${ladder}
+          <div class="pause-row">
+            <button class="btn btn-ghost btn-sm" data-pause="${slotKey}">॥ Übung pausieren</button>
+            <span class="pause-hint">bleibt aus, bis du sie wieder aufnimmst</span>
+          </div>
         </div>
       </details>
       <div class="sets">${Array.from({length: setCount}, (_, i2) => {
@@ -1052,6 +1083,10 @@ function render() {
     b.onclick = () => openEditor(b.dataset.k, +b.dataset.s));
   days.querySelectorAll("[data-fold]").forEach(b => b.onclick = () => {
     openDone[b.dataset.fold] = false; render();
+  });
+  days.querySelectorAll("[data-pause]").forEach(b => b.onclick = () => {
+    if (!off.includes(b.dataset.pause)) off.push(b.dataset.pause);
+    saveAll(); render();
   });
   days.querySelectorAll("[data-skip]").forEach(b => b.onclick = () => {
     entryFor(b.dataset.skip, today(), true).sk = 1;
@@ -1227,7 +1262,7 @@ function renderLog(days) {
   });
 
   document.getElementById("exportBtn").onclick = () => {
-    const blob = new Blob([JSON.stringify({ version: 4, exported: new Date().toISOString(), log, prog, durs, cardio, rout }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ version: 5, exported: new Date().toISOString(), log, prog, durs, cardio, rout, off }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `calisthenics-log-${today()}.json`;
@@ -1243,7 +1278,7 @@ function renderLog(days) {
         if (data.log && typeof data.log === "object") {
           /* Version 3 kennt cardio/rout noch nicht — fehlende Felder werden leer */
           log = data.log; prog = data.prog || {}; durs = data.durs || {};
-          cardio = data.cardio || {}; rout = data.rout || {};
+          cardio = data.cardio || {}; rout = data.rout || {}; off = data.off || [];
           saveAll(); render();
         } else alert("Ungültiges Format");
       } catch { alert("Datei konnte nicht gelesen werden"); }

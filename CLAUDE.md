@@ -38,14 +38,16 @@ Level = { name, reps, rest(s), query(YouTube-Suche), svg(Key in SVGS),
 | `cali-tab` | aktiver Tab (0 = Workout, 1 = Activity) |
 | `cali-cardio` | `{ datum: [ { t: "rad"\|"lauf", min, km?, hm? } ] }` — Ausdauereinheiten |
 | `cali-rt` | `{ datum: { w: [idx], c: [idx] } }` — abgehakte Warm-up-/Cool-down-Punkte |
+| `cali-off` | `[ slotKey ]` — dauerhaft pausierte Übungen (fehlendes Gerät, Verletzung). Unterschied zu `sk`: gilt bis zum Aufheben, nicht nur für einen Tag |
 | `cali-exp` | Datum des letzten JSON-Exports (für die Export-Erinnerung im Log) |
 
-Alle Zugriffe über den `store`-Wrapper (try/catch, damit die Datei auch in Umgebungen ohne localStorage nicht crasht). JSON-Export/Import im Log-Tab (`version: 4`, enthält `log`, `prog`, `durs`, `cardio`, `rout`; v3-Dateien bleiben importierbar, fehlende Felder werden leer) — **das Export-Format ist das geplante Seed-Format für die v2-Datenbank.**
+Alle Zugriffe über den `store`-Wrapper (try/catch, damit die Datei auch in Umgebungen ohne localStorage nicht crasht). JSON-Export/Import im Log-Tab (`version: 5`, enthält `log`, `prog`, `durs`, `cardio`, `rout`, `off`; ältere Dateien bleiben importierbar, fehlende Felder werden leer) — **das Export-Format ist das geplante Seed-Format für die v2-Datenbank.**
 
 ### Kernlogik
 
 - **`nextSplit(wd?)`**: empfiehlt den Split (oranger Punkt in der Split-Wahl) über die Konstante `WEEKPLAN` — der Nutzer trainiert fest So/Mo/Mi: **So = Tag A** (3 Ruhetage davor, Muscle-up braucht Frische), **Mo = Tag C** (folgt direkt auf Sonntag, minimale Überschneidung), **Mi = Tag B**. An anderen Wochentagen greift `lastTrained()` und schlägt den Split mit der längsten Pause vor. Anderer Rhythmus = nur `WEEKPLAN` anpassen.
 - **`ROUTINES`**: Warm-up und Cool-down pro Trainingstag als Checkliste (`routineCard()`), bewusst **ohne** Satz-Logging — Mobilisation soll die Trainingsstatistik nicht verwässern. Abhaken landet in `cali-rt`. Items mit `cardio: 1` (Tag A und B, jeweils erster Cool-down-Punkt) verhalten sich anders: Antippen öffnet den Cardio-Editor, und der Haken leitet sich aus `cali-cardio` ab statt aus `cali-rt`. Tag C hat bewusst keinen — nach Pistols und Nordics ist Laufen ein Verletzungsrisiko.
+- **Pausieren vs. Überspringen**: `sk` im Tages-Eintrag = heute ausgelassen. `cali-off` = Übung ruht dauerhaft (Button im Technik-Toggle), erscheint als stark ausgegraute Mini-Karte und zählt weder in Fortschritt noch in die Meta-Zeile. Aufheben per Tap auf die Karte oder gesammelt über den Zähler in der Meta-Zeile.
 - **`readyToProgress(slotKey)`**: true, wenn die letzten **2** vollständigen Einheiten der aktuellen Stufe in **allen** Sätzen ≥ `up` waren → Bernstein-Unlock-Button. `up: null` = nie automatisch (nur manuell über die Ladder im Technik-Toggle).
 - **Satz-Editor**: Tap auf Satz-Kreis → Bottom-Sheet mit Steppern. Prefill-Kaskade: heutiger Wert → gleicher Satz der letzten Einheit → vorheriger Satz heute → `up` bzw. 10s. Speichern startet den Pausen-Timer der Übung und (falls keine läuft) die Trainings-Session.
 - **Session-Timer**: Zeit über `Date.now() - start` berechnet (übersteht Reload/Display-aus). Sessions < 60 s werden verworfen, mehrere pro Tag summiert.
@@ -88,7 +90,7 @@ Typo: System-Stack, Display-Stil über `font-stretch: condensed` + Uppercase (Kl
 - Übungstexte folgen dem Schema: `pos` (Ausgangsposition, 1 Satz) → `exec` (Ausführung, 2–3 Sätze) → `fehler` (2–3 mit `·` getrennt) → `reg` („Leichter: … Schwerer: …").
 - Keine externen Ressourcen einbauen (einzige Ausnahme: YouTube-Links, die in neuem Tab öffnen).
 - Die Versionsnummer steht im Header (`<span>Progressionsbasiert · vX.Y.Z</span>`) und wird bei **jedem** Push erhöht (Patch für Fixes/Kleinkram, Minor für Features) — sie ist das Erkennungszeichen, welcher Stand auf dem Handy wirklich läuft.
-- Vor Abschluss: JS aus der Datei extrahieren, `node --check`, dann Smoke-Test mit DOM-Stub (Muster liegt in der bisherigen Historie: `makeEl()`-Stub, `eval(app + tests)` im selben Scope, localStorage-Mock der wirft → try/catch-Pfade testen).
+- Vor Abschluss: `node test/smoke.js` — extrahiert das `<script>` aus der index.html, prüft die Syntax und fährt die Logik gegen einen DOM-Stub (localStorage-Mock wirft absichtlich, damit die try/catch-Pfade mitlaufen). Bei neuen Features dort einen Fall ergänzen.
 
 ## Deployment
 
