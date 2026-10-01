@@ -1,0 +1,44 @@
+{
+  "name": "calisthenics-app",
+  "version": "2.0.0-dev",
+  "private": true,
+  "description": "Calisthenics-Trainings-App: v1 = index.html (GitHub Pages), v2 = Next.js + Payload",
+  "type": "module",
+  "scripts": {
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=4096\" next build",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "generate:types": "npm run payload -- generate:types",
+    "generate:importmap": "npm run payload -- generate:importmap",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "seed": "npm run payload -- run scripts/seed-catalog.ts",
+    "import:v1": "npm run payload -- run scripts/import-v1.ts",
+    "catalog:extract": "node scripts/extract-catalog.ts",
+    "test": "node test/smoke.cjs && node --test test/migrate.test.ts"
+  },
+  "dependencies": {
+    "@payloadcms/db-postgres": "3.90.2",
+    "@payloadcms/next": "3.90.2",
+    "@payloadcms/translations": "3.90.2",
+    "@payloadcms/ui": "3.90.2",
+    "cross-env": "^7.0.3",
+    "dotenv": "16.4.7",
+    "graphql": "^16.8.1",
+    "next": "16.3.3",
+    "payload": "3.90.2",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.9",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "tsx": "4.23.15",
+    "typescript": "5.7.3"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}

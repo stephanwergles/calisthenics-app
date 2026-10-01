@@ -1,16 +1,16 @@
 /* Einmal-Werkzeug: erzeugt den v2-Katalog aus dem aktuellen v1-Plan.
 
-     node v2/tools/extract-catalog.ts
+     npm run catalog:extract
 
-   Schreibt v2/catalog/catalog.json (ab dann die Quelle der Wahrheit für den
-   Katalog) und v2/migrate/v1-positions.json (Übersetzungstabelle für den Import).
+   Schreibt src/seed/catalog.json (ab dann die Quelle der Wahrheit für den
+   Katalog) und src/migrate/v1-positions.json (Übersetzungstabelle für den Import).
    Die IDs stehen unten von Hand – bewusst nicht aus Namen generiert, damit eine
    spätere Umbenennung nie eine ID verändert. Läuft das Skript erneut, prüft es,
    dass keine bestehende ID verschwindet. */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import type { Catalog, Exercise, Progression, Workout, RoutineItem, Block, Weekday } from "../model.ts";
+import type { Catalog, Exercise, Progression, Workout, RoutineItem, Block, Weekday } from "../src/domain/model.ts";
 
-const root = new URL("../../", import.meta.url);
+const root = new URL("../", import.meta.url);
 const html = readFileSync(new URL("index.html", root), "utf8");
 const grab = (start: string, end: string) => {
   const i = html.indexOf(start);
@@ -139,7 +139,7 @@ Object.entries(WEEKPLAN).forEach(([wd, di]) => { weekplan[WEEKDAYS[+wd]] = WORKO
 const catalog: Catalog = { schema: 1, exercises: [...exercises.values()], progressions, workouts, weekplan };
 
 /* Schutz: eine erneute Ausführung darf keine bestehende ID entfernen */
-const catalogFile = new URL("catalog/catalog.json", new URL("../", import.meta.url));
+const catalogFile = new URL("src/seed/catalog.json", root);
 if (existsSync(catalogFile)) {
   const old: Catalog = JSON.parse(readFileSync(catalogFile, "utf8"));
   const now = new Set(catalog.exercises.map(e => e.id));
@@ -147,6 +147,6 @@ if (existsSync(catalogFile)) {
   if (lost.length) throw new Error(`IDs würden verschwinden: ${lost.join(", ")}`);
 }
 writeFileSync(catalogFile, JSON.stringify(catalog, null, 2) + "\n");
-writeFileSync(new URL("migrate/v1-positions.json", new URL("../", import.meta.url)),
+writeFileSync(new URL("src/migrate/v1-positions.json", root),
   JSON.stringify({ workouts: WORKOUT_IDS, slots, positions }, null, 2) + "\n");
 console.log(`Katalog: ${catalog.exercises.length} Übungen, ${progressions.length} Progressionen, ${workouts.length} Workouts`);

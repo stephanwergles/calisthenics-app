@@ -1,0 +1,24 @@
+# Abhängigkeiten & Build
+/node_modules
+/.next/
+/out/
+/build
+*.tsbuildinfo
+next-env.d.ts
+
+# Umgebung – enthält Zugangsdaten, nie committen
+.env
+.env*.local
+
+# Trainingsexporte gehören nicht ins öffentliche Repo
+calisthenics-log-*.json
+
+# Sonstiges
+.DS_Store
+*.pem
+npm-debug.log*
+/.idea/*
+
+# Lokale Werkzeug-Konfiguration
+/.claude/launch.json
+/.claude/settings.local.json

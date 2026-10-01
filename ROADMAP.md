@@ -42,7 +42,12 @@ Startkriterium gilt als erfüllt: 16 Einheiten seit Juli, App wird ausschließli
 
 ### Phase 2.0 — Fundament
 
-**Stand Okt 2026:** Datenmodell mit stabilen IDs, Katalog (47 Übungen, 24 Progressionen, 3 Workouts) und Import für v1-Exporte stehen in `v2/`. Geprüft an allen Exporten seit Juli: 405 von 405 Sätzen übernommen, fünf Positions-Bedeutungswechsel aus der Git-Historie korrekt aufgelöst. Offen: Payload-Projekt, Offline-Client, Sync.
+**Stand Okt 2026:**
+- [x] Datenmodell mit stabilen IDs, Katalog (47 Übungen, 24 Progressionen, 3 Workouts), Import für v1-Exporte — an allen Exporten seit Juli geprüft: 405/405 Sätze, fünf Positions-Bedeutungswechsel aus der Git-Historie korrekt aufgelöst
+- [x] Payload-Projekt im selben Repo: Collections, deutscher Admin, Migrationen, Seed- und Import-Skript; lokal mit echter Historie getestet, Produktions-Build grün
+- [ ] Deployment auf Ploi (blank-apps, Postgres) — Anleitung in README.md
+- [ ] Offline-Client (IndexedDB) mit Trainingsansicht
+- [ ] Sync zwischen Client und Payload
 - Monorepo/Projekt-Setup: Next.js (App Router) + Payload 3 + Postgres, Deployment auf eigener Infra (Ploi/Hetzner — bestehender Agentur-Stack)
 - Payload-Collections aus dem v1-Datenmodell ableiten (die Struktur ist 1:1 übertragbar):
   - `exercises` (heutige Levels: Name, Technik-Texte, Skizze/Medien, Ziel, Einheit, Gewichts-Flag)

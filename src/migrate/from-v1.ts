@@ -1,18 +1,18 @@
 /* Import: v1-Export (JSON, version 3–5) → v2-Datensatz.
 
-     node v2/migrate/from-v1.ts <v1-export.json> [ausgabe.json]
+     node src/migrate/from-v1.ts <v1-export.json> [ausgabe.json]
 
    Deterministisch: dieselbe Eingabe ergibt dieselbe Ausgabe, Session-IDs sind
    `${datum}-${workout}`. Ein erneuter Import überschreibt also statt zu doppeln. */
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { Catalog, Dataset, Session, Activity, SetLog } from "../model.ts";
+import type { Catalog, Dataset, Session, Activity, SetLog } from "../domain/model.ts";
 import { POSITION_HISTORY, REALITY } from "./v1-history.ts";
 
 const here = new URL("./", import.meta.url);
 const POS: { workouts: string[]; slots: Record<string, string>; positions: Record<string, string> } =
   JSON.parse(readFileSync(new URL("v1-positions.json", here), "utf8"));
-const CATALOG: Catalog = JSON.parse(readFileSync(new URL("../catalog/catalog.json", here), "utf8"));
+const CATALOG: Catalog = JSON.parse(readFileSync(new URL("../seed/catalog.json", here), "utf8"));
 
 /** Welche Übung steckte am gegebenen Datum hinter einer v1-Position? */
 export function exerciseFor(logKey: string, date: string): { exercise: string; note?: string } | null {
@@ -123,7 +123,7 @@ export function migrate(v1: any): { data: Dataset; warnings: string[]; dropped: 
 /* CLI */
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const [, , input, output] = process.argv;
-  if (!input) { console.error("Aufruf: node v2/migrate/from-v1.ts <v1-export.json> [ausgabe.json]"); process.exit(1); }
+  if (!input) { console.error("Aufruf: node src/migrate/from-v1.ts <v1-export.json> [ausgabe.json]"); process.exit(1); }
   const { data, warnings, dropped } = migrate(JSON.parse(readFileSync(input, "utf8")));
   const sets = data.sessions.reduce((a, s) => a + s.sets.length, 0);
   console.log(`${data.sessions.length} Sessions · ${sets} Sätze · ${data.activities.length} Aktivitäten · ${warnings.length} Warnungen`);

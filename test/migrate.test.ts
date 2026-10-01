@@ -1,15 +1,15 @@
-/* node --test v2/test/
+/* node --test test/migrate.test.ts
    Läuft mit erfundenen Daten – echte Trainingsexporte gehören nicht ins öffentliche Repo. */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { migrate, exerciseFor } from "../migrate/from-v1.ts";
-import { POSITION_HISTORY, REALITY } from "../migrate/v1-history.ts";
-import type { Catalog } from "../model.ts";
+import { migrate, exerciseFor } from "../src/migrate/from-v1.ts";
+import { POSITION_HISTORY, REALITY } from "../src/migrate/v1-history.ts";
+import type { Catalog } from "../src/domain/model.ts";
 
 const read = (p: string) => JSON.parse(readFileSync(new URL(p, import.meta.url), "utf8"));
-const catalog: Catalog = read("../catalog/catalog.json");
-const positions = read("../migrate/v1-positions.json");
+const catalog: Catalog = read("../src/seed/catalog.json");
+const positions = read("../src/migrate/v1-positions.json");
 const fixture = read("./fixture-v1.json");
 const { data, warnings, dropped } = migrate(fixture);
 const sess = (id: string) => data.sessions.find(s => s.id === id)!;

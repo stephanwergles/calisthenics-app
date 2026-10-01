@@ -92,15 +92,24 @@ Typo: System-Stack, Display-Stil über `font-stretch: condensed` + Uppercase (Kl
 - Übungstexte folgen dem Schema: `pos` (Ausgangsposition, 1 Satz) → `exec` (Ausführung, 2–3 Sätze) → `fehler` (2–3 mit `·` getrennt) → `reg` („Leichter: … Schwerer: …").
 - Keine externen Ressourcen einbauen (einzige Ausnahme: YouTube-Links, die in neuem Tab öffnen).
 - Die Versionsnummer steht im Header (`<span>Progressionsbasiert · vX.Y.Z</span>`) und wird bei **jedem** Push erhöht (Patch für Fixes/Kleinkram, Minor für Features) — sie ist das Erkennungszeichen, welcher Stand auf dem Handy wirklich läuft.
-- Vor Abschluss: `node test/smoke.js` — extrahiert das `<script>` aus der index.html, prüft die Syntax und fährt die Logik gegen einen DOM-Stub (localStorage-Mock wirft absichtlich, damit die try/catch-Pfade mitlaufen). Bei neuen Features dort einen Fall ergänzen.
+- Vor Abschluss: `node test/smoke.cjs` — extrahiert das `<script>` aus der index.html, prüft die Syntax und fährt die Logik gegen einen DOM-Stub (localStorage-Mock wirft absichtlich, damit die try/catch-Pfade mitlaufen). Bei neuen Features dort einen Fall ergänzen.
 
-## v2-Fundament (Ordner `v2/`)
+## v2 (Next.js 16 + Payload 3 + Postgres, im Aufbau)
 
-Datenmodell mit stabilen Übungs-IDs, Katalog und Import für v1-Exporte – Details in `v2/README.md`. **Bei jeder Planänderung in v1:** `node v2/tools/extract-catalog.ts` ausführen (neue Übung → ID in `EXERCISE_IDS` ergänzen) und, falls eine v1-Position die Bedeutung wechselt, einen datierten Eintrag in `v2/migrate/v1-history.ts` anlegen. Dann `node --test v2/test/migrate.test.ts`. Echte Trainingsexporte nie ins Repo – es ist öffentlich.
+Liegt im selben Repo neben der v1-`index.html` – Aufbau und Befehle in `README.md`. Wichtig für die Arbeit daran:
+
+- **Stabile IDs:** Übungen, Progressionen und Workouts haben Slug-IDs als Primärschlüssel (`slugId`-Feld). Nie aus Namen ableiten, nie ändern. Nutzerdaten (`sessions`, `activities`) haben Payload-IDs plus einen `key` (`datum-workout`), über den Import und Sync abgleichen.
+- **Schema nur über Migrationen** (`push: false`): Collection ändern → `npm run payload -- migrate:create <name>` → `migrate` → `generate:types`, Migration committen. `migrate:create` fragt interaktiv nach, wenn sich nichts geändert hat – das heißt: keine Migration nötig.
+- **`payload run` reicht nur Positionsargumente durch**, Flags wie `--email` verschluckt es. Skripte deshalb mit Positionsargumenten bauen.
+- **Bei jeder Planänderung in v1:** `npm run catalog:extract` (neue Übung → ID in `EXERCISE_IDS` in `scripts/extract-catalog.ts`), bei Bedeutungswechsel einer v1-Position einen datierten Eintrag in `src/migrate/v1-history.ts`, dann `npm test`.
+- Lokale DB: `npm run db:up` (Docker, Port 5433). Echte Trainingsexporte nie ins Repo – es ist öffentlich (`.gitignore` schließt `calisthenics-log-*.json` aus).
+- Vor Abschluss: `npm test` und `npm run build`.
 
 ## Deployment
 
-GitHub Pages: Repo → `index.html` in `main` → Settings → Pages → Deploy from branch. Keine Build-Pipeline. Handy: „Zum Startbildschirm hinzufügen".
+**v1:** GitHub Pages: Repo → `index.html` in `main` → Settings → Pages → Deploy from branch. Keine Build-Pipeline, `.nojekyll` verhindert Jekyll-Verarbeitung der v2-Dateien. Handy: „Zum Startbildschirm hinzufügen".
+
+**v2:** Ploi, Server blank-apps – Schritte in `README.md`.
 
 ## Was v1 bewusst NICHT bekommt
 

@@ -1,5 +1,5 @@
 /* Smoke-Test für index.html.
-   Aufruf:  node test/smoke.js
+   Aufruf:  node test/smoke.cjs
    Extrahiert das <script> aus index.html, prüft die Syntax und führt die Logik
    gegen einen DOM-Stub aus. Der localStorage-Mock wirft absichtlich, damit die
    try/catch-Pfade im store-Wrapper mitgetestet werden. */
