@@ -122,6 +122,40 @@
   .cardio-art { display: flex; gap: 8px; margin-bottom: 14px; }
   .cardio-art .btn { flex: 1; }
   .log-session.cardio-s .d { margin-bottom: 0; }
+
+  /* Activity: Umschalter Kalender / Fortschritt */
+  .seg { display: flex; gap: 4px; padding: 4px; margin: 2px 0 12px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); }
+  .seg button { flex: 1; min-height: 38px; border: none; border-radius: var(--r-sm); background: none; color: var(--muted); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .seg button.on { background: var(--amber-dim); color: var(--amber); }
+  .seg button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--amber); }
+
+  /* Fortschritt: eine Kachel pro Übung (Wert + Delta + Verlauf), Tap öffnet die Tabelle */
+  .pg-key { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 2px 4px; color: var(--muted); font-size: 11.5px; }
+  .pg-key i { display: inline-block; vertical-align: -1px; margin-right: 3px; }
+  .pg-key .k-last { width: 8px; height: 11px; border-radius: 3px 3px 0 0; background: var(--amber); }
+  .pg-key .k-step { width: 1px; height: 11px; background: var(--muted); }
+  .pg-day { display: flex; gap: 9px; align-items: baseline; margin: 18px 2px 8px; font-size: 15px; }
+  .pg-day span:last-child { color: var(--muted); font-size: 12px; font-weight: 500; }
+  .card.pg-tile { padding: 0; overflow: hidden; }
+  .pg-btn { display: block; width: 100%; padding: 13px 16px 12px; border: none; background: none; color: var(--text); font-family: inherit; text-align: left; cursor: pointer; }
+  .pg-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--amber); }
+  .pg-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .pg-name { font-size: 15px; font-weight: 600; }
+  .pg-val { font-size: 22px; font-weight: 700; white-space: nowrap; }
+  .pg-val small { margin-left: 3px; color: var(--muted); font-size: 11.5px; font-weight: 500; }
+  .pg-meta { margin-top: 2px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+  .pg-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-top: 10px; }
+  .pg-delta { color: var(--text); font-size: 12.5px; font-weight: 600; }
+  .pg-delta.flat, .pg-delta.info { color: var(--muted); font-weight: 500; }
+  .spark { display: block; flex: 0 0 auto; }
+  .spark .sp-bar { fill: #6a6a6a; }
+  .spark .sp-bar.last { fill: var(--amber); }
+  .spark .sp-step { stroke: var(--muted); stroke-width: 1; }
+  .pg-tbl { width: calc(100% - 32px); margin: 0 16px 14px; border-collapse: collapse; font-size: 12.5px; }
+  .pg-tbl th { padding: 6px 8px 6px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-align: left; text-transform: uppercase; }
+  .pg-tbl td { padding: 6px 8px 6px 0; border-bottom: 1px solid var(--line); color: var(--muted); vertical-align: top; }
+  .pg-tbl th:last-child, .pg-tbl td:last-child { padding-right: 0; text-align: right; }
+  .pg-tbl td:last-child { color: var(--text); font-variant-numeric: tabular-nums; }
   .cal-day.sel { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--amber); }
   .cal-day:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--amber); }
 
@@ -272,7 +306,7 @@
 </head>
 <body>
 
-<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.16.2</span></header>
+<header><h1 class="display">3er-Split</h1><span>Progressionsbasiert · v1.17.0</span></header>
 <div class="tabs" id="tabs"></div>
 <div class="progress"><i id="bar"></i></div>
 <main id="days"></main>
@@ -711,7 +745,8 @@ let durs = store.get("cali-durs", {});   /* datum -> { day, dur } */
 let cardio = store.get("cali-cardio", {}); /* datum -> [ { t: "rad"|"lauf", min, km?, hm? } ] */
 let rout = store.get("cali-rt", {});     /* datum -> { w: [idx], c: [idx] } — abgehakte Routine-Punkte */
 let off = store.get("cali-off", []);     /* pausierte slotKeys — gilt bis zum Aufheben, nicht nur heute */
-let openDetails = {}, openDone = {}, calMonth = null, calSel = null;
+let openDetails = {}, openDone = {}, calMonth = null, calSel = null, openPg = {};
+let actView = store.get("cali-av", "cal");   /* Activity-Tab: "cal" = Kalender, "prog" = Fortschritt */
 
 /* Lokales Datum, NICHT UTC — sonst gehört zwischen 0 und 2 Uhr morgens
    (Sommerzeit) noch der Vortag zu „heute" und der Lösch-Button trifft
@@ -936,8 +971,7 @@ function render() {
   /* Anzeige-Reihenfolge: optionales `ord` am Slot sticht die Datenreihenfolge.
      So lässt sich eine Übung im Training vorziehen, ohne die LogKeys (und damit
      die Historie) zu verschieben. */
-  const order = PLAN[di].slots.map((s, si) => si)
-    .sort((a, b) => (PLAN[di].slots[a].ord ?? a) - (PLAN[di].slots[b].ord ?? b));
+  const order = slotOrder(di);
   const curIdx = order.find(si => !states[si].allDone && !states[si].skipped && !states[si].paused);
   const offen = states.filter(st => !st.skipped && !st.paused);
 
@@ -1131,6 +1165,104 @@ function render() {
   document.getElementById("bar").style.width = (total ? doneN / total * 100 : 0) + "%";
 }
 
+/* Anzeige-Reihenfolge eines Tages: optionales `ord` sticht die Datenreihenfolge */
+const slotOrder = di => PLAN[di].slots.map((s, si) => si)
+  .sort((a, b) => (PLAN[di].slots[a].ord ?? a) - (PLAN[di].slots[b].ord ?? b));
+
+/* ── Fortschritt ──
+   Pro Slot der Verlauf über alle Stufen: je Einheit die Summe der Sätze (so
+   denkt der Nutzer selbst: „in Summe mehr geworden"), der beste Satz und das
+   höchste Zusatzgewicht. Stufenwechsel werden im Diagramm als Linie markiert. */
+function slotHistory(slotKey) {
+  const out = [];
+  SLOTS[slotKey].levels.forEach((x, lvl) => (log[logKeyOf(slotKey, lvl)] || []).forEach(e => {
+    const v = e.s.filter(Boolean);
+    if (!v.length) return;
+    out.push({ d: e.d, lvl, sets: v, sum: v.reduce((a, s) => a + s[0], 0),
+               best: Math.max(...v.map(s => s[0])), wt: Math.max(0, ...v.map(s => s[1] || 0)) });
+  }));
+  return out.sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : a.lvl - b.lvl);
+}
+const shortDate = iso => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.`;
+
+/* Mini-Balkendiagramm der letzten 12 Einheiten. Graue Balken, die jüngste in
+   Orange; Balken 8px mit 4px gerundetem Ende, quadratisch an der Grundlinie.
+   #6a6a6a: 3:1 auf --card und für Farbfehlsichtige vom Orange getrennt (geprüft). */
+function sparkSVG(h, unit) {
+  const pts = h.slice(-12), slot = 12, bw = 8, H = 40, W = 12 * slot;
+  const max = Math.max(1, ...pts.map(p => p.sum));
+  let out = "";
+  pts.forEach((p, i) => {
+    const x = i * slot + 2, bh = Math.max(3, Math.round(p.sum / max * (H - 2))), y = H - bh, r = Math.min(4, bh);
+    if (i > 0 && p.lvl !== pts[i - 1].lvl) out += `<line class="sp-step" x1="${x - 2}" x2="${x - 2}" y1="0" y2="${H}"/>`;
+    out += `<path class="sp-bar${i === pts.length - 1 ? " last" : ""}" d="M${x},${H}V${y + r}A${r},${r} 0 0 1 ${x + r},${y}H${x + bw - r}A${r},${r} 0 0 1 ${x + bw},${y + r}V${H}Z"><title>${fmtDate(p.d)}: ${p.sum} ${unit}</title></path>`;
+  });
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Summe der letzten ${pts.length} Einheiten: ${pts.map(p => p.sum).join(", ")}">${out}</svg>`;
+}
+
+function progressTile(slotKey) {
+  const h = slotHistory(slotKey);
+  if (!h.length) return null;
+  const slot = SLOTS[slotKey], lvl = curLvl(slotKey), x = slot.levels[lvl];
+  const unit = x.opts?.t ? "s" : "Wdh.";
+  const cur = h.filter(e => e.lvl === lvl), last = cur[cur.length - 1], prev = cur[cur.length - 2];
+  let delta, dcls = "";
+  if (!last) { delta = "neue Stufe, noch nicht trainiert"; dcls = "info"; }
+  else if (!prev) { delta = lvl > 0 ? "erste Einheit auf dieser Stufe" : "erste Einheit"; dcls = "info"; }
+  else {
+    const df = last.sum - prev.sum;
+    delta = df > 0 ? `+${df} seit ${shortDate(prev.d)}` : df < 0 ? `−${-df} seit ${shortDate(prev.d)}` : `± 0 seit ${shortDate(prev.d)}`;
+    if (!df) dcls = "flat";
+  }
+  const best = cur.length ? Math.max(...cur.map(e => e.best)) : null;
+  const wt = cur.length ? Math.max(...cur.map(e => e.wt)) : 0;
+  const meta = [
+    slot.levels.length > 1 ? `Stufe ${lvl + 1}/${slot.levels.length}` : null,
+    `${cur.length} Einheit${cur.length === 1 ? "" : "en"}`,
+    best !== null ? `bester Satz ${best}${x.opts?.t ? " s" : ""}` : null,
+    wt ? `bis +${wt} kg` : null,
+    off.includes(slotKey) ? "pausiert" : readyToProgress(slotKey) ? `bereit für ${slot.levels[lvl + 1].name}` : null
+  ].filter(Boolean).join(" · ");
+  const open = !!openPg[slotKey];
+  const tile = document.createElement("div");
+  tile.className = "card pg-tile";
+  tile.innerHTML = `<button class="pg-btn" aria-expanded="${open}">
+      <div class="pg-head"><span class="pg-name">${x.name}</span><span class="pg-val">${last ? last.sum : "–"}<small>${unit}</small></span></div>
+      <div class="pg-meta">${meta}</div>
+      <div class="pg-foot"><span class="pg-delta ${dcls}">${delta}</span>${sparkSVG(h, unit)}</div>
+    </button>${open ? `<table class="pg-tbl"><thead><tr><th>Datum</th><th>Stufe</th><th>Sätze</th><th>Σ</th></tr></thead><tbody>${
+      h.slice(-12).reverse().map(e => `<tr><td>${shortDate(e.d)}</td><td>${e.lvl + 1}</td><td>${
+        e.sets.map(v => v[0] + (v[1] ? "+" + v[1] + "kg" : "")).join(" · ")}</td><td>${e.sum}</td></tr>`).join("")
+    }</tbody></table>` : ""}`;
+  const btn = tile.querySelector(".pg-btn");
+  if (btn) btn.onclick = () => { openPg[slotKey] = !open; render(); };
+  return tile;
+}
+
+function renderProgress(sec) {
+  const key = document.createElement("div");
+  key.className = "pg-key";
+  key.innerHTML = `<span>Balken = Summe pro Einheit</span><span><i class="k-last"></i> letzte Einheit</span><span><i class="k-step"></i> Stufenwechsel</span><span>Antippen für alle Werte</span>`;
+  sec.appendChild(key);
+  let any = false;
+  splitOrder().forEach(di => {
+    const tiles = slotOrder(di).map(si => progressTile(`${di}-${si}`)).filter(Boolean);
+    if (!tiles.length) return;
+    any = true;
+    const h = document.createElement("h3");
+    h.className = "pg-day";
+    h.innerHTML = `<span class="display">${PLAN[di].name}</span><span>${PLAN[di].sub} · ${splitDays(di).join(" · ")}</span>`;
+    sec.appendChild(h);
+    tiles.forEach(t => sec.appendChild(t));
+  });
+  if (!any) {
+    const e = document.createElement("div");
+    e.className = "log-empty";
+    e.innerHTML = "Noch keine Daten.<br>Nach deiner ersten Einheit siehst du hier pro Übung, wie es sich entwickelt.";
+    sec.appendChild(e);
+  }
+}
+
 /* Monatskalender: orange = Trainingstage, Tap wählt den Tag als Filter
    für die Liste darunter; „Heute"-Button springt zurück */
 function renderCal(sec, byDate) {
@@ -1167,6 +1299,16 @@ function renderCal(sec, byDate) {
 function renderLog(days) {
   const sec = document.createElement("section");
   sec.className = "day active";
+
+  const seg = document.createElement("div");
+  seg.className = "seg";
+  seg.innerHTML = [["cal", "Kalender"], ["prog", "Fortschritt"]].map(([k, l]) =>
+    `<button class="${actView === k ? "on" : ""}" data-av="${k}" aria-pressed="${actView === k}">${l}</button>`).join("");
+  seg.querySelectorAll("[data-av]").forEach(b => b.onclick = () => {
+    actView = b.dataset.av; store.set("cali-av", actView); render();
+  });
+  sec.appendChild(seg);
+  if (actView === "prog") { renderProgress(sec); days.appendChild(sec); return; }
 
   const byDate = {};
   Object.entries(log).forEach(([key, entries]) => entries.forEach(en => {

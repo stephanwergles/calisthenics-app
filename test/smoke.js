@@ -52,7 +52,7 @@ assert(SLOTS["0-0"].levels.length === 3, "Muscle-up-Slot mit Band-Zwischenstufe"
 assert(SLOTS["1-7"].levels.length === 3 && SLOTS["1-7"].ord === -1, "Handstand-Slot, vorgezogen");
 assert(SLOTS["0-5"].ord === 3.5 && SLOTS["0-5"].levels[0].up === 5, "Uneven Pull-ups vorgezogen, Ziel 5");
 var ordB = PLAN[1].slots.map((s, i) => i).sort((a, b) => (PLAN[1].slots[a].ord ?? a) - (PLAN[1].slots[b].ord ?? b));
-assert(ordB[0] === 7, "Handstand steht an Tag B ganz vorne");
+assert(ordB[0] === 7 && slotOrder(1)[0] === 7, "Handstand steht an Tag B ganz vorne");
 
 /* ── Wochenplan ── */
 assert(splitOrder().join() === "2,1,0", "Picker-Reihenfolge Mo, Mi, So");
@@ -132,6 +132,32 @@ setTimeout(() => {
   endSession();
   assert(wlRel === true, "WakeLock bei Session-Ende freigegeben");
 }, 5);
+
+/* ── Fortschritt ── */
+log = {
+  "0-0":   [{ d: "2026-09-21", s: [[5,0],[5,0],[5,0],[5,0],[5,0]] }],
+  "0-0@1": [{ d: "2026-09-28", s: [[3,0],[3,0],[3,0]] }, { d: "2026-09-30", s: [[3,0],[3,0],[4,0],null] }],
+  "0-3":   [{ d: "2026-09-30", s: [[5,5],[5,5],[4,5]] }]
+};
+prog = { "0-0": 1 };
+var hist = slotHistory("0-0");
+assert(hist.length === 3 && hist[0].lvl === 0 && hist[2].lvl === 1, "slotHistory sammelt alle Stufen chronologisch");
+assert(hist[2].sum === 10 && hist[2].best === 4, "Summe und bester Satz, null-Saetze ignoriert");
+assert(slotHistory("0-3")[0].wt === 5, "Zusatzgewicht wird erfasst");
+var svg = sparkSVG(hist, "Wdh.");
+assert((svg.match(/sp-bar/g) || []).length === 3, "ein Balken pro Einheit");
+assert((svg.match(/sp-step/g) || []).length === 1, "Stufenwechsel als Linie markiert");
+assert((svg.match(/sp-bar last/g) || []).length === 1, "nur die juengste Einheit hervorgehoben");
+assert(progressTile("2-5") === null, "keine Kachel ohne Daten");
+var tile = progressTile("0-0");
+assert(tile.innerHTML.indexOf("+1 seit 28.09.") > -1, "Delta gegen die vorige Einheit derselben Stufe");
+assert(tile.innerHTML.indexOf("Stufe 2/3") > -1, "Kachel nennt die aktuelle Stufe");
+openPg["0-0"] = true;
+assert(progressTile("0-0").innerHTML.indexOf("pg-tbl") > -1, "aufgeklappt mit Tabelle");
+openPg = {};
+activeTab = 1; actView = "prog"; render();
+actView = "cal"; render();
+activeTab = 0; log = {}; prog = {};
 
 /* ── Activity-Tab ── */
 log = { "0-0": [{ d: "2026-07-20", s: [[3,0],[3,0]] }] };
