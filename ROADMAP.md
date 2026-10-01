@@ -41,6 +41,8 @@ Startkriterium gilt als erfüllt: 16 Einheiten seit Juli, App wird ausschließli
 - Die Trainings-App bleibt **offline-first**: Daten lokal (IndexedDB), Sync im Hintergrund — keine Seite lädt im Gym Daten vom Server.
 
 ### Phase 2.0 — Fundament
+
+**Stand Okt 2026:** Datenmodell mit stabilen IDs, Katalog (47 Übungen, 24 Progressionen, 3 Workouts) und Import für v1-Exporte stehen in `v2/`. Geprüft an allen Exporten seit Juli: 405 von 405 Sätzen übernommen, fünf Positions-Bedeutungswechsel aus der Git-Historie korrekt aufgelöst. Offen: Payload-Projekt, Offline-Client, Sync.
 - Monorepo/Projekt-Setup: Next.js (App Router) + Payload 3 + Postgres, Deployment auf eigener Infra (Ploi/Hetzner — bestehender Agentur-Stack)
 - Payload-Collections aus dem v1-Datenmodell ableiten (die Struktur ist 1:1 übertragbar):
   - `exercises` (heutige Levels: Name, Technik-Texte, Skizze/Medien, Ziel, Einheit, Gewichts-Flag)

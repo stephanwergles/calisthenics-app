@@ -94,6 +94,10 @@ Typo: System-Stack, Display-Stil über `font-stretch: condensed` + Uppercase (Kl
 - Die Versionsnummer steht im Header (`<span>Progressionsbasiert · vX.Y.Z</span>`) und wird bei **jedem** Push erhöht (Patch für Fixes/Kleinkram, Minor für Features) — sie ist das Erkennungszeichen, welcher Stand auf dem Handy wirklich läuft.
 - Vor Abschluss: `node test/smoke.js` — extrahiert das `<script>` aus der index.html, prüft die Syntax und fährt die Logik gegen einen DOM-Stub (localStorage-Mock wirft absichtlich, damit die try/catch-Pfade mitlaufen). Bei neuen Features dort einen Fall ergänzen.
 
+## v2-Fundament (Ordner `v2/`)
+
+Datenmodell mit stabilen Übungs-IDs, Katalog und Import für v1-Exporte – Details in `v2/README.md`. **Bei jeder Planänderung in v1:** `node v2/tools/extract-catalog.ts` ausführen (neue Übung → ID in `EXERCISE_IDS` ergänzen) und, falls eine v1-Position die Bedeutung wechselt, einen datierten Eintrag in `v2/migrate/v1-history.ts` anlegen. Dann `node --test v2/test/migrate.test.ts`. Echte Trainingsexporte nie ins Repo – es ist öffentlich.
+
 ## Deployment
 
 GitHub Pages: Repo → `index.html` in `main` → Settings → Pages → Deploy from branch. Keine Build-Pipeline. Handy: „Zum Startbildschirm hinzufügen".

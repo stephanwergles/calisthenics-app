@@ -1,0 +1,1750 @@
+{
+  "schema": 1,
+  "exercises": [
+    {
+      "id": "explosive-pull-up",
+      "name": "Explosive Klimmzüge",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Schulterbreiter Obergriff, voller Hang, Schulterblätter leicht angespannt – nicht komplett passiv hängen.",
+        "execution": "Aus dem Stand heraus maximal explosiv ziehen, Ellenbogen nach unten-hinten reißen, Ziel: Stange auf Brusthöhe. Oben kurz „schweben“, kontrolliert ablassen, unten komplett strecken, 1–2 Sek. sammeln, nächste Wiederholung.",
+        "faults": "Kippen/Schwungholen aus der Hüfte · nur bis zum Kinn ziehen statt zur Brust · Wiederholungen aneinanderreihen ohne volle Streckung unten.",
+        "scaling": "Leichter: normale Klimmzüge mit maximal explosiver Absicht oder leichtes Band. Schwerer: höher zielen (Bauchnabel zur Stange)."
+      },
+      "media": {
+        "sketch": "pullupTop",
+        "videoQuery": "explosive pull up chest to bar tutorial"
+      }
+    },
+    {
+      "id": "chest-to-bar-pull-up",
+      "name": "Chest-to-Bar Klimmzüge",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Schulterbreiter Obergriff, voller Hang, Körper leicht nach hinten gelehnt.",
+        "execution": "Ziehen, bis die Stange die Brust berührt – nicht nur das Kinn drüber. Dafür beim Zug weiter zurücklehnen und die Ellenbogen Richtung Hüfte reißen statt Richtung Boden. Das ist die Höhe, die dem Muscle-up noch fehlt; die Transition übst du im Band-Slot.",
+        "faults": "Die letzten Zentimeter mit dem Hals holen · Kippen aus der Hüfte · Ellenbogen nach außen statt nach hinten-unten.",
+        "scaling": "Leichter: obere Brust an der Stange zählt bereits. Schwerer: 1 Sekunde Brustkontakt halten."
+      },
+      "media": {
+        "sketch": "pullupTop",
+        "videoQuery": "chest to bar pull up tutorial"
+      }
+    },
+    {
+      "id": "muscle-up",
+      "name": "Muscle-up (Stange)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Griff etwas enger als schulterbreit, falscher Griff (Handgelenke über der Stange) hilft enorm. Kleiner, kontrollierter Vorschwung ist erlaubt.",
+        "execution": "Explosiv bis zur unteren Brust ziehen, im höchsten Punkt Ellenbogen blitzschnell über die Stange kippen (Brust „über die Stange lehnen“), dann aus dem Stütz ausdrücken. Runter in umgekehrter Reihenfolge – die Negative langsam!",
+        "faults": "Zu früh umgreifen wollen (erst Höhe, dann Transition) · Hühnerflügel: ein Ellenbogen kommt zuerst · aus purer Kraft ziehen statt Zug + Lean kombinieren.",
+        "scaling": "Leichter: Band um die Füße oder niedrigere Stange mit Mini-Absprung. Schwerer: mehrere Wiederholungen ohne jeden Vorschwung."
+      },
+      "media": {
+        "sketch": "muTrans",
+        "videoQuery": "first muscle up bar tutorial"
+      }
+    },
+    {
+      "id": "straight-bar-dip",
+      "name": "Straight Bar Dips",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Stütz auf einer Stange (Hüfthöhe), Arme gestreckt, Stange an der Hüfte, Beine leicht vor dem Körper, Schultern runter.",
+        "execution": "Oberkörper nach vorn über die Stange lehnen und Ellenbogen beugen, bis die Stange die untere Brust berührt. Dann zurückdrücken bis zur vollen Streckung. Die Vorlage bleibt die ganze Zeit bestehen.",
+        "faults": "Zu aufrecht bleiben (dann kippst du nach hinten weg) · Schultern hochziehen · nur halbe Tiefe.",
+        "scaling": "Leichter: niedrigere Stange, Füße unterstützen leicht. Schwerer: 3-Sekunden-Negative, Pause am tiefsten Punkt."
+      },
+      "media": {
+        "sketch": "barSupport",
+        "videoQuery": "straight bar dips tutorial"
+      }
+    },
+    {
+      "id": "russian-dip",
+      "name": "Russian Dips (Barren)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Stütz am Parallelbarren, Unterarme flach auf die Holme legen können – das ist die untere Position.",
+        "execution": "Aus dem Stütz absenken bis die Unterarme aufliegen, Gewicht kurz nach hinten verlagern, dann nach vorn schieben und explosiv zurück in den Stütz drücken. Simuliert die Muscle-up-Transition am Barren.",
+        "faults": "Unkontrolliert in die Unterarme fallen · Ellenbogen nach außen flackern lassen · Schwung nur aus den Schultern statt aus der Gewichtsverlagerung.",
+        "scaling": "Leichter: nur den hinteren Teil üben (Unterarme ablegen und zurückdrücken). Schwerer: Übergang explosiver, ganz ohne Schwung."
+      },
+      "media": {
+        "sketch": "dipsDeep",
+        "videoQuery": "russian dips tutorial"
+      }
+    },
+    {
+      "id": "muscle-up-band",
+      "name": "Muscle-up mit Band",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Kräftiges Band über die Stange, in die Schlaufe setzen oder ein Knie einhängen. Griff schulterbreit, Handgelenke möglichst über der Stange.",
+        "execution": "Der vollständige Ablauf: leicht zurücklehnen, explosiv zur Brust ziehen, im höchsten Punkt die Ellenbogen über die Stange kippen, aus dem Stütz ausdrücken. Das Band trägt genau so viel, dass die Bewegung ganz gelingt – gezählt wird nur, was über die Stange kommt. Fortschritt heißt schwächeres Band, nicht mehr Wiederholungen.",
+        "faults": "Mit den Füßen nachschieben statt durchrotieren · Band so stark, dass es dich hochwirft und du den Zug nicht mehr spürst · ein Ellenbogen zuerst über die Stange (Hühnerflügel).",
+        "scaling": "Leichter: stärkeres Band. Reine Technikarbeit: tiefe Stange, Füße am Boden, Rotation in Zeitlupe. Schwerer: schwächeres Band oder nur ein Knie eingehängt."
+      },
+      "media": {
+        "sketch": "muTrans",
+        "videoQuery": "band assisted muscle up tutorial"
+      }
+    },
+    {
+      "id": "muscle-up-negative",
+      "name": "Negative Muscle-ups",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Per Sprung oder Kasten in den Stütz über der Stange starten.",
+        "execution": "Aus dem Stütz so langsam wie möglich rückwärts durch die Transition: Brust senkt sich, Ellenbogen rotieren nach vorn-unten, dann kontrolliert in den Hang ablassen. 3–5 Sekunden pro Negative anpeilen.",
+        "faults": "Den Transitionsmoment durchfallen lassen (genau der zählt) · Schultern hochgezogen · zu schnell.",
+        "scaling": "Leichter: nur den Transitionsteil langsam, den Rest normal ablassen. Schwerer: 5+ Sekunden pro Negative."
+      },
+      "media": {
+        "sketch": "muTrans",
+        "videoQuery": "negative muscle up tutorial"
+      }
+    },
+    {
+      "id": "pull-up",
+      "name": "Klimmzüge (volle ROM)",
+      "unit": "reps",
+      "weighted": true,
+      "perSide": false,
+      "technique": {
+        "setup": "Schulterbreiter Obergriff, voller Hang, Körperspannung: Bauch fest, Beine ruhig.",
+        "execution": "Zuerst Schulterblätter nach unten ziehen (Schultern weg von den Ohren), dann Ellenbogen Richtung Hüfte ziehen, bis das Kinn klar über der Stange ist. 2 Sekunden kontrolliert ablassen bis zur vollen Streckung.",
+        "faults": "Kippen und Schwungholen · halbe Wiederholungen oben oder unten · Schultern bleiben hochgezogen (dann fehlt die Scapula-Aktivierung).",
+        "scaling": "Leichter: Band-Unterstützung oder langsame Negative. Schwerer: Tempo 3-1-3 oder 2 Sekunden Pause oben."
+      },
+      "media": {
+        "sketch": "pullupTop",
+        "videoQuery": "perfect pull up form calisthenic movement"
+      }
+    },
+    {
+      "id": "pull-up-weighted",
+      "name": "Klimmzüge mit Zusatzgewicht",
+      "unit": "reps",
+      "weighted": true,
+      "perSide": false,
+      "technique": {
+        "setup": "Dip-Gürtel mit Gewicht (Start: 5 kg) oder Rucksack. Ausführung identisch zur Körpergewichts-Variante.",
+        "execution": "Exakt wie normale Klimmzüge – Scapula zuerst, Kinn klar über die Stange, 2 Sekunden negativ. Gewicht erst steigern, wenn alle Sätze sauber am oberen Ziel sind, dann in 2,5-kg-Schritten.",
+        "faults": "Zu früh zu schwer (Form bricht zusammen) · Gewicht schaukeln lassen · ROM verkürzen, sobald Gewicht dran hängt.",
+        "scaling": "Leichter: Gewicht reduzieren. Schwerer: +2,5 kg, sobald alle Sätze am oberen Ziel sind."
+      },
+      "media": {
+        "sketch": "pullupTop",
+        "videoQuery": "weighted pull ups guide"
+      }
+    },
+    {
+      "id": "body-row",
+      "name": "Body Rows",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Unter einer Stange oder Ringen, Fersen am Boden, Körper von Kopf bis Fuß eine Linie, Arme gestreckt.",
+        "execution": "Brust zur Stange ziehen, Ellenbogen dicht am Körper, Schulterblätter am Ende zusammenziehen. Kontrolliert zurück in die volle Streckung. Schwerer machen: Füße erhöhen oder flacher hängen.",
+        "faults": "Hüfte hängt durch oder knickt ein · nur mit den Armen ziehen statt Schulterblätter arbeiten lassen · halbe Züge.",
+        "scaling": "Leichter: Stange höher, steilerer Körperwinkel. Schwerer: Füße erhöhen, 1 Sekunde Pause an der Stange."
+      },
+      "media": {
+        "sketch": "row",
+        "videoQuery": "inverted row body row tutorial"
+      }
+    },
+    {
+      "id": "tuck-front-lever-row",
+      "name": "Tuck Front Lever Rows",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "An Stange oder Ringen in den Tuck hängen: Knie zur Brust gezogen, Rücken parallel zum Boden, Arme gestreckt.",
+        "execution": "In der Tuck-Position halten und den Körper Richtung Stange ziehen (Hüfte zur Stange), langsam ablassen, Position nie verlieren. Das ist gleichzeitig dein Einstieg in den Front Lever.",
+        "faults": "Rücken sackt aus der Horizontalen ab · Ziehen wird zum Klimmzug (Oberkörper stellt sich auf) · Schwung aus den Beinen.",
+        "scaling": "Leichter: erst statische Tuck-Halte ohne Ziehen üben. Schwerer: Advanced Tuck (Rücken flach, Knie weiter vom Körper)."
+      },
+      "media": {
+        "sketch": "tuckFL",
+        "videoQuery": "tuck front lever rows tutorial"
+      }
+    },
+    {
+      "id": "uneven-pull-up",
+      "name": "Uneven Pull-ups (Handtuch)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Handtuch über die Stange hängen: eine Hand greift die Stange, die andere fasst das Handtuch. Die Griffhöhe am Handtuch ist deine Stellschraube.",
+        "execution": "Fasse das Handtuch so hoch, dass 3 saubere Wiederholungen möglich sind — lieber zu viel Hilfe als eine gerissene Wiederholung. Hochziehen Richtung Stangenhand, Kinn auf deren Höhe, betont langsam ablassen. Pro Satz eine Seite. Erst wenn 5 sauber gehen, den Griff eine Handbreit tiefer setzen.",
+        "faults": "Zu tief gegriffen und deshalb nur noch reißen statt ziehen · Körper dreht sich unter der Stangenhand weg · unten in die Streckung fallen lassen statt abbremsen.",
+        "scaling": "Leichter: Handtuch höher fassen (bis fast auf Stangenhöhe) oder Füße auf einer Box mithelfen lassen. Schwerer: Griff tiefer, bis nur noch die Fingerspitzen mitziehen."
+      },
+      "media": {
+        "sketch": "archer",
+        "videoQuery": "uneven pull ups towel tutorial"
+      }
+    },
+    {
+      "id": "archer-pull-up",
+      "name": "Archer Pull-ups",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Deutlich breiter als schulterbreiter Obergriff.",
+        "execution": "Zur rechten Hand ziehen: rechter Arm macht die Arbeit, der linke bleibt fast gestreckt und „gleitet“ über die Stange. Kinn über die Stange beim ziehenden Arm, kontrolliert runter, Seite wechseln oder Seiten blockweise trainieren.",
+        "faults": "Der „gestreckte“ Arm beugt sich heimlich und hilft mit · Körper rotiert weg · zu enger Griff.",
+        "scaling": "Leichter: der gestreckte Arm darf spürbar mithelfen. Schwerer: gestreckter Arm nur noch mit den Fingerspitzen an der Stange."
+      },
+      "media": {
+        "sketch": "archer",
+        "videoQuery": "archer pull up tutorial"
+      }
+    },
+    {
+      "id": "typewriter-pull-up",
+      "name": "Typewriter Pull-ups",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Breiter Obergriff, wie beim Archer.",
+        "execution": "Hochziehen zur rechten Hand, dann OBEN bleiben und den Körper horizontal zur linken Hand schieben, erst dort ablassen. Die horizontale Fahrt ist der Kern – langsam und unter Spannung.",
+        "faults": "Beim Rüberschieben absacken · Fahrt mit Schwung statt Kontrolle · Kinn taucht unter die Stange.",
+        "scaling": "Leichter: kürzere seitliche Fahrt. Schwerer: Fahrt verlangsamen und an beiden Enden pausieren."
+      },
+      "media": {
+        "sketch": "archer",
+        "videoQuery": "typewriter pull up tutorial"
+      }
+    },
+    {
+      "id": "scapula-shrug",
+      "name": "Hanging Scapula Shrugs",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Voller Hang an der Stange, Arme komplett gestreckt – und gestreckt bleiben sie auch.",
+        "execution": "Nur die Schulterblätter nach unten-hinten ziehen: der Körper hebt sich ein paar Zentimeter, ohne dass sich die Ellenbogen beugen. Oben 1 Sekunde halten, langsam zurück in den passiven Hang.",
+        "faults": "Ellenbogen beugen (dann wird's ein Mini-Klimmzug) · zu schnell und ohne Endposition · Kopf einziehen.",
+        "scaling": "Leichter: Füße auf einer Box teilentlastet. Schwerer: oben 3 Sekunden halten oder Zusatzgewicht."
+      },
+      "media": {
+        "sketch": "shrug",
+        "videoQuery": "hanging scapula shrug tutorial"
+      }
+    },
+    {
+      "id": "biceps-curl",
+      "name": "Bizeps-Curls (Stange oder Band)",
+      "unit": "reps",
+      "weighted": true,
+      "perSide": false,
+      "technique": {
+        "setup": "An der tiefen Stange: Untergriff etwa schulterbreit, unter die Stange hängen, Körper gestreckt, Fersen am Boden, Oberarme zeigen nach oben. Alternativ aufrecht mit Band unter den Füßen oder Hanteln.",
+        "execution": "Nur die Unterarme arbeiten: Die Oberarme bleiben wie festgeschraubt in der Luft, du ziehst die Stirn Richtung Stange – nicht die Brust. Oben kurz anspannen, betont langsam ablassen (2–3 Sek.). Hier geht es um Sehnenqualität, nicht um Last, das Tempo ist die Übung.",
+        "faults": "Die Ellenbogen sinken ab, dann wird eine Body Row daraus · Hüfte knickt ein · zu schnell hoch und unkontrolliert runter.",
+        "scaling": "Leichter: Füße weiter unter den Körper (steilerer Winkel) oder schwächeres Band. Schwerer: Füße weiter nach vorn, bis der Körper waagerecht liegt, oder 3-Sekunden-Negative."
+      },
+      "media": {
+        "sketch": "curl",
+        "videoQuery": "bodyweight bicep curl bar tutorial"
+      }
+    },
+    {
+      "id": "l-sit-floor",
+      "name": "L-Sit (Boden)",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Sitz auf dem Boden, Hände neben der Hüfte fest aufgesetzt (Finger nach vorn), Arme komplett gestreckt.",
+        "execution": "Schultern kraftvoll nach unten drücken (weg von den Ohren), Hüfte abheben, Beine gestreckt nach vorn schieben und anheben. Position halten, ruhig weiteratmen. Zu schwer? Knie angezogen lassen (Tuck) oder nur ein Bein strecken.",
+        "faults": "Ellenbogen beugen sich · Schultern wandern zu den Ohren · Beine sinken ab und der Rücken rundet komplett ein.",
+        "scaling": "Leichter: Tuck (Knie angezogen) oder nur ein Bein gestreckt. Schwerer: Hände auf Büchern erhöhen, Zehen höher ziehen."
+      },
+      "media": {
+        "sketch": "lsit",
+        "videoQuery": "l sit floor progression tutorial"
+      }
+    },
+    {
+      "id": "l-sit-parallettes",
+      "name": "L-Sit (Parallettes)",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Stütz auf Parallettes oder zwei stabilen Erhöhungen, Arme gestreckt.",
+        "execution": "Wie am Boden, aber mit mehr Bewegungsfreiheit: Schultern tief, Beine gestreckt auf Hüfthöhe oder höher, Zehen angezogen. Die Haltezeiten hier zählen einzeln – Ziel sind 15–20 saubere Sekunden am Stück.",
+        "faults": "Hohlkreuz statt leicht eingerolltem Becken · Beine unter der Horizontalen „parken“ · Luft anhalten.",
+        "scaling": "Leichter: One-Leg-L-Sit im Wechsel. Schwerer: Beine über die Horizontale anheben."
+      },
+      "media": {
+        "sketch": "lsit",
+        "videoQuery": "l sit parallettes tutorial"
+      }
+    },
+    {
+      "id": "v-sit-prep",
+      "name": "L-Sit Pull-Throughs / V-Sit-Anbahnung",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Parallettes, stabiler L-Sit als Ausgangsposition.",
+        "execution": "Beine über die Horizontale anheben und die Hüfte leicht nach hinten kippen Richtung V-Sit. Nur so weit, wie Arme gestreckt bleiben. Alternativ: L-Sit halten und langsam Beine heben-senken.",
+        "faults": "Arme beugen, sobald die Beine steigen · Schwung statt Kompression · Rundrücken oben statt aktiver Hüftbeugung.",
+        "scaling": "Leichter: kleinere Kippung, kürzere Halten. Schwerer: Beine höher Richtung V, längere Halten."
+      },
+      "media": {
+        "sketch": "lsit",
+        "videoQuery": "v sit progression tutorial"
+      }
+    },
+    {
+      "id": "pseudo-planche-push-up",
+      "name": "Pseudo Planche Push-ups",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Liegestützposition, aber Hände auf Hüfthöhe aufgesetzt, Fingerspitzen zeigen nach außen oder hinten.",
+        "execution": "Schultern weit vor die Hände lehnen – und diese Vorlage während der ganzen Bewegung halten. Dann beugen und strecken wie ein Liegestütz. Je mehr Lean, desto härter.",
+        "faults": "Beim Beugen die Vorlage verlieren (Schultern wandern zurück) · Hüfte knickt ein · Handgelenke nicht aufgewärmt (Pflicht!).",
+        "scaling": "Leichter: weniger Vorlage oder auf den Knien. Schwerer: mehr Lean, Füße geschlossen."
+      },
+      "media": {
+        "sketch": "pppu",
+        "videoQuery": "pseudo planche push up tutorial"
+      }
+    },
+    {
+      "id": "pseudo-planche-push-up-elevated",
+      "name": "PPPU Füße erhöht",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Wie PPPU, Füße auf Box oder Bank – mehr Gewicht auf den Schultern.",
+        "execution": "Identische Mechanik, die Vorlage wird durch die Erhöhung automatisch anspruchsvoller. Qualität vor Tiefe: lieber weniger tief mit gehaltenem Lean.",
+        "faults": "Kopf Richtung Boden fallen lassen statt Körperlinie · Ellenbogen voll nach außen · Lean geht beim ersten schweren Satz verloren.",
+        "scaling": "Leichter: niedrigere Erhöhung. Schwerer: höhere Box, unten 1 Sekunde halten."
+      },
+      "media": {
+        "sketch": "pppu",
+        "videoQuery": "elevated pseudo planche push up"
+      }
+    },
+    {
+      "id": "tuck-planche",
+      "name": "Tuck Planche Hold",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Hocke, Hände schulterbreit am Boden, Fingerspitzen leicht nach außen, Knie auf die Ellenbogen? Nein – Knie frei zur Brust gezogen.",
+        "execution": "Schultern weit nach vorn lehnen, Füße vom Boden abheben, Knie eng am Körper, Rücken rund, Schulterblätter aktiv auseinandergedrückt (Protraktion). Halten und atmen.",
+        "faults": "Zu wenig Lean (Füße kommen nie hoch) · Schulterblätter zusammenfallen lassen · Knie auf den Armen abstützen.",
+        "scaling": "Leichter: Frog Stand (Knie auf den Ellenbogen abgestützt). Schwerer: Knie leicht vom Körper lösen (Advanced Tuck)."
+      },
+      "media": {
+        "sketch": "tuckPl",
+        "videoQuery": "tuck planche tutorial"
+      }
+    },
+    {
+      "id": "dip",
+      "name": "Dips (tief)",
+      "unit": "reps",
+      "weighted": true,
+      "perSide": false,
+      "technique": {
+        "setup": "Stütz am Parallelbarren, Arme gestreckt, Schultern runter, Blick leicht nach vorn-unten, leichte Vorlage.",
+        "execution": "Kontrolliert absenken, bis die Oberarme mindestens parallel zum Boden sind, Ellenbogen zeigen nach hinten. Dann kraftvoll zurück in die volle Streckung.",
+        "faults": "Halbe Tiefe · Schultern zucken zu den Ohren hoch · Ellenbogen flackern nach außen · unten „reinfallen“ statt kontrolliert abbremsen.",
+        "scaling": "Leichter: Band-Unterstützung oder langsame Negative. Schwerer: Tempo verlangsamen, Pause am tiefsten Punkt."
+      },
+      "media": {
+        "sketch": "dipsDeep",
+        "videoQuery": "perfect dip form calisthenic movement"
+      }
+    },
+    {
+      "id": "dip-weighted",
+      "name": "Dips mit Zusatzgewicht",
+      "unit": "reps",
+      "weighted": true,
+      "perSide": false,
+      "technique": {
+        "setup": "Dip-Gürtel (Start: 5–10 kg), sonst identisch.",
+        "execution": "Exakt wie Körpergewichts-Dips – volle Tiefe, volle Streckung. Steigerung in 2,5-kg-Schritten, erst wenn alle Sätze am oberen Ziel sind.",
+        "faults": "Tiefe opfern fürs Gewicht · Gewicht pendeln lassen (ruhig werden vor dem ersten Zentimeter) · Aufwärmsätze überspringen.",
+        "scaling": "Leichter: Gewicht reduzieren. Schwerer: +2,5 kg, sobald alle Sätze am oberen Ziel sind."
+      },
+      "media": {
+        "sketch": "dipsDeep",
+        "videoQuery": "weighted dips guide"
+      }
+    },
+    {
+      "id": "pike-push-up",
+      "name": "Pike Push-ups",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Umgedrehtes V: Hände schulterbreit, Hüfte so hoch wie möglich, Beine möglichst gestreckt, Gewicht über den Schultern.",
+        "execution": "Kopf senkrecht Richtung Boden zwischen die Hände senken (nicht nach vorn!), bis er fast aufsetzt, dann hochdrücken. Ellenbogen ca. 45° zum Körper.",
+        "faults": "Aus der Bewegung einen schrägen Liegestütz machen (Hüfte zu tief) · Kopf weit vor die Hände senken · Fersen-Gewicht statt Schulter-Gewicht.",
+        "scaling": "Leichter: Füße weiter von den Händen (flacherer Winkel). Schwerer: Füße näher heran oder Hände auf Erhöhungen (mehr Tiefe)."
+      },
+      "media": {
+        "sketch": "pike",
+        "videoQuery": "pike push up handstand progression"
+      }
+    },
+    {
+      "id": "pike-push-up-elevated",
+      "name": "Pike Push-ups, Füße erhöht",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Füße auf Box/Bank, Hüfte über den Schultern – je höher, desto näher am Handstand.",
+        "execution": "Senkrecht abtauchen bis kurz vor Kopfkontakt, senkrecht hochdrücken. Die Hüfte bleibt gestapelt über den Schultern.",
+        "faults": "Hüfte wandert beim Drücken nach hinten · Bauch durchhängen lassen · unkontrolliertes Abtauchen.",
+        "scaling": "Leichter: niedrigere Box. Schwerer: höhere Box, Hüfte immer senkrechter über die Schultern."
+      },
+      "media": {
+        "sketch": "pike",
+        "videoQuery": "elevated pike push up tutorial"
+      }
+    },
+    {
+      "id": "handstand-push-up-wall",
+      "name": "Wand-Handstand Push-ups",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Handstand mit Bauch oder Rücken zur Wand (Bauch = sauberere Linie), Hände etwas breiter als schulterbreit, ca. 15–25 cm von der Wand.",
+        "execution": "Körperspannung wie im Hollow Body, kontrolliert absenken bis der Kopf den Boden leicht berührt, kraftvoll hochdrücken bis zur vollen Streckung. Erst frei üben, wenn 6+ saubere Wdh. an der Wand stehen.",
+        "faults": "Bananen-Rücken (Hohlkreuz) · unkontrolliert auf den Kopf fallen · Ellenbogen nach außen wegdrehen · ohne Abrolltechnik für den Notausstieg üben.",
+        "scaling": "Leichter: Teilwiederholungen auf einen Kissenstapel, Weg über Wochen vergrößern. Schwerer: Defizit-HSPU auf Parallettes."
+      },
+      "media": {
+        "sketch": "hspu",
+        "videoQuery": "wall handstand push up tutorial"
+      }
+    },
+    {
+      "id": "decline-push-up",
+      "name": "Liegestütze, Füße erhöht",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Hände schulterbreit unter den Schultern, Füße auf Bank/Box, Körper eine Linie von Kopf bis Ferse.",
+        "execution": "Brust kontrolliert Richtung Boden, Ellenbogen ca. 45° zum Körper, dann vollständig hochdrücken. Bauch und Po bleiben die ganze Zeit fest.",
+        "faults": "Hüfte hängt durch oder ragt hoch · Kopf nickt vor · nur halbe Tiefe bei müden Sätzen.",
+        "scaling": "Leichter: normale Liegestütze am Boden. Schwerer: höhere Erhöhung oder 3-Sekunden-Negative."
+      },
+      "media": {
+        "sketch": "decline",
+        "videoQuery": "decline push up form"
+      }
+    },
+    {
+      "id": "ring-push-up",
+      "name": "Ring Push-ups",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Liegestützposition in Ringen knapp über dem Boden, Ringe eng am Körper.",
+        "execution": "Wie ein Liegestütz, aber die Instabilität der Ringe zwingt alles zur Mitarbeit. Unten Ringe leicht nach außen drehen (RTO light), oben Ringe eindrehen und Endposition stabilisieren.",
+        "faults": "Ringe flattern lassen statt aktiv stabilisieren · Ellenbogen kleben an den Ringen · zu tiefes Absinken ohne Schulterkontrolle.",
+        "scaling": "Leichter: Ringe höher einstellen (steilerer Winkel). Schwerer: Füße erhöhen, Ringe unten stärker ausdrehen."
+      },
+      "media": {
+        "sketch": "decline",
+        "videoQuery": "ring push up tutorial"
+      }
+    },
+    {
+      "id": "fly",
+      "name": "Ring- / Band-Flys",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Schräg in Ringe gelehnt (je steiler du stehst, desto leichter), Arme vor der Brust, leicht gebeugt.",
+        "execution": "Arme weit öffnen bis auf Brustlinie – die leichte Ellenbogenbeugung bleibt eingefroren – dann vor der Brust wieder zusammenführen und anspannen.",
+        "faults": "Aus dem Fly wird ein Push-up (Ellenbogen beugen sich beim Öffnen) · zu weit öffnen und Schulter überlasten · Hüfte knickt.",
+        "scaling": "Leichter: steiler stehen. Schwerer: flacher stehen, Füße weiter von den Ringen."
+      },
+      "media": {
+        "sketch": "fly",
+        "videoQuery": "ring fly tutorial"
+      }
+    },
+    {
+      "id": "triceps-extension",
+      "name": "Trizeps-Extensions",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Band hinter dem Körper fixiert oder unter dem Fuß, Ellenbogen über Kopf, eng neben den Ohren.",
+        "execution": "Nur der Unterarm streckt nach oben, die Ellenbogen bleiben wie festgeschraubt. Langsam ablassen – die Dehnung unten ist der wertvolle Teil für die Sehne.",
+        "faults": "Ellenbogen wandern nach außen/vorn · Schwung aus der Schulter · ruckartige Endstreckung.",
+        "scaling": "Leichter: schwächeres Band. Schwerer: langsamere Negative statt mehr Last."
+      },
+      "media": {
+        "sketch": "triceps",
+        "videoQuery": "overhead triceps extension band"
+      }
+    },
+    {
+      "id": "handstand-wall",
+      "name": "Wall Handstand (Bauch zur Wand)",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Vierfüßlerstand mit den Füßen an der Wand, Füße die Wand hochlaufen und die Hände Schritt für Schritt heranziehen, bis Bauch und Zehen die Wand berühren.",
+        "execution": "Hände schulterbreit, Finger gespreizt und die Kuppen aktiv in den Boden krallen. Schultern maximal nach oben schieben, Rippen einziehen, Po fest — der Körper ist eine Linie, kein Bogen. Ruhig weiteratmen. Diese Variante ist deutlich strenger als Rücken zur Wand, weil sie das Hohlkreuz unmöglich macht.",
+        "faults": "Bananen-Handstand mit offenen Rippen · Schultern nicht durchgestreckt, dadurch kippt das Gewicht auf die Handgelenke · die Wand tragen lassen statt nur zur Orientierung nutzen.",
+        "scaling": "Leichter: Hände etwas weiter von der Wand weg. Schwerer: Hände dichter an die Wand, länger halten, zwischendurch ein Bein lösen."
+      },
+      "media": {
+        "sketch": "hspu",
+        "videoQuery": "chest to wall handstand tutorial"
+      }
+    },
+    {
+      "id": "handstand-heel-pull",
+      "name": "Heel Pulls (von der Wand lösen)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Bauch-zur-Wand-Handstand, Hände etwa eine Handlänge von der Wand entfernt.",
+        "execution": "Erst ein Bein lösen, dann das zweite, und über die Fingerkuppen balancieren. Kippst du nach vorn, drückst du die Finger in den Boden; fällst du zurück, lässt du die Fersen wieder an die Wand. Jeder frei balancierte Moment zählt als Wiederholung, egal ob eine Sekunde oder fünf.",
+        "faults": "Beide Beine gleichzeitig wegreißen · die Balance über die Hüfte suchen statt über die Finger · Schultern wandern beim Lösen nach hinten.",
+        "scaling": "Leichter: nur ein Bein lösen und wieder ablegen. Schwerer: Hände weiter weg von der Wand, längere freie Phasen."
+      },
+      "media": {
+        "sketch": "hspu",
+        "videoQuery": "handstand heel pulls balance drill"
+      }
+    },
+    {
+      "id": "handstand-free",
+      "name": "Freier Handstand",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Freie Fläche mit Platz nach vorn. Vorher den Notausstieg üben — Abrollen oder Pirouette zur Seite. Wer weiß, wie er rauskommt, verkrampft nicht, und die Hälfte des Balanceverlusts ist Verkrampfung.",
+        "execution": "Kontrolliert hochkicken statt springen: ein Bein schwingt, das andere folgt sanft nach. Alles Weitere regeln die Finger — Druck in die Fingerkuppen, wenn du nach vorn kippst, Druck in die Handballen, wenn du zurückfällst. Die Zeit läuft ab dem Moment ohne Wandkontakt.",
+        "faults": "Zu kraftvoll hochkicken und drüberschießen · mit der Hüfte gegensteuern statt mit den Fingern · Blick zwischen die Hände statt leicht davor.",
+        "scaling": "Leichter: zurück zu Heel Pulls oder mit der Wand in Reichweite üben. Schwerer: längere Halten, später freie Handstand-Liegestütze."
+      },
+      "media": {
+        "sketch": "hspu",
+        "videoQuery": "freestanding handstand tutorial"
+      }
+    },
+    {
+      "id": "pistol-squat-assisted",
+      "name": "Pistol-Squat (assistiert)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Einbeiniger Stand, freies Bein nach vorn gestreckt, Arme nach vorn als Gegengewicht, Festhalten an Tür/Band/TRX erlaubt.",
+        "execution": "Auf einem Bein tief in die Hocke – Ferse bleibt komplett am Boden – bis die Hüfte unter dem Knie ist, dann hochdrücken. Die Hilfe (Festhalten oder auf Box absetzen) nur so viel wie nötig.",
+        "faults": "Ferse hebt ab (Sprunggelenk-Mobilität üben!) · Knie kollabiert nach innen · freies Bein berührt den Boden.",
+        "scaling": "Leichter: Box-Pistols (kontrolliert auf einen Kasten absetzen). Schwerer: Hilfe reduzieren, nur noch Fingerspitzen zur Balance."
+      },
+      "media": {
+        "sketch": "pistol",
+        "videoQuery": "assisted pistol squat progression"
+      }
+    },
+    {
+      "id": "pistol-squat",
+      "name": "Pistol-Squat (frei)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Wie assistiert, aber ohne Hilfe. Arme und freies Bein arbeiten aktiv als Gegengewicht nach vorn.",
+        "execution": "Langsam und kontrolliert absenken – die Abwärtsphase ist die halbe Miete – unten kurz stabilisieren, ohne Schwung hochdrücken.",
+        "faults": "Nach hinten wegkippen (Gegengewicht nach vorn!) · unten „plumpsen“ und aus dem Rebound hochspringen · Rundrücken.",
+        "scaling": "Leichter: bei müden Sätzen zurück zur Assistenz statt Form opfern. Schwerer: 3-Sekunden-Negative, Pause am tiefsten Punkt."
+      },
+      "media": {
+        "sketch": "pistol",
+        "videoQuery": "pistol squat tutorial"
+      }
+    },
+    {
+      "id": "pistol-squat-weighted",
+      "name": "Pistol-Squat mit Gewicht",
+      "unit": "reps",
+      "weighted": true,
+      "perSide": true,
+      "technique": {
+        "setup": "Kettlebell oder Hantel vor der Brust – das Gewicht macht die Balance paradoxerweise leichter.",
+        "execution": "Identisch zur freien Variante. In 2,5–5-kg-Schritten steigern.",
+        "faults": "Gewicht zu weit vom Körper halten · Tiefe reduzieren · Tempo erhöhen statt Kontrolle halten.",
+        "scaling": "Leichter: Gewicht reduzieren. Schwerer: +2,5 bis 5 kg."
+      },
+      "media": {
+        "sketch": "pistol",
+        "videoQuery": "weighted pistol squat"
+      }
+    },
+    {
+      "id": "bulgarian-split-squat",
+      "name": "Bulgarian Split Squats",
+      "unit": "reps",
+      "weighted": true,
+      "perSide": true,
+      "technique": {
+        "setup": "Ausfallschritt-Stand, hinterer Fußspann auf Bank/Box, vorderes Bein trägt. Oberkörper leicht vorgeneigt.",
+        "execution": "Senkrecht absenken, bis das hintere Knie fast den Boden berührt, vorderes Knie in Richtung der Zehen. Über die ganze Fußsohle des vorderen Beins hochdrücken. Gewicht in beide Hände für Progression.",
+        "faults": "Vorderer Fuß zu nah (Knie schiebt weit über die Zehen und die Ferse hebt) · Hüfte kippt seitlich ab · hinteres Bein schiebt aktiv mit.",
+        "scaling": "Leichter: ohne Gewicht, eine Hand hält sich leicht fest. Schwerer: mehr Gewicht oder langsame Abwärtsphase."
+      },
+      "media": {
+        "sketch": "split",
+        "videoQuery": "bulgarian split squat form"
+      }
+    },
+    {
+      "id": "nordic-curl-negative",
+      "name": "Nordic Curl Negative",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Kniestand auf Polster, Füße/Fersen fest fixiert (Partner, Sofa, Hantelbank), Hüfte gestreckt, Körper von Knie bis Kopf eine Linie.",
+        "execution": "So langsam wie irgend möglich nach vorn ablassen – die Beinbeuger bremsen. Wenn sie aufgeben, mit den Händen abfangen, kurz abdrücken, zurück in den Start. Nur die Negative zählt.",
+        "faults": "Hüfte knickt ein (dann arbeitet der Rücken statt der Beinbeuger) · zu schnell durchfallen · Fixierung zu locker.",
+        "scaling": "Leichter: Bewegungsweg verkürzen (früher abfangen) oder Hüfte minimal beugen. Schwerer: tiefer und langsamer, ohne Abfangen bis kurz vor dem Boden."
+      },
+      "media": {
+        "sketch": "nordic",
+        "videoQuery": "nordic hamstring curl beginner"
+      }
+    },
+    {
+      "id": "nordic-curl-band",
+      "name": "Nordic Curl (Band-assistiert konzentrisch)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Wie die Negative, zusätzlich ein starkes Widerstandsband von oben (Klimmzugstange) um die Brust.",
+        "execution": "Langsame Negative wie gehabt – aber jetzt zieht das Band mit und du arbeitest dich aktiv wieder hoch, ohne Hände. Bandstärke über Wochen reduzieren.",
+        "faults": "Mit den Armen nachhelfen · Hüfte beugen, um den Weg zu verkürzen · Band zu schwach gewählt und Form geopfert.",
+        "scaling": "Leichter: stärkeres Band. Schwerer: Band über Wochen schwächer wählen bis ganz ohne."
+      },
+      "media": {
+        "sketch": "nordic",
+        "videoQuery": "band assisted nordic curl"
+      }
+    },
+    {
+      "id": "calf-raise-single-leg",
+      "name": "Wadenheben, einbeinig",
+      "unit": "reps",
+      "weighted": true,
+      "perSide": true,
+      "technique": {
+        "setup": "Fußballen auf Stufe/Kante, Ferse frei in der Luft, Hand leicht zur Balance an der Wand.",
+        "execution": "Ferse tief unter die Stufenkante sinken lassen (volle Dehnung, 1 Sek. halten), dann so hoch wie möglich auf den Ballen drücken, oben 1 Sek. anspannen. Langsames, volles Tempo.",
+        "faults": "Federn ohne Endpositionen · Knie hilft durch Beugen und Strecken mit · nur halbe Dehnung unten.",
+        "scaling": "Leichter: beidbeinig. Schwerer: Zusatzgewicht in der Hand."
+      },
+      "media": {
+        "sketch": "calf",
+        "videoQuery": "single leg calf raise"
+      }
+    },
+    {
+      "id": "hanging-leg-raise",
+      "name": "Hanging Leg Raises",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Voller Hang an der Stange, Schultern aktiv (nicht passiv hängen), Beine gestreckt und geschlossen.",
+        "execution": "Beine gestreckt anheben, bis sie mindestens horizontal sind – dabei das Becken einrollen (das ist der eigentliche Bauch-Anteil). Langsam und ohne Pendeln absenken.",
+        "faults": "Schwungholen aus dem Pendeln · nur aus der Hüfte heben ohne Beckenrotation · Beine beugen bei den letzten Wiederholungen (dann lieber sauber im Tuck).",
+        "scaling": "Leichter: Knie anziehen statt Beine strecken (Knee Raises). Schwerer: langsamer, 1 Sekunde Pause in der Horizontalen."
+      },
+      "media": {
+        "sketch": "legraise",
+        "videoQuery": "hanging leg raise strict form"
+      }
+    },
+    {
+      "id": "toes-to-bar",
+      "name": "Toes to Bar",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Wie Leg Raises, voller aktiver Hang.",
+        "execution": "Gestreckte Beine so weit anheben, dass die Zehen die Stange berühren – der Rücken rollt dabei kontrolliert ein, die Hüfte kippt nach hinten. Genauso kontrolliert zurück, kein Fallenlassen.",
+        "faults": "Kipping/Schwung (das hier ist die strikte Variante) · Knie stark beugen kurz vor der Stange · unkontrolliertes Zurückschwingen.",
+        "scaling": "Leichter: gestreckte Beine so hoch wie möglich, auch ohne Stangenkontakt. Schwerer: extra-langsames Ablassen ohne jedes Pendeln."
+      },
+      "media": {
+        "sketch": "t2b",
+        "videoQuery": "strict toes to bar tutorial"
+      }
+    },
+    {
+      "id": "hollow-hold",
+      "name": "Hollow Body Hold",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Rückenlage, Arme über Kopf gestreckt, Beine gestreckt und geschlossen.",
+        "execution": "Unteren Rücken fest in den Boden pressen – das ist die eine Regel – dann Schultern und Beine so weit anheben, dass die Spannung hält. Flach atmen, Position halten. Leichter: Arme neben den Körper, Beine höher.",
+        "faults": "Unterer Rücken hebt vom Boden ab (sofort Beine höher!) · Luft anhalten · Kinn auf die Brust pressen.",
+        "scaling": "Leichter: Arme neben den Körper, Beine höher. Schwerer: Arme weiter über Kopf strecken, Beine tiefer halten."
+      },
+      "media": {
+        "sketch": "hollow",
+        "videoQuery": "hollow body hold tutorial"
+      }
+    },
+    {
+      "id": "hollow-rock",
+      "name": "Hollow Body Rocks",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Perfekter Hollow Body Hold als Ausgangsposition.",
+        "execution": "In der Hollow-Position vor- und zurückschaukeln wie ein Schaukelstuhl – die Körperform bleibt dabei komplett eingefroren, die Bewegung kommt nur aus dem Schwung.",
+        "faults": "Die Form „pumpt“ beim Schaukeln (Beine wippen) · Anschwung aus den Schultern statt gleichmäßigem Rollen · unterer Rücken verliert den Bodenkontakt in der Rücklage.",
+        "scaling": "Leichter: kleinere Schaukelbewegung. Schwerer: größerer Bewegungsbereich bei komplett eingefrorener Form."
+      },
+      "media": {
+        "sketch": "hollow",
+        "videoQuery": "hollow body rocks tutorial"
+      }
+    },
+    {
+      "id": "side-plank-rotation",
+      "name": "Side Plank + Rotation",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Seitstütz auf dem Unterarm, Ellenbogen unter der Schulter, Körper eine Linie, Hüfte hoch, freier Arm nach oben gestreckt.",
+        "execution": "Den oberen Arm unter dem Körper durchführen (Oberkörper rotiert mit), dann kontrolliert zurück öffnen bis zur Ausgangsposition. Die Hüfte bleibt die ganze Zeit oben.",
+        "faults": "Hüfte sackt ab · Rotation nur aus dem Arm statt aus dem Rumpf · Schulter des Stützarms eingesunken.",
+        "scaling": "Leichter: auf dem Knie statt auf den Füßen abstützen. Schwerer: Füße auf eine Erhöhung legen."
+      },
+      "media": {
+        "sketch": "sideplank",
+        "videoQuery": "side plank rotation"
+      }
+    },
+    {
+      "id": "dead-hang",
+      "name": "Dead Hang",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Beidhändiger Obergriff, voller Hang, Füße frei.",
+        "execution": "Einfach hängen und atmen – hier dürfen die Schultern ausnahmsweise passiv Richtung Ohren. Griffkraft, Schulterentlastung und Dekompression für die Wirbelsäule nach dem Training.",
+        "faults": "Verkrampfen statt loslassen · abspringen statt kontrolliert absteigen, wenn der Griff aufgibt.",
+        "scaling": "Leichter: Füße stützen einen Teil des Gewichts ab. Schwerer: Zusatzgewicht oder Handtuch über der Stange greifen."
+      },
+      "media": {
+        "sketch": "deadhang",
+        "videoQuery": "dead hang form benefits"
+      }
+    }
+  ],
+  "progressions": [
+    {
+      "id": "muscle-up-pull",
+      "steps": [
+        {
+          "exercise": "explosive-pull-up",
+          "target": {
+            "label": "5 × 3",
+            "sets": 5,
+            "min": 3,
+            "max": 3,
+            "restSec": 180,
+            "unlockAt": 3
+          }
+        },
+        {
+          "exercise": "chest-to-bar-pull-up",
+          "target": {
+            "label": "5 × 3–5",
+            "sets": 5,
+            "min": 3,
+            "max": 5,
+            "restSec": 180,
+            "unlockAt": 5
+          }
+        },
+        {
+          "exercise": "muscle-up",
+          "target": {
+            "label": "5 × 1–3",
+            "sets": 5,
+            "min": 1,
+            "max": 3,
+            "restSec": 180,
+            "unlockAt": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "bar-dip",
+      "steps": [
+        {
+          "exercise": "straight-bar-dip",
+          "target": {
+            "label": "4 × 6–8",
+            "sets": 4,
+            "min": 6,
+            "max": 8,
+            "restSec": 120,
+            "unlockAt": 8
+          }
+        },
+        {
+          "exercise": "russian-dip",
+          "target": {
+            "label": "4 × 5–8",
+            "sets": 4,
+            "min": 5,
+            "max": 8,
+            "restSec": 120,
+            "unlockAt": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "muscle-up-transition",
+      "steps": [
+        {
+          "exercise": "muscle-up-band",
+          "target": {
+            "label": "3 × 3–5",
+            "sets": 3,
+            "min": 3,
+            "max": 5,
+            "restSec": 150,
+            "unlockAt": 5
+          }
+        },
+        {
+          "exercise": "muscle-up-negative",
+          "target": {
+            "label": "3 × 3–4",
+            "sets": 3,
+            "min": 3,
+            "max": 4,
+            "restSec": 150,
+            "unlockAt": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "pull-up",
+      "steps": [
+        {
+          "exercise": "pull-up",
+          "target": {
+            "label": "4 × 6–8",
+            "sets": 4,
+            "min": 6,
+            "max": 8,
+            "restSec": 180,
+            "unlockAt": 8
+          }
+        },
+        {
+          "exercise": "pull-up-weighted",
+          "target": {
+            "label": "4 × 5–8",
+            "sets": 4,
+            "min": 5,
+            "max": 8,
+            "restSec": 180,
+            "unlockAt": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "row",
+      "steps": [
+        {
+          "exercise": "body-row",
+          "target": {
+            "label": "3 × 10–12",
+            "sets": 3,
+            "min": 10,
+            "max": 12,
+            "restSec": 90,
+            "unlockAt": 12
+          }
+        },
+        {
+          "exercise": "tuck-front-lever-row",
+          "target": {
+            "label": "3 × 6–8",
+            "sets": 3,
+            "min": 6,
+            "max": 8,
+            "restSec": 120,
+            "unlockAt": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "one-arm-pull",
+      "steps": [
+        {
+          "exercise": "uneven-pull-up",
+          "target": {
+            "label": "3 × 3–5 / Seite",
+            "sets": 3,
+            "min": 3,
+            "max": 5,
+            "restSec": 150,
+            "unlockAt": 5
+          }
+        },
+        {
+          "exercise": "archer-pull-up",
+          "target": {
+            "label": "3 × 4–6 / Seite",
+            "sets": 3,
+            "min": 4,
+            "max": 6,
+            "restSec": 120,
+            "unlockAt": 6
+          }
+        },
+        {
+          "exercise": "typewriter-pull-up",
+          "target": {
+            "label": "3 × 3–5 / Seite",
+            "sets": 3,
+            "min": 3,
+            "max": 5,
+            "restSec": 150,
+            "unlockAt": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "scapula",
+      "steps": [
+        {
+          "exercise": "scapula-shrug",
+          "target": {
+            "label": "3 × 10",
+            "sets": 3,
+            "min": 10,
+            "max": 10,
+            "restSec": 60,
+            "unlockAt": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "biceps",
+      "steps": [
+        {
+          "exercise": "biceps-curl",
+          "target": {
+            "label": "2 × 12–15",
+            "sets": 2,
+            "min": 12,
+            "max": 15,
+            "restSec": 60,
+            "unlockAt": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "l-sit",
+      "steps": [
+        {
+          "exercise": "l-sit-floor",
+          "target": {
+            "label": "6 × max — Σ 45–60 s",
+            "sets": 6,
+            "restSec": 90,
+            "unlockAt": 10
+          }
+        },
+        {
+          "exercise": "l-sit-parallettes",
+          "target": {
+            "label": "5 × 10–20 s",
+            "sets": 5,
+            "min": 10,
+            "max": 20,
+            "restSec": 90,
+            "unlockAt": 15
+          }
+        },
+        {
+          "exercise": "v-sit-prep",
+          "target": {
+            "label": "4 × 8–15 s",
+            "sets": 4,
+            "min": 8,
+            "max": 15,
+            "restSec": 120,
+            "unlockAt": 12
+          }
+        }
+      ]
+    },
+    {
+      "id": "planche",
+      "steps": [
+        {
+          "exercise": "pseudo-planche-push-up",
+          "target": {
+            "label": "4 × 6–8",
+            "sets": 4,
+            "min": 6,
+            "max": 8,
+            "restSec": 120,
+            "unlockAt": 8
+          }
+        },
+        {
+          "exercise": "pseudo-planche-push-up-elevated",
+          "target": {
+            "label": "4 × 5–8",
+            "sets": 4,
+            "min": 5,
+            "max": 8,
+            "restSec": 120,
+            "unlockAt": 8
+          }
+        },
+        {
+          "exercise": "tuck-planche",
+          "target": {
+            "label": "5 × 5–12 s",
+            "sets": 5,
+            "min": 5,
+            "max": 12,
+            "restSec": 150,
+            "unlockAt": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "dip",
+      "steps": [
+        {
+          "exercise": "dip",
+          "target": {
+            "label": "4 × 8–12",
+            "sets": 4,
+            "min": 8,
+            "max": 12,
+            "restSec": 180,
+            "unlockAt": 12
+          }
+        },
+        {
+          "exercise": "dip-weighted",
+          "target": {
+            "label": "4 × 6–10",
+            "sets": 4,
+            "min": 6,
+            "max": 10,
+            "restSec": 180,
+            "unlockAt": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "vertical-push",
+      "steps": [
+        {
+          "exercise": "pike-push-up",
+          "target": {
+            "label": "4 × 6–10",
+            "sets": 4,
+            "min": 6,
+            "max": 10,
+            "restSec": 120,
+            "unlockAt": 10
+          }
+        },
+        {
+          "exercise": "pike-push-up-elevated",
+          "target": {
+            "label": "4 × 5–8",
+            "sets": 4,
+            "min": 5,
+            "max": 8,
+            "restSec": 120,
+            "unlockAt": 8
+          }
+        },
+        {
+          "exercise": "handstand-push-up-wall",
+          "target": {
+            "label": "4 × 3–6",
+            "sets": 4,
+            "min": 3,
+            "max": 6,
+            "restSec": 180,
+            "unlockAt": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "horizontal-push",
+      "steps": [
+        {
+          "exercise": "decline-push-up",
+          "target": {
+            "label": "3 × 12–15",
+            "sets": 3,
+            "min": 12,
+            "max": 15,
+            "restSec": 90,
+            "unlockAt": 15
+          }
+        },
+        {
+          "exercise": "ring-push-up",
+          "target": {
+            "label": "3 × 8–12",
+            "sets": 3,
+            "min": 8,
+            "max": 12,
+            "restSec": 120,
+            "unlockAt": 12
+          }
+        }
+      ]
+    },
+    {
+      "id": "fly",
+      "steps": [
+        {
+          "exercise": "fly",
+          "target": {
+            "label": "3 × 10–12",
+            "sets": 3,
+            "min": 10,
+            "max": 12,
+            "restSec": 60,
+            "unlockAt": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "triceps",
+      "steps": [
+        {
+          "exercise": "triceps-extension",
+          "target": {
+            "label": "2 × 12–15",
+            "sets": 2,
+            "min": 12,
+            "max": 15,
+            "restSec": 60,
+            "unlockAt": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "handstand",
+      "steps": [
+        {
+          "exercise": "handstand-wall",
+          "target": {
+            "label": "5 × 20–40 s",
+            "sets": 5,
+            "min": 20,
+            "max": 40,
+            "restSec": 90,
+            "unlockAt": 40
+          }
+        },
+        {
+          "exercise": "handstand-heel-pull",
+          "target": {
+            "label": "5 × 3–5",
+            "sets": 5,
+            "min": 3,
+            "max": 5,
+            "restSec": 90,
+            "unlockAt": 5
+          }
+        },
+        {
+          "exercise": "handstand-free",
+          "target": {
+            "label": "6 × max — Σ 60 s",
+            "sets": 6,
+            "restSec": 90,
+            "unlockAt": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": "pistol",
+      "steps": [
+        {
+          "exercise": "pistol-squat-assisted",
+          "target": {
+            "label": "4 × 4–6 / Seite",
+            "sets": 4,
+            "min": 4,
+            "max": 6,
+            "restSec": 120,
+            "unlockAt": 6
+          }
+        },
+        {
+          "exercise": "pistol-squat",
+          "target": {
+            "label": "4 × 4–6 / Seite",
+            "sets": 4,
+            "min": 4,
+            "max": 6,
+            "restSec": 120,
+            "unlockAt": 6
+          }
+        },
+        {
+          "exercise": "pistol-squat-weighted",
+          "target": {
+            "label": "4 × 4–6 / Seite",
+            "sets": 4,
+            "min": 4,
+            "max": 6,
+            "restSec": 150,
+            "unlockAt": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "split-squat",
+      "steps": [
+        {
+          "exercise": "bulgarian-split-squat",
+          "target": {
+            "label": "4 × 8–10 / Seite",
+            "sets": 4,
+            "min": 8,
+            "max": 10,
+            "restSec": 120,
+            "unlockAt": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "nordic",
+      "steps": [
+        {
+          "exercise": "nordic-curl-negative",
+          "target": {
+            "label": "3 × 4–6",
+            "sets": 3,
+            "min": 4,
+            "max": 6,
+            "restSec": 120,
+            "unlockAt": 6
+          }
+        },
+        {
+          "exercise": "nordic-curl-band",
+          "target": {
+            "label": "3 × 3–5",
+            "sets": 3,
+            "min": 3,
+            "max": 5,
+            "restSec": 150,
+            "unlockAt": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "calf",
+      "steps": [
+        {
+          "exercise": "calf-raise-single-leg",
+          "target": {
+            "label": "3 × 12–15 / Seite",
+            "sets": 3,
+            "min": 12,
+            "max": 15,
+            "restSec": 60,
+            "unlockAt": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "leg-raise",
+      "steps": [
+        {
+          "exercise": "hanging-leg-raise",
+          "target": {
+            "label": "4 × 8–12",
+            "sets": 4,
+            "min": 8,
+            "max": 12,
+            "restSec": 90,
+            "unlockAt": 12
+          }
+        },
+        {
+          "exercise": "toes-to-bar",
+          "target": {
+            "label": "4 × 6–10",
+            "sets": 4,
+            "min": 6,
+            "max": 10,
+            "restSec": 120,
+            "unlockAt": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "hollow",
+      "steps": [
+        {
+          "exercise": "hollow-hold",
+          "target": {
+            "label": "3 × 20–30 s",
+            "sets": 3,
+            "min": 20,
+            "max": 30,
+            "restSec": 60,
+            "unlockAt": 30
+          }
+        },
+        {
+          "exercise": "hollow-rock",
+          "target": {
+            "label": "3 × 10–15",
+            "sets": 3,
+            "min": 10,
+            "max": 15,
+            "restSec": 90,
+            "unlockAt": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": "side-plank",
+      "steps": [
+        {
+          "exercise": "side-plank-rotation",
+          "target": {
+            "label": "2 × 8–10 / Seite",
+            "sets": 2,
+            "min": 8,
+            "max": 10,
+            "restSec": 60,
+            "unlockAt": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "hang",
+      "steps": [
+        {
+          "exercise": "dead-hang",
+          "target": {
+            "label": "2 × max",
+            "sets": 2,
+            "restSec": 90,
+            "unlockAt": null
+          }
+        }
+      ]
+    }
+  ],
+  "workouts": [
+    {
+      "id": "pull",
+      "name": "Tag A",
+      "focus": "Pull · Muscle-up",
+      "slots": [
+        {
+          "block": "skill",
+          "progression": "muscle-up-pull"
+        },
+        {
+          "block": "skill",
+          "progression": "bar-dip"
+        },
+        {
+          "block": "skill",
+          "progression": "muscle-up-transition"
+        },
+        {
+          "block": "strength",
+          "progression": "pull-up"
+        },
+        {
+          "block": "strength",
+          "progression": "one-arm-pull"
+        },
+        {
+          "block": "strength",
+          "progression": "row"
+        },
+        {
+          "block": "accessory",
+          "progression": "scapula"
+        },
+        {
+          "block": "accessory",
+          "progression": "biceps"
+        }
+      ],
+      "warmup": [
+        {
+          "id": "pull-warm-armkreisen",
+          "name": "Armkreisen",
+          "detail": "je 20 s vor- und rückwärts, groß und langsam"
+        },
+        {
+          "id": "pull-warm-band-pull-aparts",
+          "name": "Band Pull-Aparts",
+          "detail": "2 × 15 — hintere Schulter aufwecken"
+        },
+        {
+          "id": "pull-warm-scapula-pull-ups",
+          "name": "Scapula Pull-ups",
+          "detail": "2 × 8 an der Stange, Arme bleiben gestreckt"
+        },
+        {
+          "id": "pull-warm-dead-hang-locker",
+          "name": "Dead Hang locker",
+          "detail": "30 s, Schultern bewusst loslassen"
+        },
+        {
+          "id": "pull-warm-ellenbogen-aufwaermen",
+          "name": "Ellenbogen aufwärmen",
+          "detail": "20 Curls ohne Gewicht, dann 20 s Unterarme kreisen"
+        },
+        {
+          "id": "pull-warm-2-3-leichte-klimmzuege",
+          "name": "2–3 leichte Klimmzüge",
+          "detail": "betont langsam, als letzte Vorbereitung"
+        }
+      ],
+      "cooldown": [
+        {
+          "id": "pull-cool-cardio-locker",
+          "name": "Cardio locker",
+          "detail": "15–25 min Rad oder Laufen im Unterhaltungstempo — antippen zum Eintragen",
+          "cardio": true
+        },
+        {
+          "id": "pull-cool-lat-dehnung-an-der-stange",
+          "name": "Lat-Dehnung an der Stange",
+          "detail": "30 s pro Seite, Hüfte weg vom Griff schieben"
+        },
+        {
+          "id": "pull-cool-brust-bizepsdehnung-an-der-wand",
+          "name": "Brust-/Bizepsdehnung an der Wand",
+          "detail": "30 s pro Seite, Arm auf Schulterhöhe"
+        },
+        {
+          "id": "pull-cool-unterarme-dehnen",
+          "name": "Unterarme dehnen",
+          "detail": "je 20 s Beuger und Strecker — wichtig nach viel Griffarbeit"
+        },
+        {
+          "id": "pull-cool-passiver-dead-hang",
+          "name": "Passiver Dead Hang",
+          "detail": "30 s, komplett hängen lassen (Dekompression)"
+        },
+        {
+          "id": "pull-cool-nacken-seitlich",
+          "name": "Nacken seitlich",
+          "detail": "20 s pro Seite, Schulter bleibt unten"
+        }
+      ]
+    },
+    {
+      "id": "push",
+      "name": "Tag B",
+      "focus": "Push · L-Sit",
+      "slots": [
+        {
+          "block": "skill",
+          "progression": "handstand"
+        },
+        {
+          "block": "skill",
+          "progression": "l-sit"
+        },
+        {
+          "block": "skill",
+          "progression": "planche"
+        },
+        {
+          "block": "strength",
+          "progression": "dip"
+        },
+        {
+          "block": "strength",
+          "progression": "vertical-push"
+        },
+        {
+          "block": "strength",
+          "progression": "horizontal-push"
+        },
+        {
+          "block": "accessory",
+          "progression": "fly"
+        },
+        {
+          "block": "accessory",
+          "progression": "triceps"
+        }
+      ],
+      "warmup": [
+        {
+          "id": "push-warm-handgelenke-mobilisieren",
+          "name": "Handgelenke mobilisieren",
+          "detail": "60 s: kreisen, Handflächen und Handrücken am Boden wiegen — Pflicht vor PPPU"
+        },
+        {
+          "id": "push-warm-armkreisen",
+          "name": "Armkreisen",
+          "detail": "je 20 s vor- und rückwärts"
+        },
+        {
+          "id": "push-warm-schulterdislokationen",
+          "name": "Schulterdislokationen",
+          "detail": "2 × 10 mit Band oder Besenstiel, weiter Griff"
+        },
+        {
+          "id": "push-warm-cat-cow",
+          "name": "Cat-Cow",
+          "detail": "10 Wiederholungen, Wirbelsäule Segment für Segment"
+        },
+        {
+          "id": "push-warm-scapula-push-ups",
+          "name": "Scapula Push-ups",
+          "detail": "2 × 10 — Protraktion für Planche und L-Sit"
+        },
+        {
+          "id": "push-warm-2-8-leichte-liegestuetze",
+          "name": "2 × 8 leichte Liegestütze",
+          "detail": "als letzte Vorbereitung"
+        }
+      ],
+      "cooldown": [
+        {
+          "id": "push-cool-cardio-locker",
+          "name": "Cardio locker",
+          "detail": "15–25 min Rad oder Laufen im Unterhaltungstempo — antippen zum Eintragen",
+          "cardio": true
+        },
+        {
+          "id": "push-cool-brustdehnung-im-tuerrahmen",
+          "name": "Brustdehnung im Türrahmen",
+          "detail": "30 s pro Seite, Unterarm am Rahmen, Brust nach vorn"
+        },
+        {
+          "id": "push-cool-trizeps-ueber-kopf",
+          "name": "Trizeps über Kopf",
+          "detail": "20 s pro Seite, Ellenbogen sanft nach hinten ziehen"
+        },
+        {
+          "id": "push-cool-handgelenke-dehnen",
+          "name": "Handgelenke dehnen",
+          "detail": "je 20 s Beuger und Strecker"
+        },
+        {
+          "id": "push-cool-kindhaltung-mit-langen-armen",
+          "name": "Kindhaltung mit langen Armen",
+          "detail": "45 s, Achseln Richtung Boden sinken lassen"
+        },
+        {
+          "id": "push-cool-schulter-quer-dehnen",
+          "name": "Schulter quer dehnen",
+          "detail": "20 s pro Seite"
+        }
+      ]
+    },
+    {
+      "id": "legs",
+      "name": "Tag C",
+      "focus": "Beine · Core",
+      "slots": [
+        {
+          "block": "skill",
+          "progression": "pistol"
+        },
+        {
+          "block": "strength",
+          "progression": "split-squat"
+        },
+        {
+          "block": "strength",
+          "progression": "nordic"
+        },
+        {
+          "block": "strength",
+          "progression": "calf"
+        },
+        {
+          "block": "core",
+          "progression": "leg-raise"
+        },
+        {
+          "block": "core",
+          "progression": "hollow"
+        },
+        {
+          "block": "core",
+          "progression": "side-plank"
+        },
+        {
+          "block": "extra",
+          "progression": "hang"
+        }
+      ],
+      "warmup": [
+        {
+          "id": "legs-warm-knoechel-mobilisieren",
+          "name": "Knöchel mobilisieren",
+          "detail": "2 × 10 pro Seite: Knie über die Zehen schieben, Ferse bleibt unten — Pflicht für Pistols"
+        },
+        {
+          "id": "legs-warm-hueftkreisen",
+          "name": "Hüftkreisen",
+          "detail": "je 10 pro Richtung"
+        },
+        {
+          "id": "legs-warm-beinschwingen",
+          "name": "Beinschwingen",
+          "detail": "10 pro Seite vor/zurück, dann 10 seitlich"
+        },
+        {
+          "id": "legs-warm-bodyweight-squats",
+          "name": "Bodyweight Squats",
+          "detail": "15 Wiederholungen, tief und kontrolliert"
+        },
+        {
+          "id": "legs-warm-glute-bridges",
+          "name": "Glute Bridges",
+          "detail": "15 Wiederholungen, oben 1 s halten"
+        },
+        {
+          "id": "legs-warm-leichte-ausfallschritte",
+          "name": "Leichte Ausfallschritte",
+          "detail": "8 pro Seite"
+        }
+      ],
+      "cooldown": [
+        {
+          "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+          "name": "Hüftbeuger im Ausfallschritt",
+          "detail": "30 s pro Seite, Becken aufrichten"
+        },
+        {
+          "id": "legs-cool-hamstrings-im-sitzen",
+          "name": "Hamstrings im Sitzen",
+          "detail": "30 s pro Seite, Rücken lang statt rund"
+        },
+        {
+          "id": "legs-cool-quadrizeps-im-stand",
+          "name": "Quadrizeps im Stand",
+          "detail": "30 s pro Seite, Knie zeigt nach unten"
+        },
+        {
+          "id": "legs-cool-waden-an-der-wand",
+          "name": "Waden an der Wand",
+          "detail": "30 s pro Seite, Ferse am Boden"
+        },
+        {
+          "id": "legs-cool-taubenstellung",
+          "name": "Taubenstellung",
+          "detail": "30 s pro Seite — Gesäß und Piriformis"
+        }
+      ]
+    }
+  ],
+  "weekplan": {
+    "sun": "pull",
+    "mon": "legs",
+    "wed": "push"
+  }
+}
