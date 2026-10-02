@@ -92,6 +92,11 @@ export interface Session {
   sets: SetLog[];
   skipped: ExerciseId[];
   routineDone: RoutineItemId[];
+  /** heute geplante Satzzahl je Progression, wenn vom Ziel abgewichen wurde (± in
+      der Ansicht). Noch nicht im Payload-Schema – kommt mit dem Sync. */
+  setPlan?: Record<ProgressionId, number>;
+  /** letzte Änderung in ms – Grundlage für den Sync */
+  updatedAt?: number;
 }
 
 export interface Activity {

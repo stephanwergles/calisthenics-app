@@ -103,6 +103,8 @@ Liegt im selben Repo neben der v1-`index.html` – Aufbau und Befehle in `README
 - **`payload run` reicht nur Positionsargumente durch**, Flags wie `--email` verschluckt es. Skripte deshalb mit Positionsargumenten bauen.
 - **Bei jeder Planänderung in v1:** `npm run catalog:extract` (neue Übung → ID in `EXERCISE_IDS` in `scripts/extract-catalog.ts`), bei Bedeutungswechsel einer v1-Position einen datierten Eintrag in `src/migrate/v1-history.ts`, dann `npm test`.
 - Lokale DB: `npm run db:up` (Docker, Port 5433). Echte Trainingsexporte nie ins Repo – es ist öffentlich (`.gitignore` schließt `calisthenics-log-*.json` aus).
+- **Trainingsansicht** (`src/client/`): Logik ausschließlich in `logic.ts` als reine Funktionen (getestet in `test/logic.test.ts`), Komponenten bleiben dünn. Daten lokal in IndexedDB (`db.ts`), Zustand in `useTraining.ts`. Historie wird **pro Übungs-ID** gesucht, nie pro Slot. Datum immer über `localDate()`. Gleiche Gestaltungsregeln wie v1 (Tokens, Button-Varianten, 44px, „Fläche oder Rand = anfassbar“), Fokus auf die aktive Übung, alle anderen als kompakte Zeilen, Leiste unten einzeilig.
+- `APP_VERSION` in `src/client/version.ts` bei jedem Deploy erhöhen; bei Änderungen an `public/sw.js` dessen `CACHE` hochzählen. Der Service Worker läuft nur im Produktionsbuild.
 - Vor Abschluss: `npm test` und `npm run build`.
 
 ## Deployment

@@ -46,7 +46,8 @@ Startkriterium gilt als erfüllt: 16 Einheiten seit Juli, App wird ausschließli
 - [x] Datenmodell mit stabilen IDs, Katalog (47 Übungen, 24 Progressionen, 3 Workouts), Import für v1-Exporte — an allen Exporten seit Juli geprüft: 405/405 Sätze, fünf Positions-Bedeutungswechsel aus der Git-Historie korrekt aufgelöst
 - [x] Payload-Projekt im selben Repo: Collections, deutscher Admin, Migrationen, Seed- und Import-Skript; lokal mit echter Historie getestet, Produktions-Build grün
 - [ ] Deployment auf Ploi (blank-apps, Postgres) — Anleitung in README.md
-- [ ] Offline-Client (IndexedDB) mit Trainingsansicht
+- [x] Offline-Client (IndexedDB) mit Trainingsansicht: Fokus auf aktive Übung, Satz-Editor, Überspringen/Pausieren/Freischalten, Pausen- und Session-Timer, Wake Lock, Warm-up/Cool-down mit Cardio, v1-Import im Browser, Service Worker — lokal mit echter Historie und ohne Server getestet
+- [ ] Activity: Kalender und Fortschritt in v2
 - [ ] Sync zwischen Client und Payload
 - Monorepo/Projekt-Setup: Next.js (App Router) + Payload 3 + Postgres, Deployment auf eigener Infra (Ploi/Hetzner — bestehender Agentur-Stack)
 - Payload-Collections aus dem v1-Datenmodell ableiten (die Struktur ist 1:1 übertragbar):
