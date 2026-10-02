@@ -178,3 +178,125 @@ export function workoutSlots(ix: Index, workout: WorkoutId, user: UserState, tod
     }
   })
 }
+
+/* ── Verlauf: Kalender ───────────────────────────────────────────────────── */
+
+/** Einheit zählt als trainiert, sobald ein Satz oder eine Dauer drinsteht */
+export const isTrained = (s: Session) => s.sets.length > 0 || (s.durationSec ?? 0) > 0
+
+/** Tage mit Einheit bzw. Aktivität, für die Markierungen im Kalender */
+export function calendarMarks(sessions: Session[], activities: Activity[]) {
+  return {
+    trained: new Set(sessions.filter(isTrained).map(s => s.date)),
+    cardio: new Set(activities.map(a => a.date)),
+  }
+}
+
+/** Monatsraster mit Wochenstart Montag: `lead` leere Zellen, dann alle Tage als YYYY-MM-DD */
+export function monthGrid(month: string): { lead: number; days: string[] } {
+  const [y, m] = month.split('-').map(Number)
+  const lead = (new Date(y, m - 1, 1).getDay() + 6) % 7
+  const count = new Date(y, m, 0).getDate()
+  return { lead, days: Array.from({ length: count }, (_, i) => `${month}-${String(i + 1).padStart(2, '0')}`) }
+}
+export function shiftMonth(month: string, delta: number): string {
+  const [y, m] = month.split('-').map(Number)
+  const d = new Date(y, m - 1 + delta, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+export const fmtMonth = (month: string) =>
+  new Date(`${month}-15T12:00`).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })
+export const fmtShortDate = (date: string) => `${date.slice(8, 10)}.${date.slice(5, 7)}.`
+
+/** Sätze einer Einheit gruppiert nach Übung, in Trainingsreihenfolge des Workouts
+    (Übungen, die nicht mehr im Plan stehen, hinten dran) */
+export function sessionExercises(ix: Index, s: Session): { exercise: Exercise; sets: SetLog[] }[] {
+  const order = new Map<ExerciseId, number>()
+  ix.workouts.get(s.workout)?.slots.forEach((sl, i) =>
+    ix.progressions.get(sl.progression)?.steps.forEach(st => order.set(st.exercise, i)))
+  const ids = [...new Set(s.sets.map(x => x.exercise))]
+    .sort((a, b) => (order.get(a) ?? 999) - (order.get(b) ?? 999))
+  return ids.flatMap(id => {
+    const exercise = ix.exercises.get(id)
+    return exercise ? [{ exercise, sets: setsOf(s, id) }] : []
+  })
+}
+
+const ACTIVITY_LABEL: Record<Activity['kind'], string> = { run: 'Lauf', ride: 'Rad', workout: 'Workout' }
+export const activityTitle = (a: Activity) => a.name || ACTIVITY_LABEL[a.kind]
+export const fmtActivity = (a: Activity) => [
+  a.durationMin ? `${a.durationMin} min` : null,
+  a.distanceKm ? `${String(a.distanceKm).replace('.', ',')} km` : null,
+  a.elevationM ? `${a.elevationM} hm` : null,
+  a.rounds ? `${a.rounds} Runden` : null,
+].filter(Boolean).join(' · ')
+
+/* ── Verlauf: Fortschritt ────────────────────────────────────────────────── */
+
+export interface HistoryPoint {
+  date: string
+  exercise: ExerciseId
+  step: number          // Stufe innerhalb der Progression (0-basiert)
+  sets: SetLog[]
+  sum: number           // so denkt man selbst: „in Summe mehr geworden“
+  best: number
+  weightKg: number
+}
+
+/** Verlauf einer Progression über alle Stufen: je Einheit Summe, bester Satz, höchstes Zusatzgewicht.
+    Die Historie folgt der Übungs-ID – egal, über welches Workout sie trainiert wurde. */
+export function progressionHistory(ix: Index, sessions: Session[], pid: ProgressionId): HistoryPoint[] {
+  const steps = ix.progressions.get(pid)?.steps ?? []
+  const out: HistoryPoint[] = []
+  for (const s of sessions) {
+    steps.forEach((st, step) => {
+      const sets = setsOf(s, st.exercise)
+      if (!sets.length) return
+      out.push({
+        date: s.date, exercise: st.exercise, step, sets,
+        sum: sets.reduce((n, x) => n + x.value, 0),
+        best: Math.max(...sets.map(x => x.value)),
+        weightKg: Math.max(0, ...sets.map(x => x.weightKg ?? 0)),
+      })
+    })
+  }
+  return out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.step - b.step))
+}
+
+export interface ProgressSummary {
+  pid: ProgressionId
+  step: Step
+  history: HistoryPoint[]
+  current: HistoryPoint[]          // nur Einheiten der aktuellen Stufe
+  last?: HistoryPoint
+  prev?: HistoryPoint
+  delta: number | null             // Summe letzte minus vorletzte Einheit derselben Stufe
+  best: number | null
+  weightKg: number
+  paused: boolean
+  ready: boolean
+}
+
+export function progressSummary(ix: Index, user: UserState, sessions: Session[], pid: ProgressionId): ProgressSummary {
+  const step = currentStep(ix, user, pid)
+  const history = progressionHistory(ix, sessions, pid)
+  const current = history.filter(h => h.exercise === step.exercise.id)
+  const last = current.at(-1), prev = current.at(-2)
+  const paused = user.paused.includes(pid)
+  return {
+    pid, step, history, current, last, prev,
+    delta: last && prev ? last.sum - prev.sum : null,
+    best: current.length ? Math.max(...current.map(h => h.best)) : null,
+    weightKg: Math.max(0, ...current.map(h => h.weightKg)),
+    paused,
+    ready: !paused && !!step.next && readyToProgress(sessions, step.exercise.id, step.target),
+  }
+}
+
+/** Fortschritt aller Workouts in Wochenreihenfolge; Progressionen ohne Historie fallen weg */
+export function progressOverview(ix: Index, user: UserState, sessions: Session[]) {
+  return workoutsInWeekOrder(ix).map(w => ({
+    workout: w,
+    tiles: w.slots.map(sl => progressSummary(ix, user, sessions, sl.progression)).filter(p => p.history.length > 0),
+  })).filter(g => g.tiles.length > 0)
+}

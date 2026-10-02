@@ -47,7 +47,7 @@ Startkriterium gilt als erfüllt: 16 Einheiten seit Juli, App wird ausschließli
 - [x] Payload-Projekt im selben Repo: Collections, deutscher Admin, Migrationen, Seed- und Import-Skript; lokal mit echter Historie getestet, Produktions-Build grün
 - [x] Deployment auf Ploi (blank-apps, Postgres) — https://calisthenics.apps.blank-studio.de, Anleitung in README.md
 - [x] Offline-Client (IndexedDB) mit Trainingsansicht: Fokus auf aktive Übung, Satz-Editor, Überspringen/Pausieren/Freischalten, Pausen- und Session-Timer, Wake Lock, Warm-up/Cool-down mit Cardio, v1-Import im Browser, Service Worker — lokal mit echter Historie und ohne Server getestet
-- [ ] Activity: Kalender und Fortschritt in v2
+- [x] Verlauf: Kalender mit Tagesansicht und Cardio für beliebige Tage, Fortschritt pro Übung über alle Stufen
 - [x] Sync zwischen Client und Payload: Postausgang, ein Endpunkt, jüngere Änderung gewinnt, Katalog kommt vom Server
 - Monorepo/Projekt-Setup: Next.js (App Router) + Payload 3 + Postgres, Deployment auf eigener Infra (Ploi/Hetzner — bestehender Agentur-Stack)
 - Payload-Collections aus dem v1-Datenmodell ableiten (die Struktur ist 1:1 übertragbar):

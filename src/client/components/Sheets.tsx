@@ -74,19 +74,19 @@ export function SetSheet({ t, slot, setNo, rest, onClose, onSaved }: {
 }
 
 /** Cardio erfassen – Lauf oder Rad, Dauer, optional Distanz und Höhenmeter */
-export function ActivitySheet({ t, onClose }: { t: Training; onClose: () => void }) {
+export function ActivitySheet({ t, date, onClose }: { t: Training; date: string; onClose: () => void }) {
   const [kind, setKind] = useState<'run' | 'ride'>('run')
   const [min, setMin] = useState(20)
   const [km, setKm] = useState(0)
   const [hm, setHm] = useState(0)
   const save = () => {
-    const n = t.activities.filter(a => a.date === t.today && a.kind === kind).length
-    const a: Activity = { id: `${t.today}-${kind}-${n + 1}`, date: t.today, kind, durationMin: min, ...(km ? { distanceKm: km } : {}), ...(hm ? { elevationM: hm } : {}) }
+    // Zeitstempel statt laufender Nummer: nach dem Löschen eines Eintrags würde eine Nummer kollidieren
+    const a: Activity = { id: `${date}-${kind}-${Date.now().toString(36)}`, date, kind, durationMin: min, ...(km ? { distanceKm: km } : {}), ...(hm ? { elevationM: hm } : {}) }
     t.addActivity(a)
     onClose()
   }
   return (
-    <Sheet title="Cardio" sub={L.fmtDate(t.today)} onClose={onClose}>
+    <Sheet title="Cardio" sub={L.fmtDate(date)} onClose={onClose}>
       <div className="seg" role="group" aria-label="Art">
         {([['run', 'Lauf'], ['ride', 'Rad']] as const).map(([k, l]) => (
           <button key={k} className={kind === k ? 'on' : ''} aria-pressed={kind === k} onClick={() => setKind(k)}>{l}</button>

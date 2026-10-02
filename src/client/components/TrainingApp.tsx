@@ -6,10 +6,13 @@ import { useTraining, type Training } from '../useTraining'
 import { useRestTimer } from '../useRestTimer'
 import { BottomBar } from './BottomBar'
 import { DataView } from './DataView'
+import { HistoryView } from './HistoryView'
 import { ActivitySheet, SetSheet } from './Sheets'
 import { WorkoutView } from './WorkoutView'
 
-type SheetState = { kind: 'set'; pid: string; setNo: number } | { kind: 'activity' } | null
+type SheetState = { kind: 'set'; pid: string; setNo: number } | { kind: 'activity'; date: string } | null
+type View = 'train' | 'history' | 'data'
+const VIEWS: [View, string][] = [['train', 'Training'], ['history', 'Verlauf'], ['data', 'Daten']]
 
 /** kleiner Punkt am „Daten“-Button: grün = abgeglichen, orange = läuft/wartet, rot = Fehler, grau = nicht angemeldet/offline */
 const syncDot = (s: Training['sync']) => !s.account ? '' : s.phase === 'error' ? 'err' : s.phase === 'syncing' || s.pending ? 'busy' : s.phase === 'offline' ? '' : 'on'
@@ -18,7 +21,7 @@ const syncLabel = (s: Training['sync']) => !s.account ? 'Nicht angemeldet' : s.p
 export function TrainingApp() {
   const t = useTraining()
   const rest = useRestTimer()
-  const [view, setView] = useState<'train' | 'data'>('train')
+  const [view, setView] = useState<View>('train')
   const [sheet, setSheet] = useState<SheetState>(null)
   const [picked, setPicked] = useState<string | undefined>()
 
@@ -48,17 +51,24 @@ export function TrainingApp() {
   return (
     <main className="app">
       <header className="top">
-        <h1 className="display">Calisthenics</h1>
-        <button className="btn btn-ghost btn-sm" onClick={() => setView(view === 'train' ? 'data' : 'train')}>
-          {view === 'train' && <span className={`sync-dot ${syncDot(t.sync)}`} aria-label={syncLabel(t.sync)} />}
-          {view === 'train' ? 'Daten' : '← Training'}
-        </button>
+        <h1 className="sr-only">Calisthenics</h1>
+        <nav className="seg" aria-label="Bereiche">
+          {VIEWS.map(([k, l]) => (
+            <button key={k} className={view === k ? 'on' : ''} aria-current={view === k ? 'page' : undefined}
+              onClick={() => { setView(k); window.scrollTo(0, 0) }}>
+              {k === 'data' && <span className={`sync-dot ${syncDot(t.sync)}`} role="img" aria-label={syncLabel(t.sync)} />}
+              {l}
+            </button>
+          ))}
+        </nav>
       </header>
 
-      {view === 'data' ? <DataView t={t} /> : (
+      {view === 'data' && <DataView t={t} />}
+      {view === 'history' && <HistoryView t={t} openActivity={date => setSheet({ kind: 'activity', date })} />}
+      {view === 'train' && (
         <WorkoutView t={t} slots={slots} focus={focus} setFocus={setPicked}
           openSet={(pid, setNo) => setSheet({ kind: 'set', pid, setNo })}
-          openActivity={() => setSheet({ kind: 'activity' })} />
+          openActivity={() => setSheet({ kind: 'activity', date: t.today })} />
       )}
 
       {view === 'train' && <BottomBar t={t} rest={rest} />}
@@ -72,7 +82,7 @@ export function TrainingApp() {
             setSheet(null)
           }} />
       )}
-      {sheet?.kind === 'activity' && <ActivitySheet t={t} onClose={() => setSheet(null)} />}
+      {sheet?.kind === 'activity' && <ActivitySheet t={t} date={sheet.date} onClose={() => setSheet(null)} />}
     </main>
   )
 }

@@ -107,3 +107,55 @@ test('Workout-Ansicht: Reihenfolge, Status, Historie, Freischaltung', () => {
   assert.equal(by['pull-up'].last!.date, '2026-09-30')
   assert.equal(L.firstOpen(v.map(x => ({ pid: x.pid, state: x.state }))), 'muscle-up-pull')
 })
+
+test('Kalender: Monatsraster ab Montag, Monatswechsel über Jahresgrenzen', () => {
+  const g = L.monthGrid('2026-10')          // 1. Oktober 2026 ist ein Donnerstag
+  assert.equal(g.lead, 3)
+  assert.equal(g.days.length, 31)
+  assert.equal(g.days[0], '2026-10-01')
+  assert.equal(L.monthGrid('2026-02').days.length, 28)
+  assert.equal(L.shiftMonth('2026-12', 1), '2027-01')
+  assert.equal(L.shiftMonth('2026-01', -1), '2025-12')
+})
+
+test('Kalender: trainiert = Satz oder Dauer, leere Einheiten zählen nicht', () => {
+  const marks = L.calendarMarks([
+    sess('2026-10-01', 'pull', [['bar-dip', [5]]]),
+    { ...L.emptySession('2026-10-02', 'push'), durationSec: 600 },
+    L.emptySession('2026-10-03', 'legs'),
+  ], [{ id: 'a', date: '2026-10-05', kind: 'run', durationMin: 20 }])
+  assert.deepEqual([...marks.trained], ['2026-10-01', '2026-10-02'])
+  assert.deepEqual([...marks.cardio], ['2026-10-05'])
+})
+
+test('Tagesansicht: Übungen in Trainingsreihenfolge, Unbekanntes fällt weg', () => {
+  const s = sess('2026-10-04', 'pull', [['scapula-shrug', [10]], ['explosive-pull-up', [3, 3]], ['gibt-es-nicht', [1]]])
+  assert.deepEqual(L.sessionExercises(ix, s).map(e => [e.exercise.id, e.sets.length]),
+    [['explosive-pull-up', 2], ['scapula-shrug', 1]])
+})
+
+test('Fortschritt: Verlauf über alle Stufen, Delta nur innerhalb der aktuellen Stufe', () => {
+  const sessions = [
+    sess('2026-09-01', 'pull', [['explosive-pull-up', [3, 3, 3]]]),
+    sess('2026-09-08', 'pull', [['chest-to-bar-pull-up', [2, 2, 1]]]),
+    sess('2026-09-15', 'pull', [['chest-to-bar-pull-up', [3, 2, 2]]]),
+  ]
+  const p = L.progressSummary(ix, state, sessions, 'muscle-up-pull')
+  assert.deepEqual(p.history.map(h => [h.step, h.sum]), [[0, 9], [1, 5], [1, 7]])
+  assert.equal(p.current.length, 2)
+  assert.equal(p.delta, 2)
+  assert.equal(p.best, 3)
+  // neue Stufe ohne Einheit: Historie bleibt sichtbar, aber kein Delta
+  const fresh = L.progressSummary(ix, { current: { 'muscle-up-pull': 'muscle-up' }, paused: [] }, sessions, 'muscle-up-pull')
+  assert.equal(fresh.history.length, 3)
+  assert.equal(fresh.last, undefined)
+  assert.equal(fresh.delta, null)
+  // Übersicht: nur Progressionen mit Historie, Workouts in Wochenreihenfolge
+  const ov = L.progressOverview(ix, state, sessions)
+  assert.deepEqual(ov.map(g => [g.workout.id, g.tiles.map(t => t.pid)]), [['pull', ['muscle-up-pull']]])
+})
+
+test('Aktivitäten: Anzeige', () => {
+  assert.equal(L.fmtActivity({ id: 'a', date: '2026-10-01', kind: 'ride', durationMin: 90, distanceKm: 40.5, elevationM: 450 }), '90 min · 40,5 km · 450 hm')
+  assert.equal(L.activityTitle({ id: 'b', date: '2026-10-01', kind: 'workout', name: 'Cindy' }), 'Cindy')
+})

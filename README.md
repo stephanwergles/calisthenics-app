@@ -41,7 +41,10 @@ npm run import:v1 -- <v1-export.json> <email>   # Trainingshistorie übernehmen
 
 ## Trainingsansicht
 
-Unter `/`. Die App liest und schreibt **nur lokal** (IndexedDB) und gleicht im
+Unter `/`, drei Bereiche: **Training** (Fokus auf die aktive Übung), **Verlauf**
+(Kalender mit Tagesansicht und Cardio-Erfassung für beliebige Tage; Fortschritt pro
+Übung über alle Stufen mit Summe, Delta zur vorigen Einheit derselben Stufe und
+Balkendiagramm) und **Daten**. Die App liest und schreibt **nur lokal** (IndexedDB) und gleicht im
 Hintergrund mit Payload ab – im Gym lädt keine Ansicht Daten vom Server. Unter
 „Daten“ anmelden (Payload-Nutzer, Sitzung 60 Tage, wird bei jedem Start verlängert),
 einen v1-Export übernehmen (wiederholbar) oder alles als JSON sichern.
