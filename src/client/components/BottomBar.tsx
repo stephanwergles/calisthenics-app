@@ -5,7 +5,7 @@ import type { Training } from '../useTraining'
 import type { RestTimer } from '../useRestTimer'
 
 /** Eine Zeile statt zwei: ohne Session nur „Workout starten“, mit Session links
-    Workout + Dauer, rechts der Pausen-Timer bzw. drei Schnellstarts */
+    Dauer + Workout (reine Anzeige), dann Pausen-Timer bzw. drei Schnellstarts, rechts außen Beenden */
 export function BottomBar({ t, rest }: { t: Training; rest: RestTimer }) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
@@ -24,14 +24,19 @@ export function BottomBar({ t, rest }: { t: Training; rest: RestTimer }) {
         </>
       ) : (
         <>
-          <button className="session" onClick={() => { if (confirm('Workout beenden und Zeit speichern?')) t.endSession() }} aria-label="Workout beenden">
+          <div className="session">
             <span className="dot" aria-hidden="true" />
-            <span className="session-name">{t.ix.workouts.get(t.active.workout)!.name}</span>
-            <span className="session-time">{L.fmtDuration(Math.max(0, now - t.active.start) / 1000)}</span>
-          </button>
+            <span className="session-info">
+              <span className="session-time">{L.fmtDuration(Math.max(0, now - t.active.start) / 1000)}</span>
+              <span className="session-name">{t.ix.workouts.get(t.active.workout)!.name}</span>
+            </span>
+          </div>
           {rest.running || rest.ringing
             ? <RestButton rest={rest} />
             : <div className="presets">{[90, 120, 180].map(s => <button key={s} className="btn btn-secondary btn-sm" onClick={() => rest.start(s)}>{L.fmtClock(s)}</button>)}</div>}
+          <button className="btn btn-ghost btn-icon stop" onClick={() => { if (confirm('Workout beenden und Zeit speichern?')) t.endSession() }} aria-label="Workout beenden">
+            <span aria-hidden="true">■</span>
+          </button>
         </>
       )}
     </footer>
