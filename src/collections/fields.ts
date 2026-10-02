@@ -19,6 +19,14 @@ export const owner: Field = {
   admin: { position: 'sidebar', readOnly: true },
 }
 
+/** Zeitpunkt der letzten Änderung auf dem Gerät (ms). Der Sync entscheidet damit,
+    welche Fassung gewinnt (die jüngere). */
+export const clientUpdatedAt: Field = {
+  name: 'clientUpdatedAt',
+  type: 'number',
+  admin: { position: 'sidebar', readOnly: true, description: 'Letzte Änderung auf dem Gerät (ms) – für den Sync' },
+}
+
 /** Lokales Datum YYYY-MM-DD als Text – bewusst kein Datumstyp, damit keine
     Zeitzone das Trainingsdatum verschiebt (v1-Bug vom Juli) */
 export const localDate: Field = {

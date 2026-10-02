@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { loggedIn, ownDocs, setOwner } from '../access'
-import { localDate, owner } from './fields'
+import { clientUpdatedAt, localDate, owner } from './fields'
 
 export const Sessions: CollectionConfig = {
   slug: 'sessions',
@@ -38,5 +38,7 @@ export const Sessions: CollectionConfig = {
     },
     { name: 'skipped', type: 'relationship', relationTo: 'exercises', hasMany: true, label: 'Übersprungen' },
     { name: 'routineDone', type: 'text', hasMany: true, label: 'Warm-up/Cool-down erledigt' },
+    { name: 'setPlan', type: 'json', label: 'Geplante Satzzahl (Abweichungen vom Ziel)' },
+    clientUpdatedAt,
   ],
 }

@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as L from '../logic'
 import { keepAwake } from '../signals'
-import { ix, useTraining } from '../useTraining'
+import { useTraining, type Training } from '../useTraining'
 import { useRestTimer } from '../useRestTimer'
 import { BottomBar } from './BottomBar'
 import { DataView } from './DataView'
@@ -10,6 +10,10 @@ import { ActivitySheet, SetSheet } from './Sheets'
 import { WorkoutView } from './WorkoutView'
 
 type SheetState = { kind: 'set'; pid: string; setNo: number } | { kind: 'activity' } | null
+
+/** kleiner Punkt am „Daten“-Button: grün = abgeglichen, orange = läuft/wartet, rot = Fehler, grau = nicht angemeldet/offline */
+const syncDot = (s: Training['sync']) => !s.account ? '' : s.phase === 'error' ? 'err' : s.phase === 'syncing' || s.pending ? 'busy' : s.phase === 'offline' ? '' : 'on'
+const syncLabel = (s: Training['sync']) => !s.account ? 'Nicht angemeldet' : s.phase === 'error' ? 'Sync-Fehler' : s.pending ? 'Änderungen warten auf Abgleich' : 'Abgeglichen'
 
 export function TrainingApp() {
   const t = useTraining()
@@ -32,8 +36,8 @@ export function TrainingApp() {
   }, [t.active])
 
   const slots = useMemo(
-    () => (t.loaded ? L.workoutSlots(ix, t.workout, t.state, t.todaySession, t.sessions, t.today) : []),
-    [t.loaded, t.workout, t.state, t.todaySession, t.sessions, t.today],
+    () => (t.loaded ? L.workoutSlots(t.ix, t.workout, t.state, t.todaySession, t.sessions, t.today) : []),
+    [t.loaded, t.ix, t.workout, t.state, t.todaySession, t.sessions, t.today],
   )
   // Fokus: ausgewählte Übung, sonst die erste offene
   const focus = picked && slots.some(s => s.pid === picked) ? picked : L.firstOpen(slots.map(s => ({ pid: s.pid, state: s.state })))
@@ -46,6 +50,7 @@ export function TrainingApp() {
       <header className="top">
         <h1 className="display">Calisthenics</h1>
         <button className="btn btn-ghost btn-sm" onClick={() => setView(view === 'train' ? 'data' : 'train')}>
+          {view === 'train' && <span className={`sync-dot ${syncDot(t.sync)}`} aria-label={syncLabel(t.sync)} />}
           {view === 'train' ? 'Daten' : '← Training'}
         </button>
       </header>

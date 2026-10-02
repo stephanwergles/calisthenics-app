@@ -92,8 +92,7 @@ export interface Session {
   sets: SetLog[];
   skipped: ExerciseId[];
   routineDone: RoutineItemId[];
-  /** heute geplante Satzzahl je Progression, wenn vom Ziel abgewichen wurde (± in
-      der Ansicht). Noch nicht im Payload-Schema – kommt mit dem Sync. */
+  /** heute geplante Satzzahl je Progression, wenn vom Ziel abgewichen wurde (± in der Ansicht) */
   setPlan?: Record<ProgressionId, number>;
   /** letzte Änderung in ms – Grundlage für den Sync */
   updatedAt?: number;
@@ -109,12 +108,16 @@ export interface Activity {
   elevationM?: number;
   rounds?: number;
   note?: string;
+  /** letzte Änderung in ms – Grundlage für den Sync */
+  updatedAt?: number;
 }
 
 export interface UserState {
   /** aktuelle Stufe je Progression – als Übungs-ID, nicht als Index */
   current: Record<ProgressionId, ExerciseId>;
   paused: ProgressionId[];
+  /** letzte Änderung in ms – Grundlage für den Sync */
+  updatedAt?: number;
 }
 
 export interface Dataset {

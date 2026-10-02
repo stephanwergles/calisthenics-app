@@ -3,7 +3,7 @@
    - /_next/static/*: unveränderliche Build-Dateien, einmal laden, dann aus dem Cache
    - /admin und /api: nie cachen – das sind Server-Funktionen
    Neue Version = CACHE hochzählen, alte Caches werden beim Aktivieren gelöscht. */
-const CACHE = 'calisthenics-v2-1'
+const CACHE = 'calisthenics-v2-2'
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/', '/manifest.webmanifest', '/apple-touch-icon.png'])).then(() => self.skipWaiting()))

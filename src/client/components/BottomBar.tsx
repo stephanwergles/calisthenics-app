@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import * as L from '../logic'
-import { ix, type Training } from '../useTraining'
+import type { Training } from '../useTraining'
 import type { RestTimer } from '../useRestTimer'
 
 /** Eine Zeile statt zwei: ohne Session nur „Workout starten“, mit Session links
@@ -19,14 +19,14 @@ export function BottomBar({ t, rest }: { t: Training; rest: RestTimer }) {
     <footer className={`bar${rest.ringing ? ' alarm' : ''}`}>
       {!t.active ? (
         <>
-          <button className="btn btn-primary grow" onClick={t.startSession}>▶ {ix.workouts.get(t.workout)!.name} starten</button>
+          <button className="btn btn-primary grow" onClick={t.startSession}>▶ {t.ix.workouts.get(t.workout)!.name} starten</button>
           {(rest.running || rest.ringing) && <RestButton rest={rest} />}
         </>
       ) : (
         <>
           <button className="session" onClick={() => { if (confirm('Workout beenden und Zeit speichern?')) t.endSession() }} aria-label="Workout beenden">
             <span className="dot" aria-hidden="true" />
-            <span className="session-name">{ix.workouts.get(t.active.workout)!.name}</span>
+            <span className="session-name">{t.ix.workouts.get(t.active.workout)!.name}</span>
             <span className="session-time">{L.fmtDuration(Math.max(0, now - t.active.start) / 1000)}</span>
           </button>
           {rest.running || rest.ringing

@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react'
 import type { RoutineItem } from '@/domain/model'
 import * as L from '../logic'
-import { ix, type Training } from '../useTraining'
+import type { Training } from '../useTraining'
 
 interface Props {
   t: Training
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function WorkoutView({ t, slots, focus, setFocus, openSet, openActivity }: Props) {
-  const w = ix.workouts.get(t.workout)!
+  const w = t.ix.workouts.get(t.workout)!
   const counted = slots.filter(s => s.state !== 'skipped' && s.state !== 'paused')
   const planned = counted.reduce((n, s) => n + s.planned, 0)
   const done = counted.reduce((n, s) => n + Math.min(s.sets.length, s.planned), 0)
@@ -24,11 +24,11 @@ export function WorkoutView({ t, slots, focus, setFocus, openSet, openActivity }
   return (
     <>
       <div className="picker" role="group" aria-label="Workout wählen">
-        {L.workoutsInWeekOrder(ix).map(x => (
+        {L.workoutsInWeekOrder(t.ix).map(x => (
           <button key={x.id} className={x.id === t.workout ? 'on' : ''} aria-pressed={x.id === t.workout} onClick={() => { t.chooseWorkout(x.id); setFocus(undefined) }}>
             <span className="display">{x.name}</span>
             <small>{x.focus}</small>
-            <em className={x.id === t.recommended ? 'rec' : ''}>{L.plannedDays(ix, x.id).map(d => L.WEEKDAY_SHORT[d]).join(' · ') || '—'}</em>
+            <em className={x.id === t.recommended ? 'rec' : ''}>{L.plannedDays(t.ix, x.id).map(d => L.WEEKDAY_SHORT[d]).join(' · ') || '—'}</em>
           </button>
         ))}
       </div>

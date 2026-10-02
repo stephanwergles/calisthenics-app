@@ -16,7 +16,7 @@
     "seed": "npm run payload -- run scripts/seed-catalog.ts",
     "import:v1": "npm run payload -- run scripts/import-v1.ts",
     "catalog:extract": "node scripts/extract-catalog.ts",
-    "test": "node test/smoke.cjs && node --test test/migrate.test.ts test/logic.test.ts"
+    "test": "node test/smoke.cjs && node --test test/migrate.test.ts test/logic.test.ts test/sync.test.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.90.2",

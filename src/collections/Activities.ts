@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { loggedIn, ownDocs, setOwner } from '../access'
-import { localDate, owner } from './fields'
+import { clientUpdatedAt, localDate, owner } from './fields'
 
 export const Activities: CollectionConfig = {
   slug: 'activities',
@@ -27,5 +27,6 @@ export const Activities: CollectionConfig = {
       { name: 'rounds', type: 'number', label: 'Runden' },
     ] },
     { name: 'note', type: 'textarea', label: 'Notiz' },
+    clientUpdatedAt,
   ],
 }

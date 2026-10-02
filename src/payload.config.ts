@@ -12,6 +12,7 @@ import { Sessions } from './collections/Sessions'
 import { Users } from './collections/Users'
 import { Workouts } from './collections/Workouts'
 import { WeekPlan } from './globals/WeekPlan'
+import { syncHandler } from './sync/endpoint'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -25,6 +26,8 @@ export default buildConfig({
   i18n: { supportedLanguages: { de, en }, fallbackLanguage: 'de' },
   collections: [Sessions, Activities, Exercises, Progressions, Workouts, Users],
   globals: [WeekPlan],
+  // Abgleich mit der Trainings-App: POST /api/sync (siehe src/sync/endpoint.ts)
+  endpoints: [{ path: '/sync', method: 'post', handler: syncHandler }],
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({

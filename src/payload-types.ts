@@ -157,6 +157,19 @@ export interface Session {
     | null;
   skipped?: (string | Exercise)[] | null;
   routineDone?: string[] | null;
+  setPlan?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Letzte Änderung auf dem Gerät (ms) – für den Sync
+   */
+  clientUpdatedAt?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -180,6 +193,7 @@ export interface User {
       | boolean
       | null;
     paused?: (string | Progression)[] | null;
+    clientUpdatedAt?: number | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -314,6 +328,10 @@ export interface Activity {
   elevationM?: number | null;
   rounds?: number | null;
   note?: string | null;
+  /**
+   * Letzte Änderung auf dem Gerät (ms) – für den Sync
+   */
+  clientUpdatedAt?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -431,6 +449,8 @@ export interface SessionsSelect<T extends boolean = true> {
       };
   skipped?: T;
   routineDone?: T;
+  setPlan?: T;
+  clientUpdatedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -449,6 +469,7 @@ export interface ActivitiesSelect<T extends boolean = true> {
   elevationM?: T;
   rounds?: T;
   note?: T;
+  clientUpdatedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -550,6 +571,7 @@ export interface UsersSelect<T extends boolean = true> {
     | {
         current?: T;
         paused?: T;
+        clientUpdatedAt?: T;
       };
   updatedAt?: T;
   createdAt?: T;

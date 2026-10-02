@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Catalog } from '../src/domain/model.ts'
+import { catalogToDocs } from '../src/sync/convert.ts'
 
 const catalog: Catalog = JSON.parse(readFileSync(new URL('../src/seed/catalog.json', import.meta.url), 'utf8'))
 const payload = await getPayload({ config })
@@ -18,19 +19,11 @@ async function upsert(collection: 'exercises' | 'progressions' | 'workouts', id:
   else await payload.create({ collection, data: { id, ...data } as never, depth: 0 })
 }
 
-for (const e of catalog.exercises) {
-  const { id, ...rest } = e
-  await upsert('exercises', id, rest)
-}
-for (const p of catalog.progressions) await upsert('progressions', p.id, { steps: p.steps })
-for (const w of catalog.workouts) {
-  const routine = (items: typeof w.warmup) =>
-    items.map(({ id, name, detail, cardio }) => ({ key: id, name, detail, cardio: !!cardio }))
-  await upsert('workouts', w.id, {
-    name: w.name, focus: w.focus, slots: w.slots, warmup: routine(w.warmup), cooldown: routine(w.cooldown),
-  })
-}
-await payload.updateGlobal({ slug: 'weekplan', data: catalog.weekplan as never, depth: 0 })
+const docs = catalogToDocs(catalog)
+for (const e of docs.exercises) await upsert('exercises', e.id, e.data)
+for (const p of docs.progressions) await upsert('progressions', p.id, p.data)
+for (const w of docs.workouts) await upsert('workouts', w.id, w.data)
+await payload.updateGlobal({ slug: 'weekplan', data: docs.weekplan as never, depth: 0 })
 
 console.log(`Katalog eingespielt: ${catalog.exercises.length} Übungen, ${catalog.progressions.length} Progressionen, ${catalog.workouts.length} Workouts, Wochenplan`)
 process.exit(0)

@@ -158,6 +158,14 @@ a { color: var(--accent); }
 .data .hint { color: var(--muted); font-size: 13px; margin: 6px 0 12px; }
 .data .warn { color: var(--danger); font-size: 13px; margin-top: 8px; }
 .data .btn + .btn { margin-top: 8px; }
+.field { display: block; font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.field input { display: block; width: 100%; min-height: var(--tap); margin-top: 4px; padding: 0 12px; font-size: 16px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-md); color: var(--text); }
+.field input:focus-visible { outline: none; border-color: var(--accent); }
+.row-btns { display: flex; gap: 8px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--muted); }
+.sync-dot.on { background: #5bbf6a; } .sync-dot.busy { background: var(--accent); } .sync-dot.err { background: var(--danger); }
 .result { list-style: none; margin-top: 12px; font-size: 13px; color: var(--muted); }
 .result li:first-child { color: var(--text); }
 .version { text-align: center; color: var(--muted); font-size: 12px; margin-top: 18px; }

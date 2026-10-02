@@ -28,7 +28,8 @@ npm run import:v1 -- <v1-export.json> <email>   # Trainingshistorie übernehmen
 
 | Pfad | Inhalt |
 |---|---|
-| `src/client/` | Trainingsansicht: `logic.ts` (reine Trainingslogik, getestet), `db.ts` (IndexedDB), `useTraining.ts` (Zustand), `components/` |
+| `src/client/` | Trainingsansicht: `logic.ts` (reine Trainingslogik, getestet), `db.ts` (IndexedDB), `useTraining.ts` (Zustand + Sync-Ablauf), `sync.ts` (Server-Aufrufe, Konfliktregel), `components/` |
+| `src/sync/` | Sync-Endpunkt `POST /api/sync` (`endpoint.ts`) und die reinen Umrechnungen App ↔ Payload (`convert.ts`, getestet) |
 | `public/sw.js` | Service Worker – Trainingsansicht startet ohne Netz |
 | `src/domain/model.ts` | Datenmodell. Leitregel: Jede Referenz über eine **stabile ID**, nie über eine Position |
 | `src/seed/catalog.json` | Katalog: 47 Übungen, 24 Progressionen, 3 Workouts, Wochenplan |
@@ -36,13 +37,29 @@ npm run import:v1 -- <v1-export.json> <email>   # Trainingshistorie übernehmen
 | `src/migrations/` | Datenbank-Migrationen – auch lokal, kein automatisches Schema-Push |
 | `src/migrate/` | Import für v1-Exporte (`core.ts` ohne Dateizugriff – läuft in Node und im Browser) |
 | `scripts/` | Katalog aus v1 erzeugen, Katalog einspielen, v1-Export importieren |
-| `test/` | `npm test` – v1-Smoke-Test und Import-Tests (nur erfundene Daten, das Repo ist öffentlich) |
+| `test/` | `npm test` – v1-Smoke-Test, Import-, Logik- und Sync-Tests (nur erfundene Daten, das Repo ist öffentlich) |
 
 ## Trainingsansicht
 
-Unter `/`. Daten liegen lokal im Browser (IndexedDB) – **noch ohne Sync**. Unter
-„Daten“ lässt sich ein v1-Export übernehmen (wiederholbar) und alles als JSON
-sichern. Der Katalog kommt bis zum Sync aus `src/seed/catalog.json`, also aus dem Build.
+Unter `/`. Die App liest und schreibt **nur lokal** (IndexedDB) und gleicht im
+Hintergrund mit Payload ab – im Gym lädt keine Ansicht Daten vom Server. Unter
+„Daten“ anmelden (Payload-Nutzer, Sitzung 60 Tage, wird bei jedem Start verlängert),
+einen v1-Export übernehmen (wiederholbar) oder alles als JSON sichern.
+
+**Sync** (`POST /api/sync`, ein Aufruf hin und zurück):
+
+- Jede Änderung landet im Postausgang (IndexedDB `kv.outbox`) und wird ~2,5 s später
+  gesendet; außerdem beim Start, bei Netz-Rückkehr, beim Zurückholen der App und per Button.
+- Der erste Abgleich nach der Anmeldung lädt alles vom Gerät hoch, danach nur Geändertes.
+  Vom Server kommt alles, was seit dem letzten Abgleich (`serverTime`) geändert wurde.
+- Konflikte: Die jüngere Änderung gewinnt (`updatedAt` aus der App, in Payload als
+  `clientUpdatedAt`). Lokal noch nicht gesendete Änderungen überschreibt der Server nie mit
+  einer älteren Fassung.
+- Einheiten sind über `datum-workout` eindeutig, Aktivitäten über ihre ID; Trainingsstand
+  (aktuelle Stufen, Pausierte) liegt am Nutzer.
+- Der Katalog kommt vom Server, sobald er sich geändert hat (`catalogVersion` = jüngste
+  Änderung an Übungen, Progressionen, Workouts, Wochenplan) – Änderungen im Admin landen
+  so ohne Deploy in der App. Ohne Server-Katalog gilt `src/seed/catalog.json` aus dem Build.
 
 Offline-Start über `public/sw.js`, nur im Produktionsbuild aktiv (`npm run build && npm start`).
 Bei Änderungen am Service Worker `CACHE` hochzählen; bei jedem Deploy `APP_VERSION`
