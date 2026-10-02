@@ -61,29 +61,50 @@ Migrationsdateien committen – der Server führt beim Deploy genau diese aus.
 
 ## Deployment (Ploi, Server blank-apps)
 
-Einmalig in Ploi:
+Live unter **https://calisthenics.apps.blank-studio.de** (Admin unter `/admin`).
+So ist die Site eingerichtet – beim Neuaufsetzen genauso:
 
-1. **Datenbank** anlegen (Postgres) und `DATABASE_URL` notieren.
-2. **Site** für die Domain anlegen, Repo `stephanwergles/calisthenics-app`, Branch `main`.
-   Node-Projekt auf Port 3000 (Nginx als Reverse Proxy).
-3. **Node ≥ 22.18** auf dem Server sicherstellen.
-4. **Environment** der Site: `DATABASE_URL`, `PAYLOAD_SECRET` (eigener, neuer Wert),
-   `NEXT_PUBLIC_SERVER_URL=https://<domain>`.
-5. **Daemon**: `npm run start` im Site-Verzeichnis, als Name `calisthenics`.
-
-Deploy-Skript:
-
-```bash
-cd {SITE_DIRECTORY}
-git pull origin {BRANCH}
-npm ci
-npm run payload -- migrate
-npm run build
-npm run seed
-sudo -S supervisorctl restart calisthenics:*   # bzw. Neustart des Daemons in Ploi
-```
+1. **Datenbank** `calisthenics` (Postgres) auf blank-apps.
+2. **Site** `calisthenics.apps.blank-studio.de`, Repo `stephanwergles/calisthenics-app`,
+   Branch `main`, Projekttyp **NodeJS**, Web directory **`/public`** – nicht das
+   Hauptverzeichnis: Dort liegen `.env` und die v1-`index.html`. Server-Node: 24.x.
+3. **Environment** (Ploi legt `.env` aus `.env.example` an – Werte anpassen):
+   ```
+   DATABASE_URL=postgres://<db-user>:<db-passwort>@127.0.0.1:5432/calisthenics
+   PAYLOAD_SECRET=<openssl rand -hex 32>
+   NEXT_PUBLIC_SERVER_URL=https://calisthenics.apps.blank-studio.de
+   ```
+   Port **5432** (nicht 5433 aus der lokalen Vorlage). Kein `NODE_ENV=production`
+   setzen – sonst fehlen beim Build die Dev-Abhängigkeiten (TypeScript).
+4. **Deploy-Skript** – ohne Composer:
+   ```
+   cd {SITE_DIRECTORY}
+   git pull origin main
+   npm ci
+   npm run payload -- migrate
+   npm run build
+   npm run seed
+   ```
+   plus die Neustart-Zeile für pm2 am Ende.
+5. **pm2** (über den NodeJS-Projekttyp): Start-Befehl `npm run start -- -p 3101`.
+   Der Port muss im Befehl stehen, sonst nimmt Next 3000.
+6. **Nginx**: Der NodeJS-Projekttyp richtet den Proxy **nicht** selbst ein. Den
+   `location /`-Block ersetzen (PHP-Block entfernen):
+   ```nginx
+   location / {
+       proxy_pass http://127.0.0.1:3101;
+       proxy_http_version 1.1;
+       proxy_set_header Host $host;
+       proxy_set_header X-Real-IP $remote_addr;
+       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header X-Forwarded-Proto $scheme;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection 'upgrade';
+   }
+   ```
+   Symptom, wenn das fehlt: `/` liefert ein Nginx-403, nur `/sw.js` und das Icon kommen an.
+7. **Nach dem ersten Deploy sofort** unter `/admin` das eigene Konto anlegen – solange
+   keins existiert, darf das jede:r.
 
 `npm run seed` ist wiederholbar und hält den Katalog auf dem Stand von
-`src/seed/catalog.json`. Nach dem ersten Deploy unter `/admin` die eigene Person
-anlegen und die Historie importieren (lokal gegen die Server-Datenbank oder per
-SSH auf dem Server).
+`src/seed/catalog.json`.
