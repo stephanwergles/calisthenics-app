@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as L from '../logic'
 import { keepAwake } from '../signals'
-import { askNotifications, isNative, nativeActions, nativePanel, nativeTabs, type NBlock } from '../native'
+import { askNotifications, isNative, nativeActions, nativePanel, nativeRest, nativeTabs, type NBlock } from '../native'
 import { NativeShell, useNativeSheet } from '../useNativeSheet'
 import { useTraining, type Training } from '../useTraining'
 import { useRestTimer } from '../useRestTimer'
@@ -77,9 +77,10 @@ export function TrainingApp() {
 
   const started = !!t.active || (t.todaySession?.sets.length ?? 0) > 0
   const showHome = view === 'train'
-  const overlay = !!sheet || planOpen || !!skillPid || !!day || !!summaryId || restView !== null
   // native Sheets liegen selbst über der Tab-Leiste – ausblenden nur für Web-Ebenen
-  const hideNativeTabs = trainOpen || !!summaryId || restView !== null
+  // Pause gilt nur als offen, solange sie läuft oder klingelt (restView bleibt sonst stehen)
+  const restShown = restView !== null && (rest.running || rest.ringing)
+  const hideNativeTabs = trainOpen || !!summaryId || restShown
   const showBar = !trainOpen && (!!t.active || rest.running || rest.ringing)
   const summarySession = summaryId ? t.sessions.find(s => s.id === summaryId) : undefined
   const start = () => { t.startSession(); void askNotifications(); setPlanOpen(false); openFocus(undefined) }
@@ -112,7 +113,7 @@ export function TrainingApp() {
   useEffect(() => { if (nativeShell) nativeTabs.select(view) }, [nativeShell, view])
   useEffect(() => { if (nativeShell) nativeTabs.hide(hideNativeTabs) }, [nativeShell, hideNativeTabs])
   // Native Glas-Buttons im Training: oben links minimieren, oben rechts Übungsliste
-  const trainButtons = nativeShell && trainOpen && !summaryId && restView === null
+  const trainButtons = nativeShell && trainOpen && !summaryId && !restShown
   useEffect(() => {
     if (!nativeShell) return
     if (trainButtons) {
@@ -134,9 +135,24 @@ export function TrainingApp() {
     if (e.type === 'tap' || e.type === 'dismiss') setSheet(null)
   })
   // Erfassungs-Panel: nur im offenen Training ohne Pause/Abschluss darüber
-  const panelOn = nativeShell && trainOpen && train.shown && restView === null && !summaryId
+  const panelOn = nativeShell && trainOpen && train.shown && !restShown && !summaryId
   useEffect(() => { if (nativeShell && !panelOn) nativePanel.set(null) }, [nativeShell, panelOn])
   const [panelH, setPanelH] = useState(0)
+  // Pausen-Screen nativ: zeigen, solange eine Pause läuft/klingelt und die Ansicht offen ist
+  const restOpen = trainOpen && restShown
+  const restNext = restOpen ? L.upNext(slots, focus) : null
+  const restSpec = nativeShell && restOpen ? JSON.stringify({
+    end: rest.end, total: rest.total, ringing: rest.ringing, saved: restView || undefined,
+    nextTitle: restNext ? `Satz ${restNext.setNo} von ${restNext.slot.planned}` : undefined,
+    nextSubtitle: restNext ? `${restNext.slot.step.exercise.name} · Ziel ${restNext.slot.step.target.label}` : undefined,
+  }) : ''
+  useEffect(() => { if (nativeShell) nativeRest.set(restSpec ? JSON.parse(restSpec) : null) }, [nativeShell, restSpec])
+  useEffect(() => nativeRest.on(type => {
+    if (type === 'minus') rest.shift(-15)
+    else if (type === 'plus') rest.shift(30)
+    else if (type === 'go') { rest.stop(); setRestView(null) }
+    else setRestView(null)
+  }), [rest.shift, rest.stop]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => nativePanel.onHeight(setPanelH), [])
   const dot = syncDot(t.sync)
   useEffect(() => {
@@ -178,7 +194,7 @@ export function TrainingApp() {
               if (L.nextSetNo({ sets: [...s.sets, { exercise: s.step.exercise.id, progression: s.pid, set: setNo, value: 0 }], planned: s.planned }) === null) setPicked(undefined)
               if (s.step.target.restSec > 0) setRestView(summary)
             }} />
-          {restView !== null && (rest.running || rest.ringing) && (
+          {!nativeShell && restView !== null && (rest.running || rest.ringing) && (
             <RestOverlay rest={rest} saved={restView} next={L.upNext(slots, focus)} onClose={() => setRestView(null)} />
           )}
         </div>

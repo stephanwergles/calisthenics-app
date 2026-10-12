@@ -44,6 +44,8 @@ export function useRestTimer() {
     running: end !== null, remaining: end ? Math.max(0, Math.ceil((end - now) / 1000)) : 0,
     /** exakter Rest in ms – für den flüssigen Ring */
     remainingMs: end ? Math.max(0, end - now) : 0,
+    /** Endzeitpunkt (ms) – für den nativen Pausen-Screen */
+    end,
     total, ringing, start, stop, shift,
   }
 }

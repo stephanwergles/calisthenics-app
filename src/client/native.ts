@@ -77,9 +77,11 @@ interface LeverTabBarPlugin {
   showSheet(o: { spec: NSheet }): Promise<void>
   closeSheet(o: { id: string }): Promise<void>
   setPanel(o: { spec: NPanel | null }): Promise<void>
+  setRest(o: { spec: NRest | null }): Promise<void>
   addListener(event: 'select' | 'action', cb: (d: { id: string }) => void): Promise<PluginListenerHandle>
   addListener(event: 'sheet', cb: (d: SheetEvent) => void): Promise<PluginListenerHandle>
   addListener(event: 'panel', cb: (d: PanelEvent) => void): Promise<PluginListenerHandle>
+  addListener(event: 'rest', cb: (d: { type: 'minus' | 'plus' | 'go' | 'close' }) => void): Promise<PluginListenerHandle>
 }
 export interface SheetSpec {
   title: string
@@ -149,6 +151,7 @@ export type NBlock =
   | { type: 'field'; id: string; label?: string; value: string; placeholder?: string }
   | { type: 'button'; id: string; title: string; symbol?: string; style?: NButton['style'] }
   | { type: 'buttons'; buttons: NButton[] }
+  | { type: 'compare'; title: string; before: number; now: number; max: number; delta: string }
 export interface NSheet { id: string; title: string; subtitle?: string; detents?: ('auto' | 'medium' | 'large')[]; blocks: NBlock[]; footer?: NButton[] }
 export interface SheetEvent { sheet: string; type: 'tap' | 'toggle' | 'text' | 'dismiss'; id?: string; value?: unknown }
 
@@ -188,4 +191,17 @@ export const nativePanel = {
     return () => { if (panelHandler === handler) panelHandler = null }
   },
   onHeight(h: (px: number) => void) { heightHandler = h; return () => { if (heightHandler === h) heightHandler = null } },
+}
+
+/* Pausen-Screen (nativ): Ring und Countdown rechnet iOS selbst aus dem Endzeitpunkt */
+export interface NRest { end: number | null; total: number; ringing: boolean; saved?: string; nextTitle?: string; nextSubtitle?: string }
+let restHandler: ((t: 'minus' | 'plus' | 'go' | 'close') => void) | null = null
+let restListening = false
+export const nativeRest = {
+  set: (spec: NRest | null) => { if (isNative()) void TabBar.setRest({ spec }).catch(() => undefined) },
+  on(h: (t: 'minus' | 'plus' | 'go' | 'close') => void) {
+    if (!restListening && isNative()) { restListening = true; void TabBar.addListener('rest', e => restHandler?.(e.type)) }
+    restHandler = h
+    return () => { if (restHandler === h) restHandler = null }
+  },
 }

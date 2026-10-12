@@ -259,6 +259,7 @@ public class LeverTabBarPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "showSheet", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "closeSheet", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setPanel", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setRest", returnType: CAPPluginReturnPromise),
     ]
 
     /// Tab-Controller finden: über die Controller-Kette oder direkt als Wurzel des Fensters

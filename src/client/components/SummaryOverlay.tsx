@@ -5,6 +5,8 @@ import type { Session } from '@/domain/model'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
 import { Icon } from './Icon'
+import { useNativeShell, useNativeSheet } from '../useNativeSheet'
+import type { NBlock } from '../native'
 
 export function SummaryOverlay({ t, session, onClose }: { t: Training; session: Session; onClose: () => void }) {
   const sum = useMemo(() => L.sessionSummary(t.ix, t.sessions, session), [t.ix, t.sessions, session])
@@ -17,6 +19,41 @@ export function SummaryOverlay({ t, session, onClose }: { t: Training; session: 
     onClose()
   }
   const h = Math.floor(sum.durationSec / 3600), m = Math.round((sum.durationSec % 3600) / 60)
+  const sub = `${L.fmtDate(session.date)} · ${w ? `${w.name} · ${w.focus}` : session.workout}`
+
+  // iOS-App: als natives Sheet (Fertig/Wegwischen speichert die Notiz)
+  const native = useNativeShell()
+  const noteRef = { current: note }
+  useNativeSheet(native ? {
+    id: 'summary', title: 'Stark.', subtitle: sub, detents: ['large'],
+    blocks: [
+      { type: 'stats', items: [
+        { value: h ? `${h}:${String(m).padStart(2, '0')}` : String(m), label: h ? 'Stunden' : m === 1 ? 'Minute' : 'Minuten', accent: true },
+        { value: String(sum.sets), label: sum.sets === 1 ? 'Satz' : 'Sätze' },
+        { value: String(sum.reps), label: 'Wdh.', delta: sum.repsDelta ? `${sum.repsDelta > 0 ? '+' : '−'}${Math.abs(sum.repsDelta)}` : undefined },
+      ] },
+      ...(sum.records.length ? [{ type: 'section', title: 'Neue Bestwerte' } as NBlock] : []),
+      ...sum.records.map((r): NBlock => ({
+        type: 'record', title: r.exercise.name, value: r.kind === 'weight' ? `+${r.value}` : String(r.value),
+        subtitle: r.kind === 'weight' ? (r.before ? `Zusatzgewicht +${r.value} kg · vorher +${r.before} kg` : `Erstmals mit +${r.value} kg`)
+          : `Bester Satz ${r.value}${r.exercise.unit === 'seconds' ? ' s' : ''} · vorher ${r.before}`,
+      })),
+      ...(sum.compare.length ? [{ type: 'section', title: 'Zum letzten Mal' } as NBlock, { type: 'text', style: 'small', text: 'Grau = letztes Mal · Volt = heute' } as NBlock] : []),
+      ...sum.compare.map((c): NBlock => {
+        const d = c.now - c.before
+        return { type: 'compare', title: c.exercise.name, before: c.before, now: c.now, max, delta: `${d > 0 ? '+' : d < 0 ? '−' : '±'}${Math.abs(d)}` }
+      }),
+      { type: 'field', id: 'note', label: 'Notiz zur Einheit', value: session.note ?? '', placeholder: 'Wie war’s?' },
+    ],
+    footer: [{ id: 'done', title: 'Fertig', symbol: 'checkmark', style: 'prominent' }],
+  } : null, e => {
+    if (e.type === 'text') { noteRef.current = String(e.value ?? ''); setNote(noteRef.current) }
+    else if (e.type === 'dismiss' || e.id === 'done') {
+      if ((L.cleanNote(noteRef.current) ?? '') !== (session.note ?? '')) t.updateToday(s => L.withNote(s, noteRef.current))
+      onClose()
+    }
+  })
+  if (native) return null
 
   return (
     <div className="summary" role="dialog" aria-modal="true" aria-label="Trainingsabschluss">

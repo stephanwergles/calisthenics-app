@@ -65,13 +65,13 @@ enum Lever {
     static let danger = UIColor(red: 1, green: 0.42, blue: 0.37, alpha: 1)
 
     /// Echte Glas-Konfiguration (iOS 26), sonst Fläche. style: glass | prominent | destructive
-    static func button(title: String?, symbol: String? = nil, style: String = "glass", size: CGFloat = 17, display: Bool = false) -> UIButton {
-        let b = UIButton(configuration: config(title: title, symbol: symbol, style: style, size: size, display: display))
+    static func button(title: String?, symbol: String? = nil, style: String = "glass", size: CGFloat = 17, display: Bool = false, upper: Bool = true) -> UIButton {
+        let b = UIButton(configuration: config(title: title, symbol: symbol, style: style, size: size, display: display, upper: upper))
         if style == "prominent" { b.tintColor = volt }
         b.accessibilityLabel = title
         return b
     }
-    static func config(title: String?, symbol: String? = nil, style: String = "glass", size: CGFloat = 17, display: Bool = false) -> UIButton.Configuration {
+    static func config(title: String?, symbol: String? = nil, style: String = "glass", size: CGFloat = 17, display: Bool = false, upper: Bool = true) -> UIButton.Configuration {
         var cfg: UIButton.Configuration
         let prominent = style == "prominent"
         // In Sheets liegt alles schon auf Glas – Glas auf Glas hat kaum Kontrast. Deshalb hier
@@ -87,7 +87,7 @@ enum Lever {
         if let symbol { cfg.image = UIImage(systemName: symbol, withConfiguration: UIImage.SymbolConfiguration(pointSize: size * 0.95, weight: .semibold)) }
         cfg.imagePadding = 8
         if let title {
-            var t = AttributedString(display ? title.uppercased() : title)
+            var t = AttributedString(display && upper ? title.uppercased() : title)
             t.font = display ? UIFont.display(size + 2, .heavy) : UIFont.body(size, .semibold)
             // prominentes Glas tönt Inhalte ein (wirkt dunkelgrün) – Schwarz fest vorgeben
             if prominent { t.foregroundColor = ink }
@@ -121,6 +121,7 @@ struct NBlock: Decodable {
     let trailing: String?, eyebrow: String?, state: String?, chips: [String]?, delta: String?
     let on: Bool?, value: String?, label: String?, placeholder: String?, keyboard: String?, symbol: String?
     let items: [NStat]?, options: [NOption]?, selected: String?, done: Int?, total: Int?, buttons: [NButton]?
+    let before: Double?, now: Double?, max: Double?
 }
 struct NSheetSpec: Decodable {
     let id: String; let title: String; let subtitle: String?
@@ -457,6 +458,28 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
             v.axis = .vertical; v.spacing = 2
             let h = UIStackView(arrangedSubviews: [dot, v]); h.spacing = 14; h.alignment = .center
             return state == "current" ? card(h, tint: Lever.volt.withAlphaComponent(0.1), padding: 12) : h
+
+        case "compare":
+            // Balken: letztes Mal (grau) und heute (Volt) relativ zum größten Wert, rechts das Delta
+            let name = label(b.title ?? "", .body(15, .semibold), .white)
+            let m = max(1, b.max ?? 1)
+            func bar(_ v: Double, _ color: UIColor) -> UIView {
+                let track = UIView(); track.heightAnchor.constraint(equalToConstant: 7).isActive = true
+                let fill = UIView(); fill.backgroundColor = color; fill.layer.cornerRadius = 3.5; fill.translatesAutoresizingMaskIntoConstraints = false
+                track.addSubview(fill)
+                NSLayoutConstraint.activate([fill.leadingAnchor.constraint(equalTo: track.leadingAnchor), fill.topAnchor.constraint(equalTo: track.topAnchor),
+                                             fill.bottomAnchor.constraint(equalTo: track.bottomAnchor),
+                                             fill.widthAnchor.constraint(equalTo: track.widthAnchor, multiplier: CGFloat(Swift.max(0.02, Swift.min(1, v / m))))])
+                return track
+            }
+            let bars = UIStackView(arrangedSubviews: [bar(b.before ?? 0, UIColor(white: 1, alpha: 0.28)), bar(b.now ?? 0, Lever.volt)])
+            bars.axis = .vertical; bars.spacing = 4
+            let d = label(b.delta ?? "", .display(22, .heavy), (b.delta ?? "").hasPrefix("+") ? Lever.volt : Lever.muted, lines: 1)
+            d.setContentHuggingPriority(.required, for: .horizontal); d.setContentCompressionResistancePriority(.required, for: .horizontal)
+            d.textAlignment = .right; d.widthAnchor.constraint(greaterThanOrEqualToConstant: 44).isActive = true
+            let left = UIStackView(arrangedSubviews: [name, bars]); left.axis = .vertical; left.spacing = 6
+            let h = UIStackView(arrangedSubviews: [left, d]); h.spacing = 14; h.alignment = .center
+            return h
 
         case "stepper":
             let id = b.id ?? ""
@@ -981,6 +1004,8 @@ final class HoldRing: UIView {
 extension LeverTabBarPlugin {
     private static var sheets: [String: LeverNativeSheet] = [:]
     private static var panel: LeverSetPanel?
+    /// Panel, das erst nach dem Schließen des Pausen-Screens erscheinen darf
+    static var pendingPanel: NPanelSpec?
 
     private func topController() -> UIViewController? {
         guard var top: UIViewController = tabsRef else { return nil }
@@ -1025,17 +1050,211 @@ extension LeverTabBarPlugin {
         DispatchQueue.main.async {
             if let spec {
                 if let p = Self.panel, p.presentingViewController != nil { p.apply(spec); call.resolve(); return }
+                // Pausen-Screen noch offen (oder schließt gerade): sonst hinge das Panel an ihm und ginge mit
+                if Self.restOpen { Self.pendingPanel = spec; call.resolve(); return }
+                self.presentPanel(spec)
+            } else {
+                Self.pendingPanel = nil
+                if let p = Self.panel {
+                    Self.panel = nil
+                    p.presentingViewController?.dismiss(animated: true)
+                }
+            }
+            call.resolve()
+        }
+    }
+
+    func presentPanel(_ spec: NPanelSpec) {
                 let p = LeverSetPanel(spec: spec) { [weak self] type, value in
                     var data: [String: Any] = ["type": type]
                     if let value { data["value"] = value }
                     self?.notifyListeners("panel", data: data)
                 }
                 Self.panel = p
-                guard let top = self.topController() else { call.reject("Kein Controller"); return }
+                guard let top = self.topController() else { return }
                 top.present(p, animated: true)
-            } else if let p = Self.panel {
-                Self.panel = nil
-                p.presentingViewController?.dismiss(animated: true)
+    }
+}
+
+
+// MARK: - Pausen-Screen (nativ, Vollbild-Sheet)
+
+struct NRest: Decodable {
+    let end: Double?        // Endzeitpunkt in ms seit 1970 (nil = abgelaufen)
+    let total: Double       // Länge in s (für den Ring)
+    let ringing: Bool
+    let saved: String?      // „6 Wdh. · +1 zum letzten Mal“
+    let nextTitle: String?
+    let nextSubtitle: String?
+}
+
+/// Ring und Countdown laufen hier selbst (CADisplayLink) – flüssig, ohne Web-Takt.
+final class LeverRestController: UIViewController, UISheetPresentationControllerDelegate {
+    var spec: NRest
+    let emit: (String) -> Void
+    var closedByApp = false
+    private let ringTrack = CAShapeLayer(), ringArc = CAShapeLayer()
+    private let ringView = UIView()
+    private let time = UILabel(), of = UILabel(), head = UILabel()
+    private let saved = PaddedLabel()
+    private let minus = Lever.button(title: "−15 s", style: "glass", size: 20, display: true, upper: false)
+    private let plus = Lever.button(title: "+30 s", style: "glass", size: 20, display: true, upper: false)
+    private let go = Lever.button(title: "Los", symbol: "forward.end.fill", style: "prominent", size: 18, display: true)
+    private let nextBox = UIStackView()
+    private var link: CADisplayLink?
+
+    init(spec: NRest, emit: @escaping (String) -> Void) {
+        self.spec = spec; self.emit = emit
+        super.init(nibName: nil, bundle: nil)
+        overrideUserInterfaceStyle = .dark
+        if let sheet = sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+            sheet.delegate = self
+        }
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) { if !closedByApp { emit("close") } }
+    var onGone: (() -> Void)?
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated); link?.invalidate(); link = nil
+        if isBeingDismissed || presentingViewController == nil { onGone?() }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        if #unavailable(iOS 26.0) { view.backgroundColor = UIColor(white: 0.08, alpha: 1) }
+        head.font = .body(13, .bold); head.textColor = Lever.muted; head.textAlignment = .center
+        saved.font = .display(19, .heavy); saved.textColor = Lever.ink; saved.backgroundColor = UIColor(white: 0.95, alpha: 1)
+        saved.layer.cornerRadius = 19; saved.clipsToBounds = true; saved.insets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+
+        for l in [ringTrack, ringArc] { l.fillColor = UIColor.clear.cgColor; l.lineWidth = 18; l.lineCap = .round; ringView.layer.addSublayer(l) }
+        ringTrack.strokeColor = UIColor(white: 1, alpha: 0.08).cgColor
+        ringArc.strokeColor = Lever.volt.cgColor
+        time.font = .display(92, .black); time.textColor = .white; time.textAlignment = .center
+        time.adjustsFontSizeToFitWidth = true; time.minimumScaleFactor = 0.6
+        of.font = .body(15, .semibold); of.textColor = Lever.muted; of.textAlignment = .center
+        let center = UIStackView(arrangedSubviews: [time, of]); center.axis = .vertical; center.alignment = .center; center.spacing = -6
+        center.translatesAutoresizingMaskIntoConstraints = false
+        ringView.addSubview(center)
+        ringView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            ringView.widthAnchor.constraint(equalToConstant: 280), ringView.heightAnchor.constraint(equalToConstant: 280),
+            center.centerXAnchor.constraint(equalTo: ringView.centerXAnchor), center.centerYAnchor.constraint(equalTo: ringView.centerYAnchor),
+            center.widthAnchor.constraint(lessThanOrEqualToConstant: 220),
+        ])
+
+        for (b, ev) in [(minus, "minus"), (plus, "plus"), (go, "go")] {
+            b.heightAnchor.constraint(equalToConstant: 58).isActive = true
+            b.addAction(UIAction { [weak self] _ in UIImpactFeedbackGenerator(style: .light).impactOccurred(); self?.emit(ev) }, for: .touchUpInside)
+        }
+        let row = UIStackView(arrangedSubviews: [minus, plus, go]); row.spacing = 10; row.distribution = .fillEqually
+
+        nextBox.axis = .horizontal; nextBox.spacing = 14; nextBox.alignment = .center
+        nextBox.isLayoutMarginsRelativeArrangement = true; nextBox.layoutMargins = UIEdgeInsets(top: 16, left: 18, bottom: 16, right: 18)
+        nextBox.backgroundColor = UIColor(white: 1, alpha: 0.06); nextBox.layer.cornerRadius = 22; nextBox.layer.cornerCurve = .continuous
+        nextBox.layer.borderWidth = 1; nextBox.layer.borderColor = Lever.line.cgColor
+        let nextTap = UITapGestureRecognizer(target: self, action: #selector(nextTapped)); nextBox.addGestureRecognizer(nextTap)
+
+        let back = Lever.button(title: "Zurück zur Übung, Timer läuft weiter", style: "glass", size: 16)
+        back.heightAnchor.constraint(equalToConstant: 52).isActive = true
+        back.addAction(UIAction { [weak self] _ in self?.emit("close") }, for: .touchUpInside)
+
+        let top = UIStackView(arrangedSubviews: [head, saved]); top.axis = .vertical; top.alignment = .center; top.spacing = 12
+        let stack = UIStackView(arrangedSubviews: [top, ringView, row, UIView(), nextBox, back])
+        stack.axis = .vertical; stack.alignment = .fill; stack.spacing = 22
+        stack.setCustomSpacing(30, after: top)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(stack)
+        let ringWrap = stack.arrangedSubviews[1]
+        stack.removeArrangedSubview(ringWrap)
+        let holder = UIView(); holder.addSubview(ringView)
+        NSLayoutConstraint.activate([ringView.centerXAnchor.constraint(equalTo: holder.centerXAnchor), ringView.topAnchor.constraint(equalTo: holder.topAnchor),
+                                     ringView.bottomAnchor.constraint(equalTo: holder.bottomAnchor)])
+        stack.insertArrangedSubview(holder, at: 1)
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 34),
+            stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 22),
+            stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -22),
+            stack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12),
+        ])
+        apply(spec)
+        link = CADisplayLink(target: self, selector: #selector(tick)); link?.add(to: .main, forMode: .common)
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        let r = ringView.bounds.width / 2 - 10
+        let path = UIBezierPath(arcCenter: CGPoint(x: ringView.bounds.midX, y: ringView.bounds.midY), radius: r, startAngle: -.pi / 2, endAngle: 1.5 * .pi, clockwise: true)
+        ringTrack.path = path.cgPath; ringArc.path = path.cgPath
+    }
+
+
+    @objc private func nextTapped() { emit("close") }
+
+    func apply(_ s: NRest) {
+        spec = s
+        head.text = s.ringing || s.end == nil ? "PAUSE VORBEI" : "PAUSE"
+        saved.isHidden = (s.saved ?? "").isEmpty
+        saved.text = s.saved.map { "✓  \($0)" }
+        of.text = "von \(Self.clock(s.total))"
+        minus.isEnabled = s.end != nil; plus.isEnabled = s.end != nil
+        nextBox.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        nextBox.isHidden = s.nextTitle == nil
+        if let t = s.nextTitle {
+            let cap = UILabel(); cap.text = "ALS NÄCHSTES"; cap.font = .body(11.5, .bold); cap.textColor = Lever.muted
+            let title = UILabel(); title.text = t.uppercased(); title.font = .display(26, .heavy); title.textColor = .white
+            let sub = UILabel(); sub.text = s.nextSubtitle; sub.font = .body(14); sub.textColor = Lever.muted; sub.numberOfLines = 2
+            let v = UIStackView(arrangedSubviews: [cap, title, sub]); v.axis = .vertical; v.spacing = 2
+            let chev = UIImageView(image: UIImage(systemName: "chevron.right")); chev.tintColor = Lever.muted
+            chev.setContentHuggingPriority(.required, for: .horizontal)
+            nextBox.addArrangedSubview(v); nextBox.addArrangedSubview(chev)
+        }
+        tick()
+    }
+
+    @objc private func tick() {
+        let now = Date().timeIntervalSince1970 * 1000
+        let left = spec.end.map { Swift.max(0, $0 - now) } ?? 0
+        let share = spec.total > 0 ? left / (spec.total * 1000) : 0
+        CATransaction.begin(); CATransaction.setDisableActions(true)
+        ringArc.strokeEnd = CGFloat(Swift.min(1, share))
+        CATransaction.commit()
+        let txt = spec.ringing || spec.end == nil ? "Los!" : Self.clock(ceil(left / 1000))
+        if time.text != txt { time.text = txt }
+        time.textColor = spec.ringing ? Lever.volt : .white
+    }
+
+    static func clock(_ s: Double) -> String { let v = Int(s); return "\(v / 60):" + String(format: "%02d", v % 60) }
+}
+
+extension LeverTabBarPlugin {
+    private static var rest: LeverRestController?
+    static var restOpen: Bool { rest != nil }
+
+    /// Pausen-Screen: spec = null schließt
+    @objc func setRest(_ call: CAPPluginCall) {
+        let obj = call.getObject("spec")
+        let spec: NRest? = {
+            guard let obj, JSONSerialization.isValidJSONObject(obj), let d = try? JSONSerialization.data(withJSONObject: obj) else { return nil }
+            return try? JSONDecoder().decode(NRest.self, from: d)
+        }()
+        DispatchQueue.main.async {
+            if let spec {
+                if let r = Self.rest, r.presentingViewController != nil { r.apply(spec); call.resolve(); return }
+                let r = LeverRestController(spec: spec) { [weak self] ev in self?.notifyListeners("rest", data: ["type": ev]) }
+                Self.rest = r
+                guard var top: UIViewController = self.tabsRef else { call.reject("Kein Controller"); return }
+                while let p = top.presentedViewController, !p.isBeingDismissed { top = p }
+                top.present(r, animated: true)
+            } else if let r = Self.rest {
+                Self.rest = nil
+                r.closedByApp = true
+                let after = { [weak self] in
+                    if let p = Self.pendingPanel { Self.pendingPanel = nil; self?.presentPanel(p) }
+                }
+                if let presenter = r.presentingViewController { presenter.dismiss(animated: true, completion: after) } else { after() }
             }
             call.resolve()
         }
