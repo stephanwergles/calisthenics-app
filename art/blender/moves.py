@@ -109,13 +109,13 @@ def mu_keys(H):
             dict(rot=(22, 0, 0), pose=OVER_BAR, hang=dict(sz=0.2, dy=0.1), hands=mu_hands(H, 0.6, (0.1, 1, -0.5))),
             dict(rot=(22, 0, 0), pose=OVER_BAR, hang=dict(sz=0.3, dy=0.0), hands=mu_hands(H, 1, (0.1, 1, -0.2))),
             dict(rot=(8, 0, 0), pose=SUPPORT, hang=dict(ext=STRAIGHT, up=True, dy=-0.04), hands=mu_hands(H, 1, (0.1, 1, -0.2)))]
-def muscle_up():
-    return hang_ex(mu_keys(PULL_H), sz=True)
+def muscle_up():          # follow: Kamera geht mit, die Figur füllt das Bild statt der ganzen Bahn
+    return dict(hang_ex(mu_keys(PULL_H), sz=True), follow=True, fit=0.9)
 def muscle_up_negative():
     """Oben starten, langsam durch den Übergang ablassen – Hochkommen (Sprung) im Zeitraffer."""
-    return hang_ex(mu_keys(PULL_H), sz=True, timing="fast")
+    return dict(hang_ex(mu_keys(PULL_H), sz=True, timing="fast"), follow=True, fit=0.9)
 def muscle_up_band():
-    ex = hang_ex(mu_keys(PULL_H), sz=True)
+    ex = dict(hang_ex(mu_keys(PULL_H), sz=True), follow=True, fit=0.9)
     knee = skin("shin.L", (0.13, -0.02, 0.47), (0, -1, 0))        # Band hängt im linken Knie
     chest = skin("chest", (0, -0.15, 1.25), (0, -1, 0))
     def via(x):                     # solange die Brust unter der Stange ist, liegt das Band vor ihr
@@ -269,36 +269,39 @@ def handstand_wall():
     """Bauch zur Wand halten: aus den Schultern groß machen und wieder lösen."""
     yw, H, k0 = chest_wall_keys()
     k1 = dict(k0, pose=sym({**INV, "clavicle.L": (1, 0.05, 0.6)}))
-    return dict(keys=[hang_sz(k0), hang_sz(k1)], timing="hold", view=(-6, 6))   # seitlich, Wand am Rand
+    return dict(keys=[hang_sz(k0), hang_sz(k1)], timing="hold", view=(8, 6))   # seitlich von hinten, Wand verdeckt nichts
 def handstand_heel_pull():
     """Fersen von der Wand lösen und über den Händen balancieren."""
     yw, H, k0 = chest_wall_keys()
     k1 = inv_key(-1.5, H)
-    return dict(keys=[hang_sz(k0), hang_sz(k1)], timing="hold", view=(-6, 6))   # seitlich, Wand am Rand
+    return dict(keys=[hang_sz(k0), hang_sz(k1)], timing="hold", view=(8, 6))   # seitlich von hinten, Wand verdeckt nichts
 def handstand_free():
     """Freier Handstand: kleine Balance-Korrekturen über die Finger."""
     H = handstand_hands(0.0)
     return dict(keys=[hang_sz(inv_key(-2.5, H)), hang_sz(inv_key(2.5, H))], view=(-35, 6))
 def handstand_push_up_wall():
     """Rücken zur Wand, Fersen an der Wand, Kopf bis knapp über den Boden."""
-    yw = 0.28; wall(yw, 1); H = handstand_hands(0.0, hint=(0.6, -0.9, 0.1))
+    yw = 0.28; wall(yw, 1); H = handstand_hands(0.0, hint=(0.35, -1, 0.05))   # Ellbogen schräg nach vorn
     heel = lambda k: pt("ankle").y - (yw - 0.07)
     k0 = inv_key(0, H); solve(k0, 0, -25, 25, heel, 0); k0 = hang_sz(k0)
     crown = skin("head", (0, -0.02, 1.69), (0, 0, 1))
-    k1 = dict(k0); solve(k1, set_place(1, "sz"), k0["place"][1]["sz"], 0.0, lambda k: crown().z, 0.05)
+    k1 = dict(k0); set_place(1, "dy")(k1, -0.08)          # Kopf landet vor den Händen (Dreieck)
+    solve(k1, set_place(1, "sz"), k0["place"][1]["sz"], 0.0, lambda k: crown().z, 0.05)
     solve(k1, 0, -25, 25, heel, 0)
     return dict(keys=[k0, k1], view=(-40, 6))
 PIKE = sym({"neck": (0, -0.05, 1), "head": (0, -0.1, 1), "thigh.L": (0.02, -1, -0.12), "shin.L": (0, -1, -0.12)})
-def pike_ex(feet_h=0.0, a_top=130):
+def pike_ex(feet_h=0.0, a_top=130, hand_dy=-0.02):
     """Hüfte hoch, Kopf zwischen die Hände; Körper kippt um die Zehen."""
     T = Vector((0, 0.55 if not feet_h else 0.62, feet_h + 0.035))
     if feet_h: box((0, T.y + 0.08, feet_h / 2), (0.62, 0.42, feet_h))
     k = dict(rot=(a_top, 0, 0), pose=PIKE, wpose=sym({"foot.L": (0, -0.45, -0.9)}), place=("pin", "toe", T))
     pose_key(k, limbs=False); S = pt("shoulder")
-    k1 = dict(k, hands=floor_hands(0.27, S.y + 0.04, hint=(0.45, 1, 0.3)))
+    k1 = dict(k, hands=floor_hands(0.27, S.y + hand_dy, hint=(0.3, 1, 0.25)))   # Hände vor den Schultern
     solve(k1, 0, a_top - 35, a_top + 35, m_arm(), STRAIGHT)
     k0 = dict(k1); crown = skin("head", (0, -0.04, 1.69), (0, -0.4, 1)); nose = skin("head", (0, -0.1, 1.56), (0, -1, 0))
-    solve(k0, 0, k1["rot"][0], k1["rot"][0] + 40, lambda k: min(crown().z, nose().z), 0.06)
+    solve(k0, 0, k1["rot"][0], k1["rot"][0] + 40, lambda k: min(crown().z, nose().z), 0.1)
+    if os.environ.get("LEVER_DEBUG"):
+        pose_key(k0); print("PIKE Kopf y", round(crown().y, 3), "Hände y", round(k1["hands"]["L"]["k"][1], 3), "Schulter y", round(pt("shoulder").y, 3))
     return dict(keys=[k1, k0], view=(-30, 10))
 def pike_push_up(): return pike_ex()
 def pike_push_up_elevated(): return pike_ex(feet_h=0.5, a_top=150)
@@ -315,7 +318,7 @@ def lsit_ex(par=False, v=False):
     if par:          # vom Stütz mit Fersen am Boden in den L-Sit
         down = dict(up, pose=sym({**LSIT, "thigh.L": (0.03, -1, -0.3), "shin.L": (0, -1, -0.32), "foot.L": (0, -1, -0.05)}))
     else:            # aus dem Sitz abheben (Beine in Weltrichtung, damit sie beim Zurücklehnen am Boden bleiben)
-        up["wpose"] = sym({"thigh.L": (0.03, -1, 0.07), "shin.L": (0, -1, 0.09), "foot.L": (0, -1, -0.3)})
+        up["wpose"] = sym({"thigh.L": (0.03, -1, 0.15), "shin.L": (0, -1, 0.17), "foot.L": (0, -1, -0.25)})
         down = grounded(dict(up, rot=(-28, 0, 0), pose=sym({**LSIT, "neck": (0, -0.3, 1), "head": (0, -0.3, 1)}),
                              wpose=sym({"thigh.L": (0.03, -1, -0.03), "shin.L": (0, -1, -0.03), "foot.L": (0, -1, 0.3)}),
                              place=("ground", "hip", (0, 0.03)), hands=floor_hands(0.24, 0.22, (0, -1, 0), (0.2, 1, 0))), "hip")

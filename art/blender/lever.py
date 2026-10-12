@@ -493,7 +493,9 @@ def key_at(keys, s):
     i = min(int(s), len(keys) - 2); return mix(keys[i], keys[i + 1], s - i)
 
 # ── Bildausschnitt ──────────────────────────────────────────────────────────
-def frame_camera(view, pts, fit=0.86, lens=60):
+def frame_camera(view, pts, fit=0.86, lens=60, dist=None):
+    """Kamera aus Blickwinkel view so setzen, dass alle Punkte mit Rand fit ins Bild passen.
+    dist: Abstand vorgeben und nur zentrieren (mitgeführte Kamera). Gibt (Ziel, Abstand) zurück."""
     az, el = (math.radians(a) for a in view)
     off = Vector((math.cos(el) * math.cos(az), math.cos(el) * math.sin(az), math.sin(el)))
     fwd = -off; right = fwd.cross(Z).normalized(); up = right.cross(fwd)
@@ -505,12 +507,19 @@ def frame_camera(view, pts, fit=0.86, lens=60):
         return (rel @ R) / z, (rel @ U) / z
     for _ in range(4):
         lo, hi = 0.5, 40.0
-        for _ in range(40):
+        for _ in range(40 if dist is None else 0):
             d = (lo + hi) / 2; x, y = proj(ctr, d)
             if max(np.abs(x).max() / tx, np.abs(y).max() / ty) > fit: lo = d
             else: hi = d
+        if dist is not None: hi = dist
         x, y = proj(ctr, hi)
         ctr += right * ((x.max() + x.min()) / 2 * hi) + up * ((y.max() + y.min()) / 2 * hi)
+    set_camera(view, ctr, hi, lens)
+    return ctr, hi
+def set_camera(view, ctr, dist, lens=60):
+    az, el = (math.radians(a) for a in view)
+    off = Vector((math.cos(el) * math.cos(az), math.cos(el) * math.sin(az), math.sin(el)))
+    ctr = Vector(ctr); hi = dist
     cam_d.lens = lens
     cam.location, target.location = ctr + off * hi, ctr
     light_target.location = ctr
@@ -568,6 +577,9 @@ else:
         k.setdefault("rot", (0, 0, 0))
     frames = int(os.environ.get("LEVER_FRAMES") or EX.get("frames", 48)); prof = EX.get("timing", "pp")
     S_OF = [curve(i / frames, prof) * (len(keys) - 1) for i in range(frames)]
+    top = [i for i, x in enumerate(S_OF) if x >= max(S_OF) - 1e-6]          # Schlüsselposition auf 1 s legen:
+    shift = (top[0] + top[-1]) // 2 - frames // 2                           # Mitte des Loops = Vorschaubild der App
+    S_OF = S_OF[shift:] + S_OF[:shift]
     scene.render.resolution_x, scene.render.resolution_y = 800, 600   # = Clip-Größe; höher bringt nach Skalierung nichts
     if os.environ.get("LEVER_RES"): scene.render.resolution_percentage = int(os.environ["LEVER_RES"])
     if os.environ.get("LEVER_SAMPLES"): scene.cycles.samples = int(os.environ["LEVER_SAMPLES"])
@@ -576,7 +588,19 @@ else:
     for s in sorted(set(round(x, 3) for x in S_OF[::3])) + list(range(len(keys))):
         pose_key(key_at(keys, s)); pts.append(mesh_np()[::5])
     pts = np.vstack(pts + [np.array([list(p) for p in FRAME])] if FRAME else pts)
-    frame_camera(EX.get("view", (AZ0, 4)), pts, EX.get("fit", 0.86), EX.get("lens", 60))
+    view, fit, lens = EX.get("view", (AZ0, 4)), EX.get("fit", 0.86), EX.get("lens", 60)
+    frame_camera(view, pts, fit, lens)
+    CAM = {}                               # mitgeführte Kamera: fester Abstand, Ziel folgt der Figur (geglättet)
+    if EX.get("follow"):
+        per = []
+        for s in S_OF:
+            pose_key(key_at(keys, s)); per.append(mesh_np()[::5])
+        d = max(frame_camera(view, P, fit, lens)[1] for P in per)
+        ctrs = [frame_camera(view, P, fit, lens, dist=d)[0] for P in per]
+        n = len(ctrs)
+        for i in range(n):
+            CAM[i] = sum((ctrs[(i + j) % n] for j in range(-3, 4)), Vector()) / 7
+        CAM["d"] = d
     if os.environ.get("LEVER_CAM"):   # Detailkontrolle: LEVER_CAM="x,y,z,zx,zy,zz"
         c = [float(x) for x in os.environ["LEVER_CAM"].split(",")]
         cam.location, target.location = Vector(c[:3]), Vector(c[3:])
@@ -594,8 +618,12 @@ else:
         print("CHECK", ARG, " ".join(f"{kk}={v:+.3f}@{i}{'(' + w + ')' if w else ''}" for kk, (v, i, w) in worst.items()))
     elif MODE == "still":                  # jede Schlüsselpose als Bild: <übung>_k0.png …
         for i in range(len(keys)):
-            pose_key(keys[i]); render(os.path.join(OUT, f"{ARG}_k{i}.png"))
+            pose_key(keys[i])
+            if CAM: frame_camera(view, mesh_np()[::5], fit, lens, dist=CAM["d"])
+            render(os.path.join(OUT, f"{ARG}_k{i}.png"))
     elif MODE == "clip":
         for i, s in enumerate(S_OF):
-            pose_key(key_at(keys, s)); render(os.path.join(OUT, f"frame_{i:04d}.png"))
+            pose_key(key_at(keys, s))
+            if CAM: set_camera(view, CAM[i], CAM["d"], lens)
+            render(os.path.join(OUT, f"frame_{i:04d}.png"))
 print("FERTIG", OUT)
