@@ -47,7 +47,8 @@ const session: Session = {
     { exercise: 'pull-up', progression: 'pull-up', set: 1, value: 5, weightKg: 5 },
     { exercise: 'muscle-up-band', progression: 'muscle-up-transition', set: 2, value: 1, attempts: 5, note: 'knapp' },
   ],
-  skipped: ['body-row'], routineDone: ['pull-warm-armkreisen'], setPlan: { 'pull-up': 3 }, updatedAt: 1790000000000,
+  skipped: ['body-row'], routineDone: ['pull-warm-armkreisen'], setPlan: { 'pull-up': 3 },
+  note: 'Schulter links zwickt bei Dips', updatedAt: 1790000000000,
 }
 
 test('Einheit übersteht den Weg zum Server und zurück', () => {
@@ -56,6 +57,7 @@ test('Einheit übersteht den Weg zum Server und zurück', () => {
   const bare = C.docToSession(asPayload({ ...C.sessionToDoc({ ...session, durationSec: undefined, setPlan: undefined, updatedAt: undefined }) }))
   assert.equal('durationSec' in bare, false, 'null wird nicht zu einem Feld')
   assert.equal('setPlan' in bare, false)
+  assert.equal('note' in C.docToSession(asPayload({ ...C.sessionToDoc({ ...session, note: undefined }) })), false)
 })
 
 test('Aktivität und Trainingsstand', () => {
@@ -72,6 +74,9 @@ test('Eingaben vom Gerät werden geprüft', () => {
   assert.equal(C.isSession({ ...session, date: '30.09.2026', id: '30.09.2026-pull' }), false)
   assert.equal(C.isSession({ ...session, sets: [{ exercise: 'x', progression: 'y', set: '1', value: 5 }] }), false)
   assert.equal(C.isSession({ ...session, skipped: ['<script>'] }), false)
+  assert.equal(C.isSession({ ...session, note: 'x'.repeat(C.NOTE_MAX + 1) }), false, 'Notiz zu lang')
+  assert.equal(C.isSession({ ...session, note: 42 }), false)
+  assert.equal(C.isSession({ ...session, sets: [{ ...session.sets[0], note: { a: 1 } }] }), false)
   assert.ok(C.isActivity({ id: '2026-09-27-run-1', date: '2026-09-27', kind: 'run' }))
   assert.equal(C.isActivity({ id: '2026-09-27-x-1', date: '2026-09-27', kind: 'swim' }), false)
   assert.ok(C.isState({ current: { pistol: 'pistol-squat' }, paused: [] }))

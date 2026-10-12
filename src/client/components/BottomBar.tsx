@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
 import type { RestTimer } from '../useRestTimer'
+import { Icon } from './Icon'
 
 /** Eine Zeile statt zwei: ohne Session nur „Workout starten“, mit Session links
     Dauer + Workout (reine Anzeige), dann Pausen-Timer bzw. drei Schnellstarts, rechts außen Beenden */
@@ -16,10 +17,10 @@ export function BottomBar({ t, rest }: { t: Training; rest: RestTimer }) {
   }, [t.active])
 
   return (
-    <footer className={`bar${rest.ringing ? ' alarm' : ''}`}>
+    <div className={`bar${rest.ringing ? ' alarm' : ''}`}>
       {!t.active ? (
         <>
-          <button className="btn btn-primary grow" onClick={t.startSession}>▶ {t.ix.workouts.get(t.workout)!.name} starten</button>
+          <button className="btn btn-primary grow" onClick={t.startSession}><Icon name="play" /> {t.ix.workouts.get(t.workout)!.name} starten</button>
           {(rest.running || rest.ringing) && <RestButton rest={rest} />}
         </>
       ) : (
@@ -35,18 +36,18 @@ export function BottomBar({ t, rest }: { t: Training; rest: RestTimer }) {
             ? <RestButton rest={rest} />
             : <div className="presets">{[90, 120, 180].map(s => <button key={s} className="btn btn-secondary btn-sm" onClick={() => rest.start(s)}>{L.fmtClock(s)}</button>)}</div>}
           <button className="btn btn-ghost btn-icon stop" onClick={() => { if (confirm('Workout beenden und Zeit speichern?')) t.endSession() }} aria-label="Workout beenden">
-            <span aria-hidden="true">■</span>
+            <Icon name="stop" size={16} />
           </button>
         </>
       )}
-    </footer>
+    </div>
   )
 }
 
 function RestButton({ rest }: { rest: RestTimer }) {
   return (
     <button className="btn btn-outline rest" onClick={rest.stop} aria-label="Pausen-Timer stoppen">
-      {rest.ringing ? 'FERTIG' : L.fmtClock(rest.remaining)}
+      {rest.ringing ? 'FERTIG' : <><Icon name="timer" size={18} />{L.fmtClock(rest.remaining)}</>}
     </button>
   )
 }

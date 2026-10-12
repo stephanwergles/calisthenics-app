@@ -159,3 +159,18 @@ test('Aktivitäten: Anzeige', () => {
   assert.equal(L.fmtActivity({ id: 'a', date: '2026-10-01', kind: 'ride', durationMin: 90, distanceKm: 40.5, elevationM: 450 }), '90 min · 40,5 km · 450 hm')
   assert.equal(L.activityTitle({ id: 'b', date: '2026-10-01', kind: 'workout', name: 'Cindy' }), 'Cindy')
 })
+
+test('Notizen: zur Einheit und pro Satz', () => {
+  const s = L.emptySession('2026-10-12', 'legs')
+  const n = L.withNote(s, '  Knie links zwickt  ')
+  assert.equal(n.note, 'Knie links zwickt')
+  assert.ok(n.updatedAt)
+  assert.equal('note' in L.withNote(n, '   '), false, 'leere Notiz entfernt das Feld')
+  assert.equal(L.withNote(s, 'x'.repeat(600)).note!.length, L.NOTE_MAX)
+  const sets = [
+    { exercise: 'dip', progression: 'dip', set: 2, value: 8, note: 'Schulter' },
+    { exercise: 'dip', progression: 'dip', set: 1, value: 10 },
+    { exercise: 'dip', progression: 'dip', set: 3, value: 6, note: 'knapp' },
+  ]
+  assert.deepEqual(L.notesOf(sets), [{ set: 2, note: 'Schulter' }, { set: 3, note: 'knapp' }])
+})

@@ -4,6 +4,9 @@ import type {
   Activity, Catalog, Exercise, ExerciseId, Progression, ProgressionId, Session, SetLog,
   Target, UserState, Weekday, Workout, WorkoutId,
 } from '../domain/model.ts'
+import { NOTE_MAX } from '../domain/model.ts'
+
+export { NOTE_MAX }
 
 export const WEEKDAYS: Weekday[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 export const WEEKDAY_SHORT: Record<Weekday, string> = { mon: 'Mo', tue: 'Di', wed: 'Mi', thu: 'Do', fri: 'Fr', sat: 'Sa', sun: 'So' }
@@ -118,6 +121,17 @@ export const withRoutine = (s: Session, item: string, on: boolean): Session =>
   touch({ ...s, routineDone: on ? [...new Set([...s.routineDone, item])] : s.routineDone.filter(i => i !== item) })
 export const withDuration = (s: Session, seconds: number): Session =>
   touch({ ...s, durationSec: Math.round((s.durationSec ?? 0) + seconds) })
+
+/** Notizen: getrimmt, höchstens NOTE_MAX Zeichen (wie der Server prüft), leer = keine */
+export const cleanNote = (v: string | undefined) => v?.trim().slice(0, NOTE_MAX) || undefined
+export function withNote(s: Session, note: string): Session {
+  const { note: _old, ...rest } = s
+  const n = cleanNote(note)
+  return touch(n ? { ...rest, note: n } : rest)
+}
+/** Satz-Notizen einer Satzliste, in Satzreihenfolge */
+export const notesOf = (sets: SetLog[]) =>
+  sets.filter(x => x.note).sort((a, b) => a.set - b.set).map(x => ({ set: x.set, note: x.note! }))
 
 /** Vorbelegung des Satz-Editors: heutiger Wert → gleicher Satz der letzten Einheit
     → vorheriger Satz heute → oberes Ziel bzw. Freischalt-Schwelle */

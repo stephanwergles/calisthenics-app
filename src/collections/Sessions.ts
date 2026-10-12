@@ -38,6 +38,7 @@ export const Sessions: CollectionConfig = {
     },
     { name: 'skipped', type: 'relationship', relationTo: 'exercises', hasMany: true, label: 'Übersprungen' },
     { name: 'routineDone', type: 'text', hasMany: true, label: 'Warm-up/Cool-down erledigt' },
+    { name: 'note', type: 'textarea', label: 'Notiz zur Einheit' },
     { name: 'setPlan', type: 'json', label: 'Geplante Satzzahl (Abweichungen vom Ziel)' },
     clientUpdatedAt,
   ],

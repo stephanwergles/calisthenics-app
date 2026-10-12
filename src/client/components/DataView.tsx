@@ -96,6 +96,7 @@ export function DataView({ t }: { t: Training }) {
 
   return (
     <section className="data">
+      <h2 className="page-title display">Daten</h2>
       <div className="card">
         <h2>Auf diesem Gerät</h2>
         <p className="meta">{t.sessions.length} Einheiten · {sets} Sätze · {t.activities.length} Aktivitäten</p>

@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
+import { Icon } from './Icon'
 
 type Sub = 'cal' | 'prog'
 
@@ -10,6 +11,7 @@ export function HistoryView({ t, openActivity }: { t: Training; openActivity: (d
   const [sub, setSub] = useState<Sub>('cal')
   return (
     <section className="history">
+      <h2 className="page-title display">Verlauf</h2>
       <div className="seg" role="group" aria-label="Ansicht">
         {([['cal', 'Kalender'], ['prog', 'Fortschritt']] as const).map(([k, l]) => (
           <button key={k} className={sub === k ? 'on' : ''} aria-pressed={sub === k} onClick={() => setSub(k)}>{l}</button>
@@ -40,8 +42,8 @@ function Calendar({ t, openActivity }: { t: Training; openActivity: (date: strin
           <span className="display">{L.fmtMonth(month)}</span>
           <div className="cal-ctrl">
             {!atToday && <button className="btn btn-outline btn-sm" onClick={() => { setSel(t.today); setMonth(t.today.slice(0, 7)) }}>Heute</button>}
-            <button className="btn btn-secondary btn-icon" aria-label="Voriger Monat" onClick={() => setMonth(L.shiftMonth(month, -1))}>‹</button>
-            <button className="btn btn-secondary btn-icon" aria-label="Nächster Monat" onClick={() => setMonth(L.shiftMonth(month, 1))}>›</button>
+            <button className="btn btn-secondary btn-icon" aria-label="Voriger Monat" onClick={() => setMonth(L.shiftMonth(month, -1))}><Icon name="left" size={20} /></button>
+            <button className="btn btn-secondary btn-icon" aria-label="Nächster Monat" onClick={() => setMonth(L.shiftMonth(month, 1))}><Icon name="right" size={20} /></button>
           </div>
         </div>
         <div className="cal-grid">
@@ -68,11 +70,18 @@ function Calendar({ t, openActivity }: { t: Training; openActivity: (date: strin
           <div key={s.id} className="card day">
             <h3>{w ? `${w.name} · ${w.focus}` : s.workout}</h3>
             <p className="meta">{L.fmtDate(s.date)}{s.durationSec ? ` · ${L.fmtDuration(s.durationSec)}` : ''} · {s.sets.length} Sätze</p>
+            {s.note && <p className="note-text"><Icon name="note" size={14} /><span>{s.note}</span></p>}
             {rows.length > 0 && (
               <table>
                 <tbody>
                   {rows.map(r => (
-                    <tr key={r.exercise.id}><td>{r.exercise.name}</td><td>{r.sets.map((x, i) => <span key={i} className="nw">{i > 0 && ' · '}{L.fmtSet(x, r.exercise)}</span>)}</td></tr>
+                    <tr key={r.exercise.id}>
+                      <td>
+                        {r.exercise.name}
+                        {L.notesOf(r.sets).map(n => <span key={n.set} className="set-note">Satz {n.set}: {n.note}</span>)}
+                      </td>
+                      <td>{r.sets.map((x, i) => <span key={i} className="nw">{i > 0 && ' · '}{L.fmtSet(x, r.exercise)}{x.note ? '*' : ''}</span>)}</td>
+                    </tr>
                   ))}
                 </tbody>
               </table>
@@ -150,7 +159,10 @@ function Tile({ p, open, toggle }: { p: L.ProgressSummary; open: boolean; toggle
             {p.history.slice(-12).reverse().map((h, i) => (
               <tr key={`${h.date}-${h.step}-${i}`}>
                 <td>{L.fmtShortDate(h.date)}</td><td>{h.step + 1}</td>
-                <td>{h.sets.map(x => `${x.value}${x.weightKg ? `+${x.weightKg}kg` : ''}`).join(' · ')}</td><td>{h.sum}</td>
+                <td>
+                  {h.sets.map(x => `${x.value}${x.weightKg ? `+${x.weightKg}kg` : ''}${x.note ? '*' : ''}`).join(' · ')}
+                  {L.notesOf(h.sets).map(n => <span key={n.set} className="set-note">Satz {n.set}: {n.note}</span>)}
+                </td><td>{h.sum}</td>
               </tr>
             ))}
           </tbody>

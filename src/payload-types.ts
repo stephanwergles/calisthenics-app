@@ -157,6 +157,7 @@ export interface Session {
     | null;
   skipped?: (string | Exercise)[] | null;
   routineDone?: string[] | null;
+  note?: string | null;
   setPlan?:
     | {
         [k: string]: unknown;
@@ -449,6 +450,7 @@ export interface SessionsSelect<T extends boolean = true> {
       };
   skipped?: T;
   routineDone?: T;
+  note?: T;
   setPlan?: T;
   clientUpdatedAt?: T;
   updatedAt?: T;

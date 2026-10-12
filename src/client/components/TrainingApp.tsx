@@ -6,13 +6,14 @@ import { useTraining, type Training } from '../useTraining'
 import { useRestTimer } from '../useRestTimer'
 import { BottomBar } from './BottomBar'
 import { DataView } from './DataView'
+import { Icon, type IconName } from './Icon'
 import { HistoryView } from './HistoryView'
 import { ActivitySheet, SetSheet } from './Sheets'
 import { WorkoutView } from './WorkoutView'
 
 type SheetState = { kind: 'set'; pid: string; setNo: number } | { kind: 'activity'; date: string } | null
 type View = 'train' | 'history' | 'data'
-const VIEWS: [View, string][] = [['train', 'Training'], ['history', 'Verlauf'], ['data', 'Daten']]
+const VIEWS: [View, string, IconName][] = [['train', 'Training', 'training'], ['history', 'Verlauf', 'history'], ['data', 'Daten', 'data']]
 
 /** kleiner Punkt am „Daten“-Button: grün = abgeglichen, orange = läuft/wartet, rot = Fehler, grau = nicht angemeldet/offline */
 const syncDot = (s: Training['sync']) => !s.account ? '' : s.phase === 'error' ? 'err' : s.phase === 'syncing' || s.pending ? 'busy' : s.phase === 'offline' ? '' : 'on'
@@ -46,23 +47,13 @@ export function TrainingApp() {
   const focus = picked && slots.some(s => s.pid === picked) ? picked : L.firstOpen(slots.map(s => ({ pid: s.pid, state: s.state })))
   const sheetSlot = sheet?.kind === 'set' ? slots.find(s => s.pid === sheet.pid) : undefined
 
+  const showBar = view === 'train' || !!t.active || rest.running || rest.ringing
+
   if (!t.loaded) return <main className="app loading" aria-busy="true" />
 
   return (
-    <main className="app">
-      <header className="top">
-        <h1 className="sr-only">Calisthenics</h1>
-        <nav className="seg" aria-label="Bereiche">
-          {VIEWS.map(([k, l]) => (
-            <button key={k} className={view === k ? 'on' : ''} aria-current={view === k ? 'page' : undefined}
-              onClick={() => { setView(k); window.scrollTo(0, 0) }}>
-              {k === 'data' && <span className={`sync-dot ${syncDot(t.sync)}`} role="img" aria-label={syncLabel(t.sync)} />}
-              {l}
-            </button>
-          ))}
-        </nav>
-      </header>
-
+    <main className={`app${showBar ? ' with-bar' : ''}`}>
+      <h1 className="sr-only">Calisthenics</h1>
       {view === 'data' && <DataView t={t} />}
       {view === 'history' && <HistoryView t={t} openActivity={date => setSheet({ kind: 'activity', date })} />}
       {view === 'train' && (
@@ -71,7 +62,22 @@ export function TrainingApp() {
           openActivity={() => setSheet({ kind: 'activity', date: t.today })} />
       )}
 
-      {view === 'train' && <BottomBar t={t} rest={rest} />}
+      {/* unten, in Daumenreichweite: Session-Leiste (im Training immer, sonst nur während Session/Pause) über den Tabs */}
+      <div className="dock">
+        {showBar && <BottomBar t={t} rest={rest} />}
+        <nav className="tabs" aria-label="Bereiche">
+          {VIEWS.map(([k, l, icon]) => (
+            <button key={k} className={view === k ? 'on' : ''} aria-current={view === k ? 'page' : undefined}
+              onClick={() => { setView(k); window.scrollTo(0, 0) }}>
+              <span className="tab-icon">
+                <Icon name={icon} size={22} />
+                {k === 'data' && <span className={`sync-dot ${syncDot(t.sync)}`} role="img" aria-label={syncLabel(t.sync)} />}
+              </span>
+              {l}
+            </button>
+          ))}
+        </nav>
+      </div>
 
       {sheetSlot && sheet?.kind === 'set' && (
         <SetSheet key={`${sheet.pid}-${sheet.setNo}`} t={t} slot={sheetSlot} setNo={sheet.setNo} rest={rest}

@@ -1,5 +1,6 @@
 import * as migration_20261001_232313_initial from './20261001_232313_initial';
 import * as migration_20261002_123616_sync_fields from './20261002_123616_sync_fields';
+import * as migration_20261012_121337_session_note from './20261012_121337_session_note';
 
 export const migrations = [
   {
@@ -10,6 +11,11 @@ export const migrations = [
   {
     up: migration_20261002_123616_sync_fields.up,
     down: migration_20261002_123616_sync_fields.down,
-    name: '20261002_123616_sync_fields'
+    name: '20261002_123616_sync_fields',
+  },
+  {
+    up: migration_20261012_121337_session_note.up,
+    down: migration_20261012_121337_session_note.down,
+    name: '20261012_121337_session_note'
   },
 ];

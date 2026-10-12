@@ -4,6 +4,7 @@ import type { Activity } from '@/domain/model'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
 import type { RestTimer } from '../useRestTimer'
+import { Icon } from './Icon'
 
 export function Sheet({ title, sub, onClose, children }: { title: string; sub?: string; onClose: () => void; children: ReactNode }) {
   useEffect(() => {
@@ -15,8 +16,13 @@ export function Sheet({ title, sub, onClose, children }: { title: string; sub?: 
     <>
       <div className="scrim" onClick={onClose} />
       <div className="sheet" role="dialog" aria-modal="true" aria-label={title}>
-        <h3>{title}</h3>
-        {sub && <p className="sheet-sub">{sub}</p>}
+        <div className="sheet-head">
+          <div>
+            <h3>{title}</h3>
+            {sub && <p className="sheet-sub">{sub}</p>}
+          </div>
+          <button className="btn btn-ghost btn-icon" aria-label="Schließen" onClick={onClose}><Icon name="close" /></button>
+        </div>
         {children}
       </div>
     </>
@@ -28,9 +34,9 @@ function Stepper({ label, value, step, min, unit, onChange }: { label: string; v
     <div className="stepper">
       <span className="stepper-label">{label}</span>
       <div className="stepper-row">
-        <button className="btn btn-secondary btn-icon" aria-label={`${label} verringern`} onClick={() => onChange(Math.max(min, +(value - step).toFixed(1)))}>−</button>
+        <button className="btn btn-secondary btn-icon" aria-label={`${label} verringern`} onClick={() => onChange(Math.max(min, +(value - step).toFixed(1)))}><Icon name="minus" size={20} /></button>
         <output className="stepper-val">{value}{unit && <small>{unit}</small>}</output>
-        <button className="btn btn-secondary btn-icon" aria-label={`${label} erhöhen`} onClick={() => onChange(+(value + step).toFixed(1))}>+</button>
+        <button className="btn btn-secondary btn-icon" aria-label={`${label} erhöhen`} onClick={() => onChange(+(value + step).toFixed(1))}><Icon name="plus" size={20} /></button>
       </div>
     </div>
   )
@@ -45,10 +51,13 @@ export function SetSheet({ t, slot, setNo, rest, onClose, onSaved }: {
   const init = L.prefill(slot.sets, slot.last?.sets ?? [], setNo, target, ex)
   const [value, setValue] = useState(init.value)
   const [weight, setWeight] = useState(init.weightKg)
+  const [note, setNote] = useState(existing?.note ?? '')
+  const [noteOpen, setNoteOpen] = useState(!!existing?.note)
   const seconds = ex.unit === 'seconds'
 
   const save = () => {
-    t.updateToday(s => L.withSet(s, { exercise: ex.id, progression: slot.pid, set: setNo, value, ...(weight ? { weightKg: weight } : {}) }))
+    const n = L.cleanNote(note)
+    t.updateToday(s => L.withSet(s, { exercise: ex.id, progression: slot.pid, set: setNo, value, ...(weight ? { weightKg: weight } : {}), ...(n ? { note: n } : {}) }))
     t.startSession()
     rest.start(target.restSec)
     onSaved()
@@ -61,8 +70,17 @@ export function SetSheet({ t, slot, setNo, rest, onClose, onSaved }: {
       </div>
       {seconds && (
         <button className="btn btn-outline btn-block hold" onClick={() => rest.start(value)}>
-          ⏱ {rest.running ? `${rest.remaining} s` : `Halte-Timer ${value} s`}
+          <Icon name="timer" /> {rest.running ? `${rest.remaining} s` : `Halte-Timer ${value} s`}
         </button>
+      )}
+      {noteOpen ? (
+        <label className="field">
+          <span className="field-label">Notiz zu diesem Satz</span>
+          <textarea rows={2} maxLength={L.NOTE_MAX} value={note} placeholder="z. B. Ellenbogen gezwickt, mit Schwung"
+            autoFocus={!existing?.note} onChange={e => setNote(e.target.value)} />
+        </label>
+      ) : (
+        <button className="btn btn-ghost btn-block note-add" onClick={() => setNoteOpen(true)}><Icon name="note" /> Notiz hinzufügen</button>
       )}
       <div className="sheet-actions">
         {existing && <button className="btn btn-danger" onClick={() => { t.updateToday(s => L.withoutSet(s, ex.id, setNo)); onClose() }}>Löschen</button>}

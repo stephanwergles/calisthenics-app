@@ -3,6 +3,7 @@
 
    Payload liefert leere Felder als null, Relationen je nach depth als ID oder
    Objekt und Array-Zeilen mit eigener `id`. Das App-Modell kennt nichts davon. */
+import { NOTE_MAX } from '../domain/model.ts'
 import type { Activity, Catalog, Exercise, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
 
 type Doc = Record<string, any>
@@ -28,6 +29,7 @@ export function docToSession(d: Doc): Session {
     skipped: (d.skipped ?? []).map(idOf),
     routineDone: d.routineDone ?? [],
     setPlan: opt(d.setPlan),
+    note: opt<string>(d.note),
     updatedAt: opt<number>(d.clientUpdatedAt),
   })
 }
@@ -38,7 +40,7 @@ export const sessionToDoc = (s: Session) => ({
     exercise: x.exercise, progression: x.progression, set: x.set, value: x.value,
     weightKg: x.weightKg ?? null, attempts: x.attempts ?? null, note: x.note ?? null,
   })),
-  skipped: s.skipped, routineDone: s.routineDone, setPlan: s.setPlan ?? null,
+  skipped: s.skipped, routineDone: s.routineDone, setPlan: s.setPlan ?? null, note: s.note ?? null,
   clientUpdatedAt: s.updatedAt ?? 0,
 })
 
@@ -71,10 +73,14 @@ const isDate = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.te
 const isId = (v: unknown) => typeof v === 'string' && /^[a-z0-9-]{1,80}$/.test(v)
 const isNum = (v: unknown) => typeof v === 'number' && Number.isFinite(v)
 
+/** Notizen: optional, Text, höchstens NOTE_MAX Zeichen */
+export { NOTE_MAX }
+const isNote = (v: any) => v === undefined || (typeof v === 'string' && v.length <= NOTE_MAX)
 export function isSession(s: any): s is Session {
   return !!s && isId(s.id) && isDate(s.date) && isId(s.workout) && s.id === `${s.date}-${s.workout}`
     && Array.isArray(s.sets) && s.sets.length <= 300
-    && s.sets.every((x: any) => x && isId(x.exercise) && isId(x.progression) && isNum(x.set) && isNum(x.value))
+    && s.sets.every((x: any) => x && isId(x.exercise) && isId(x.progression) && isNum(x.set) && isNum(x.value) && isNote(x.note))
+    && isNote(s.note)
     && Array.isArray(s.skipped) && s.skipped.every(isId)
     && Array.isArray(s.routineDone) && s.routineDone.every(isId)
 }

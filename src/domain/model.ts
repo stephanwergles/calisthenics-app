@@ -84,6 +84,9 @@ export interface SetLog {
   note?: string;
 }
 
+/** Höchstlänge einer Notiz (Satz oder Einheit) – App und Server prüfen dasselbe */
+export const NOTE_MAX = 500;
+
 export interface Session {
   id: string;                   // deterministisch `${date}-${workout}` → Import wiederholbar
   date: string;                 // YYYY-MM-DD, lokales Datum
@@ -94,6 +97,8 @@ export interface Session {
   routineDone: RoutineItemId[];
   /** heute geplante Satzzahl je Progression, wenn vom Ziel abgewichen wurde (± in der Ansicht) */
   setPlan?: Record<ProgressionId, number>;
+  /** Freitext zur ganzen Einheit, z. B. „schlecht geschlafen, Schulter links zwickt“ */
+  note?: string;
   /** letzte Änderung in ms – Grundlage für den Sync */
   updatedAt?: number;
 }
