@@ -10,7 +10,8 @@ import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 
 type Sub = 'cal' | 'prog'
 
-export type DayItem = { kind: 'session' | 'activity'; id: string }
+/** Was ein Tipp im Verlauf öffnet; 'empty' = Tag ohne Eintrag (id = Datum) */
+export type DayItem = { kind: 'session' | 'activity' | 'empty'; id: string }
 
 /** Verlauf: Monat mit Kalender und allen Einheiten als Feed, daneben Fortschritt pro Übung */
 export function HistoryView({ t, openActivity, openDay }: { t: Training; openActivity: (date: string) => void; openDay: (d: DayItem) => void }) {
@@ -47,7 +48,7 @@ function Month({ t, month, setMonth, openActivity, openDay }: {
   const pickDay = (d: string) => {
     const hit = feed.find(f => f.date === d)
     if (hit) openDay({ kind: hit.kind, id: hit.id })
-    else openActivity(d)
+    else openDay({ kind: 'empty', id: d })
   }
 
   return (
@@ -120,11 +121,31 @@ function Month({ t, month, setMonth, openActivity, openDay }: {
 }
 
 /** Tag im Verlauf als Sheet: alle Sätze und Notizen, unten Löschen */
-export function DaySheet({ t, item, onClose }: { t: Training; item: DayItem; onClose: () => void }) {
+export function DaySheet({ t, item, onClose, openActivity }: { t: Training; item: DayItem; onClose: () => void; openActivity: (date: string) => void }) {
+  if (item.kind === 'empty') return <EmptyDay date={item.id} onClose={onClose} openActivity={openActivity} />
   if (item.kind === 'activity') return <ActivityDetail t={t} id={item.id} onClose={onClose} />
   const s = t.sessions.find(x => x.id === item.id)
   if (!s) return null
   return <SessionDetail t={t} s={s} onClose={onClose} />
+}
+
+/** Tag ohne Eintrag: zeigen statt gleich ein Formular zu öffnen – Cardio nachtragen ist eine Option */
+function EmptyDay({ date, onClose, openActivity }: { date: string; onClose: () => void; openActivity: (date: string) => void }) {
+  const native = useNativeShell()
+  // nativ erst nach dem Wegfahren öffnen – iOS präsentiert kein Sheet, solange das alte noch schließt
+  const add = () => { onClose(); setTimeout(() => openActivity(date), native ? 450 : 0) }
+  useNativeSheet(native ? {
+    id: 'empty-day', title: L.fmtDate(date), detents: ['auto'],
+    blocks: [{ type: 'text', style: 'muted', text: 'An diesem Tag ist nichts eingetragen.' }],
+    footer: [{ id: 'cardio', title: 'Cardio eintragen', symbol: 'figure.run' }],
+  } : null, e => { if (e.type === 'dismiss') onClose(); else if (e.id === 'cardio') add() })
+  if (native) return null
+  return (
+    <Sheet title={L.fmtDate(date)} onClose={onClose}>
+      <p className="hv-sheet-meta">An diesem Tag ist nichts eingetragen.</p>
+      <button className="btn btn-secondary btn-block" onClick={add}><Icon name="plus" size={18} /> Cardio eintragen</button>
+    </Sheet>
+  )
 }
 
 function ActivityDetail({ t, id, onClose }: { t: Training; id: string; onClose: () => void }) {

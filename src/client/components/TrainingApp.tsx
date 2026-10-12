@@ -205,7 +205,7 @@ export function TrainingApp() {
           openFocus={openFocus} openActivity={() => setSheet({ kind: 'activity', date: t.today })} />
       )}
       {skillPid && <SkillSheet t={t} pid={skillPid} onClose={() => setSkillPid(null)} />}
-      {day && <DaySheet t={t} item={day} onClose={() => setDay(null)} />}
+      {day && <DaySheet t={t} item={day} onClose={() => setDay(null)} openActivity={date => setSheet({ kind: 'activity', date })} />}
 
       {sheetSlot && sheet?.kind === 'set' && (
         <SetSheet key={`${sheet.pid}-${sheet.setNo}`} t={t} slot={sheetSlot} setNo={sheet.setNo} rest={rest}
