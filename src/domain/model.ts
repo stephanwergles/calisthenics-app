@@ -29,6 +29,10 @@ export interface Exercise {
   perSide: boolean;             // Werte gelten pro Seite
   technique: { setup: string; execution: string; faults: string; scaling: string };
   media: { sketch?: string; videoQuery?: string };
+  /** bis zu drei kurze Kernpunkte für den Blick zwischen zwei Sätzen (src/seed/coaching.json) */
+  cues?: string[];
+  /** Hauptmuskeln bzw. Schwerpunkte, wichtigste zuerst */
+  muscles?: string[];
 }
 
 /** Vorgabe einer Stufe. Gehört zur Progression, nicht zur Übung: Dieselbe Übung

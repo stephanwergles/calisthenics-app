@@ -20,6 +20,12 @@ const grab = (start: string, end: string) => {
 const PLAN = new Function(grab("const PLAN = [", "\n];").replace("const PLAN =", "return"))();
 const ROUTINES = new Function(grab("const ROUTINES = [", "\n];").replace("const ROUTINES =", "return"))();
 const WEEKPLAN = new Function(grab("const WEEKPLAN = {", "};").replace("const WEEKPLAN =", "return"))();
+/* Skizzen: v1 färbt per Attribut, v2 per CSS-Klasse (f = Figur, a = Gerät) – so folgt das Gerät der Akzentfarbe */
+const SVGS: Record<string, string> = new Function("S", "F", "A", "H",
+  grab("const SVGS = {", "\n};").replace("const SVGS =", "return"))((s: string) => s, 'class="f"', 'class="a"', 'class="f"');
+/* Kernpunkte und Muskeln: von Hand gepflegt, v1 kennt sie nicht */
+const COACHING: Record<string, { cues: string[]; muscles: string[] }> =
+  JSON.parse(readFileSync(new URL("src/seed/coaching.json", root), "utf8"));
 
 /* Übungs-IDs, Schlüssel = v1-Name */
 const EXERCISE_IDS: Record<string, string> = {
@@ -122,6 +128,7 @@ const workouts: Workout[] = PLAN.map((day: any, di: number) => {
         perSide: /Seite/.test(l.reps),
         technique: { setup: l.pos, execution: l.exec, faults: l.fehler, scaling: l.reg ?? "" },
         media: { sketch: l.svg, videoQuery: l.query },
+        ...(COACHING[id] ?? {}),
       });
       return { exercise: id, target: target(l) };
     }) });
@@ -146,7 +153,11 @@ if (existsSync(catalogFile)) {
   const lost = old.exercises.map(e => e.id).filter(id => !now.has(id));
   if (lost.length) throw new Error(`IDs würden verschwinden: ${lost.join(", ")}`);
 }
+const noCoaching = catalog.exercises.filter(e => !e.cues?.length).map(e => e.id);
+if (noCoaching.length) console.warn(`Ohne Kernpunkte in coaching.json: ${noCoaching.join(", ")}`);
 writeFileSync(catalogFile, JSON.stringify(catalog, null, 2) + "\n");
+const sketches = Object.fromEntries(catalog.exercises.flatMap(e => e.media.sketch && SVGS[e.media.sketch] ? [[e.media.sketch, SVGS[e.media.sketch]]] : []));
+writeFileSync(new URL("src/seed/sketches.json", root), JSON.stringify(sketches, null, 2) + "\n");
 writeFileSync(new URL("src/migrate/v1-positions.json", root),
   JSON.stringify({ workouts: WORKOUT_IDS, slots, positions }, null, 2) + "\n");
 console.log(`Katalog: ${catalog.exercises.length} Übungen, ${progressions.length} Progressionen, ${workouts.length} Workouts`);

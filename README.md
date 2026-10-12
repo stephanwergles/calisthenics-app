@@ -41,7 +41,9 @@ npm run import:v1 -- <v1-export.json> <email>   # Trainingshistorie übernehmen
 
 ## Trainingsansicht
 
-Unter `/`, drei Bereiche über die Tab-Leiste unten (darüber die Session-Leiste mit
+Unter `/`. Training im **Fokus-Modus**: eine Übung pro Screen mit Kreide-Skizze, drei
+Kernpunkten, Muskeln und großem Zähler; nach dem Speichern ein Pausen-Screen mit Ring.
+Kernpunkte und Muskeln stehen in `src/seed/coaching.json`. Drei Bereiche über die Tab-Leiste unten (darüber die Session-Leiste mit
 Timer, solange trainiert wird): **Training** (Fokus auf die aktive Übung; Notizen
 pro Satz im Satz-Editor und zur ganzen Einheit, die Satz-Notizen vom letzten Mal
 stehen an der Übung), **Verlauf**

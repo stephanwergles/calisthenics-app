@@ -7,7 +7,7 @@ import { Icon } from './Icon'
 
 /** Eine Zeile statt zwei: ohne Session nur „Workout starten“, mit Session links
     Dauer + Workout (reine Anzeige), dann Pausen-Timer bzw. drei Schnellstarts, rechts außen Beenden */
-export function BottomBar({ t, rest }: { t: Training; rest: RestTimer }) {
+export function BottomBar({ t, rest, onStart }: { t: Training; rest: RestTimer; onStart: () => void }) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
     if (!t.active) return
@@ -20,7 +20,7 @@ export function BottomBar({ t, rest }: { t: Training; rest: RestTimer }) {
     <div className={`bar${rest.ringing ? ' alarm' : ''}`}>
       {!t.active ? (
         <>
-          <button className="btn btn-primary grow" onClick={t.startSession}><Icon name="play" /> {t.ix.workouts.get(t.workout)!.name} starten</button>
+          <button className="btn btn-primary grow" onClick={onStart}><Icon name="play" /> {t.ix.workouts.get(t.workout)!.name} starten</button>
           {(rest.running || rest.ringing) && <RestButton rest={rest} />}
         </>
       ) : (

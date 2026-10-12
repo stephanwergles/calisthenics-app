@@ -131,6 +131,8 @@ export function buildCatalog(exs: Doc[], progs: Doc[], works: Doc[], week: Doc |
         faults: e.technique?.faults ?? '', scaling: e.technique?.scaling ?? '',
       },
       media: tidy({ sketch: opt<string>(e.media?.sketch), videoQuery: opt<string>(e.media?.videoQuery) }),
+      ...(e.cues?.length ? { cues: e.cues as string[] } : {}),
+      ...(e.muscles?.length ? { muscles: e.muscles as string[] } : {}),
     })),
     progressions: progs.map((p): Progression => ({
       id: p.id, steps: (p.steps ?? []).map((s: Doc) => ({ exercise: idOf(s.exercise), target: target(s.target ?? {}) })),

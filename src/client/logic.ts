@@ -314,3 +314,20 @@ export function progressOverview(ix: Index, user: UserState, sessions: Session[]
     tiles: w.slots.map(sl => progressSummary(ix, user, sessions, sl.progression)).filter(p => p.history.length > 0),
   })).filter(g => g.tiles.length > 0)
 }
+
+/* ── Fokus-Modus ─────────────────────────────────────────────────────────── */
+
+/** nächste noch nicht erfasste Satznummer (1 … planned), sonst null */
+export function nextSetNo(s: { sets: SetLog[]; planned: number }): number | null {
+  for (let n = 1; n <= s.planned; n++) if (!s.sets.some(x => x.set === n)) return n
+  return null
+}
+
+/** Was nach der Pause dran ist: weiterer Satz derselben Übung, sonst die erste offene Übung */
+export function upNext(slots: SlotView[], current: ProgressionId | undefined): { slot: SlotView; setNo: number } | null {
+  const cur = slots.find(s => s.pid === current)
+  const n = cur && cur.state === 'open' ? nextSetNo(cur) : null
+  if (cur && n) return { slot: cur, setNo: n }
+  const next = slots.find(s => s.state === 'open' && nextSetNo(s))
+  return next ? { slot: next, setNo: nextSetNo(next)! } : null
+}

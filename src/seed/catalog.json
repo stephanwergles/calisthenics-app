@@ -16,7 +16,17 @@
       "media": {
         "sketch": "pullupTop",
         "videoQuery": "explosive pull up chest to bar tutorial"
-      }
+      },
+      "cues": [
+        "Aus dem vollen Hang explosiv ziehen",
+        "Ellenbogen nach hinten-unten reißen",
+        "Stange auf Brusthöhe, unten ganz strecken"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Bizeps",
+        "oberer Rücken"
+      ]
     },
     {
       "id": "chest-to-bar-pull-up",
@@ -33,7 +43,17 @@
       "media": {
         "sketch": "pullupTop",
         "videoQuery": "chest to bar pull up tutorial"
-      }
+      },
+      "cues": [
+        "Beim Zug leicht zurücklehnen",
+        "Ellenbogen Richtung Hüfte reißen",
+        "Stange berührt die Brust, nicht das Kinn"
+      ],
+      "muscles": [
+        "Latissimus",
+        "oberer Rücken",
+        "Bizeps"
+      ]
     },
     {
       "id": "muscle-up",
@@ -50,7 +70,17 @@
       "media": {
         "sketch": "muTrans",
         "videoQuery": "first muscle up bar tutorial"
-      }
+      },
+      "cues": [
+        "Falscher Griff, kleiner kontrollierter Vorschwung",
+        "Explosiv bis zur unteren Brust ziehen",
+        "Ellenbogen gleichzeitig über die Stange kippen"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Brust",
+        "Trizeps"
+      ]
     },
     {
       "id": "straight-bar-dip",
@@ -67,7 +97,17 @@
       "media": {
         "sketch": "barSupport",
         "videoQuery": "straight bar dips tutorial"
-      }
+      },
+      "cues": [
+        "Oberkörper bleibt über der Stange vorgelehnt",
+        "Absenken, bis die Stange die Brust berührt",
+        "Schultern tief, voll ausdrücken"
+      ],
+      "muscles": [
+        "Trizeps",
+        "Brust",
+        "vordere Schulter"
+      ]
     },
     {
       "id": "russian-dip",
@@ -84,7 +124,17 @@
       "media": {
         "sketch": "dipsDeep",
         "videoQuery": "russian dips tutorial"
-      }
+      },
+      "cues": [
+        "Kontrolliert auf die Unterarme absenken",
+        "Gewicht kurz nach hinten verlagern",
+        "Nach vorn schieben und in den Stütz drücken"
+      ],
+      "muscles": [
+        "Trizeps",
+        "Brust",
+        "Schultern"
+      ]
     },
     {
       "id": "muscle-up-band",
@@ -101,7 +151,17 @@
       "media": {
         "sketch": "muTrans",
         "videoQuery": "band assisted muscle up tutorial"
-      }
+      },
+      "cues": [
+        "Zurücklehnen und explosiv zur Brust ziehen",
+        "Ellenbogen gleichzeitig über die Stange kippen",
+        "Nur zählen, was ganz über die Stange kommt"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Brust",
+        "Trizeps"
+      ]
     },
     {
       "id": "muscle-up-negative",
@@ -118,7 +178,17 @@
       "media": {
         "sketch": "muTrans",
         "videoQuery": "negative muscle up tutorial"
-      }
+      },
+      "cues": [
+        "Im Stütz über der Stange starten",
+        "Transition so langsam wie möglich",
+        "3–5 Sekunden bis in den Hang"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Brust",
+        "Trizeps"
+      ]
     },
     {
       "id": "pull-up",
@@ -135,7 +205,17 @@
       "media": {
         "sketch": "pullupTop",
         "videoQuery": "perfect pull up form calisthenic movement"
-      }
+      },
+      "cues": [
+        "Zuerst Schultern weg von den Ohren",
+        "Ellenbogen Richtung Hüfte, Kinn klar drüber",
+        "2 Sekunden ablassen bis zur vollen Streckung"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Bizeps",
+        "oberer Rücken"
+      ]
     },
     {
       "id": "pull-up-weighted",
@@ -152,7 +232,17 @@
       "media": {
         "sketch": "pullupTop",
         "videoQuery": "weighted pull ups guide"
-      }
+      },
+      "cues": [
+        "Gewicht ruhig hängen lassen",
+        "Scapula zuerst, Kinn klar über die Stange",
+        "Volle Streckung, 2 Sekunden negativ"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Bizeps",
+        "oberer Rücken"
+      ]
     },
     {
       "id": "body-row",
@@ -169,7 +259,17 @@
       "media": {
         "sketch": "row",
         "videoQuery": "inverted row body row tutorial"
-      }
+      },
+      "cues": [
+        "Körper eine Linie von Kopf bis Fuß",
+        "Brust zur Stange, Ellenbogen eng",
+        "Schulterblätter oben zusammenziehen"
+      ],
+      "muscles": [
+        "oberer Rücken",
+        "Latissimus",
+        "Bizeps"
+      ]
     },
     {
       "id": "tuck-front-lever-row",
@@ -186,7 +286,17 @@
       "media": {
         "sketch": "tuckFL",
         "videoQuery": "tuck front lever rows tutorial"
-      }
+      },
+      "cues": [
+        "Knie zur Brust, Rücken waagerecht",
+        "Hüfte zur Stange ziehen",
+        "Tuck-Position nie verlieren"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Core",
+        "oberer Rücken"
+      ]
     },
     {
       "id": "uneven-pull-up",
@@ -203,7 +313,17 @@
       "media": {
         "sketch": "archer",
         "videoQuery": "uneven pull ups towel tutorial"
-      }
+      },
+      "cues": [
+        "Handtuch so hoch fassen, dass 3 sauber gehen",
+        "Zur Stangenhand ziehen, Kinn auf Höhe",
+        "Betont langsam ablassen"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Bizeps",
+        "Unterarme"
+      ]
     },
     {
       "id": "archer-pull-up",
@@ -220,7 +340,17 @@
       "media": {
         "sketch": "archer",
         "videoQuery": "archer pull up tutorial"
-      }
+      },
+      "cues": [
+        "Sehr breiter Obergriff",
+        "Ziehender Arm arbeitet, der andere bleibt gestreckt",
+        "Kinn über die Stange an der Zugseite"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Bizeps",
+        "oberer Rücken"
+      ]
     },
     {
       "id": "typewriter-pull-up",
@@ -237,7 +367,17 @@
       "media": {
         "sketch": "archer",
         "videoQuery": "typewriter pull up tutorial"
-      }
+      },
+      "cues": [
+        "Zur einen Hand hochziehen",
+        "Oben bleiben und langsam rüberschieben",
+        "Erst auf der anderen Seite ablassen"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Bizeps",
+        "oberer Rücken"
+      ]
     },
     {
       "id": "scapula-shrug",
@@ -254,7 +394,16 @@
       "media": {
         "sketch": "shrug",
         "videoQuery": "hanging scapula shrug tutorial"
-      }
+      },
+      "cues": [
+        "Arme bleiben komplett gestreckt",
+        "Nur die Schulterblätter nach unten ziehen",
+        "Oben 1 Sekunde halten"
+      ],
+      "muscles": [
+        "unterer Trapez",
+        "Latissimus"
+      ]
     },
     {
       "id": "biceps-curl",
@@ -271,7 +420,16 @@
       "media": {
         "sketch": "curl",
         "videoQuery": "bodyweight bicep curl bar tutorial"
-      }
+      },
+      "cues": [
+        "Oberarme bleiben fest in der Luft",
+        "Stirn zur Stange, nicht die Brust",
+        "2–3 Sekunden ablassen"
+      ],
+      "muscles": [
+        "Bizeps",
+        "Unterarme"
+      ]
     },
     {
       "id": "l-sit-floor",
@@ -288,7 +446,17 @@
       "media": {
         "sketch": "lsit",
         "videoQuery": "l sit floor progression tutorial"
-      }
+      },
+      "cues": [
+        "Hände neben der Hüfte, Arme gestreckt",
+        "Schultern kräftig nach unten drücken",
+        "Beine gestreckt anheben, ruhig atmen"
+      ],
+      "muscles": [
+        "Hüftbeuger",
+        "Bauch",
+        "Trizeps"
+      ]
     },
     {
       "id": "l-sit-parallettes",
@@ -305,7 +473,17 @@
       "media": {
         "sketch": "lsit",
         "videoQuery": "l sit parallettes tutorial"
-      }
+      },
+      "cues": [
+        "Schultern tief, Arme gestreckt",
+        "Beine auf Hüfthöhe, Zehen angezogen",
+        "Becken leicht einrollen, weiteratmen"
+      ],
+      "muscles": [
+        "Hüftbeuger",
+        "Bauch",
+        "Trizeps"
+      ]
     },
     {
       "id": "v-sit-prep",
@@ -322,7 +500,17 @@
       "media": {
         "sketch": "lsit",
         "videoQuery": "v sit progression tutorial"
-      }
+      },
+      "cues": [
+        "Aus stabilem L-Sit starten",
+        "Beine über die Horizontale heben",
+        "Nur so weit, wie die Arme gestreckt bleiben"
+      ],
+      "muscles": [
+        "Hüftbeuger",
+        "Bauch",
+        "Schultern"
+      ]
     },
     {
       "id": "pseudo-planche-push-up",
@@ -339,7 +527,17 @@
       "media": {
         "sketch": "pppu",
         "videoQuery": "pseudo planche push up tutorial"
-      }
+      },
+      "cues": [
+        "Hände auf Hüfthöhe, Finger nach außen",
+        "Schultern weit vor die Hände lehnen",
+        "Die Vorlage die ganze Zeit halten"
+      ],
+      "muscles": [
+        "vordere Schulter",
+        "Brust",
+        "Trizeps"
+      ]
     },
     {
       "id": "pseudo-planche-push-up-elevated",
@@ -356,7 +554,17 @@
       "media": {
         "sketch": "pppu",
         "videoQuery": "elevated pseudo planche push up"
-      }
+      },
+      "cues": [
+        "Füße erhöht, Hände auf Hüfthöhe",
+        "Vorlage halten, Körper eine Linie",
+        "Lieber weniger tief als ohne Lean"
+      ],
+      "muscles": [
+        "vordere Schulter",
+        "Brust",
+        "Trizeps"
+      ]
     },
     {
       "id": "tuck-planche",
@@ -373,7 +581,17 @@
       "media": {
         "sketch": "tuckPl",
         "videoQuery": "tuck planche tutorial"
-      }
+      },
+      "cues": [
+        "Schultern weit nach vorn lehnen",
+        "Knie eng zur Brust, Rücken rund",
+        "Schulterblätter auseinanderdrücken"
+      ],
+      "muscles": [
+        "vordere Schulter",
+        "Core",
+        "Serratus"
+      ]
     },
     {
       "id": "dip",
@@ -390,7 +608,17 @@
       "media": {
         "sketch": "dipsDeep",
         "videoQuery": "perfect dip form calisthenic movement"
-      }
+      },
+      "cues": [
+        "Schultern runter, leichte Vorlage",
+        "Oberarme mindestens parallel zum Boden",
+        "Kontrolliert bremsen, voll ausdrücken"
+      ],
+      "muscles": [
+        "Trizeps",
+        "Brust",
+        "vordere Schulter"
+      ]
     },
     {
       "id": "dip-weighted",
@@ -407,7 +635,17 @@
       "media": {
         "sketch": "dipsDeep",
         "videoQuery": "weighted dips guide"
-      }
+      },
+      "cues": [
+        "Gewicht beruhigen vor der ersten Wiederholung",
+        "Volle Tiefe trotz Gewicht",
+        "Voll ausdrücken bis zur Streckung"
+      ],
+      "muscles": [
+        "Trizeps",
+        "Brust",
+        "vordere Schulter"
+      ]
     },
     {
       "id": "pike-push-up",
@@ -424,7 +662,17 @@
       "media": {
         "sketch": "pike",
         "videoQuery": "pike push up handstand progression"
-      }
+      },
+      "cues": [
+        "Hüfte hoch, Gewicht über den Schultern",
+        "Kopf senkrecht zwischen die Hände senken",
+        "Ellenbogen etwa 45° zum Körper"
+      ],
+      "muscles": [
+        "Schultern",
+        "Trizeps",
+        "oberer Rücken"
+      ]
     },
     {
       "id": "pike-push-up-elevated",
@@ -441,7 +689,17 @@
       "media": {
         "sketch": "pike",
         "videoQuery": "elevated pike push up tutorial"
-      }
+      },
+      "cues": [
+        "Füße erhöht, Hüfte über den Schultern",
+        "Senkrecht abtauchen bis kurz vor den Boden",
+        "Senkrecht hochdrücken, Bauch fest"
+      ],
+      "muscles": [
+        "Schultern",
+        "Trizeps",
+        "oberer Rücken"
+      ]
     },
     {
       "id": "handstand-push-up-wall",
@@ -458,7 +716,17 @@
       "media": {
         "sketch": "hspu",
         "videoQuery": "wall handstand push up tutorial"
-      }
+      },
+      "cues": [
+        "Bauch zur Wand, Hollow-Spannung",
+        "Kontrolliert bis zur leichten Kopfberührung",
+        "Kraftvoll bis zur vollen Streckung"
+      ],
+      "muscles": [
+        "Schultern",
+        "Trizeps",
+        "oberer Rücken"
+      ]
     },
     {
       "id": "decline-push-up",
@@ -475,7 +743,17 @@
       "media": {
         "sketch": "decline",
         "videoQuery": "decline push up form"
-      }
+      },
+      "cues": [
+        "Füße erhöht, Körper eine Linie",
+        "Ellenbogen etwa 45° zum Körper",
+        "Bauch und Po die ganze Zeit fest"
+      ],
+      "muscles": [
+        "obere Brust",
+        "vordere Schulter",
+        "Trizeps"
+      ]
     },
     {
       "id": "ring-push-up",
@@ -492,7 +770,17 @@
       "media": {
         "sketch": "decline",
         "videoQuery": "ring push up tutorial"
-      }
+      },
+      "cues": [
+        "Ringe eng am Körper",
+        "Ringe aktiv stabilisieren, nicht flattern",
+        "Oben eindrehen und Endposition halten"
+      ],
+      "muscles": [
+        "Brust",
+        "Trizeps",
+        "Schulterstabilität"
+      ]
     },
     {
       "id": "fly",
@@ -509,7 +797,16 @@
       "media": {
         "sketch": "fly",
         "videoQuery": "ring fly tutorial"
-      }
+      },
+      "cues": [
+        "Ellenbogen leicht gebeugt und eingefroren",
+        "Weit öffnen bis auf Brustlinie",
+        "Vor der Brust zusammenführen und anspannen"
+      ],
+      "muscles": [
+        "Brust",
+        "vordere Schulter"
+      ]
     },
     {
       "id": "triceps-extension",
@@ -526,7 +823,15 @@
       "media": {
         "sketch": "triceps",
         "videoQuery": "overhead triceps extension band"
-      }
+      },
+      "cues": [
+        "Ellenbogen eng neben den Ohren",
+        "Nur der Unterarm bewegt sich",
+        "Langsam in die Dehnung ablassen"
+      ],
+      "muscles": [
+        "Trizeps"
+      ]
     },
     {
       "id": "handstand-wall",
@@ -543,7 +848,17 @@
       "media": {
         "sketch": "hspu",
         "videoQuery": "chest to wall handstand tutorial"
-      }
+      },
+      "cues": [
+        "Finger gespreizt, Kuppen in den Boden krallen",
+        "Schultern maximal nach oben schieben",
+        "Rippen rein, Po fest: eine Linie"
+      ],
+      "muscles": [
+        "Schultern",
+        "Core",
+        "Handgelenke"
+      ]
     },
     {
       "id": "handstand-heel-pull",
@@ -560,7 +875,17 @@
       "media": {
         "sketch": "hspu",
         "videoQuery": "handstand heel pulls balance drill"
-      }
+      },
+      "cues": [
+        "Erst ein Bein lösen, dann das zweite",
+        "Balance über die Fingerkuppen",
+        "Jeder freie Moment zählt"
+      ],
+      "muscles": [
+        "Schultern",
+        "Core",
+        "Unterarme"
+      ]
     },
     {
       "id": "handstand-free",
@@ -577,7 +902,17 @@
       "media": {
         "sketch": "hspu",
         "videoQuery": "freestanding handstand tutorial"
-      }
+      },
+      "cues": [
+        "Kontrolliert hochkicken, nicht springen",
+        "Kippen nach vorn: Fingerkuppen drücken",
+        "Notausstieg vorher üben"
+      ],
+      "muscles": [
+        "Schultern",
+        "Core",
+        "Unterarme"
+      ]
     },
     {
       "id": "pistol-squat-assisted",
@@ -594,7 +929,17 @@
       "media": {
         "sketch": "pistol",
         "videoQuery": "assisted pistol squat progression"
-      }
+      },
+      "cues": [
+        "Ferse bleibt komplett am Boden",
+        "Hüfte unter das Knie absenken",
+        "Nur so viel Hilfe wie nötig"
+      ],
+      "muscles": [
+        "Quadrizeps",
+        "Gesäß",
+        "Balance"
+      ]
     },
     {
       "id": "pistol-squat",
@@ -611,7 +956,17 @@
       "media": {
         "sketch": "pistol",
         "videoQuery": "pistol squat tutorial"
-      }
+      },
+      "cues": [
+        "Arme und freies Bein als Gegengewicht vorn",
+        "Langsam absenken, unten stabilisieren",
+        "Ohne Schwung hochdrücken"
+      ],
+      "muscles": [
+        "Quadrizeps",
+        "Gesäß",
+        "Balance"
+      ]
     },
     {
       "id": "pistol-squat-weighted",
@@ -628,7 +983,17 @@
       "media": {
         "sketch": "pistol",
         "videoQuery": "weighted pistol squat"
-      }
+      },
+      "cues": [
+        "Gewicht dicht vor der Brust",
+        "Volle Tiefe beibehalten",
+        "Kontrolle vor Tempo"
+      ],
+      "muscles": [
+        "Quadrizeps",
+        "Gesäß",
+        "Core"
+      ]
     },
     {
       "id": "bulgarian-split-squat",
@@ -645,7 +1010,17 @@
       "media": {
         "sketch": "split",
         "videoQuery": "bulgarian split squat form"
-      }
+      },
+      "cues": [
+        "Hinterer Fuß auf der Bank, vorderer weit genug vor",
+        "Senkrecht absenken, Knie folgt der Fußspitze",
+        "Über die ganze Fußsohle hochdrücken"
+      ],
+      "muscles": [
+        "Quadrizeps",
+        "Gesäß",
+        "Adduktoren"
+      ]
     },
     {
       "id": "nordic-curl-negative",
@@ -662,7 +1037,16 @@
       "media": {
         "sketch": "nordic",
         "videoQuery": "nordic hamstring curl beginner"
-      }
+      },
+      "cues": [
+        "Fersen fest fixiert, Hüfte gestreckt",
+        "So langsam wie möglich nach vorn",
+        "Mit den Händen abfangen, nur die Negative zählt"
+      ],
+      "muscles": [
+        "Beinbeuger",
+        "Gesäß"
+      ]
     },
     {
       "id": "nordic-curl-band",
@@ -679,7 +1063,16 @@
       "media": {
         "sketch": "nordic",
         "videoQuery": "band assisted nordic curl"
-      }
+      },
+      "cues": [
+        "Band um die Brust, Hüfte gestreckt",
+        "Langsam ablassen wie bei der Negative",
+        "Aktiv ohne Hände zurück nach oben"
+      ],
+      "muscles": [
+        "Beinbeuger",
+        "Gesäß"
+      ]
     },
     {
       "id": "calf-raise-single-leg",
@@ -696,7 +1089,16 @@
       "media": {
         "sketch": "calf",
         "videoQuery": "single leg calf raise"
-      }
+      },
+      "cues": [
+        "Ferse tief unter die Kante, 1 Sekunde",
+        "So hoch wie möglich auf den Ballen",
+        "Oben 1 Sekunde anspannen"
+      ],
+      "muscles": [
+        "Waden",
+        "Achillessehne"
+      ]
     },
     {
       "id": "hanging-leg-raise",
@@ -713,7 +1115,17 @@
       "media": {
         "sketch": "legraise",
         "videoQuery": "hanging leg raise strict form"
-      }
+      },
+      "cues": [
+        "Aktiver Hang, Schultern fest",
+        "Beine gestreckt mindestens waagerecht",
+        "Becken einrollen, ohne Pendeln absenken"
+      ],
+      "muscles": [
+        "Bauch",
+        "Hüftbeuger",
+        "Griff"
+      ]
     },
     {
       "id": "toes-to-bar",
@@ -730,7 +1142,17 @@
       "media": {
         "sketch": "t2b",
         "videoQuery": "strict toes to bar tutorial"
-      }
+      },
+      "cues": [
+        "Aktiver Hang, kein Schwung",
+        "Rücken einrollen, Zehen zur Stange",
+        "Genauso kontrolliert zurück"
+      ],
+      "muscles": [
+        "Bauch",
+        "Hüftbeuger",
+        "Latissimus"
+      ]
     },
     {
       "id": "hollow-hold",
@@ -747,7 +1169,16 @@
       "media": {
         "sketch": "hollow",
         "videoQuery": "hollow body hold tutorial"
-      }
+      },
+      "cues": [
+        "Unteren Rücken fest in den Boden pressen",
+        "Schultern und Beine nur so hoch, wie es hält",
+        "Flach weiteratmen"
+      ],
+      "muscles": [
+        "Bauch",
+        "Hüftbeuger"
+      ]
     },
     {
       "id": "hollow-rock",
@@ -764,7 +1195,16 @@
       "media": {
         "sketch": "hollow",
         "videoQuery": "hollow body rocks tutorial"
-      }
+      },
+      "cues": [
+        "Aus sauberem Hollow Hold starten",
+        "Körperform komplett einfrieren",
+        "Gleichmäßig schaukeln wie ein Schaukelstuhl"
+      ],
+      "muscles": [
+        "Bauch",
+        "Hüftbeuger"
+      ]
     },
     {
       "id": "side-plank-rotation",
@@ -781,7 +1221,16 @@
       "media": {
         "sketch": "sideplank",
         "videoQuery": "side plank rotation"
-      }
+      },
+      "cues": [
+        "Ellenbogen unter der Schulter, Hüfte hoch",
+        "Oberen Arm unter dem Körper durchführen",
+        "Rotation aus dem Rumpf, Hüfte bleibt oben"
+      ],
+      "muscles": [
+        "seitlicher Bauch",
+        "Schultern"
+      ]
     },
     {
       "id": "dead-hang",
@@ -798,7 +1247,16 @@
       "media": {
         "sketch": "deadhang",
         "videoQuery": "dead hang form benefits"
-      }
+      },
+      "cues": [
+        "Beidhändig, Füße frei",
+        "Schultern dürfen locker lassen",
+        "Ruhig atmen, kontrolliert absteigen"
+      ],
+      "muscles": [
+        "Griff",
+        "Schulterentlastung"
+      ]
     }
   ],
   "progressions": [

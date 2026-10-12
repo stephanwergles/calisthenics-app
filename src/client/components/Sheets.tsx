@@ -124,3 +124,36 @@ export function ActivitySheet({ t, date, onClose }: { t: Training; date: string;
     </Sheet>
   )
 }
+
+/** Technik & Optionen einer Übung: voller Technik-Text, Stufe wechseln, Satzzahl, Überspringen, Pausieren */
+export function ExerciseSheet({ t, slot, onClose }: { t: Training; slot: L.SlotView; onClose: () => void }) {
+  const { step } = slot, ex = step.exercise
+  const setStep = (id: string) => { t.setState(st => ({ ...st, current: { ...st.current, [slot.pid]: id } })); onClose() }
+  return (
+    <Sheet title={ex.name} sub={`${L.BLOCK_LABEL[slot.block]}${step.total > 1 ? ` · Stufe ${step.index + 1}/${step.total}` : ''} · Ziel ${step.target.label}`} onClose={onClose}>
+      <dl className="technique-dl">
+        <dt>Ausgangsposition</dt><dd>{ex.technique.setup}</dd>
+        <dt>Ausführung</dt><dd>{ex.technique.execution}</dd>
+        <dt className="warn">Häufige Fehler</dt><dd>{ex.technique.faults}</dd>
+        {ex.technique.scaling && <><dt>Leichter · Schwerer</dt><dd>{ex.technique.scaling}</dd></>}
+      </dl>
+      {ex.media.videoQuery && (
+        <a className="btn btn-secondary btn-block" href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.media.videoQuery)}`} target="_blank" rel="noopener">
+          <Icon name="play" /> Tutorial auf YouTube
+        </a>
+      )}
+      <div className="sheet-grid">
+        {step.prev && <button className="btn btn-secondary" onClick={() => setStep(step.prev!.id)}><Icon name="left" /> {step.prev.name}</button>}
+        {step.next && <button className="btn btn-outline" onClick={() => setStep(step.next!.id)}>{step.next.name} <Icon name="right" /></button>}
+        <button className="btn btn-secondary" disabled={slot.planned <= 1} onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned - 1))}><Icon name="minus" /> Satz weniger</button>
+        <button className="btn btn-secondary" onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned + 1))}><Icon name="plus" /> Satz mehr</button>
+        {slot.state === 'skipped'
+          ? <button className="btn btn-ghost" onClick={() => { t.updateToday(x => L.withSkip(x, ex.id, false)); onClose() }}><Icon name="undo" /> Doch machen</button>
+          : <button className="btn btn-ghost" onClick={() => { t.updateToday(x => L.withSkip(x, ex.id, true)); onClose() }}><Icon name="skip" /> Heute überspringen</button>}
+        {slot.state === 'paused'
+          ? <button className="btn btn-ghost" onClick={() => { t.setState(st => ({ ...st, paused: st.paused.filter(p => p !== slot.pid) })); onClose() }}><Icon name="undo" /> Wieder aufnehmen</button>
+          : <button className="btn btn-ghost" onClick={() => { t.setState(st => ({ ...st, paused: [...new Set([...st.paused, slot.pid])] })); onClose() }}><Icon name="pause" /> Dauerhaft pausieren</button>}
+      </div>
+    </Sheet>
+  )
+}

@@ -174,3 +174,20 @@ test('Notizen: zur Einheit und pro Satz', () => {
   ]
   assert.deepEqual(L.notesOf(sets), [{ set: 2, note: 'Schulter' }, { set: 3, note: 'knapp' }])
 })
+
+test('Fokus: nächster Satz und was nach der Pause kommt', () => {
+  assert.equal(L.nextSetNo({ sets: [], planned: 3 }), 1)
+  assert.equal(L.nextSetNo({ sets: [{ exercise: 'x', progression: 'x', set: 1, value: 5 }, { exercise: 'x', progression: 'x', set: 3, value: 5 }], planned: 3 }), 2)
+  assert.equal(L.nextSetNo({ sets: [1, 2].map(set => ({ exercise: 'x', progression: 'x', set, value: 5 })), planned: 2 }), null)
+
+  const today = sess('2026-10-12', 'legs', [['pistol-squat-assisted', [6, 6, 6, 6]], ['bulgarian-split-squat', [8]]])
+  const slots = L.workoutSlots(ix, 'legs', { current: {}, paused: [] }, today, [today], '2026-10-12')
+  const after = L.upNext(slots, 'split-squat')
+  assert.equal(after?.slot.pid, 'split-squat')
+  assert.equal(after?.setNo, 2, 'gleiche Übung, nächster Satz')
+  const fromDone = L.upNext(slots, 'pistol')
+  assert.equal(fromDone?.slot.pid, 'split-squat', 'erledigte Übung → erste offene')
+  const skipped = { ...today, skipped: ['bulgarian-split-squat'] }
+  const s2 = L.workoutSlots(ix, 'legs', { current: {}, paused: [] }, skipped, [skipped], '2026-10-12')
+  assert.equal(L.upNext(s2, 'pistol')?.slot.pid, 'nordic', 'übersprungene fallen weg')
+})

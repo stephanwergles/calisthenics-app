@@ -30,6 +30,8 @@ export const Exercises: CollectionConfig = {
         { name: 'scaling', type: 'textarea', label: 'Leichter · Schwerer' },
       ],
     },
+    { name: 'cues', type: 'text', hasMany: true, maxRows: 3, label: 'Kernpunkte (max. 3)' },
+    { name: 'muscles', type: 'text', hasMany: true, label: 'Muskeln / Schwerpunkte' },
     {
       name: 'media', type: 'group', label: 'Medien',
       fields: [

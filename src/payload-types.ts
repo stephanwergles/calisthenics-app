@@ -264,6 +264,8 @@ export interface Exercise {
     faults?: string | null;
     scaling?: string | null;
   };
+  cues?: string[] | null;
+  muscles?: string[] | null;
   media?: {
     sketch?: string | null;
     videoQuery?: string | null;
@@ -493,6 +495,8 @@ export interface ExercisesSelect<T extends boolean = true> {
         faults?: T;
         scaling?: T;
       };
+  cues?: T;
+  muscles?: T;
   media?:
     | T
     | {
