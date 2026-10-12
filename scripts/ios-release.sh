@@ -3,18 +3,21 @@
 #
 #   npm run native:release
 #
-# Braucht einen App Store Connect API-Key (App Store Connect → Benutzer und Zugriff →
-# Integrationen → App Store Connect API → Schlüssel, Rolle „App-Manager“). Die drei Werte
-# stehen in .env.ios (liegt nicht im Repo), die .p8-Datei irgendwo außerhalb des Repos:
+# Signiert und lädt über das in Xcode angemeldete Konto (Xcode → Einstellungen → Accounts).
+# Optional per API-Schlüssel (ASC_USE_KEY=1, Werte in .env.ios, Rolle „Admin“):
 #   ASC_KEY_ID=…  ASC_ISSUER_ID=…  ASC_KEY_PATH=/Users/…/AuthKey_….p8
 set -euo pipefail
 cd "$(dirname "$0")/.."
 [ -f .env.ios ] && set -a && . ./.env.ios && set +a
-: "${ASC_KEY_ID:?ASC_KEY_ID fehlt (.env.ios)}" "${ASC_ISSUER_ID:?ASC_ISSUER_ID fehlt}" "${ASC_KEY_PATH:?ASC_KEY_PATH fehlt}"
 
 # Build-Nummer: Zeitstempel – steigt immer, ohne dass eine Datei geändert werden muss
 BUILD=$(date +%Y%m%d%H%M)
-AUTH=(-allowProvisioningUpdates -authenticationKeyPath "$ASC_KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID")
+# Standard: das in Xcode angemeldete Konto (darf Profile erneuern). Mit ASC_USE_KEY=1 stattdessen
+# der API-Schlüssel aus .env.ios – der braucht dafür die Rolle „Admin“.
+AUTH=(-allowProvisioningUpdates)
+if [ "${ASC_USE_KEY:-}" = 1 ]; then
+  AUTH+=(-authenticationKeyPath "$ASC_KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID")
+fi
 OUT=ios/App/build/release
 
 npm run native:build

@@ -599,3 +599,14 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .shell.native .app { padding-bottom: calc(env(safe-area-inset-bottom) + 28px); }
 .shell.native .app.with-bar { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 28px); }
 .shell.native .app.focus-mode { padding-bottom: calc(env(safe-area-inset-bottom) + 14px); }
+
+/* Start-Zustand: kein Glas-Rahmen um den Volt-Button – er schwebt selbst als Pille */
+.bar.start { background: none; border: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0; min-height: 0; gap: 8px; }
+.bar-start { min-height: 58px !important; border-radius: 29px; font-family: var(--font-display); font-weight: 800; font-size: 21px;
+  letter-spacing: .04em; text-transform: uppercase; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 10px 28px rgba(0, 0, 0, .5), 0 4px 16px rgba(212, 255, 58, .22); }
+.bar.start .rest { border-radius: 29px; min-height: 58px; background: var(--glass); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
+
+/* iOS-App: Start- und Zurück-Buttons sind native Glas-Buttons – Platz halten, Web-Version ausblenden */
+.shell.native .bar.start { display: none; }
+.shell.native .ov-head > .btn-icon, .shell.native .f-top > .btn:first-child { visibility: hidden; }
+.shell.native .ov-head { padding-top: 4px; }

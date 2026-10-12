@@ -5,6 +5,7 @@ import * as L from '../logic'
 import type { Training } from '../useTraining'
 import type { RestTimer } from '../useRestTimer'
 import { Icon } from './Icon'
+import type { SheetSpec } from '../native'
 
 export function Sheet({ title, sub, onClose, children }: { title: string; sub?: string; onClose: () => void; children: ReactNode }) {
   useEffect(() => {
@@ -156,4 +157,34 @@ export function ExerciseSheet({ t, slot, onClose }: { t: Training; slot: L.SlotV
       </div>
     </Sheet>
   )
+}
+
+/** Technik & Optionen als natives iOS-Sheet: dieselben Inhalte und Aktionen wie ExerciseSheet */
+export function exerciseSheetSpec(t: Training, slot: L.SlotView): { spec: SheetSpec; run: (id: string) => void } {
+  const { step } = slot, ex = step.exercise
+  const setStep = (id: string) => t.setState(st => ({ ...st, current: { ...st.current, [slot.pid]: id } }))
+  const acts: (SheetSpec['actions'][number] & { run: () => void })[] = []
+  if (ex.media.videoQuery) acts.push({ id: 'video', title: 'Tutorial auf YouTube', symbol: 'play.rectangle', run: () => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.media.videoQuery!)}`, '_blank') })
+  if (step.next) acts.push({ id: 'next', title: `Weiter: ${step.next.name}`, symbol: 'arrow.up.right', style: 'prominent', run: () => setStep(step.next!.id) })
+  if (step.prev) acts.push({ id: 'prev', title: `Zurück: ${step.prev.name}`, symbol: 'arrow.down.left', run: () => setStep(step.prev!.id) })
+  acts.push({ id: 'more', title: 'Satz mehr', symbol: 'plus', run: () => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned + 1)) })
+  if (slot.planned > 1) acts.push({ id: 'less', title: 'Satz weniger', symbol: 'minus', run: () => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned - 1)) })
+  acts.push(slot.state === 'skipped'
+    ? { id: 'unskip', title: 'Doch machen', symbol: 'arrow.uturn.backward', run: () => t.updateToday(x => L.withSkip(x, ex.id, false)) }
+    : { id: 'skip', title: 'Heute überspringen', symbol: 'forward.end', run: () => t.updateToday(x => L.withSkip(x, ex.id, true)) })
+  acts.push(slot.state === 'paused'
+    ? { id: 'resume', title: 'Wieder aufnehmen', symbol: 'play', run: () => t.setState(st => ({ ...st, paused: st.paused.filter(p => p !== slot.pid) })) }
+    : { id: 'pause', title: 'Dauerhaft pausieren', symbol: 'pause', style: 'destructive', run: () => t.setState(st => ({ ...st, paused: [...new Set([...st.paused, slot.pid])] })) })
+  const spec: SheetSpec = {
+    title: ex.name,
+    subtitle: `${L.BLOCK_LABEL[slot.block]}${step.total > 1 ? ` · Stufe ${step.index + 1}/${step.total}` : ''} · Ziel ${step.target.label}`,
+    sections: [
+      { title: 'Ausgangsposition', text: ex.technique.setup },
+      { title: 'Ausführung', text: ex.technique.execution },
+      { title: 'Häufige Fehler', text: ex.technique.faults, warn: true },
+      ...(ex.technique.scaling ? [{ title: 'Leichter · Schwerer', text: ex.technique.scaling }] : []),
+    ],
+    actions: acts.map(({ run: _run, ...a }) => a),
+  }
+  return { spec, run: id => acts.find(a => a.id === id)?.run() }
 }

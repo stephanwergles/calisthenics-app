@@ -2,14 +2,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as L from '../logic'
 import { keepAwake } from '../signals'
-import { askNotifications, isNative, nativeTabs } from '../native'
+import { askNotifications, isNative, nativeActions, nativeSheet, nativeTabs } from '../native'
 import { useTraining, type Training } from '../useTraining'
 import { useRestTimer } from '../useRestTimer'
 import { BottomBar } from './BottomBar'
 import { DataView } from './DataView'
 import { Icon, type IconName } from './Icon'
 import { HistoryView } from './HistoryView'
-import { ActivitySheet, ExerciseSheet, SetSheet } from './Sheets'
+import { ActivitySheet, ExerciseSheet, SetSheet, exerciseSheetSpec } from './Sheets'
 import { FocusView } from './FocusView'
 import { HomeView } from './HomeView'
 import { SkillsView } from './SkillsView'
@@ -88,13 +88,38 @@ export function TrainingApp() {
   const [nativeShell, setNativeShell] = useState(false)
   const goTo = useRef<(k: View) => void>(() => undefined)
   goTo.current = (k: View) => { setView(k); if (k === 'train') setBrowse(false); toTop() }
+  const onAction = useRef<(id: string) => void>(() => undefined)
+  onAction.current = (id: string) => {
+    if (id === 'start') start()
+    else if (id === 'back' && focusMode) { setFocusMode(false); setBrowse(true); toTop() }
+    else if (id === 'back') { setBrowse(false); toTop() }
+  }
   useEffect(() => {
     if (!t.loaded || !isNative()) return
-    void nativeTabs.configure(VIEWS.map(([id, title]) => ({ id, title, symbol: SYMBOLS[id] })), view, id => goTo.current(id as View))
+    void nativeTabs.configure(VIEWS.map(([id, title]) => ({ id, title, symbol: SYMBOLS[id] })), view, id => goTo.current(id as View), id => onAction.current(id))
       .then(ok => setNativeShell(ok))
   }, [t.loaded]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (nativeShell) nativeTabs.select(view) }, [nativeShell, view])
   useEffect(() => { if (nativeShell) nativeTabs.hide(hideNativeTabs) }, [nativeShell, hideNativeTabs])
+  // Native Glas-Buttons: Start (Übersicht ohne Session) und Zurück (Übersicht, Fokus)
+  const overview = view === 'train' && !focusMode && !showHome
+  const overlay = !!sheet || !!summaryId || restView !== null
+  const startTitle = `${t.ix.workouts.get(t.workout)?.name ?? ''} starten`
+  useEffect(() => {
+    if (!nativeShell) return
+    if (overview && !t.active && !overlay) nativeActions.set('start', { title: startTitle, symbol: 'play.fill', prominent: true, position: 'bottom' })
+    else nativeActions.remove('start')
+    if ((overview || inFocus) && !overlay) nativeActions.set('back', { symbol: inFocus ? 'list.bullet' : 'chevron.left', position: 'topLeading' })
+    else nativeActions.remove('back')
+  }, [nativeShell, overview, inFocus, overlay, t.active, startTitle])
+  // Technik & Optionen als natives Sheet
+  useEffect(() => {
+    if (!nativeShell || sheet?.kind !== 'options') return
+    const slot = slots.find(s => s.pid === sheet.pid)
+    if (!slot) return
+    const { spec, run } = exerciseSheetSpec(t, slot)
+    void nativeSheet(spec).then(id => { if (id) run(id); setSheet(null) })
+  }, [nativeShell, sheet]) // eslint-disable-line react-hooks/exhaustive-deps
   const dot = syncDot(t.sync)
   useEffect(() => {
     if (nativeShell) nativeTabs.badge('data', dot === 'err' ? '!' : dot === 'busy' ? '' : null, dot === 'err' ? 'error' : 'volt')
@@ -164,7 +189,7 @@ export function TrainingApp() {
             setSheet(null)
           }} />
       )}
-      {sheetSlot && sheet?.kind === 'options' && <ExerciseSheet t={t} slot={sheetSlot} onClose={() => setSheet(null)} />}
+      {sheetSlot && sheet?.kind === 'options' && !nativeShell && <ExerciseSheet t={t} slot={sheetSlot} onClose={() => setSheet(null)} />}
       {sheet?.kind === 'activity' && <ActivitySheet t={t} date={sheet.date} onClose={() => setSheet(null)} />}
       {summarySession && <SummaryOverlay t={t} session={summarySession} onClose={() => { setSummaryId(null); toTop() }} />}
     </div>

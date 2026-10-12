@@ -17,10 +17,10 @@ export function BottomBar({ t, rest, onStart, onStop }: { t: Training; rest: Res
   }, [t.active])
 
   return (
-    <div className={`bar${rest.ringing ? ' alarm' : ''}`}>
+    <div className={`bar${rest.ringing ? ' alarm' : ''}${!t.active ? ' start' : ''}`}>
       {!t.active ? (
         <>
-          <button className="btn btn-primary grow" onClick={onStart}><Icon name="play" /> {t.ix.workouts.get(t.workout)!.name} starten</button>
+          <button className="btn btn-primary grow bar-start" onClick={onStart}><Icon name="play" size={20} /> {t.ix.workouts.get(t.workout)!.name} starten</button>
           {(rest.running || rest.ringing) && <RestButton rest={rest} />}
         </>
       ) : (

@@ -70,15 +70,25 @@ interface LeverTabBarPlugin {
   select(o: { id: string }): Promise<void>
   setHidden(o: { hidden: boolean }): Promise<void>
   setBadge(o: { id: string; value: string | null; tone?: 'volt' | 'error' }): Promise<void>
-  addListener(event: 'select', cb: (d: { id: string }) => void): Promise<PluginListenerHandle>
+  setAction(o: { id: string; title?: string; symbol?: string; prominent?: boolean; position?: 'bottom' | 'topLeading' }): Promise<void>
+  removeAction(o: { id: string }): Promise<void>
+  presentSheet(o: SheetSpec): Promise<{ action: string | null }>
+  addListener(event: 'select' | 'action', cb: (d: { id: string }) => void): Promise<PluginListenerHandle>
+}
+export interface SheetSpec {
+  title: string
+  subtitle?: string
+  sections: { title: string; text: string; warn?: boolean }[]
+  actions: { id: string; title: string; symbol?: string; style?: 'glass' | 'prominent' | 'destructive' }[]
 }
 const TabBar = registerPlugin<LeverTabBarPlugin>('LeverTabBar')
 
 export const nativeTabs = {
-  async configure(items: { id: string; title: string; symbol: string }[], selected: string, onSelect: (id: string) => void) {
+  async configure(items: { id: string; title: string; symbol: string }[], selected: string, onSelect: (id: string) => void, onAction: (id: string) => void) {
     if (!isNative()) return false
     try {
       await TabBar.addListener('select', d => onSelect(d.id))
+      await TabBar.addListener('action', d => onAction(d.id))
       await TabBar.configure({ items, selected })
       return true
     } catch { return false }
@@ -88,4 +98,17 @@ export const nativeTabs = {
   badge: (id: string, value: string | null, tone?: 'volt' | 'error') => {
     if (isNative()) void TabBar.setBadge({ id, value, tone }).catch(() => undefined)
   },
+}
+
+/* ── Native Glas-Buttons und Sheets ── */
+export const nativeActions = {
+  set: (id: string, o: { title?: string; symbol?: string; prominent?: boolean; position?: 'bottom' | 'topLeading' }) => {
+    if (isNative()) void TabBar.setAction({ id, ...o }).catch(() => undefined)
+  },
+  remove: (id: string) => { if (isNative()) void TabBar.removeAction({ id }).catch(() => undefined) },
+}
+/** natives iOS-Sheet; liefert die gewählte Aktion oder null (weggewischt) */
+export async function nativeSheet(spec: SheetSpec): Promise<string | null> {
+  if (!isNative()) return null
+  try { return (await TabBar.presentSheet(spec)).action } catch { return null }
 }
