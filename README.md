@@ -104,10 +104,16 @@ So ist die Site eingerichtet – beim Neuaufsetzen genauso:
    npm run payload -- migrate
    npm run build
    npm run seed
+   pm2 reload calisthenicsappsblank-studiode --update-env || pm2 start npm --name calisthenicsappsblank-studiode -- run start -- -p 3101
+   pm2 save
    ```
-   plus die Neustart-Zeile für pm2 am Ende.
+   Die pm2-Zeile startet die App auch dann, wenn pm2 sie nicht (mehr) kennt – Ploi
+   setzt sonst nur `pm2 reload`, und das scheitert mit „Process … not found“.
 5. **pm2** (über den NodeJS-Projekttyp): Start-Befehl `npm run start -- -p 3101`.
-   Der Port muss im Befehl stehen, sonst nimmt Next 3000.
+   Der Port muss im Befehl stehen, sonst nimmt Next 3000. **Einmalig** per SSH
+   `pm2 startup` ausführen und die ausgegebene `sudo`-Zeile übernehmen, danach
+   `pm2 save` – sonst startet die App nach einem Server-Neustart nicht wieder
+   (Symptom: 502, im Deploy-Log „Spawning PM2 daemon“ und „Process … not found“).
 6. **Nginx**: Der NodeJS-Projekttyp richtet den Proxy **nicht** selbst ein. Den
    `location /`-Block ersetzen (PHP-Block entfernen):
    ```nginx
