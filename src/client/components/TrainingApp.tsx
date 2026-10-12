@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as L from '../logic'
 import { keepAwake } from '../signals'
 import { useTraining, type Training } from '../useTraining'
@@ -28,6 +28,10 @@ export function TrainingApp() {
   const [sheet, setSheet] = useState<SheetState>(null)
   const [picked, setPicked] = useState<string | undefined>()
   const [focusMode, setFocusMode] = useState(false)
+  // Gescrollt wird nur der Inhaltsbereich, nie die Seite: iOS verschiebt fixierte Leisten sonst,
+  // sobald sich die Seitenhöhe ändert (Tab-Wechsel von lang nach kurz)
+  const scroller = useRef<HTMLElement>(null)
+  const toTop = () => scroller.current?.scrollTo(0, 0)
   const [restView, setRestView] = useState<string | null>(null)   // Rückmeldung zum gespeicherten Satz, solange der Pausen-Screen offen ist
 
   // Nach einem Neustart mitten im Training direkt zurück in den Fokus
@@ -57,12 +61,13 @@ export function TrainingApp() {
 
   const inFocus = view === 'train' && focusMode
   const showBar = !inFocus && (view === 'train' || !!t.active || rest.running || rest.ringing)
-  const openFocus = (pid?: string) => { setPicked(pid); setFocusMode(true); window.scrollTo(0, 0) }
+  const openFocus = (pid?: string) => { setPicked(pid); setFocusMode(true); toTop() }
 
-  if (!t.loaded) return <main className="app loading" aria-busy="true" />
+  if (!t.loaded) return <div className="shell"><main className="app loading" aria-busy="true" /></div>
 
   return (
-    <main className={`app${showBar ? ' with-bar' : ''}${inFocus ? ' focus-mode' : ''}`}>
+    <div className="shell">
+    <main ref={scroller} className={`app${inFocus ? ' focus-mode' : ''}`}>
       <h1 className="sr-only">Calisthenics</h1>
       {view === 'data' && <DataView t={t} />}
       {view === 'history' && <HistoryView t={t} openActivity={date => setSheet({ kind: 'activity', date })} />}
@@ -72,8 +77,8 @@ export function TrainingApp() {
       )}
       {inFocus && (
         <FocusView t={t} rest={rest} slots={slots} slot={focusSlot}
-          onBack={() => { setFocusMode(false); window.scrollTo(0, 0) }}
-          onPick={pid => { setPicked(pid); window.scrollTo(0, 0) }}
+          onBack={() => { setFocusMode(false); toTop() }}
+          onPick={pid => { setPicked(pid); toTop() }}
           openSet={(pid, setNo) => setSheet({ kind: 'set', pid, setNo })}
           openOptions={pid => setSheet({ kind: 'options', pid })}
           onSaved={(s, setNo, summary) => {
@@ -87,12 +92,14 @@ export function TrainingApp() {
       )}
 
       {/* unten, in Daumenreichweite: Session-Leiste (im Training immer, sonst nur während Session/Pause) über den Tabs */}
+    </main>
+
       {!inFocus && <div className="dock">
         {showBar && <BottomBar t={t} rest={rest} onStart={() => { t.startSession(); openFocus(undefined) }} />}
         <nav className="tabs" aria-label="Bereiche">
           {VIEWS.map(([k, l, icon]) => (
             <button key={k} className={view === k ? 'on' : ''} aria-current={view === k ? 'page' : undefined}
-              onClick={() => { setView(k); window.scrollTo(0, 0) }}>
+              onClick={() => { setView(k); toTop() }}>
               <span className="tab-icon">
                 <Icon name={icon} size={22} />
                 {k === 'data' && <span className={`sync-dot ${syncDot(t.sync)}`} role="img" aria-label={syncLabel(t.sync)} />}
@@ -114,6 +121,6 @@ export function TrainingApp() {
       )}
       {sheetSlot && sheet?.kind === 'options' && <ExerciseSheet t={t} slot={sheetSlot} onClose={() => setSheet(null)} />}
       {sheet?.kind === 'activity' && <ActivitySheet t={t} date={sheet.date} onClose={() => setSheet(null)} />}
-    </main>
+    </div>
   )
 }

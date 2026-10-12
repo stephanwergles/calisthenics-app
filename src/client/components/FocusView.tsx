@@ -73,6 +73,7 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
 
   return (
     <>
+      <div className="f-scroll">
       <div className="f-figure">
         <span className="f-label">{L.BLOCK_LABEL[slot.block]} · {index + 1}/{total}{step.total > 1 && <span className="f-level"> · Stufe {step.index + 1}/{step.total}</span>}</span>
         <button className="btn btn-ghost btn-sm f-opts" onClick={() => openOptions(slot.pid)}>Technik</button>
@@ -108,6 +109,8 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
           <Icon name="up" /> Bereit für: {step.next.name}
         </button>
       )}
+
+      </div>
 
       <div className="f-bottom">
         <div className="f-bars">
