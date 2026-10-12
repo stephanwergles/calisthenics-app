@@ -184,33 +184,38 @@ def render(path):
     bpy.ops.render.render(write_still=True)
 
 if MODE == "heat":
-    # Belastung je Region (0–1) → weiche Farbverteilung über die Knochengewichte jedes Punkts
+    # Belastung je Region (0–1) → ein Material je Region, zugeordnet über die Knochengewichte
     loads = dict((k, float(v)) for k, v in (kv.split("=") for kv in ARG.split(",")))
     REGION = {"chest": "chest", "spine": "core", "pelvis": "hips", "neck": None, "head": None}
     for n in "LR":
         REGION.update({f"clavicle.{n}": "shoulders", f"arm.{n}": "arms", f"forearm.{n}": "forearms",
                        f"hand.{n}": "forearms", f"thigh.{n}": "thighs", f"shin.{n}": "calves", f"foot.{n}": None})
-    low, high = srgb("#3b3a36"), srgb("#d4ff3a")
+    low, high = srgb("#55534d"), srgb("#d4ff3a")
+    for o in scene.objects:      # Volt-Streiflicht würde wie Belastung aussehen → neutral
+        if o.type == "LIGHT" and o.name == "rim": o.data.color = (1, 1, 1); o.data.energy = 160
+    # Ein Material je Region (Material-Zuordnungen überstehen Multires, Farbattribute nicht zuverlässig)
     names = {g.index: g.name for g in body.vertex_groups}
-    attr = body.data.color_attributes.new("heat", "FLOAT_COLOR", "POINT")
-    for v in body.data.vertices:
-        tot = val = 0.0
-        for g in v.groups:
-            r = REGION.get(names[g.group])
-            val += g.weight * (loads.get(r, 0.0) if r else 0.0); tot += g.weight
-        x = val / tot if tot else 0.0
-        attr.data[v.index].color = tuple(low[i] + (high[i] - low[i]) * x for i in range(3)) + (1.0,)
-    m = bpy.data.materials.new("heat"); m.use_nodes = True
-    nt = m.node_tree; bsdf = nt.nodes["Principled BSDF"]
-    an = nt.nodes.new("ShaderNodeAttribute"); an.attribute_name = "heat"
-    nt.links.new(an.outputs["Color"], bsdf.inputs["Base Color"])
-    nt.links.new(an.outputs["Color"], bsdf.inputs["Emission Color"])
-    bsdf.inputs["Emission Strength"].default_value = 0.35; bsdf.inputs["Roughness"].default_value = 0.5
-    paint(body, m)
+    regions = sorted({r for r in REGION.values() if r}) + ["none"]
+    body.data.materials.clear()
+    for r in regions:
+        x = loads.get(r, 0.0) if r != "none" else 0.0
+        # in sRGB mischen (wie das Auge sieht), Last betont: wenig Last bleibt Stein, viel wird Volt
+        lo, hi = (0x8a, 0x86, 0x7d), (0xd4, 0xff, 0x3a)
+        k = x ** 1.6
+        hexcol = "#" + "".join(f"{round(lo[i] + (hi[i] - lo[i]) * k):02x}" for i in range(3))
+        body.data.materials.append(material(f"heat_{r}", srgb(hexcol), 0.45, emit=0.25 * k))
+    def vregion(v):
+        best = max(v.groups, key=lambda g: g.weight, default=None)
+        return REGION.get(names[best.group]) if best else None
+    vr = [vregion(v) or "none" for v in body.data.vertices]
+    for poly in body.data.polygons:
+        votes = {}
+        for i in poly.vertices: votes[vr[i]] = votes.get(vr[i], 0) + 1
+        poly.material_index = regions.index(max(votes, key=votes.get))
+    body.data.update()
     reset()
-    rot("arm.L", Y, 14); rot("arm.R", Y, -14)          # Arme etwas näher an den Körper
     scene.render.resolution_x, scene.render.resolution_y = 900, 1200
-    for name, loc in (("front", (1.5, -4.4, 1.2)), ("back", (-1.5, 4.4, 1.2))):
+    for name, loc in (("front", (1.1, -3.5, 1.2)), ("back", (-1.1, 3.5, 1.2))):
         cam.location, target.location = Vector(loc), Vector((0, 0, 0.9))
         render(os.path.join(OUT, f"heat_{name}.png"))
 else:
