@@ -96,7 +96,7 @@ npm run native:release   # native:build → Archiv (Build-Nummer = Zeitstempel) 
 ```
 
 In Xcode einmalig unter *Signing & Capabilities* das eigene Team wählen
-(Bundle-ID `de.blank-studio.lever`), dann aufs iPhone spielen (▶) oder über
+(Bundle-ID `de.offected.lever`), dann aufs iPhone spielen (▶) oder über
 *Product → Archive* zu TestFlight hochladen. Nach jeder Änderung an der Oberfläche
 `npm run native:build` und neu bauen – die App zieht keine Updates vom Server.
 
