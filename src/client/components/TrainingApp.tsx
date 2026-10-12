@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as L from '../logic'
 import { keepAwake } from '../signals'
-import { askNotifications, isNative, nativeActions, nativeSheet, nativeTabs } from '../native'
+import { askNotifications, isNative, nativeActions, nativePanel, nativeTabs, type NBlock } from '../native'
+import { NativeShell, useNativeSheet } from '../useNativeSheet'
 import { useTraining, type Training } from '../useTraining'
 import { useRestTimer } from '../useRestTimer'
 import { BottomBar } from './BottomBar'
@@ -13,6 +14,7 @@ import { ActivitySheet, ExerciseSheet, SetSheet, exerciseSheetSpec } from './She
 import { FocusView } from './FocusView'
 import { HomeView } from './HomeView'
 import { SkillsView } from './SkillsView'
+import { Splash } from './Splash'
 import { SummaryOverlay } from './SummaryOverlay'
 import { RestOverlay } from './RestOverlay'
 import { PlanSheet } from './WorkoutView'
@@ -76,7 +78,8 @@ export function TrainingApp() {
   const started = !!t.active || (t.todaySession?.sets.length ?? 0) > 0
   const showHome = view === 'train'
   const overlay = !!sheet || planOpen || !!skillPid || !!day || !!summaryId || restView !== null
-  const hideNativeTabs = trainOpen || overlay
+  // native Sheets liegen selbst über der Tab-Leiste – ausblenden nur für Web-Ebenen
+  const hideNativeTabs = trainOpen || !!summaryId || restView !== null
   const showBar = !trainOpen && (!!t.active || rest.running || rest.ringing)
   const summarySession = summaryId ? t.sessions.find(s => s.id === summaryId) : undefined
   const start = () => { t.startSession(); void askNotifications(); setPlanOpen(false); openFocus(undefined) }
@@ -92,6 +95,8 @@ export function TrainingApp() {
 
   // iOS-App: native Liquid-Glass-Tab-Leiste statt der eigenen
   const [nativeShell, setNativeShell] = useState(false)
+  // Native Tab-Leiste erst nach der Startanimation – sie läge sonst über dem Splash
+  const [splashDone, setSplashDone] = useState(false)
   const goTo = useRef<(k: View) => void>(() => undefined)
   goTo.current = (k: View) => { setView(k); toTop() }
   const onAction = useRef<(id: string) => void>(() => undefined)
@@ -100,14 +105,14 @@ export function TrainingApp() {
     else if (id === 'list') setPlanOpen(true)
   }
   useEffect(() => {
-    if (!t.loaded || !isNative()) return
+    if (!t.loaded || !splashDone || !isNative()) return
     void nativeTabs.configure(VIEWS.map(([id, title]) => ({ id, title, symbol: SYMBOLS[id] })), view, id => goTo.current(id as View), id => onAction.current(id))
       .then(ok => setNativeShell(ok))
-  }, [t.loaded]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [t.loaded, splashDone]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (nativeShell) nativeTabs.select(view) }, [nativeShell, view])
   useEffect(() => { if (nativeShell) nativeTabs.hide(hideNativeTabs) }, [nativeShell, hideNativeTabs])
   // Native Glas-Buttons im Training: oben links minimieren, oben rechts Übungsliste
-  const trainButtons = nativeShell && trainOpen && !overlay
+  const trainButtons = nativeShell && trainOpen && !summaryId && restView === null
   useEffect(() => {
     if (!nativeShell) return
     if (trainButtons) {
@@ -116,21 +121,35 @@ export function TrainingApp() {
     } else { nativeActions.remove('back'); nativeActions.remove('list') }
   }, [nativeShell, trainButtons])
   // Technik & Optionen als natives Sheet
-  useEffect(() => {
-    if (!nativeShell || sheet?.kind !== 'options') return
-    const slot = slots.find(s => s.pid === sheet.pid)
-    if (!slot) return
-    const { spec, run } = exerciseSheetSpec(t, slot)
-    void nativeSheet(spec).then(id => { if (id) run(id); setSheet(null) })
-  }, [nativeShell, sheet]) // eslint-disable-line react-hooks/exhaustive-deps
+  const optSlot = nativeShell && sheet?.kind === 'options' ? slots.find(s => s.pid === sheet.pid) : undefined
+  const opt = optSlot ? exerciseSheetSpec(t, optSlot) : null
+  useNativeSheet(opt ? {
+    id: 'technik', title: opt.spec.title, subtitle: opt.spec.subtitle, detents: ['medium', 'large'],
+    blocks: [
+      ...opt.spec.sections.map((x): NBlock => ({ type: 'text', title: x.title, text: x.text, style: x.warn ? 'warn' : 'body' })),
+      ...opt.spec.actions.map((a): NBlock => ({ type: 'button', id: a.id, title: a.title, symbol: a.symbol, style: a.style })),
+    ],
+  } : null, e => {
+    if (e.type === 'tap' && e.id) opt?.run(e.id)
+    if (e.type === 'tap' || e.type === 'dismiss') setSheet(null)
+  })
+  // Erfassungs-Panel: nur im offenen Training ohne Pause/Abschluss darüber
+  const panelOn = nativeShell && trainOpen && train.shown && restView === null && !summaryId
+  useEffect(() => { if (nativeShell && !panelOn) nativePanel.set(null) }, [nativeShell, panelOn])
+  const [panelH, setPanelH] = useState(0)
+  useEffect(() => nativePanel.onHeight(setPanelH), [])
   const dot = syncDot(t.sync)
   useEffect(() => {
     if (nativeShell) nativeTabs.badge('data', dot === 'err' ? '!' : dot === 'busy' ? '' : null, dot === 'err' ? 'error' : 'volt')
   }, [nativeShell, dot])
 
-  if (!t.loaded) return <div className="shell"><main className="app loading" aria-busy="true" /></div>
+  // Splash steht in beiden Zweigen an derselben Stelle – so läuft die Animation beim Laden einfach weiter
+  const splash = <Splash ready={t.loaded} onDone={() => setSplashDone(true)} />
+  if (!t.loaded) return <>{splash}<div className="shell"><main className="app loading" aria-busy="true" /></div></>
 
   return (
+    <>{splash}
+    <NativeShell.Provider value={nativeShell}>
     <div className={`shell${nativeShell ? ' native' : ''}`}>
     <main ref={scroller} className={`app${showBar ? ' with-bar' : ''}`} aria-hidden={trainOpen || undefined}>
       <h1 className="sr-only">Lever</h1>
@@ -145,14 +164,15 @@ export function TrainingApp() {
     </main>
 
       {train.mounted && (
-        <div className={`tsheet${train.shown ? ' open' : ''}`} style={trainDrag.style} role="dialog" aria-modal="true" aria-label="Training">
+        <div className={`tsheet${train.shown ? ' open' : ''}${nativeShell ? ' native-panel' : ''}`} role="dialog" aria-modal="true" aria-label="Training"
+          style={{ ...trainDrag.style, ...(panelH ? { ['--panel-h' as string]: `${panelH}px` } : {}) }}>
           <FocusView t={t} rest={rest} slots={slots} slot={focusSlot} drag={trainDrag.bind}
             onMinimize={() => setTrainOpen(false)}
             onList={() => setPlanOpen(true)}
             onPick={pid => setPicked(pid)}
             openSet={(pid, setNo) => setSheet({ kind: 'set', pid, setNo })}
             openOptions={pid => setSheet({ kind: 'options', pid })}
-            onFinish={finish}
+            onFinish={finish} panel={panelOn}
             onSaved={(s, setNo, summary) => {
               // letzter geplanter Satz → nach der Pause geht es mit der nächsten offenen Übung weiter
               if (L.nextSetNo({ sets: [...s.sets, { exercise: s.step.exercise.id, progression: s.pid, set: setNo, value: 0 }], planned: s.planned }) === null) setPicked(undefined)
@@ -200,5 +220,7 @@ export function TrainingApp() {
       {sheet?.kind === 'activity' && <ActivitySheet t={t} date={sheet.date} onClose={() => setSheet(null)} />}
       {summarySession && <SummaryOverlay t={t} session={summarySession} onClose={() => { setSummaryId(null); toTop() }} />}
     </div>
+    </NativeShell.Provider>
+    </>
   )
 }

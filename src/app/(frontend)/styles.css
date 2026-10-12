@@ -541,6 +541,22 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 /* Wortmarke: Barlow Condensed Black kursiv – wie im App-Icon */
 .wordmark { font-family: var(--font-display); font-weight: 900; font-style: italic; letter-spacing: .01em; line-height: .85; }
 .home > .wordmark { font-size: 26px; margin-bottom: -6px; }
+/* Lockup: Zeichen : Versalhöhe = 1,3 : 1, Abstand = 1 Modul (¼ Zeichenhöhe) – wie art/brand/lockup-*.svg */
+.lockup { display: flex; align-items: baseline; color: var(--accent); }
+.lockup .mark { height: .9em; width: auto; margin-right: .225em; flex: none; }
+
+/* ── Startanimation (Splash.tsx) ── nur in der iOS-App (data-native, gesetzt von scripts/native-web.ts)
+   und als Home-Bildschirm-App; Lage und Größe exakt wie das native Startbild */
+.splash { position: fixed; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center;
+  background: var(--bg); color: var(--accent); transition: opacity .28s ease-out; }
+html[data-native] .splash { display: flex; }
+@media (display-mode: standalone) { .splash { display: flex; } }
+.splash svg { height: 11vh; width: auto; }
+.splash .lv { opacity: 0; animation: splash-step .06s linear forwards; }
+.splash .lv1 { animation-delay: .16s; } .splash .lv2 { animation-delay: .32s; } .splash .lv3 { animation-delay: .48s; }
+.splash.out { opacity: 0; pointer-events: none; }
+@keyframes splash-step { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .splash .lv { animation: none; opacity: 1; } }
 .version .wordmark { font-size: 16px; color: var(--text); margin-right: 4px; }
 
 /* ══ Glas (iOS-„Liquid Glass“ nachempfunden) ═══════════════════════════════
@@ -834,3 +850,7 @@ label.btn { cursor: pointer; }
 .f-more textarea { min-height: 64px; resize: none; }
 .f-notebtn.on { color: var(--accent); border-color: rgba(212, 255, 58, .45); }
 @media (prefers-reduced-motion: reduce) { .f-more { transition: none; } }
+/* iOS-App: Session-Leiste so breit wie die native Liquid-Glass-Tab-Leiste (iOS 26: ~21 pt Rand) */
+.shell.native .dock { padding-left: 21px; padding-right: 21px; }
+/* iOS-App: Erfassung ist ein natives Panel – Inhalt darüber endet, wo das Panel beginnt */
+.tsheet.native-panel .f-scroll { padding-bottom: calc(var(--panel-h, 330px) + 12px); mask-image: none; }

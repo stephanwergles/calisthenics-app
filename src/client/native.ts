@@ -74,7 +74,12 @@ interface LeverTabBarPlugin {
   removeAction(o: { id: string }): Promise<void>
   presentSheet(o: SheetSpec): Promise<{ action: string | null }>
   confirm(o: { title: string; message?: string; ok: string; destructive?: boolean }): Promise<{ ok: boolean }>
+  showSheet(o: { spec: NSheet }): Promise<void>
+  closeSheet(o: { id: string }): Promise<void>
+  setPanel(o: { spec: NPanel | null }): Promise<void>
   addListener(event: 'select' | 'action', cb: (d: { id: string }) => void): Promise<PluginListenerHandle>
+  addListener(event: 'sheet', cb: (d: SheetEvent) => void): Promise<PluginListenerHandle>
+  addListener(event: 'panel', cb: (d: PanelEvent) => void): Promise<PluginListenerHandle>
 }
 export interface SheetSpec {
   title: string
@@ -121,4 +126,65 @@ export async function ask(o: { title: string; message?: string; ok: string; dest
     try { return (await TabBar.confirm(o)).ok } catch { /* Plugin fehlt (alte App) → Browser-Dialog */ }
   }
   return window.confirm([o.title, o.message].filter(Boolean).join('\n\n'))
+}
+
+/* ── Native Sheets ────────────────────────────────────────────────────────────
+   Die Web-App beschreibt ein Sheet als Bausteine, iOS zeichnet es mit UIKit (echtes Glas,
+   Detents). Ereignisse kommen zurück; ein erneutes showSheet mit gleicher id aktualisiert. */
+export interface NButton { id: string; title: string; symbol?: string; style?: 'glass' | 'prominent' | 'destructive' }
+export type NBlock =
+  | { type: 'section'; title: string }
+  | { type: 'text'; text: string; title?: string; style?: 'body' | 'muted' | 'small' | 'note' | 'warn' | 'accent' }
+  | { type: 'stats'; items: { value: string; label: string; accent?: boolean; delta?: string }[] }
+  | { type: 'segments'; done: number; total: number; label?: string }
+  | { type: 'progress'; value: string }
+  | { type: 'row'; id?: string; title: string; subtitle?: string; eyebrow?: string; trailing?: string; delta?: string
+      state?: 'open' | 'done' | 'skipped' | 'paused' | 'next'; chips?: string[]; symbol?: 'none' }
+  | { type: 'check'; id: string; title: string; subtitle?: string; on: boolean }
+  | { type: 'disclosure'; id: string; title: string; trailing?: string; on: boolean }
+  | { type: 'record'; title: string; subtitle: string; value: string }
+  | { type: 'ladder'; title: string; subtitle: string; state: 'done' | 'current' | 'locked'; label: string }
+  | { type: 'stepper'; id: string; label: string; value: string }
+  | { type: 'segmented'; id: string; options: { id: string; title: string }[]; selected: string }
+  | { type: 'field'; id: string; label?: string; value: string; placeholder?: string }
+  | { type: 'button'; id: string; title: string; symbol?: string; style?: NButton['style'] }
+  | { type: 'buttons'; buttons: NButton[] }
+export interface NSheet { id: string; title: string; subtitle?: string; detents?: ('auto' | 'medium' | 'large')[]; blocks: NBlock[]; footer?: NButton[] }
+export interface SheetEvent { sheet: string; type: 'tap' | 'toggle' | 'text' | 'dismiss'; id?: string; value?: unknown }
+
+const sheetHandlers = new Map<string, (e: SheetEvent) => void>()
+let sheetListening = false
+export const nativeSheets = {
+  show: (spec: NSheet) => { if (isNative()) void TabBar.showSheet({ spec }).catch(() => undefined) },
+  close: (id: string) => { if (isNative()) void TabBar.closeSheet({ id }).catch(() => undefined) },
+  on(id: string, handler: (e: SheetEvent) => void) {
+    if (!sheetListening && isNative()) { sheetListening = true; void TabBar.addListener('sheet', e => sheetHandlers.get(e.sheet)?.(e)) }
+    sheetHandlers.set(id, handler)
+    return () => { if (sheetHandlers.get(id) === handler) sheetHandlers.delete(id) }
+  },
+}
+
+/* Erfassungs-Panel im Training (dauerhaftes natives Sheet mit zwei Höhen) */
+export interface NPanel {
+  key: string; caption: string; value: string; unit?: string; weight?: string; seconds: boolean
+  timerPhase: 'idle' | 'prep' | 'hold' | 'done'; timerLeft?: number; timerShare?: number; timerTitle?: string
+  primary: 'save' | 'timer'; doneHint?: string
+  tiles: { n: number; text: string; state: 'done' | 'current' | 'open'; note?: boolean }[]
+  canRemove: boolean; stateText?: string; stateButton?: string
+}
+export interface PanelEvent { type: 'minus' | 'plus' | 'wminus' | 'wplus' | 'timer' | 'cancel' | 'save' | 'tile' | 'add' | 'remove' | 'state' | 'height'; value?: unknown }
+let panelHandler: ((e: PanelEvent) => void) | null = null
+let heightHandler: ((h: number) => void) | null = null
+let panelListening = false
+export const nativePanel = {
+  set: (spec: NPanel | null) => { if (isNative()) void TabBar.setPanel({ spec }).catch(() => undefined) },
+  on(handler: (e: PanelEvent) => void) {
+    if (!panelListening && isNative()) {
+      panelListening = true
+      void TabBar.addListener('panel', e => (e.type === 'height' ? heightHandler?.(Number(e.value)) : panelHandler?.(e)))
+    }
+    panelHandler = handler
+    return () => { if (panelHandler === handler) panelHandler = null }
+  },
+  onHeight(h: (px: number) => void) { heightHandler = h; return () => { if (heightHandler === h) heightHandler = null } },
 }

@@ -11,6 +11,8 @@ import { Icon } from './Icon'
 import { Sketch } from './Sketch'
 import { tap } from '../native'
 import { useHoldTimer, type HoldTimer } from '../useHoldTimer'
+import { useNativeShell, usePanel } from '../useNativeSheet'
+import type { NPanel, PanelEvent } from '../native'
 import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react'
 
 interface Props {
@@ -26,9 +28,11 @@ interface Props {
   openOptions: (pid: string) => void
   onSaved: (slot: L.SlotView, setNo: number, summary: string) => void
   onFinish: () => void
+  /** iOS-App: natives Erfassungs-Panel zeigen (aus, solange Pause/Abschluss darüber liegen) */
+  panel?: boolean
 }
 
-export function FocusView({ t, rest, slots, slot, drag, onMinimize, onList, onPick, openSet, openOptions, onSaved, onFinish }: Props) {
+export function FocusView({ t, rest, slots, slot, drag, onMinimize, onList, onPick, openSet, openOptions, onSaved, onFinish, panel = false }: Props) {
   const now = useNow(!!t.active)
   const index = slot ? slots.findIndex(s => s.pid === slot.pid) : -1
 
@@ -52,7 +56,7 @@ export function FocusView({ t, rest, slots, slot, drag, onMinimize, onList, onPi
 
       {!slot ? <AllDone onBack={onList} onFinish={t.active ? onFinish : undefined} /> : (
         <Exercise key={slot.pid} t={t} rest={rest} slot={slot} index={index} total={slots.length}
-          openSet={openSet} openOptions={openOptions} onSaved={onSaved} />
+          openSet={openSet} openOptions={openOptions} onSaved={onSaved} panel={panel} />
       )}
     </section>
   )
@@ -69,9 +73,10 @@ function AllDone({ onBack, onFinish }: { onBack: () => void; onFinish?: () => vo
   )
 }
 
-function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }: {
+function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved, panel }: {
   t: Training; rest: RestTimer; slot: L.SlotView; index: number; total: number
   openSet: (pid: string, setNo: number) => void; openOptions: (pid: string) => void; onSaved: (slot: L.SlotView, setNo: number, summary: string) => void
+  panel: boolean
 }) {
   const { step } = slot, ex = step.exercise, target = step.target
   const seconds = ex.unit === 'seconds'
@@ -121,6 +126,29 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
   }
   const moreH = dragH ?? (expanded ? full : 0)
 
+  // iOS-App: Erfassung als natives Panel – hier Kacheln und Zustände, Zähler & Timer in SetInput
+  const native = useNativeShell()
+  const tiles: NPanel['tiles'] = Array.from({ length: bars }, (_, i) => {
+    const v = slot.sets.find(x => x.set === i + 1)
+    return { n: i + 1, text: v ? String(v.value) : '', state: v ? 'done' : i + 1 === setNo ? 'current' : 'open', note: !!v?.note }
+  })
+  const canRemove = slot.planned > Math.max(1, ...slot.sets.map(x => x.set))
+  const undoState = () => slot.state === 'skipped'
+    ? t.updateToday(x => L.withSkip(x, ex.id, false))
+    : t.setState(st => ({ ...st, paused: st.paused.filter(p => p !== slot.pid) }))
+  const onTileEvent = (e: PanelEvent) => {
+    if (e.type === 'tile') openSet(slot.pid, Number(e.value))
+    else if (e.type === 'add') t.updateToday(x => L.withPlan(x, slot.pid, slot.planned + 1))
+    else if (e.type === 'remove') t.updateToday(x => L.withPlan(x, slot.pid, slot.planned - 1))
+    else if (e.type === 'state') undoState()
+  }
+  usePanel(native && panel && setNo === null ? {
+    key: `${slot.pid}-state`, caption: '', value: '', seconds: false, timerPhase: 'idle', primary: 'save', tiles, canRemove,
+    stateText: slot.state === 'skipped' ? 'Heute übersprungen.' : slot.state === 'paused' ? 'Pausiert, bis du sie wieder aufnimmst.'
+      : `Alle ${slot.planned} Sätze erfasst: ${slot.sets.map(x => L.fmtSet(x, ex)).join(' · ')}`,
+    stateButton: slot.state === 'skipped' ? 'Doch machen' : slot.state === 'paused' ? 'Wieder aufnehmen' : undefined,
+  } : null, onTileEvent)
+
   return (
     <>
       <div className="f-scroll">
@@ -162,7 +190,11 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
 
       </div>
 
-      <div className={`f-bottom${expanded ? ' expanded' : ''}`} role="region" aria-label="Satz erfassen" onPointerDown={onSheetDown}>
+      {native && setNo !== null && (
+        <SetInput key={`${slot.pid}-${setNo}`} t={t} rest={rest} slot={slot} setNo={setNo} seconds={seconds} onSaved={onSaved}
+          note="" onNoteToggle={() => undefined} panel={panel ? { tiles, canRemove, onTileEvent } : null} />
+      )}
+      {!native && <div className={`f-bottom${expanded ? ' expanded' : ''}`} role="region" aria-label="Satz erfassen" onPointerDown={onSheetDown}>
         {/* Tastatur/Screenreader: Griff ist ein Button; Zeiger-Tipp schaltet in onSheetDown um */}
         <button className="f-handle" onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(x => !x) } }}
           aria-expanded={expanded} aria-label={expanded ? 'Erfassung einklappen' : 'Mehr: Sätze und Notiz'}>
@@ -211,15 +243,17 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
           <SetInput key={`${slot.pid}-${setNo}`} t={t} rest={rest} slot={slot} setNo={setNo} seconds={seconds} onSaved={onSaved}
             note={note} onNoteToggle={() => setExpanded(x => !x)} />
         )}
-      </div>
+      </div>}
     </>
   )
 }
 
 /** Erfassung des nächsten Satzes direkt im Screen – Vorbelegung wie im Satz-Editor */
-function SetInput({ t, rest, slot, setNo, seconds, onSaved, note, onNoteToggle }: {
+function SetInput({ t, rest, slot, setNo, seconds, onSaved, note, onNoteToggle, panel }: {
   t: Training; rest: RestTimer; slot: L.SlotView; setNo: number; seconds: boolean; onSaved: (slot: L.SlotView, setNo: number, summary: string) => void
   note: string; onNoteToggle: () => void
+  /** gesetzt = als natives Panel zeigen statt im Web */
+  panel?: { tiles: NPanel['tiles']; canRemove: boolean; onTileEvent: (e: PanelEvent) => void } | null
 }) {
   const ex = slot.step.exercise, target = slot.step.target
   const init = L.prefill(slot.sets, slot.last?.sets ?? [], setNo, target, ex)
@@ -231,8 +265,8 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, note, onNoteToggle }
   const timing = hold.phase === 'prep' || hold.phase === 'hold'
   const timerFirst = seconds && hold.phase !== 'done'
 
-  const save = () => {
-    const n = L.cleanNote(note)
+  const save = (noteText?: string) => {
+    const n = L.cleanNote(noteText ?? note)
     t.updateToday(s => L.withSet(s, { exercise: ex.id, progression: slot.pid, set: setNo, value, ...(weight ? { weightKg: weight } : {}), ...(n ? { note: n } : {}) }))
     t.startSession()
     tap()
@@ -243,6 +277,26 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, note, onNoteToggle }
     const unit = seconds ? 's' : 'Wdh.'
     onSaved(slot, setNo, `${value}${weight ? ` +${weight} kg` : ''} ${unit}${d === null ? '' : d === 0 ? ' · wie letztes Mal' : ` · ${d > 0 ? '+' : '−'}${Math.abs(d)} zum letzten Mal`}`)
   }
+
+  const caption = `Satz ${setNo} von ${slot.planned} · ${seconds ? 'Sekunden' : 'Wiederholungen'}${ex.perSide ? ' pro Seite' : ''}`
+  usePanel(panel ? {
+    key: `${slot.pid}-${setNo}`, caption, value: String(value), unit: seconds ? 's' : undefined,
+    weight: ex.weighted ? String(weight).replace('.', ',') : undefined, seconds,
+    timerPhase: hold.phase, timerLeft: hold.left, timerShare: Math.round(hold.share * 1000) / 1000,
+    timerTitle: timing ? 'Timer abbrechen' : hold.phase === 'done' ? `Nochmal · ${value} s` : `Timer starten · ${value} s`,
+    primary: timerFirst ? 'timer' : 'save', doneHint: hold.phase === 'done' ? `${value} s gehalten – jetzt speichern` : undefined,
+    tiles: panel.tiles, canRemove: panel.canRemove,
+  } : null, e => {
+    if (e.type === 'minus') setValue(v => Math.max(1, v - stepBy))
+    else if (e.type === 'plus') setValue(v => v + stepBy)
+    else if (e.type === 'wminus') setWeight(w => Math.max(0, +(w - 2.5).toFixed(1)))
+    else if (e.type === 'wplus') setWeight(w => +(w + 2.5).toFixed(1))
+    else if (e.type === 'timer') hold.start(value)
+    else if (e.type === 'cancel') hold.cancel()
+    else if (e.type === 'save') save(String(e.value ?? ''))
+    else panel?.onTileEvent(e)
+  })
+  if (panel !== undefined) return null
 
   return (
     <>
@@ -272,7 +326,7 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, note, onNoteToggle }
         <button className={`btn btn-secondary f-notebtn${note.trim() ? ' on' : ''}`} aria-label="Notiz zu diesem Satz" onClick={onNoteToggle}>
           <Icon name="note" size={22} />
         </button>
-        <button className={`btn ${timerFirst ? 'btn-secondary' : 'btn-primary'} grow f-cta`} onClick={save}><Icon name="check" size={22} /> Satz speichern</button>
+        <button className={`btn ${timerFirst ? 'btn-secondary' : 'btn-primary'} grow f-cta`} onClick={() => save()}><Icon name="check" size={22} /> Satz speichern</button>
       </div>
     </>
   )

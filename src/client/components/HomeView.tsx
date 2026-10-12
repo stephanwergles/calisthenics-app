@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
 import { Icon } from './Icon'
+import { LeverMark } from './LeverMark'
 import { Sketch } from './Sketch'
 
 const R = 22, C = 2 * Math.PI * R
@@ -30,7 +31,7 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
 
   return (
     <section className="home">
-      <p className="wordmark" aria-hidden="true">LEVER</p>
+      <p className="wordmark lockup" aria-hidden="true"><LeverMark className="mark" />LEVER</p>
       <header className="h-head">
         <div>
           <span className="h-date">{dateLabel}</span>

@@ -7,6 +7,8 @@ import type { RestTimer } from '../useRestTimer'
 import { Icon } from './Icon'
 import type { SheetSpec } from '../native'
 import { useDrag } from '../useSheet'
+import { useNativeShell, useNativeSheet } from '../useNativeSheet'
+import type { NBlock } from '../native'
 
 /** Bottom-Sheet: Griff und Kopf lassen sich nach unten wegziehen. `large` = fast volle Höhe mit
     scrollendem Inhalt und fester Fußzeile (z. B. Start-Button). */
@@ -73,15 +75,40 @@ export function SetSheet({ t, slot, setNo, rest, onClose, onSaved }: {
     rest.start(target.restSec)
     onSaved()
   }
+  const sub = `Satz ${setNo} von ${slot.planned} · Ziel ${target.label}`
+  const native = useNativeShell()
+  const fmtKg = (w: number) => `${String(w).replace('.', ',')} kg`
+  useNativeSheet(native ? {
+    id: 'set', title: ex.name, subtitle: sub, detents: ['auto', 'large'],
+    blocks: [
+      { type: 'stepper', id: 'value', label: seconds ? 'Sekunden' : 'Wiederholungen', value: `${value}${seconds ? ' s' : ''}` },
+      ...(ex.weighted ? [{ type: 'stepper', id: 'weight', label: 'Zusatzgewicht', value: fmtKg(weight) } as NBlock] : []),
+      { type: 'field', id: 'note', label: 'Notiz zu diesem Satz', value: existing?.note ?? '', placeholder: 'z. B. Ellenbogen gezwickt, mit Schwung' },
+    ],
+    footer: [
+      ...(existing ? [{ id: 'delete', title: 'Löschen', symbol: 'trash', style: 'destructive' as const }] : []),
+      { id: 'save', title: 'Speichern', symbol: 'checkmark', style: 'prominent' },
+    ],
+  } : null, e => {
+    if (e.type === 'dismiss') onClose()
+    else if (e.type === 'text') setNote(String(e.value ?? ''))
+    else if (e.id === 'value:minus') setValue(v => Math.max(1, v - (seconds ? 5 : 1)))
+    else if (e.id === 'value:plus') setValue(v => v + (seconds ? 5 : 1))
+    else if (e.id === 'weight:minus') setWeight(w => Math.max(0, +(w - 2.5).toFixed(1)))
+    else if (e.id === 'weight:plus') setWeight(w => +(w + 2.5).toFixed(1))
+    else if (e.id === 'delete') { t.updateToday(s => L.withoutSet(s, ex.id, setNo)); onClose() }
+    else if (e.id === 'save') save()
+  })
+  if (native) return null
   return (
-    <Sheet title={ex.name} sub={`Satz ${setNo} von ${slot.planned} · Ziel ${target.label}`} onClose={onClose}>
+    <Sheet title={ex.name} sub={sub} onClose={onClose}>
       <div className="steppers">
         <Stepper label={seconds ? 'Sekunden' : 'Wiederholungen'} value={value} step={seconds ? 5 : 1} min={1} onChange={setValue} />
         {ex.weighted && <Stepper label="Zusatzgewicht" value={weight} step={2.5} min={0} unit="kg" onChange={setWeight} />}
       </div>
       {seconds && (
         <button className="btn btn-outline btn-block hold" onClick={() => rest.start(value)}>
-          <Icon name="timer" /> {rest.running ? `${rest.remaining} s` : `Halte-Timer ${value} s`}
+          <Icon name="timer" /> {rest.running ? `${rest.remaining} s` : `Timer starten · ${value} s`}
         </button>
       )}
       {noteOpen ? (
@@ -114,6 +141,28 @@ export function ActivitySheet({ t, date, onClose }: { t: Training; date: string;
     t.addActivity(a)
     onClose()
   }
+  const native = useNativeShell()
+  useNativeSheet(native ? {
+    id: 'cardio', title: 'Cardio', subtitle: L.fmtDate(date), detents: ['auto'],
+    blocks: [
+      { type: 'segmented', id: 'kind', options: [{ id: 'run', title: 'Lauf' }, { id: 'ride', title: 'Rad' }], selected: kind },
+      { type: 'stepper', id: 'min', label: 'Minuten', value: String(min) },
+      { type: 'stepper', id: 'km', label: 'Kilometer', value: String(km) },
+      { type: 'stepper', id: 'hm', label: 'Höhenmeter', value: String(hm) },
+    ],
+    footer: [{ id: 'save', title: 'Speichern', symbol: 'checkmark', style: 'prominent' }],
+  } : null, e => {
+    if (e.type === 'dismiss') onClose()
+    else if (e.id === 'kind:run' || e.id === 'kind:ride') setKind(e.id.slice(5) as 'run' | 'ride')
+    else if (e.id === 'min:minus') setMin(v => Math.max(5, v - 5))
+    else if (e.id === 'min:plus') setMin(v => v + 5)
+    else if (e.id === 'km:minus') setKm(v => Math.max(0, v - 1))
+    else if (e.id === 'km:plus') setKm(v => v + 1)
+    else if (e.id === 'hm:minus') setHm(v => Math.max(0, v - 50))
+    else if (e.id === 'hm:plus') setHm(v => v + 50)
+    else if (e.id === 'save') save()
+  })
+  if (native) return null
   return (
     <Sheet title="Cardio" sub={L.fmtDate(date)} onClose={onClose}>
       <div className="seg" role="group" aria-label="Art">

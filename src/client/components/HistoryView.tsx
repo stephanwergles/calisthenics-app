@@ -5,7 +5,8 @@ import type { Training } from '../useTraining'
 import type { RoutineItem, Session, SetLog } from '@/domain/model'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
-import { ask } from '../native'
+import { ask, type NBlock } from '../native'
+import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 
 type Sub = 'cal' | 'prog'
 
@@ -120,22 +121,36 @@ function Month({ t, month, setMonth, openActivity, openDay }: {
 
 /** Tag im Verlauf als Sheet: alle Sätze und Notizen, unten Löschen */
 export function DaySheet({ t, item, onClose }: { t: Training; item: DayItem; onClose: () => void }) {
-  if (item.kind === 'activity') {
-    const a = t.activities.find(x => x.id === item.id)
-    if (!a) return null
+  if (item.kind === 'activity') return <ActivityDetail t={t} id={item.id} onClose={onClose} />
+  const s = t.sessions.find(x => x.id === item.id)
+  if (!s) return null
+  return <SessionDetail t={t} s={s} onClose={onClose} />
+}
+
+function ActivityDetail({ t, id, onClose }: { t: Training; id: string; onClose: () => void }) {
+  const a = t.activities.find(x => x.id === id)
+  const native = useNativeShell()
+  const remove = async () => {
+    if (a && await ask({ title: `${L.activityTitle(a)} löschen?`, message: `Eintrag vom ${L.fmtDate(a.date)}.`, ok: 'Löschen', destructive: true })) { t.removeActivity(a.id); onClose() }
+  }
+  useNativeSheet(native && a ? {
+    id: 'activity-day', title: L.activityTitle(a), subtitle: L.fmtDate(a.date), detents: ['auto'],
+    blocks: [
+      ...(L.fmtActivity(a) ? [{ type: 'text', text: L.fmtActivity(a) } as NBlock] : []),
+      ...(a.note ? [{ type: 'text', style: 'note', text: a.note } as NBlock] : []),
+    ],
+    footer: [{ id: 'delete', title: 'Eintrag löschen', symbol: 'trash', style: 'destructive' }],
+  } : null, e => { if (e.type === 'dismiss') onClose(); else if (e.type === 'tap' && e.id === 'delete') void remove() })
+  if (!a || native) return null
+  {
     return (
       <Sheet title={L.activityTitle(a)} sub={L.fmtDate(a.date)} onClose={onClose}>
         {L.fmtActivity(a) && <p className="hv-sheet-meta">{L.fmtActivity(a)}</p>}
         {a.note && <p className="note-text"><Icon name="note" size={14} /><span>{a.note}</span></p>}
-        <button className="btn btn-danger btn-block hv-delete" onClick={async () => {
-          if (await ask({ title: `${L.activityTitle(a)} löschen?`, message: `Eintrag vom ${L.fmtDate(a.date)}.`, ok: 'Löschen', destructive: true })) { t.removeActivity(a.id); onClose() }
-        }}><Icon name="trash" size={18} /> Eintrag löschen</button>
+        <button className="btn btn-danger btn-block hv-delete" onClick={() => void remove()}><Icon name="trash" size={18} /> Eintrag löschen</button>
       </Sheet>
     )
   }
-  const s = t.sessions.find(x => x.id === item.id)
-  if (!s) return null
-  return <SessionDetail t={t} s={s} onClose={onClose} />
 }
 
 /** Eine Einheit mit allem: Kennzahlen, Bestwerte, jede Übung mit Stufe, Sätzen, Notizen und Vergleich */
@@ -154,14 +169,50 @@ function SessionDetail({ t, s, onClose }: { t: Training; s: Session; onClose: ()
     ? `${items.filter(it => !it.cardio && s.routineDone.includes(it.id)).length}/${items.filter(it => !it.cardio).length}` : null
   const warm = w ? routine(w.warmup) : null, cool = w ? routine(w.cooldown) : null
   const skipped = s.skipped.map(id => t.ix.exercises.get(id)?.name).filter(Boolean)
+  const remove = async () => {
+    const what = `${w?.name ?? 'Einheit'} vom ${L.fmtDate(s.date)} mit ${s.sets.length} ${s.sets.length === 1 ? 'Satz' : 'Sätzen'}.`
+    if (await ask({ title: 'Training löschen?', message: `${what}${running ? ' Das laufende Training wird dabei beendet.' : ''} Das lässt sich nicht rückgängig machen.`, ok: 'Löschen', destructive: true })) { t.removeSession(s.id); onClose() }
+  }
+  const native = useNativeShell()
+  const minutes = sum.durationSec ? (h ? `${h}:${String(m).padStart(2, '0')}` : String(m)) : '–'
+  useNativeSheet(native ? {
+    id: 'session-day', title: w ? w.focus : s.workout, subtitle: `${L.fmtDate(s.date)}${w ? ` · ${w.name}` : ''}`, detents: ['large', 'medium'],
+    blocks: [
+      { type: 'stats', items: [
+        { value: minutes, label: h ? 'Stunden' : m === 1 ? 'Minute' : 'Minuten' },
+        { value: String(sum.sets), label: sum.sets === 1 ? 'Satz' : 'Sätze' },
+        { value: String(sum.reps), label: 'Wdh.', delta: sum.repsDelta ? `${sum.repsDelta > 0 ? '+' : '−'}${Math.abs(sum.repsDelta)}` : undefined },
+      ] },
+      ...(s.note ? [{ type: 'text', style: 'note', text: s.note } as NBlock] : []),
+      ...(sum.records.length ? [{ type: 'section', title: 'Bestwerte' } as NBlock] : []),
+      ...sum.records.map((r): NBlock => ({
+        type: 'record', title: r.exercise.name, value: r.kind === 'weight' ? `+${r.value}` : String(r.value),
+        subtitle: r.kind === 'weight' ? (r.before ? `Zusatzgewicht +${r.value} kg · vorher +${r.before} kg` : `Erstmals mit +${r.value} kg`)
+          : `Bester Satz ${r.value}${r.exercise.unit === 'seconds' ? ' s' : ''} · vorher ${r.before}`,
+      })),
+      ...(rows.length ? [{ type: 'section', title: 'Übungen' } as NBlock] : [{ type: 'text', style: 'muted', text: `Keine Sätze eingetragen${sum.durationSec ? ' – nur die Trainingszeit' : ''}.` } as NBlock]),
+      ...rows.map((r): NBlock => {
+        const c = sum.compare.find(x => x.exercise.id === r.exercise.id)
+        const d = c ? c.now - c.before : null
+        const unit = r.exercise.unit === 'seconds' ? 's' : ''
+        const notes = L.notesOf(r.sets).map(n => `Satz ${n.set}: ${n.note}`)
+        return {
+          type: 'row', symbol: 'none', title: r.exercise.name,
+          subtitle: [stepOf(r.sets[0]), ...notes].filter(Boolean).join('\n') || undefined,
+          chips: r.sets.map(x => `${x.value}${unit}${x.weightKg ? ` +${x.weightKg}` : ''}`),
+          delta: d !== null ? `${d > 0 ? '+' : d < 0 ? '−' : '±'}${Math.abs(d)}` : undefined,
+        }
+      }),
+      ...(warm || cool || skipped.length ? [{ type: 'text', style: 'muted', text: [warm && `Warm-up ${warm}`, cool && `Cool-down ${cool}`, skipped.length ? `Übersprungen: ${skipped.join(', ')}` : null].filter(Boolean).join(' · ') } as NBlock] : []),
+    ],
+    footer: [{ id: 'delete', title: 'Training löschen', symbol: 'trash', style: 'destructive' }],
+  } : null, e => { if (e.type === 'dismiss') onClose(); else if (e.type === 'tap' && e.id === 'delete') void remove() })
+  if (native) return null
 
   return (
     <Sheet large title={w ? w.focus : s.workout} sub={`${L.fmtDate(s.date)}${w ? ` · ${w.name}` : ''}`} onClose={onClose}
       footer={
-        <button className="btn btn-danger btn-block" onClick={async () => {
-          const what = `${w?.name ?? 'Einheit'} vom ${L.fmtDate(s.date)} mit ${s.sets.length} ${s.sets.length === 1 ? 'Satz' : 'Sätzen'}.`
-          if (await ask({ title: 'Training löschen?', message: `${what}${running ? ' Das laufende Training wird dabei beendet.' : ''} Das lässt sich nicht rückgängig machen.`, ok: 'Löschen', destructive: true })) { t.removeSession(s.id); onClose() }
-        }}><Icon name="trash" size={18} /> Training löschen</button>
+        <button className="btn btn-danger btn-block" onClick={() => void remove()}><Icon name="trash" size={18} /> Training löschen</button>
       }>
       <div className="sm-stats sd-stats">
         <div><span className="num">{sum.durationSec ? (h ? `${h}:${String(m).padStart(2, '0')}` : m) : '–'}</span><small>{h ? 'Stunden' : m === 1 ? 'Minute' : 'Minuten'}</small></div>

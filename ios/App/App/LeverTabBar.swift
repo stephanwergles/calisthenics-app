@@ -251,6 +251,9 @@ public class LeverTabBarPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "removeAction", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "presentSheet", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "confirm", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "showSheet", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "closeSheet", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setPanel", returnType: CAPPluginReturnPromise),
     ]
 
     /// Tab-Controller finden: über die Controller-Kette oder direkt als Wurzel des Fensters

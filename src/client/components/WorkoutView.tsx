@@ -1,10 +1,12 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { RoutineItem } from '@/domain/model'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
+import { useNativeShell, useNativeSheet } from '../useNativeSheet'
+import type { NBlock } from '../native'
 
 interface Props {
   t: Training
@@ -25,10 +27,51 @@ export function PlanSheet({ t, slots, focus, openFocus, openActivity, onClose, o
   const done = counted.reduce((n, s) => n + Math.min(s.sets.length, s.planned), 0)
   const skipped = slots.filter(s => s.state === 'skipped').length
   const paused = slots.filter(s => s.state === 'paused').length
+  const sub = `${w.name} · ${counted.length} Übungen · ${planned} Sätze${skipped ? ` · ${skipped} übersprungen` : ''}${paused ? ` · ${paused} pausiert` : ''}`
+
+  // iOS-App: als natives Sheet (gleiche Inhalte, echte Bedienelemente)
+  const native = useNativeShell()
+  const [openR, setOpenR] = useState<Record<string, boolean>>({})
+  const note = useNoteSaver(t)
+  const todays = t.activities.filter(a => a.date === t.today)
+  const doneIds = t.todaySession?.routineDone ?? []
+  const isDone = (it: RoutineItem) => (it.cardio ? todays.length > 0 : doneIds.includes(it.id))
+  const routineBlocks = (key: string, title: string, items: RoutineItem[]): NBlock[] => [
+    { type: 'disclosure', id: `open:${key}`, title, trailing: `${items.filter(isDone).length}/${items.length}`, on: !!openR[key] },
+    ...(openR[key] ? items.map((it): NBlock => ({ type: 'check', id: `${it.cardio ? 'cardio' : 'rt'}:${it.id}`, title: it.name, subtitle: it.detail, on: isDone(it) })) : []),
+  ]
+  const cool = w.cooldown.some(i => i.cardio) ? 'Cardio & Cool-down' : 'Cool-down & Dehnen'
+  useNativeSheet(native ? {
+    id: 'plan', title: w.focus, subtitle: sub, detents: ['medium', 'large'],
+    blocks: [
+      ...(done > 0 ? [{ type: 'segments', done, total: planned } as NBlock] : []),
+      ...routineBlocks('warm', 'Warm-up', w.warmup),
+      ...slots.map((s): NBlock => ({
+        type: 'row', id: `ex:${s.pid}`, title: s.step.exercise.name,
+        eyebrow: s.pid === focus && s.state === 'open' ? 'Als Nächstes' : undefined,
+        subtitle: [s.state === 'open' && s.last ? `Zuletzt ${s.last.sets.map(x => x.value).join(' · ')}` : null, s.ready ? 'bereit für die nächste Stufe' : null].filter(Boolean).join(' · ') || undefined,
+        trailing: s.state === 'done' ? s.sets.map(x => x.value).join(' · ') : s.state === 'skipped' ? 'übersprungen' : s.state === 'paused' ? 'pausiert'
+          : s.sets.length ? `${s.sets.length}/${s.planned}` : s.step.target.label,
+        state: s.pid === focus && s.state === 'open' ? 'next' : s.state,
+      })),
+      ...routineBlocks('cool', cool, w.cooldown),
+      { type: 'field', id: 'note', label: 'Notiz zur Einheit', value: t.todaySession?.note ?? '', placeholder: 'z. B. schlecht geschlafen, Schulter links zwickt' },
+    ],
+    footer: onStart ? [{ id: 'start', title: `${w.name} starten`, symbol: 'play.fill', style: 'prominent' }] : undefined,
+  } : null, e => {
+    if (e.type === 'dismiss') { note.flush(); onClose() }
+    else if (e.type === 'text' && e.id === 'note') note.change(String(e.value ?? ''))
+    else if (e.type === 'toggle' && e.id?.startsWith('open:')) { const k = e.id.slice(5); setOpenR(o => ({ ...o, [k]: !o[k] })) }
+    else if (e.type === 'toggle' && e.id?.startsWith('rt:')) t.updateToday(x => L.withRoutine(x, e.id!.slice(3), !!e.value))
+    else if (e.type === 'toggle' && e.id?.startsWith('cardio:')) openActivity()
+    else if (e.type === 'tap' && e.id?.startsWith('ex:')) { note.flush(); openFocus(e.id.slice(3)) }
+    else if (e.type === 'tap' && e.id === 'start') { note.flush(); onStart?.() }
+  })
+  if (native) return null
 
   return (
     <Sheet large title={w.focus} onClose={onClose}
-      sub={`${w.name} · ${counted.length} Übungen · ${planned} Sätze${skipped ? ` · ${skipped} übersprungen` : ''}${paused ? ` · ${paused} pausiert` : ''}`}
+      sub={sub}
       footer={onStart && <button className="btn btn-primary btn-block bar-start" onClick={onStart}><Icon name="play" size={20} /> {w.name} starten</button>}>
       {done > 0 && (
         <div className="progress" role="progressbar" aria-label="Sätze erledigt" aria-valuemin={0} aria-valuemax={planned} aria-valuenow={done}>
@@ -116,4 +159,21 @@ function SessionNote({ t }: { t: Training }) {
       </label>
     </div>
   )
+}
+
+/** Notiz zur Einheit aus dem nativen Feld: speichert 1,5 s nach der letzten Eingabe und beim Schließen */
+function useNoteSaver(t: Training) {
+  const pending = useRef<string | null>(null)
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const flush = () => {
+    if (timer.current) clearTimeout(timer.current)
+    const v = pending.current; pending.current = null
+    if (v !== null && (L.cleanNote(v) ?? '') !== (t.todaySession?.note ?? '')) t.updateToday(s => L.withNote(s, v))
+  }
+  const change = (v: string) => {
+    pending.current = v
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = setTimeout(flush, 1500)
+  }
+  return { change, flush }
 }
