@@ -542,3 +542,51 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .wordmark { font-family: var(--font-display); font-weight: 900; font-style: italic; letter-spacing: .01em; line-height: .85; }
 .home > .wordmark { font-size: 26px; margin-bottom: -6px; }
 .version .wordmark { font-size: 16px; color: var(--text); margin-right: 4px; }
+
+/* ══ Glas (iOS-„Liquid Glass“ nachempfunden) ═══════════════════════════════
+   Echte Unschärfe nur auf schwebenden Elementen (Dock, Sheets) – dort scheint Inhalt
+   durch. Buttons auf Karten bekommen Glasfläche + Lichtkante ohne Blur (spart Leistung).
+   Volt-Buttons bleiben satt: Hauptaktion, maximaler Kontrast. */
+:root {
+  --glass: rgba(34, 34, 34, .55);
+  --glass-strong: rgba(28, 28, 28, .74);
+  --glass-line: rgba(255, 255, 255, .11);
+  --glass-hi: inset 0 1px 0 rgba(255, 255, 255, .16), inset 0 -1px 0 rgba(0, 0, 0, .28);
+  --glass-blur: blur(22px) saturate(180%);
+  --glass-shadow: 0 12px 32px rgba(0, 0, 0, .45);
+}
+
+/* Dock schwebt über dem Inhalt: Session-Leiste und Tabs als Glas-Kapseln */
+.shell { position: fixed; }
+.dock { position: absolute; left: 0; right: 0; bottom: 0; z-index: 20; background: none; border: none;
+  display: flex; flex-direction: column; gap: 8px; padding: 0 12px calc(env(safe-area-inset-bottom) + 8px); pointer-events: none; }
+.dock > * { pointer-events: auto; width: 100%; max-width: 536px; margin: 0 auto; box-sizing: border-box; }
+.bar, .tabs { background: var(--glass); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-line); box-shadow: var(--glass-hi), var(--glass-shadow); }
+.bar { border-radius: 26px; padding: 8px; min-height: 64px; border-bottom: 1px solid var(--glass-line); }
+.bar .session { padding-left: 8px; }
+.tabs { border-radius: 30px; height: 62px; padding: 5px; gap: 2px; }
+.tabs button { border-radius: 24px; transition: color .15s, background .2s; }
+.tabs button.on { background: rgba(255, 255, 255, .09); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12); }
+.tabs button:active { background: rgba(255, 255, 255, .12); }
+.tabs button:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.app { padding-bottom: calc(62px + env(safe-area-inset-bottom) + 32px); }
+.app.with-bar { padding-bottom: calc(62px + 64px + 8px + env(safe-area-inset-bottom) + 32px); }
+.app.focus-mode { padding-bottom: calc(env(safe-area-inset-bottom) + 14px); }
+.bar.alarm { animation: alarm .7s ease-in-out infinite; }
+
+/* Sheets: Milchglas über der App */
+.scrim { background: rgba(0, 0, 0, .35); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.sheet { background: var(--glass-strong); -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid var(--glass-line); border-bottom: none; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 -12px 40px rgba(0, 0, 0, .5);
+  margin-bottom: 0; border-radius: 30px 30px 0 0; }
+
+/* Buttons: Glasfläche mit Lichtkante */
+.btn-secondary, .f-round, .seg, .f-bar.add {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .085), rgba(255, 255, 255, .035));
+  border: 1px solid var(--glass-line); box-shadow: var(--glass-hi); }
+.btn-ghost { background: rgba(255, 255, 255, .055); border: 1px solid rgba(255, 255, 255, .06); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); }
+.btn-outline { background: linear-gradient(180deg, rgba(212, 255, 58, .16), rgba(212, 255, 58, .06)); box-shadow: inset 0 1px 0 rgba(212, 255, 58, .25); }
+.btn-primary { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 6px 18px rgba(212, 255, 58, .18); }
+.seg button.on { background: rgba(212, 255, 58, .14); box-shadow: inset 0 1px 0 rgba(212, 255, 58, .22); }
+.f-round:active { background: rgba(255, 255, 255, .14); }

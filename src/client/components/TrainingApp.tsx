@@ -85,7 +85,7 @@ export function TrainingApp() {
 
   return (
     <div className="shell">
-    <main ref={scroller} className={`app${inFocus ? ' focus-mode' : ''}`}>
+    <main ref={scroller} className={`app${inFocus ? ' focus-mode' : showBar ? ' with-bar' : ''}`}>
       <h1 className="sr-only">Lever</h1>
       {view === 'data' && <DataView t={t} />}
       {view === 'skills' && <SkillsView t={t} toTop={toTop} />}
