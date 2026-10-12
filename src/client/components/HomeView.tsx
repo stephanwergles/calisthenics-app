@@ -6,7 +6,7 @@ import * as L from '../logic'
 import type { Training } from '../useTraining'
 import { Icon } from './Icon'
 import { LeverMark } from './LeverMark'
-import { Sketch } from './Sketch'
+import { ExerciseStill, hasClip } from './ExerciseMedia'
 
 const R = 22, C = 2 * Math.PI * R
 
@@ -24,7 +24,8 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
   const active = slots.filter(s => s.state !== 'paused' && s.state !== 'skipped')
   const sets = active.reduce((n, s) => n + s.planned, 0)
   const [first, ...rest] = w.focus.split(' · ')
-  const hero = active[0]?.step.exercise
+  // Bild im Hero: erste Übung des Tages mit 3D-Clip, sonst die erste mit Skizze
+  const hero = (active.find(s => hasClip(s.step.exercise.id)) ?? active[0])?.step.exercise
   const dateLabel = new Date(`${t.today}T12:00`).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })
   const doneSets = active.reduce((n, s) => n + Math.min(s.sets.length, s.planned), 0)
   const cta = t.active ? 'Weiter trainieren' : done ? 'Noch eine Runde' : started ? 'Training fortsetzen' : 'Training starten'
@@ -56,7 +57,7 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
       </ol>
 
       <div className="h-hero">
-        {hero && <Sketch id={hero.media.sketch} label="" />}
+        {hero && <ExerciseStill exercise={hero} className="h-still" />}
         <span className="h-label">Heute · {w.name}{started ? ` · ${doneSets}/${sets} Sätze` : ''}</span>
         <h3 className="display h-focus">{first}{rest.length > 0 && <><br />{rest.join(' · ')}</>}</h3>
         {started

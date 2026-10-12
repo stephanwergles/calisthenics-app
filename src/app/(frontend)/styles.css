@@ -868,3 +868,11 @@ button.f-clock.rest:active { transform: scale(.95); }
 .clip.ready video { opacity: 1; }
 .clip .sketch { position: absolute; inset: 0; margin: auto; width: 70%; height: 50%; }
 .f-figure:has(.clip) .f-label, .f-figure:has(.clip) .f-opts { z-index: 1; }
+
+/* Heute: Standbild des 3D-Modells rechts im Hero, nach links in die Karte ausgeblendet */
+.h-hero > .h-still { position: absolute; top: 0; right: -6%; width: 72%; height: 300px; object-fit: cover; object-position: 55% 30%;
+  opacity: 0; transition: opacity .4s; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to left, #000 45%, transparent 92%), linear-gradient(to top, transparent 8%, #000 50%);
+  mask-image: linear-gradient(to left, #000 45%, transparent 92%), linear-gradient(to top, transparent 8%, #000 50%); -webkit-mask-composite: source-in; mask-composite: intersect; }
+.h-hero > .h-still.ready { opacity: .72; }
+.h-hero > :not(.h-still):not(.sketch) { position: relative; }

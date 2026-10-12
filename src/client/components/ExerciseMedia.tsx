@@ -32,3 +32,16 @@ export function ExerciseMedia({ exercise, label }: { exercise: Exercise; label: 
     </div>
   )
 }
+
+/** Standbild aus dem Clip (Schlüsselposition nach 1 s = Mitte der Bewegung), sonst die Skizze.
+    Kein eigenes Bild nötig – neue Clips bringen ihr Standbild automatisch mit. Rein dekorativ. */
+export function ExerciseStill({ exercise, className }: { exercise: Exercise; className?: string }) {
+  const [ready, setReady] = useState(false)
+  useEffect(() => { setReady(false) }, [exercise.id])
+  if (!CLIPS.has(exercise.id)) return <Sketch id={exercise.media.sketch} label="" />
+  return (
+    <video key={exercise.id} className={`still${ready ? ' ready' : ''}${className ? ` ${className}` : ''}`}
+      src={`/clips/${exercise.id}.mp4#t=1`} muted playsInline preload="auto" aria-hidden="true" tabIndex={-1} disablePictureInPicture
+      onLoadedMetadata={e => { e.currentTarget.currentTime = 1 }} onSeeked={() => setReady(true)} onError={() => setReady(false)} />
+  )
+}
