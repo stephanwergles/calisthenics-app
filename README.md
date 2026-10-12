@@ -112,7 +112,35 @@ Grafiken entstehen per Skript in Blender (headless, `art/vendor/Blender.app`, ni
 |---|---|
 | `art/brand/mark.py` | Marke „Gelenk“: einzige Quelle der Geometrie (Modul M, 7°, Gehrungsfuge, Progressionsstufen); schreibt die SVG-Master in `art/brand/` und `public/favicon.svg` (`python3 art/brand/mark.py`) |
 | `art/blender/brand.py` | App-Icon (1024/512/180) und iOS-Startbild aus `mark.py`; Startbild zeigt die Tuck-Stufe, `Splash.tsx` verlängert den Hebel bis Full |
-| `art/blender/lever.py` | Übungsclips und Körperkarte aus den **Human Base Meshes** (Blender Foundation, CC0): realistischer Körper, per Skript athletischer geformt, eigenes Skelett, Posen als Gelenkwinkel |
+| `art/blender/lever.py` | Übungsclips und Körperkarte aus den **Human Base Meshes** (Blender Foundation, CC0): realistischer Körper, per Skript athletischer geformt, eigenes Skelett, Posing-Werkzeuge (IK, Platzierung, Prüfung) |
+| `art/blender/moves.py` | Die Übungen als Schlüsselposen, eine Funktion je Katalog-ID |
+| `art/blender/clips.sh` | Rendert und kodiert Clips nach `public/clips/<id>.mp4` |
+
+### Übungsclips
+
+Jede Übung aus `src/seed/catalog.json` hat einen 2-Sekunden-Loop (48 Bilder, 24 fps, 800×600,
+Hintergrund `#1a1a1a` eingebrannt) unter `public/clips/<exercise-id>.mp4`.
+
+```bash
+art/blender/clips.sh pull-up muscle-up      # rendern (Cycles/Metal, ~5 min je Clip) + kodieren
+```
+
+Einzeln über `lever.py -- <modus> <id> <ordner>` (Aufruf oben in der Datei):
+`still` rendert jede Schlüsselpose, `check` rendert nichts und meldet je Bild Durchdringungen
+(Boden, Stange, Kasten …), Reichweite der Hände/Füße und die betroffene Körperpartie,
+`clip` die 48 Bilder. `LEVER_CAM="x,y,z,zx,zy,zz"` setzt eine Kontrollkamera.
+
+Eine Übung in `moves.py` liefert `keys` (Schlüsselposen, der Clip läuft 0 → letzte → 0, Muscle-up
+hat fünf), `timing` (`pp`, `hold` für Halteübungen, `fast`/`slow` für explosive bzw. negative
+Phasen) und `view` (Kamerawinkel; der Ausschnitt wird aus allen Posen berechnet). Eine
+Schlüsselpose setzt `rot` (Wurzel-Drehung), `pose` (Knochenrichtungen im Körperraum),
+`place` (`hang` – Schultern relativ zu den Händen, unter oder über dem Griff; `pin` – Körperpunkt
+an Weltpunkt; `ground` – tiefster Hautpunkt auf den Boden) sowie `hands`/`legs` als IK-Ziele.
+Unbekannte Winkel (Neigung beim Rudern oder Liegestütz, Hüfthöhe im L-Sit) sucht `solve()`
+per Halbierung, z. B. „Arme gestreckt“ oder „Brust 7 cm über dem Boden“. Varianten derselben
+Bewegung teilen eine Familie (`hang_ex`, `row_ex`, `push_ex`, `pike_ex`, `lsit_ex` …) und
+unterscheiden sich über Parameter und Geräte (Stange, Barren, Parallettes, Ringe, Wand, Kasten,
+Band, Gewichtsscheibe).
 
 Rohdaten (`art/vendor/`: Blender 5.2, Human Base Meshes) und Zwischenstände (`art/out/`)
 liegen nicht im Repo; die Schrift in `art/fonts/` steht unter der SIL Open Font License.

@@ -258,7 +258,7 @@ def skin(bone, near, d):
     return lambda: world(pb.matrix @ pb.bone.matrix_local.inverted() @ p)
 
 def mesh_np():
-    dg = bpy.context.evaluated_depsgraph_get(); ev = body.evaluated_get(dg); me = ev.to_mesh()
+    dg = bpy.context.evaluated_depsgraph_get(); dg.update(); ev = body.evaluated_get(dg); me = ev.to_mesh()
     a = np.empty(len(me.vertices) * 3, dtype=np.float64); me.vertices.foreach_get("co", a)
     M = np.array(ev.matrix_world); ev.to_mesh_clear()
     return a.reshape(-1, 3) @ M[:3, :3].T + M[:3, 3]
@@ -420,7 +420,9 @@ def pose_key(k, limbs=True):
     else:
         P = k.get("pose", {})
         for b in ORDER: aim(b, P.get(b, REST[b]), local=True)
-    for b, d in k.get("wpose", {}).items(): aim(b, d)
+    W = k.get("wpose", {})
+    for b in ORDER:                        # Eltern vor Kindern (gemischte dicts haben keine feste Reihenfolge)
+        if b in W: aim(b, W[b])
     for b, deg in k.get("twist", {}).items():   # Drehung um die eigene Knochenachse (Rumpfrotation)
         pb = PB[b]; rot(b, (pb.tail - pb.head).normalized(), deg)
     place(k)
@@ -563,6 +565,7 @@ else:
     keys = EX["keys"]
     for k in keys:                         # fehlende Knochen = Ruhelage, damit sich alle Schlüssel mischen lassen
         if "rots" not in k: k["pose"] = {b: k.get("pose", {}).get(b, REST[b]) for b in ORDER}
+        k.setdefault("rot", (0, 0, 0))
     frames = int(os.environ.get("LEVER_FRAMES") or EX.get("frames", 48)); prof = EX.get("timing", "pp")
     S_OF = [curve(i / frames, prof) * (len(keys) - 1) for i in range(frames)]
     scene.render.resolution_x, scene.render.resolution_y = 800, 600   # = Clip-Größe; höher bringt nach Skalierung nichts
