@@ -194,7 +194,9 @@ export const nativePanel = {
 }
 
 /* Pausen-Screen (nativ): Ring und Countdown rechnet iOS selbst aus dem Endzeitpunkt */
-export interface NRest { end: number | null; total: number; ringing: boolean; saved?: string; nextTitle?: string; nextSubtitle?: string }
+export interface NRest { end: number | null; total: number; ringing: boolean; saved?: string; nextTitle?: string; nextSubtitle?: string
+  /** Übungs-ID mit 3D-Clip im App-Paket – iOS zeigt daraus ein Standbild */
+  nextClip?: string }
 let restHandler: ((t: 'minus' | 'plus' | 'go' | 'close') => void) | null = null
 let restListening = false
 export const nativeRest = {

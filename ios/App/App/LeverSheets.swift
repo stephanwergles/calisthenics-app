@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import AVFoundation
 
 /*
  Native Sheets für Lever. Die Web-App beschreibt ein Sheet als Bausteine (src/client/native.ts,
@@ -1086,6 +1087,30 @@ struct NRest: Decodable {
     let saved: String?      // „6 Wdh. · +1 zum letzten Mal“
     let nextTitle: String?
     let nextSubtitle: String?
+    let nextClip: String?
+}
+
+/// Standbild aus einem Clip im App-Paket (Schlüsselposition nach 1 s), zwischengespeichert
+enum ClipStill {
+    private static var cache: [String: UIImage] = [:]
+    static func load(_ id: String, done: @escaping (UIImage?) -> Void) {
+        if let img = cache[id] { done(img); return }
+        guard let url = Bundle.main.resourceURL?.appendingPathComponent("public/clips/\(id).mp4"),
+              FileManager.default.fileExists(atPath: url.path) else { done(nil); return }
+        let gen = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+        gen.appliesPreferredTrackTransform = true
+        gen.requestedTimeToleranceBefore = .zero; gen.requestedTimeToleranceAfter = .zero
+        gen.maximumSize = CGSize(width: 480, height: 360)
+        gen.generateCGImageAsynchronously(for: CMTime(seconds: 1, preferredTimescale: 600)) { cg, _, _ in
+            // quadratischer Ausschnitt um die Bildmitte – die Figur füllt das Vorschaubild
+            let img = cg.map { c -> UIImage in
+                let side = CGFloat(c.height) * 0.8
+                let rect = CGRect(x: (CGFloat(c.width) - side) / 2, y: CGFloat(c.height) * 0.06, width: side, height: side)
+                return UIImage(cgImage: c.cropping(to: rect) ?? c)
+            }
+            DispatchQueue.main.async { if let img { cache[id] = img }; done(img) }
+        }
+    }
 }
 
 /// Ring und Countdown laufen hier selbst (CADisplayLink) – flüssig, ohne Web-Takt.
@@ -1152,7 +1177,7 @@ final class LeverRestController: UIViewController, UISheetPresentationController
         let row = UIStackView(arrangedSubviews: [minus, plus, go]); row.spacing = 10; row.distribution = .fillEqually
 
         nextBox.axis = .horizontal; nextBox.spacing = 14; nextBox.alignment = .center
-        nextBox.isLayoutMarginsRelativeArrangement = true; nextBox.layoutMargins = UIEdgeInsets(top: 16, left: 18, bottom: 16, right: 18)
+        nextBox.isLayoutMarginsRelativeArrangement = true; nextBox.layoutMargins = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 18)
         nextBox.backgroundColor = UIColor(white: 1, alpha: 0.06); nextBox.layer.cornerRadius = 22; nextBox.layer.cornerCurve = .continuous
         nextBox.layer.borderWidth = 1; nextBox.layer.borderColor = Lever.line.cgColor
         let nextTap = UITapGestureRecognizer(target: self, action: #selector(nextTapped)); nextBox.addGestureRecognizer(nextTap)
@@ -1209,6 +1234,15 @@ final class LeverRestController: UIViewController, UISheetPresentationController
             let v = UIStackView(arrangedSubviews: [cap, title, sub]); v.axis = .vertical; v.spacing = 2
             let chev = UIImageView(image: UIImage(systemName: "chevron.right")); chev.tintColor = Lever.muted
             chev.setContentHuggingPriority(.required, for: .horizontal)
+            if let clip = s.nextClip {
+                let thumb = UIImageView(); thumb.contentMode = .scaleAspectFill; thumb.clipsToBounds = true
+                thumb.layer.cornerRadius = 14; thumb.layer.cornerCurve = .continuous
+                thumb.backgroundColor = UIColor(white: 1, alpha: 0.04)
+                thumb.widthAnchor.constraint(equalToConstant: 104).isActive = true
+                thumb.heightAnchor.constraint(equalToConstant: 104).isActive = true
+                nextBox.addArrangedSubview(thumb)
+                ClipStill.load(clip) { [weak thumb] img in thumb?.image = img; thumb?.isHidden = img == nil }
+            }
             nextBox.addArrangedSubview(v); nextBox.addArrangedSubview(chev)
         }
         tick()

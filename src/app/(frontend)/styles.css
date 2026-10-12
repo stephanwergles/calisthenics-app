@@ -876,3 +876,7 @@ button.f-clock.rest:active { transform: scale(.95); }
   mask-image: linear-gradient(to left, #000 45%, transparent 92%), linear-gradient(to top, transparent 8%, #000 50%); -webkit-mask-composite: source-in; mask-composite: intersect; }
 .h-hero > .h-still.ready { opacity: .72; }
 .h-hero > :not(.h-still):not(.sketch) { position: relative; }
+
+/* Pausen-Screen (Web): Standbild der nächsten Übung */
+.rs-next-body .rs-still { width: 88px; height: 88px; flex: none; object-fit: cover; border-radius: 14px; opacity: 0; transition: opacity .3s; }
+.rs-next-body .rs-still.ready { opacity: 1; }

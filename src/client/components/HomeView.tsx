@@ -60,9 +60,7 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
         {hero && <ExerciseStill exercise={hero} className="h-still" />}
         <span className="h-label">Heute · {w.name}{started ? ` · ${doneSets}/${sets} Sätze` : ''}</span>
         <h3 className="display h-focus">{first}{rest.length > 0 && <><br />{rest.join(' · ')}</>}</h3>
-        {started
-          ? <div className="h-progress" role="progressbar" aria-label="Sätze erledigt" aria-valuemin={0} aria-valuemax={sets} aria-valuenow={doneSets}><i style={{ width: `${sets ? (doneSets / sets) * 100 : 0}%` }} /></div>
-          : <p className="h-meta">{active.length} Übungen · {sets} Sätze{minutes ? ` · ca. ${minutes} min` : ''}</p>}
+        {!started && <p className="h-meta">{active.length} Übungen · {sets} Sätze{minutes ? ` · ca. ${minutes} min` : ''}</p>}
         <ul className="h-chips">
           {active.slice(0, 3).map(s => <li key={s.pid}>{s.step.exercise.name}</li>)}
           {active.length > 3 && <li className="more">+{active.length - 3}</li>}

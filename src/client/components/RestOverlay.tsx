@@ -4,7 +4,7 @@
 import * as L from '../logic'
 import type { RestTimer } from '../useRestTimer'
 import { Icon } from './Icon'
-import { Sketch } from './Sketch'
+import { ExerciseStill } from './ExerciseMedia'
 
 const R = 132, C = 2 * Math.PI * R
 
@@ -45,7 +45,7 @@ export function RestOverlay({ rest, saved, next, onClose }: {
         <button className="rs-next" onClick={onClose}>
           <span className="rs-next-label">Als Nächstes</span>
           <span className="rs-next-body">
-            <Sketch id={next.slot.step.exercise.media.sketch} label="" />
+            <ExerciseStill exercise={next.slot.step.exercise} className="rs-still" />
             <span>
               <b className="display">Satz {next.setNo} von {next.slot.planned}</b>
               <small>{next.slot.step.exercise.name} · Ziel {next.slot.step.target.label}</small>

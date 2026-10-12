@@ -10,6 +10,7 @@ import { BottomBar } from './BottomBar'
 import { DataView } from './DataView'
 import { Icon, type IconName } from './Icon'
 import { DaySheet, HistoryView, type DayItem } from './HistoryView'
+import { hasClip } from './ExerciseMedia'
 import { ActivitySheet, ExerciseSheet, SetSheet, exerciseSheetSpec } from './Sheets'
 import { FocusView } from './FocusView'
 import { HomeView } from './HomeView'
@@ -145,6 +146,7 @@ export function TrainingApp() {
     end: rest.end, total: rest.total, ringing: rest.ringing, saved: restView || undefined,
     nextTitle: restNext ? `Satz ${restNext.setNo} von ${restNext.slot.planned}` : undefined,
     nextSubtitle: restNext ? `${restNext.slot.step.exercise.name} · Ziel ${restNext.slot.step.target.label}` : undefined,
+    nextClip: restNext && hasClip(restNext.slot.step.exercise.id) ? restNext.slot.step.exercise.id : undefined,
   }) : ''
   useEffect(() => { if (nativeShell) nativeRest.set(restSpec ? JSON.parse(restSpec) : null) }, [nativeShell, restSpec])
   useEffect(() => nativeRest.on(type => {
