@@ -100,6 +100,18 @@ In Xcode einmalig unter *Signing & Capabilities* das eigene Team wählen
 *Product → Archive* zu TestFlight hochladen. Nach jeder Änderung an der Oberfläche
 `npm run native:build` und neu bauen – die App zieht keine Updates vom Server.
 
+## Marke & 3D (`art/`)
+
+Grafiken entstehen per Skript in Blender (headless, `art/vendor/Blender.app`, nicht im Repo):
+
+| Skript | Ergebnis |
+|---|---|
+| `art/blender/brand.py` | App-Icon (B2: Volt, Stange, „L“ aus Barlow Condensed Black Italic) und iOS-Startbildschirm |
+| `art/blender/lever.py` | Übungsclips und Körperkarte aus den **Human Base Meshes** (Blender Foundation, CC0): realistischer Körper, per Skript athletischer geformt, eigenes Skelett, Posen als Gelenkwinkel |
+
+Rohdaten (`art/vendor/`: Blender 5.2, Human Base Meshes) und Zwischenstände (`art/out/`)
+liegen nicht im Repo; die Schrift in `art/fonts/` steht unter der SIL Open Font License.
+
 ## Schema ändern
 
 ```bash

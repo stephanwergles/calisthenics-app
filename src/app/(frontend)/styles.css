@@ -537,3 +537,8 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 /* Scrollleisten ausblenden – Touch-App, gescrollt wird mit dem Finger */
 .app, .f-scroll, .sm-scroll, .sheet, .rest-screen { scrollbar-width: none; }
 .app::-webkit-scrollbar, .f-scroll::-webkit-scrollbar, .sm-scroll::-webkit-scrollbar, .sheet::-webkit-scrollbar, .rest-screen::-webkit-scrollbar { display: none; }
+
+/* Wortmarke: Barlow Condensed Black kursiv – wie im App-Icon */
+.wordmark { font-family: var(--font-display); font-weight: 900; font-style: italic; letter-spacing: .01em; line-height: .85; }
+.home > .wordmark { font-size: 26px; margin-bottom: -6px; }
+.version .wordmark { font-size: 16px; color: var(--text); margin-right: 4px; }

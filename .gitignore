@@ -29,3 +29,8 @@ native/www/
 # App Store Connect API-Key (scripts/ios-release.sh) – nie committen
 .env.ios
 *.p8
+
+# 3D-Rohdaten (Human Base Meshes, CC0) – zu groß fürs Repo
+art/vendor/
+# gerenderte Zwischenstände
+art/out/

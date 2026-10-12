@@ -30,6 +30,7 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
 
   return (
     <section className="home">
+      <p className="wordmark" aria-hidden="true">LEVER</p>
       <header className="h-head">
         <div>
           <span className="h-date">{dateLabel}</span>

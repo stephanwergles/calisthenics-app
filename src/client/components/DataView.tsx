@@ -117,7 +117,7 @@ export function DataView({ t }: { t: Training }) {
         <button className="btn btn-secondary btn-block" onClick={download}>Export (JSON)</button>
         <a className="btn btn-ghost btn-block" href="/admin">Katalog verwalten →</a>
       </div>
-      <p className="version">v{APP_VERSION}</p>
+      <p className="version"><span className="wordmark">LEVER</span> v{APP_VERSION}</p>
     </section>
   )
 }
