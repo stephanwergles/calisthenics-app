@@ -1,7 +1,7 @@
 /* Trainingslogik der v2-App – rein funktional, ohne React, DOM oder Speicher.
    Die Oberfläche ruft diese Funktionen auf; getestet wird direkt mit node --test. */
 import type {
-  Activity, Catalog, Exercise, ExerciseId, Progression, ProgressionId, Session, SetLog,
+  Activity, Catalog, Exercise, ExerciseId, Progression, ProgressionId, Region, Session, SetLog,
   Target, UserState, Weekday, Workout, WorkoutId,
 } from '../domain/model.ts'
 import { NOTE_MAX } from '../domain/model.ts'
@@ -440,7 +440,7 @@ export function unlockProgress(sessions: Session[], exercise: ExerciseId, target
 }
 
 export interface SkillNode { exercise: Exercise; target: Target; state: 'done' | 'current' | 'locked'; sessions: number }
-export interface SkillPath { pid: ProgressionId; workout: Workout; block: string; step: Step; nodes: SkillNode[]; paused: boolean
+export interface SkillPath { pid: ProgressionId; workout: Workout; region?: Region; block: string; step: Step; nodes: SkillNode[]; paused: boolean
   progress: ReturnType<typeof unlockProgress>; readiness: number | null }
 
 /** alle Progressionen als Leitern, in Wochen- und Trainingsreihenfolge */
@@ -451,7 +451,7 @@ export function skillTree(ix: Index, user: UserState, sessions: Session[]): Skil
     const step = currentStep(ix, user, sl.progression)
     const p = ix.progressions.get(sl.progression)!
     return {
-      pid: sl.progression, workout: w, block: sl.block, step, paused: user.paused.includes(sl.progression),
+      pid: sl.progression, workout: w, region: p.region, block: sl.block, step, paused: user.paused.includes(sl.progression),
       nodes: p.steps.map((st, i) => ({
         exercise: ix.exercises.get(st.exercise)!, target: st.target, sessions: count(st.exercise),
         state: i < step.index ? 'done' as const : i === step.index ? 'current' as const : 'locked' as const,

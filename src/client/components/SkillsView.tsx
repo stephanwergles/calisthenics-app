@@ -3,6 +3,7 @@
    Weg zur nächsten Stufe), alle anderen als kompakte Zeilen mit Stufen-Balken. */
 import { useMemo, useState } from 'react'
 import * as L from '../logic'
+import { REGIONS } from '@/domain/model'
 import type { Training } from '../useTraining'
 import { Icon } from './Icon'
 
@@ -13,11 +14,10 @@ export function SkillsView({ t, toTop }: { t: Training; toTop: () => void }) {
   const selected = open ?? best ?? tree[0]?.pid
   const current = tree.find(p => p.pid === selected)
   const unlocked = tree.reduce((n, p) => n + p.step.index, 0)
-  const groups = tree.reduce<{ workout: L.SkillPath['workout']; paths: L.SkillPath[] }[]>((acc, p) => {
-    const g = acc.find(x => x.workout.id === p.workout.id)
-    if (g) g.paths.push(p); else acc.push({ workout: p.workout, paths: [p] })
-    return acc
-  }, [])
+  // nach Körperregion – Workouts sind Planung, der Skill-Tree zeigt den Körper
+  const groups = [...REGIONS, { id: undefined, label: 'Weitere', detail: '' }]
+    .map(r => ({ ...r, paths: tree.filter(p => p.region === r.id) }))
+    .filter(g => g.paths.length)
 
   return (
     <section className="skills">
@@ -25,8 +25,8 @@ export function SkillsView({ t, toTop }: { t: Training; toTop: () => void }) {
       <h2 className="page-title display">Skill-Tree</h2>
       {current && <Ladder key={current.pid} t={t} p={current} />}
       {groups.map(g => (
-        <div key={g.workout.id} className="sk-group">
-          <h3 className="pg-day"><span className="display">{g.workout.name}</span><span>{g.workout.focus}</span></h3>
+        <div key={g.label} className="sk-group">
+          <h3 className="pg-day"><span className="display">{g.label}</span><span>{g.detail}</span></h3>
           {g.paths.map(p => <Row key={p.pid} p={p} on={p.pid === selected} onOpen={() => { setOpen(p.pid); toTop() }} />)}
         </div>
       ))}
@@ -55,7 +55,7 @@ function Ladder({ t, p }: { t: Training; p: L.SkillPath }) {
   return (
     <div className="sk-ladder">
       <div className="sk-head">
-        <span className="display">{p.workout.name} · {L.BLOCK_LABEL[p.block]}</span>
+        <span className="display">{REGIONS.find(r => r.id === p.region)?.label ?? p.workout.name} · {L.BLOCK_LABEL[p.block]}</span>
         <span className="sk-level">Stufe {p.step.index + 1}/{p.step.total}{p.paused ? ' · pausiert' : ''}</span>
       </div>
       <ol className="sk-nodes">

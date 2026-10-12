@@ -46,8 +46,18 @@ export interface Target {
   unlockAt: number | null;      // jeder Satz ≥ unlockAt in 2 Einheiten → nächste Stufe
 }
 
+/** Körperregion einer Progression – gruppiert den Skill-Tree */
+export type Region = "pull" | "push" | "core" | "legs";
+export const REGIONS: { id: Region; label: string; detail: string }[] = [
+  { id: "pull", label: "Ziehen", detail: "Rücken, Bizeps, Griff" },
+  { id: "push", label: "Drücken", detail: "Brust, Schultern, Trizeps" },
+  { id: "core", label: "Rumpf", detail: "Bauch, Hüftbeuger" },
+  { id: "legs", label: "Beine", detail: "Oberschenkel, Gesäß, Waden" },
+];
+
 export interface Progression {
   id: ProgressionId;
+  region?: Region;
   steps: { exercise: ExerciseId; target: Target }[];
 }
 

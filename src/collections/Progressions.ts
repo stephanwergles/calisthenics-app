@@ -10,6 +10,13 @@ export const Progressions: CollectionConfig = {
   fields: [
     slugId,
     {
+      name: 'region', type: 'select', label: 'Körperregion',
+      options: [
+        { label: 'Ziehen', value: 'pull' }, { label: 'Drücken', value: 'push' },
+        { label: 'Rumpf', value: 'core' }, { label: 'Beine', value: 'legs' },
+      ],
+    },
+    {
       name: 'steps', type: 'array', label: 'Stufen', minRows: 1,
       admin: { description: 'Reihenfolge = Progression. Die Vorgabe gehört zur Stufe, nicht zur Übung.' },
       fields: [

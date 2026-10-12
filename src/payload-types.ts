@@ -225,6 +225,7 @@ export interface Progression {
    * Stabile ID (Slug, z. B. „chest-to-bar-pull-up“). Einmal vergeben, nie ändern.
    */
   id: string;
+  region?: ('pull' | 'push' | 'core' | 'legs') | null;
   /**
    * Reihenfolge = Progression. Die Vorgabe gehört zur Stufe, nicht zur Übung.
    */
@@ -512,6 +513,7 @@ export interface ExercisesSelect<T extends boolean = true> {
  */
 export interface ProgressionsSelect<T extends boolean = true> {
   id?: T;
+  region?: T;
   steps?:
     | T
     | {

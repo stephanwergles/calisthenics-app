@@ -528,3 +528,12 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
 .h-progress { position: relative; height: 6px; border-radius: 3px; background: var(--card2); overflow: hidden; margin: 2px 0; }
 .h-progress i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+
+/* Übersicht: Kopf statt Workout-Wahl (gewechselt wird auf „Heute“) */
+.ov-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.ov-head .btn-icon { margin-left: -8px; }
+.ov-title { font-size: 34px; margin-top: 2px; }
+
+/* Scrollleisten ausblenden – Touch-App, gescrollt wird mit dem Finger */
+.app, .f-scroll, .sm-scroll, .sheet, .rest-screen { scrollbar-width: none; }
+.app::-webkit-scrollbar, .f-scroll::-webkit-scrollbar, .sm-scroll::-webkit-scrollbar, .sheet::-webkit-scrollbar, .rest-screen::-webkit-scrollbar { display: none; }

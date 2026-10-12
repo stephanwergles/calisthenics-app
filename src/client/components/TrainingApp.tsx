@@ -96,7 +96,7 @@ export function TrainingApp() {
           onBrowse={() => { setBrowse(true); toTop() }} onSkills={() => { setView('skills'); toTop() }} />
       )}
       {view === 'train' && !focusMode && !showHome && (
-        <WorkoutView t={t} slots={slots} focus={focus} setFocus={setPicked} openFocus={openFocus}
+        <WorkoutView t={t} slots={slots} focus={focus} openFocus={openFocus}
           onHome={() => { setBrowse(false); toTop() }}
           openActivity={() => setSheet({ kind: 'activity', date: t.today })} />
       )}

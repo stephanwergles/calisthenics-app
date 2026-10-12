@@ -8,7 +8,7 @@
    spätere Umbenennung nie eine ID verändert. Läuft das Skript erneut, prüft es,
    dass keine bestehende ID verschwindet. */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import type { Catalog, Exercise, Progression, Workout, RoutineItem, Block, Weekday } from "../src/domain/model.ts";
+import type { Catalog, Exercise, Progression, Workout, RoutineItem, Block, Weekday, Region } from "../src/domain/model.ts";
 
 const root = new URL("../", import.meta.url);
 const html = readFileSync(new URL("index.html", root), "utf8");
@@ -79,6 +79,16 @@ const EXERCISE_IDS: Record<string, string> = {
 };
 
 /* Progressions-IDs, Schlüssel = v1-Slot (Tag-Slot) */
+/* Körperregion je Progression (Skill-Tree) */
+const REGION_OF: Record<string, Region> = {
+  "muscle-up-pull": "pull", "muscle-up-transition": "pull", "pull-up": "pull", "row": "pull", "one-arm-pull": "pull",
+  "scapula": "pull", "biceps": "pull", "hang": "pull",
+  "bar-dip": "push", "planche": "push", "dip": "push", "vertical-push": "push", "horizontal-push": "push",
+  "fly": "push", "triceps": "push", "handstand": "push",
+  "l-sit": "core", "leg-raise": "core", "hollow": "core", "side-plank": "core",
+  "pistol": "legs", "split-squat": "legs", "nordic": "legs", "calf": "legs",
+};
+
 const PROGRESSION_IDS: Record<string, string> = {
   "0-0": "muscle-up-pull", "0-1": "bar-dip", "0-2": "muscle-up-transition", "0-3": "pull-up",
   "0-4": "row", "0-5": "one-arm-pull", "0-6": "scapula", "0-7": "biceps",
@@ -119,7 +129,8 @@ const workouts: Workout[] = PLAN.map((day: any, di: number) => {
     const pid = PROGRESSION_IDS[`${di}-${si}`];
     if (!pid) throw new Error(`Keine Progressions-ID für Slot ${di}-${si}`);
     slots[`${di}-${si}`] = pid;
-    progressions.push({ id: pid, steps: s.levels.map((l: any, lvl: number) => {
+    if (!REGION_OF[pid]) throw new Error(`Keine Region für Progression ${pid}`);
+    progressions.push({ id: pid, region: REGION_OF[pid], steps: s.levels.map((l: any, lvl: number) => {
       const id = EXERCISE_IDS[l.name];
       if (!id) throw new Error(`Keine Übungs-ID für „${l.name}“`);
       positions[lvl ? `${di}-${si}@${lvl}` : `${di}-${si}`] = id;

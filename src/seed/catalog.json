@@ -1262,6 +1262,7 @@
   "progressions": [
     {
       "id": "muscle-up-pull",
+      "region": "pull",
       "steps": [
         {
           "exercise": "explosive-pull-up",
@@ -1300,6 +1301,7 @@
     },
     {
       "id": "bar-dip",
+      "region": "push",
       "steps": [
         {
           "exercise": "straight-bar-dip",
@@ -1327,6 +1329,7 @@
     },
     {
       "id": "muscle-up-transition",
+      "region": "pull",
       "steps": [
         {
           "exercise": "muscle-up-band",
@@ -1354,6 +1357,7 @@
     },
     {
       "id": "pull-up",
+      "region": "pull",
       "steps": [
         {
           "exercise": "pull-up",
@@ -1381,6 +1385,7 @@
     },
     {
       "id": "row",
+      "region": "pull",
       "steps": [
         {
           "exercise": "body-row",
@@ -1408,6 +1413,7 @@
     },
     {
       "id": "one-arm-pull",
+      "region": "pull",
       "steps": [
         {
           "exercise": "uneven-pull-up",
@@ -1446,6 +1452,7 @@
     },
     {
       "id": "scapula",
+      "region": "pull",
       "steps": [
         {
           "exercise": "scapula-shrug",
@@ -1462,6 +1469,7 @@
     },
     {
       "id": "biceps",
+      "region": "pull",
       "steps": [
         {
           "exercise": "biceps-curl",
@@ -1478,6 +1486,7 @@
     },
     {
       "id": "l-sit",
+      "region": "core",
       "steps": [
         {
           "exercise": "l-sit-floor",
@@ -1514,6 +1523,7 @@
     },
     {
       "id": "planche",
+      "region": "push",
       "steps": [
         {
           "exercise": "pseudo-planche-push-up",
@@ -1552,6 +1562,7 @@
     },
     {
       "id": "dip",
+      "region": "push",
       "steps": [
         {
           "exercise": "dip",
@@ -1579,6 +1590,7 @@
     },
     {
       "id": "vertical-push",
+      "region": "push",
       "steps": [
         {
           "exercise": "pike-push-up",
@@ -1617,6 +1629,7 @@
     },
     {
       "id": "horizontal-push",
+      "region": "push",
       "steps": [
         {
           "exercise": "decline-push-up",
@@ -1644,6 +1657,7 @@
     },
     {
       "id": "fly",
+      "region": "push",
       "steps": [
         {
           "exercise": "fly",
@@ -1660,6 +1674,7 @@
     },
     {
       "id": "triceps",
+      "region": "push",
       "steps": [
         {
           "exercise": "triceps-extension",
@@ -1676,6 +1691,7 @@
     },
     {
       "id": "handstand",
+      "region": "push",
       "steps": [
         {
           "exercise": "handstand-wall",
@@ -1712,6 +1728,7 @@
     },
     {
       "id": "pistol",
+      "region": "legs",
       "steps": [
         {
           "exercise": "pistol-squat-assisted",
@@ -1750,6 +1767,7 @@
     },
     {
       "id": "split-squat",
+      "region": "legs",
       "steps": [
         {
           "exercise": "bulgarian-split-squat",
@@ -1766,6 +1784,7 @@
     },
     {
       "id": "nordic",
+      "region": "legs",
       "steps": [
         {
           "exercise": "nordic-curl-negative",
@@ -1793,6 +1812,7 @@
     },
     {
       "id": "calf",
+      "region": "legs",
       "steps": [
         {
           "exercise": "calf-raise-single-leg",
@@ -1809,6 +1829,7 @@
     },
     {
       "id": "leg-raise",
+      "region": "core",
       "steps": [
         {
           "exercise": "hanging-leg-raise",
@@ -1836,6 +1857,7 @@
     },
     {
       "id": "hollow",
+      "region": "core",
       "steps": [
         {
           "exercise": "hollow-hold",
@@ -1863,6 +1885,7 @@
     },
     {
       "id": "side-plank",
+      "region": "core",
       "steps": [
         {
           "exercise": "side-plank-rotation",
@@ -1879,6 +1902,7 @@
     },
     {
       "id": "hang",
+      "region": "pull",
       "steps": [
         {
           "exercise": "dead-hang",

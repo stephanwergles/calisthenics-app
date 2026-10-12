@@ -9,13 +9,12 @@ interface Props {
   t: Training
   slots: L.SlotView[]
   focus: string | undefined
-  setFocus: (pid: string | undefined) => void
   openFocus: (pid: string) => void
   onHome?: () => void
   openActivity: () => void
 }
 
-export function WorkoutView({ t, slots, focus, setFocus, openFocus, onHome, openActivity }: Props) {
+export function WorkoutView({ t, slots, focus, openFocus, onHome, openActivity }: Props) {
   const w = t.ix.workouts.get(t.workout)!
   const counted = slots.filter(s => s.state !== 'skipped' && s.state !== 'paused')
   const planned = counted.reduce((n, s) => n + s.planned, 0)
@@ -23,31 +22,15 @@ export function WorkoutView({ t, slots, focus, setFocus, openFocus, onHome, open
   const skipped = slots.filter(s => s.state === 'skipped').length
   const paused = slots.filter(s => s.state === 'paused').length
 
-  // Sobald trainiert wird, braucht die Wahl keinen Platz mehr – eine Zeile, aufklappbar
-  const started = !!t.active || (t.todaySession?.sets.length ?? 0) > 0
-  const [pickOpen, setPickOpen] = useState(false)
-  const compact = started && !pickOpen
-
   return (
     <>
-      {onHome && <button className="btn btn-ghost btn-sm back-home" onClick={onHome}><Icon name="left" size={16} /> Heute</button>}
-      {compact ? (
-        <button className="wsel" onClick={() => setPickOpen(true)} aria-expanded={false}>
-          <span className="display">{w.name}</span><span className="wsel-focus">{w.focus}</span>
-          <span className="wsel-change">Wechseln <Icon name="down" size={16} /></span>
-        </button>
-      ) : (
-        <div className="picker" role="group" aria-label="Workout wählen">
-          {L.workoutsInWeekOrder(t.ix).map(x => (
-            <button key={x.id} className={x.id === t.workout ? 'on' : ''} aria-pressed={x.id === t.workout}
-              onClick={() => { t.chooseWorkout(x.id); setFocus(undefined); setPickOpen(false) }}>
-              <span className="display">{x.name}</span>
-              <small>{x.focus}</small>
-              <em className={x.id === t.recommended ? 'rec' : ''}>{L.plannedDays(t.ix, x.id).map(d => L.WEEKDAY_SHORT[d]).join(' · ') || '—'}</em>
-            </button>
-          ))}
+      <header className="ov-head">
+        {onHome && <button className="btn btn-ghost btn-icon" aria-label="Zurück zu Heute" onClick={onHome}><Icon name="left" size={20} /></button>}
+        <div>
+          <span className="h-label">Übungen · {w.name}</span>
+          <h2 className="display ov-title">{w.focus}</h2>
         </div>
-      )}
+      </header>
       <p className="wmeta">
         {counted.length} Übungen · {planned} Sätze{skipped ? ` · ${skipped} übersprungen` : ''}{paused ? ` · ${paused} pausiert` : ''}
       </p>
