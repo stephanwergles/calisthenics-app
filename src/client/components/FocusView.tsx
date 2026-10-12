@@ -11,6 +11,7 @@ import { Icon } from './Icon'
 import { Sketch } from './Sketch'
 import { tap } from '../native'
 import { useDrag } from '../useSheet'
+import { useHoldTimer, type HoldTimer } from '../useHoldTimer'
 import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react'
 
 interface Props {
@@ -182,7 +183,10 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, expanded, onExpand }
   const [note, setNote] = useState('')
   const [noteOpen, setNoteOpen] = useState(false)
   const stepBy = seconds ? 5 : 1
-  const holding = rest.running
+  // Halteübungen: Timer mit Vorlauf; bis er durch ist, ist „Timer starten“ die Hauptaktion
+  const hold = useHoldTimer()
+  const timing = hold.phase === 'prep' || hold.phase === 'hold'
+  const timerFirst = seconds && hold.phase !== 'done'
 
   const save = () => {
     const n = L.cleanNote(note)
@@ -200,11 +204,13 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, expanded, onExpand }
   return (
     <>
       <p className="f-caption">Satz {setNo} von {slot.planned} · {seconds ? 'Sekunden' : 'Wiederholungen'}{ex.perSide ? ' pro Seite' : ''}</p>
-      <div className="f-counter">
-        <button className="f-round" aria-label={`${stepBy} weniger`} onClick={() => setValue(v => Math.max(1, v - stepBy))}><Icon name="minus" size={28} /></button>
-        <output className="num f-value" aria-live="polite">{value}{seconds && <small>s</small>}</output>
-        <button className="f-round" aria-label={`${stepBy} mehr`} onClick={() => setValue(v => v + stepBy)}><Icon name="plus" size={28} /></button>
-      </div>
+      {timing ? <HoldRing hold={hold} /> : (
+        <div className="f-counter">
+          <button className="f-round" aria-label={`${stepBy} weniger`} onClick={() => setValue(v => Math.max(1, v - stepBy))}><Icon name="minus" size={28} /></button>
+          <output className="num f-value" aria-live="polite">{value}{seconds && <small>s</small>}</output>
+          <button className="f-round" aria-label={`${stepBy} mehr`} onClick={() => setValue(v => v + stepBy)}><Icon name="plus" size={28} /></button>
+        </div>
+      )}
       {ex.weighted && (
         <div className="f-weight">
           <span>Zusatzgewicht</span>
@@ -213,11 +219,12 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, expanded, onExpand }
           <button className="btn btn-secondary btn-icon" aria-label="2,5 kg mehr" onClick={() => setWeight(w => +(w + 2.5).toFixed(1))}><Icon name="plus" /></button>
         </div>
       )}
-      {seconds && (
-        <button className="btn btn-outline btn-block" onClick={() => rest.start(value)}>
-          <Icon name="timer" /> {holding ? `Halten … ${rest.remaining} s` : `Halte-Timer ${value} s`}
-        </button>
-      )}
+      {seconds && (timing
+        ? <button className="btn btn-secondary btn-block f-timer" onClick={hold.cancel}><Icon name="close" size={20} /> Timer abbrechen</button>
+        : <button className={`btn ${timerFirst ? 'btn-primary' : 'btn-outline'} btn-block f-timer`} onClick={() => hold.start(value)}>
+            <Icon name="timer" size={22} /> {hold.phase === 'done' ? `Nochmal · ${value} s` : `Timer starten · ${value} s`}
+          </button>)}
+      {hold.phase === 'done' && <p className="f-holddone"><Icon name="check" size={16} /> {value} s gehalten – jetzt speichern</p>}
       {noteOpen && expanded && (
         <label className="field f-notefield">
           <span className="field-label">Notiz zu diesem Satz</span>
@@ -228,8 +235,27 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, expanded, onExpand }
         <button className={`btn btn-secondary f-notebtn${noteOpen ? ' on' : ''}`} aria-label="Notiz zu diesem Satz" aria-pressed={noteOpen && expanded} onClick={() => { if (noteOpen && expanded) setNoteOpen(false); else { setNoteOpen(true); onExpand() } }}>
           <Icon name="note" size={22} />
         </button>
-        <button className="btn btn-primary grow f-cta" onClick={save}><Icon name="check" size={22} /> Satz speichern</button>
+        <button className={`btn ${timerFirst ? 'btn-secondary' : 'btn-primary'} grow f-cta`} onClick={save}><Icon name="check" size={22} /> Satz speichern</button>
       </div>
     </>
+  )
+}
+
+const HR = 92, HC = 2 * Math.PI * HR
+
+/** Großer Ring während des Halte-Timers: erst Vorlauf zum Positionieren, dann Halten */
+function HoldRing({ hold }: { hold: HoldTimer }) {
+  const prep = hold.phase === 'prep'
+  return (
+    <div className={`f-hold${prep ? ' prep' : ''}`} role="timer" aria-live="assertive">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="100" cy="100" r={HR} className="fh-track" />
+        <circle cx="100" cy="100" r={HR} className="fh-arc" strokeDasharray={`${(hold.share * HC).toFixed(1)} ${HC.toFixed(1)}`} transform="rotate(-90 100 100)" />
+      </svg>
+      <div className="fh-center">
+        <span className="num fh-time">{hold.left}</span>
+        <small>{prep ? 'In Position' : 'Halten!'}</small>
+      </div>
+    </div>
   )
 }

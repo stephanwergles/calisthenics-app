@@ -15,7 +15,8 @@ export function RestOverlay({ rest, saved, next, onClose }: {
   onClose: () => void
 }) {
   const left = rest.ringing ? 0 : rest.remaining
-  const share = rest.total ? Math.min(1, left / rest.total) : 0
+  // aus dem exakten Rest, nicht aus ganzen Sekunden – der Ring läuft so flüssig statt in Stufen
+  const share = rest.total && !rest.ringing ? Math.min(1, rest.remainingMs / (rest.total * 1000)) : 0
   return (
     <div className={`rest-screen${rest.ringing ? ' ringing' : ''}`} role="dialog" aria-modal="true" aria-label="Pause">
       <div className="rs-top">

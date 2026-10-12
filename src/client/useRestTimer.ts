@@ -40,6 +40,11 @@ export function useRestTimer() {
     setTotal(t => Math.max(1, t + sec))
   }, [])
 
-  return { running: end !== null, remaining: end ? Math.max(0, Math.ceil((end - now) / 1000)) : 0, total, ringing, start, stop, shift }
+  return {
+    running: end !== null, remaining: end ? Math.max(0, Math.ceil((end - now) / 1000)) : 0,
+    /** exakter Rest in ms – für den flüssigen Ring */
+    remainingMs: end ? Math.max(0, end - now) : 0,
+    total, ringing, start, stop, shift,
+  }
 }
 export type RestTimer = ReturnType<typeof useRestTimer>

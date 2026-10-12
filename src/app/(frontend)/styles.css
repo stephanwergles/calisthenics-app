@@ -794,3 +794,29 @@ label.btn { cursor: pointer; }
 .hv-day.trained { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 4px 12px rgba(212, 255, 58, .18); border-color: transparent; }
 .hv-day.today:not(.trained) { box-shadow: inset 0 0 0 2px var(--text); }
 .hv-day.trained.today { box-shadow: inset 0 0 0 2px #101010, 0 0 0 2px var(--accent); }
+
+/* Fokus-Kopf: Zeile so hoch wie die nativen 48-px-Glas-Knöpfe und auf deren Mitte (safe + 8 + 24) */
+.tsheet { padding-top: calc(env(safe-area-inset-top) + 8px); }
+.f-top { min-height: 48px; }
+.f-top > .f-min, .f-top > .f-list { width: 48px; height: 48px; min-height: 48px; }
+.f-grabber { top: -7px; }
+.f-clock { height: 32px; line-height: 1; }
+.f-clock.rest { padding: 0 10px; }
+
+/* Pausen-Ring: Tick alle 250 ms + lineare Überblendung = flüssig */
+.rs-arc { transition: stroke-dasharray .25s linear; }
+
+/* Halte-Timer */
+.f-timer { min-height: 56px; font-family: var(--font-display); font-weight: 800; font-size: 19px; letter-spacing: .04em; text-transform: uppercase; }
+.f-hold { position: relative; width: 204px; aspect-ratio: 1; margin: 0 auto; }
+.f-hold svg { width: 100%; height: 100%; }
+.fh-track { fill: none; stroke: rgba(255, 255, 255, .08); stroke-width: 14; }
+.fh-arc { fill: none; stroke: var(--accent); stroke-width: 14; stroke-linecap: round; transition: stroke-dasharray .1s linear; }
+.f-hold.prep .fh-arc { stroke: var(--text); }
+.fh-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.fh-time { font-family: var(--font-display); font-weight: 900; font-size: 84px; line-height: .9; }
+.f-hold:not(.prep) .fh-time { color: var(--accent); }
+.fh-center small { color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.f-hold.prep .fh-center small { color: var(--text); }
+.f-holddone { display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--accent); font-weight: 700; font-size: 14px; margin-top: -4px; }
+@media (prefers-reduced-motion: reduce) { .fh-arc, .rs-arc { transition: none; } }
