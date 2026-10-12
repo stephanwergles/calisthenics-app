@@ -84,7 +84,7 @@ export function TrainingApp() {
   return (
     <div className="shell">
     <main ref={scroller} className={`app${inFocus ? ' focus-mode' : ''}`}>
-      <h1 className="sr-only">Calisthenics</h1>
+      <h1 className="sr-only">Lever</h1>
       {view === 'data' && <DataView t={t} />}
       {view === 'skills' && <SkillsView t={t} toTop={toTop} />}
       {view === 'history' && <HistoryView t={t} openActivity={date => setSheet({ kind: 'activity', date })} />}

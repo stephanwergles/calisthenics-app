@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Calisthenics',
-    short_name: 'Calisthenics',
+    name: 'Lever – Calisthenics',
+    short_name: 'Lever',
     start_url: '/',
     display: 'standalone',
     background_color: '#101010',

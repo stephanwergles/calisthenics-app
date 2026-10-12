@@ -34,9 +34,16 @@ function Calendar({ t, openActivity }: { t: Training; openActivity: (date: strin
   const sessions = t.sessions.filter(s => s.date === sel && L.isTrained(s))
   const activities = t.activities.filter(a => a.date === sel)
   const anything = marks.trained.size > 0 || marks.cardio.size > 0
+  const stats = useMemo(() => L.monthStats(t.sessions, t.activities, month), [t.sessions, t.activities, month])
+  const hours = Math.floor(stats.durationSec / 3600), mins = Math.round((stats.durationSec % 3600) / 60)
 
   return (
     <>
+      <div className="sm-stats hv-stats" aria-label={`Bilanz ${L.fmtMonth(month)}`}>
+        <div><span className="num">{stats.sessions}</span><small>Einheiten</small></div>
+        <div><span className="num">{hours ? `${hours}:${String(mins).padStart(2, '0')}` : mins}</span><small>{hours ? 'Stunden' : 'Minuten'}</small></div>
+        <div><span className="num">{stats.cardio}</span><small>Cardio</small></div>
+      </div>
       <div className="card cal">
         <div className="cal-head">
           <span className="display">{L.fmtMonth(month)}</span>
@@ -66,25 +73,33 @@ function Calendar({ t, openActivity }: { t: Training; openActivity: (date: strin
       {sessions.map(s => {
         const w = t.ix.workouts.get(s.workout)
         const rows = L.sessionExercises(t.ix, s)
+        const reps = s.sets.reduce((n, x) => n + (t.ix.exercises.get(x.exercise)?.unit === 'reps' ? x.value : 0), 0)
         return (
           <div key={s.id} className="card day">
-            <h3>{w ? `${w.name} · ${w.focus}` : s.workout}</h3>
-            <p className="meta">{L.fmtDate(s.date)}{s.durationSec ? ` · ${L.fmtDuration(s.durationSec)}` : ''} · {s.sets.length} Sätze</p>
+            <span className="h-label">{L.fmtDate(s.date)}</span>
+            <h3 className="display day-title">{w ? `${w.name} · ${w.focus}` : s.workout}</h3>
+            <ul className="f-facts">
+              {s.durationSec ? <li>{L.fmtDuration(s.durationSec)}</li> : null}
+              <li>{s.sets.length} Sätze</li>
+              {reps > 0 && <li>{reps} Wdh.</li>}
+            </ul>
             {s.note && <p className="note-text"><Icon name="note" size={14} /><span>{s.note}</span></p>}
             {rows.length > 0 && (
-              <table>
-                <tbody>
-                  {rows.map(r => (
-                    <tr key={r.exercise.id}>
-                      <td>
-                        {r.exercise.name}
-                        {L.notesOf(r.sets).map(n => <span key={n.set} className="set-note">Satz {n.set}: {n.note}</span>)}
-                      </td>
-                      <td>{r.sets.map((x, i) => <span key={i} className="nw">{i > 0 && ' · '}{L.fmtSet(x, r.exercise)}{x.note ? '*' : ''}</span>)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <ul className="day-ex">
+                {rows.map(r => (
+                  <li key={r.exercise.id}>
+                    <span className="day-ex-name">{r.exercise.name}</span>
+                    <span className="day-sets">
+                      {r.sets.map((x, i) => (
+                        <span key={i} className={`num day-set${x.note ? ' has-note' : ''}`} title={x.note}>
+                          {x.value}{r.exercise.unit === 'seconds' ? <small>s</small> : null}{x.weightKg ? <small>+{x.weightKg}</small> : null}
+                        </span>
+                      ))}
+                    </span>
+                    {L.notesOf(r.sets).map(n => <span key={n.set} className="set-note">Satz {n.set}: {n.note}</span>)}
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         )
@@ -93,7 +108,7 @@ function Calendar({ t, openActivity }: { t: Training; openActivity: (date: strin
       {activities.map(a => (
         <div key={a.id} className="card day">
           <div className="day-head">
-            <h3>{L.activityTitle(a)}</h3>
+            <h3 className="display day-title">{L.activityTitle(a)}</h3>
             <button className="btn btn-ghost btn-sm" onClick={() => { if (confirm(`${L.activityTitle(a)} vom ${L.fmtDate(a.date)} löschen?`)) t.removeActivity(a.id) }}>Löschen</button>
           </div>
           <p className="meta">{L.fmtDate(a.date)}{L.fmtActivity(a) ? ` · ${L.fmtActivity(a)}` : ''}</p>

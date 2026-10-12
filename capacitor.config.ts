@@ -4,10 +4,10 @@ import type { CapacitorConfig } from '@capacitor/cli'
    der Sync geht an die Live-Instanz. Details in README.md, Abschnitt „iOS-App“. */
 const config: CapacitorConfig = {
   appId: 'de.blankstudio.calisthenics',
-  appName: 'Calisthenics',
+  appName: 'Lever',
   webDir: 'native/www',
   backgroundColor: '#101010',
-  ios: { contentInset: 'never', backgroundColor: '#101010', scheme: 'Calisthenics' },
+  ios: { contentInset: 'never', backgroundColor: '#101010' },
   plugins: {
     LocalNotifications: { presentationOptions: ['banner', 'sound'] },
   },

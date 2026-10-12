@@ -21,7 +21,7 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
-    meta: { titleSuffix: ' · Calisthenics' },
+    meta: { titleSuffix: ' · Lever' },
   },
   i18n: { supportedLanguages: { de, en }, fallbackLanguage: 'de' },
   collections: [Sessions, Activities, Exercises, Progressions, Workouts, Users],

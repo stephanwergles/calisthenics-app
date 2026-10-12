@@ -246,3 +246,14 @@ test('Skill-Tree: Leitern, Stand zur Freischaltung', () => {
   assert.equal(mu.nodes[1].sessions, 1)
   assert.equal(mu.progress?.done, 1)
 })
+
+test('Kalender: Monatsbilanz', () => {
+  const ss = [
+    { ...sess('2026-10-04', 'pull', [['pull-up', [5, 5]]]), durationSec: 3600 },
+    { ...sess('2026-10-07', 'push', [['dip', [8]]]), durationSec: 1800 },
+    sess('2026-09-30', 'pull', [['pull-up', [5]]]),
+    L.emptySession('2026-10-09', 'legs'),
+  ]
+  assert.deepEqual(L.monthStats(ss, [{ id: 'a', date: '2026-10-05', kind: 'run' }, { id: 'b', date: '2026-09-02', kind: 'ride' }], '2026-10'),
+    { sessions: 2, durationSec: 5400, sets: 3, cardio: 1 })
+})

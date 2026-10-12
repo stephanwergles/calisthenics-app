@@ -4,9 +4,9 @@ import { Barlow, Barlow_Condensed } from 'next/font/google'
 import './styles.css'
 
 export const metadata: Metadata = {
-  title: 'Calisthenics',
-  description: 'Progressionsbasiertes Calisthenics-Training',
-  appleWebApp: { capable: true, title: 'Calisthenics', statusBarStyle: 'black-translucent' },
+  title: 'Lever',
+  description: 'Lever – progressionsbasiertes Calisthenics-Training',
+  appleWebApp: { capable: true, title: 'Lever', statusBarStyle: 'black-translucent' },
   icons: { apple: '/apple-touch-icon.png' },
 }
 

@@ -461,3 +461,14 @@ export function skillTree(ix: Index, user: UserState, sessions: Session[]): Skil
     }
   }))
 }
+
+/** Monatsbilanz für den Kalender: Einheiten, Trainingszeit, Sätze, Cardio-Einheiten */
+export function monthStats(sessions: Session[], activities: Activity[], month: string) {
+  const s = sessions.filter(x => x.date.startsWith(month) && isTrained(x))
+  return {
+    sessions: s.length,
+    durationSec: s.reduce((n, x) => n + (x.durationSec ?? 0), 0),
+    sets: s.reduce((n, x) => n + x.sets.length, 0),
+    cardio: activities.filter(a => a.date.startsWith(month)).length,
+  }
+}
