@@ -74,8 +74,15 @@ enum Lever {
     static func config(title: String?, symbol: String? = nil, style: String = "glass", size: CGFloat = 17, display: Bool = false) -> UIButton.Configuration {
         var cfg: UIButton.Configuration
         let prominent = style == "prominent"
-        if #available(iOS 26.0, *) { cfg = prominent ? .prominentGlass() : .glass() }
-        else { cfg = prominent ? .filled() : .gray() }
+        // In Sheets liegt alles schon auf Glas – Glas auf Glas hat kaum Kontrast. Deshalb hier
+        // helle, halbtransparente Flächen; echtes Glas nur für die Volt-Hauptaktion und die
+        // frei schwebenden Knöpfe (LeverTabController.glassConfig).
+        if prominent, #available(iOS 26.0, *) { cfg = .prominentGlass() }
+        else { cfg = .filled() }
+        if !prominent {
+            cfg.background.backgroundColor = style == "destructive" ? UIColor(red: 1, green: 0.42, blue: 0.37, alpha: 0.16) : UIColor(white: 1, alpha: 0.14)
+            cfg.background.strokeColor = UIColor(white: 1, alpha: 0.12); cfg.background.strokeWidth = 1
+        }
         cfg.cornerStyle = .capsule
         if let symbol { cfg.image = UIImage(systemName: symbol, withConfiguration: UIImage.SymbolConfiguration(pointSize: size * 0.95, weight: .semibold)) }
         cfg.imagePadding = 8
@@ -517,6 +524,16 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
         }
     }
 
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        if let sheet = sheetPresentationController, (spec.detents ?? []).contains("large") {
+            sheet.animateChanges { sheet.selectedDetentIdentifier = .large }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
+            guard let self, let box = textView.superview else { return }
+            self.scroll.scrollRectToVisible(box.convert(box.bounds, to: self.scroll).insetBy(dx: 0, dy: -12), animated: true)
+        }
+    }
+
     func textViewDidChange(_ textView: UITextView) {
         (textView.superview as? FieldBox)?.refreshPlaceholder()
         emit("text", textView.accessibilityIdentifier, textView.text ?? "")
@@ -594,6 +611,7 @@ final class LeverSetPanel: UIViewController, UISheetPresentationControllerDelega
     static let big = UISheetPresentationController.Detent.Identifier("big")
 
     private let root = UIStackView()
+    private let scroll = UIScrollView()
     private let caption = UILabel()
     private let counter = UIStackView()
     private let value = UILabel()
@@ -639,11 +657,19 @@ final class LeverSetPanel: UIViewController, UISheetPresentationControllerDelega
         super.viewDidLoad()
         if #unavailable(iOS 26.0) { view.backgroundColor = UIColor(white: 0.1, alpha: 1) }
         root.axis = .vertical; root.spacing = 14; root.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(root)
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        scroll.showsVerticalScrollIndicator = false; scroll.keyboardDismissMode = .interactive
+        scroll.isScrollEnabled = false          // nur beim Tippen nötig
+        view.addSubview(scroll); scroll.addSubview(root)
         NSLayoutConstraint.activate([
-            root.topAnchor.constraint(equalTo: view.topAnchor, constant: 26),
-            root.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            root.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            scroll.topAnchor.constraint(equalTo: view.topAnchor),
+            scroll.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scroll.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scroll.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
+            root.topAnchor.constraint(equalTo: scroll.contentLayoutGuide.topAnchor, constant: 26),
+            root.bottomAnchor.constraint(equalTo: scroll.contentLayoutGuide.bottomAnchor, constant: -16),
+            root.leadingAnchor.constraint(equalTo: scroll.frameLayoutGuide.leadingAnchor, constant: 20),
+            root.trailingAnchor.constraint(equalTo: scroll.frameLayoutGuide.trailingAnchor, constant: -20),
         ])
 
         caption.font = .body(12, .bold); caption.textColor = Lever.muted; caption.textAlignment = .center
@@ -843,6 +869,30 @@ final class LeverSetPanel: UIViewController, UISheetPresentationControllerDelega
     func textViewDidChange(_ textView: UITextView) {
         notePlaceholder.isHidden = !(textView.text ?? "").isEmpty
         restyleNote()
+    }
+
+    /// Tippen in die Notiz: Sheet ganz hoch, Inhalt scrollbar, Feld über die Tastatur holen
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        guard let sheet = sheetPresentationController else { return }
+        scroll.isScrollEnabled = true
+        sheet.animateChanges {
+            sheet.detents = sheet.detents + [.large()]
+            sheet.selectedDetentIdentifier = .large
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
+            guard let self else { return }
+            let r = self.note.superview?.convert(self.note.superview?.bounds ?? .zero, to: self.scroll) ?? .zero
+            self.scroll.scrollRectToVisible(r.insetBy(dx: 0, dy: -12), animated: true)
+        }
+    }
+    func textViewDidEndEditing(_ textView: UITextView) {
+        guard let sheet = sheetPresentationController else { return }
+        scroll.isScrollEnabled = false
+        scroll.setContentOffset(.zero, animated: true)
+        sheet.animateChanges {
+            sheet.detents = sheet.detents.filter { $0.identifier != .large }
+            if sheet.selectedDetentIdentifier == .large || sheet.selectedDetentIdentifier == nil { sheet.selectedDetentIdentifier = Self.big }
+        }
     }
 
     func sheetPresentationControllerDidChangeSelectedDetentIdentifier(_ sheet: UISheetPresentationController) {
