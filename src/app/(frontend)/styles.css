@@ -880,3 +880,10 @@ button.f-clock.rest:active { transform: scale(.95); }
 /* Pausen-Screen (Web): Standbild der nächsten Übung */
 .rs-next-body .rs-still { width: 88px; height: 88px; flex: none; object-fit: cover; border-radius: 14px; opacity: 0; transition: opacity .3s; }
 .rs-next-body .rs-still.ready { opacity: 1; }
+
+/* Übungsliste: 3D-Standbild statt Statuskreis, Status als Abzeichen */
+.row-thumb { position: relative; flex: none; width: 56px; height: 56px; }
+.row-thumb .still { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; border-radius: 12px; background: rgba(255, 255, 255, .04); opacity: 0; transition: opacity .3s; }
+.row-thumb .still.ready { opacity: 1; }
+.row.skipped .row-thumb .still, .row.paused .row-thumb .still { opacity: .4; }
+.row-thumb .mark { position: absolute; right: -4px; bottom: -4px; width: 22px; height: 22px; }

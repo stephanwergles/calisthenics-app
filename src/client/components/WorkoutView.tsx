@@ -5,6 +5,7 @@ import * as L from '../logic'
 import type { Training } from '../useTraining'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
+import { ExerciseStill, hasClip } from './ExerciseMedia'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import type { NBlock } from '../native'
 
@@ -53,6 +54,7 @@ export function PlanSheet({ t, slots, focus, openFocus, openActivity, onClose, o
         trailing: s.state === 'done' ? s.sets.map(x => x.value).join(' · ') : s.state === 'skipped' ? 'übersprungen' : s.state === 'paused' ? 'pausiert'
           : s.sets.length ? `${s.sets.length}/${s.planned}` : s.step.target.label,
         state: s.pid === focus && s.state === 'open' ? 'next' : s.state,
+        clip: hasClip(s.step.exercise.id) ? s.step.exercise.id : undefined,
       })),
       ...routineBlocks('cool', cool, w.cooldown),
       { type: 'field', id: 'note', label: 'Notiz zur Einheit', value: t.todaySession?.note ?? '', placeholder: 'z. B. schlecht geschlafen, Schulter links zwickt' },
@@ -96,7 +98,9 @@ function Row({ s, next, onClick }: { s: L.SlotView; next: boolean; onClick: () =
   return (
     <li>
       <button className={`row ${s.state}${next ? ' next' : ''}`} onClick={onClick}>
-        <span className="mark" aria-hidden="true">{mark}</span>
+        {hasClip(s.step.exercise.id)
+          ? <span className="row-thumb" aria-hidden="true"><ExerciseStill exercise={s.step.exercise} />{mark && <span className="mark">{mark}</span>}</span>
+          : <span className="mark" aria-hidden="true">{mark}</span>}
         <span className="row-main">
           {next && <small className="next-label">Als Nächstes</small>}
           <b>{s.step.exercise.name}</b>

@@ -141,7 +141,9 @@ export type NBlock =
   | { type: 'segments'; done: number; total: number; label?: string }
   | { type: 'progress'; value: string }
   | { type: 'row'; id?: string; title: string; subtitle?: string; eyebrow?: string; trailing?: string; delta?: string
-      state?: 'open' | 'done' | 'skipped' | 'paused' | 'next'; chips?: string[]; symbol?: 'none' }
+      state?: 'open' | 'done' | 'skipped' | 'paused' | 'next'; chips?: string[]; symbol?: 'none'
+      /** Übungs-ID mit 3D-Clip – Standbild links statt Statuskreis */
+      clip?: string }
   | { type: 'check'; id: string; title: string; subtitle?: string; on: boolean }
   | { type: 'disclosure'; id: string; title: string; trailing?: string; on: boolean }
   | { type: 'record'; title: string; subtitle: string; value: string }

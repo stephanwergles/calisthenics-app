@@ -123,6 +123,7 @@ struct NBlock: Decodable {
     let on: Bool?, value: String?, label: String?, placeholder: String?, keyboard: String?, symbol: String?
     let items: [NStat]?, options: [NOption]?, selected: String?, done: Int?, total: Int?, buttons: [NButton]?
     let before: Double?, now: Double?, max: Double?
+    let clip: String?
 }
 struct NSheetSpec: Decodable {
     let id: String; let title: String; let subtitle: String?
@@ -367,7 +368,31 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
             mark.tintColor = state == "done" ? .white : state == "next" ? Lever.volt : Lever.muted
             mark.preferredSymbolConfiguration = .init(pointSize: 24, weight: .regular)
             mark.setContentHuggingPriority(.required, for: .horizontal)
-            if b.symbol != "none" { h.addArrangedSubview(mark) }
+            if let clip = b.clip {
+                // 3D-Standbild statt Statuskreis; der Status sitzt als Abzeichen unten rechts im Bild
+                let thumb = UIImageView(); thumb.contentMode = .scaleAspectFill; thumb.clipsToBounds = true
+                thumb.layer.cornerRadius = 12; thumb.layer.cornerCurve = .continuous
+                thumb.backgroundColor = UIColor(white: 1, alpha: 0.04)
+                thumb.translatesAutoresizingMaskIntoConstraints = false
+                thumb.alpha = state == "skipped" || state == "paused" ? 0.4 : 1
+                let holder = UIView(); holder.translatesAutoresizingMaskIntoConstraints = false
+                holder.addSubview(thumb)
+                NSLayoutConstraint.activate([holder.widthAnchor.constraint(equalToConstant: 60), holder.heightAnchor.constraint(equalToConstant: 60),
+                                             thumb.topAnchor.constraint(equalTo: holder.topAnchor), thumb.bottomAnchor.constraint(equalTo: holder.bottomAnchor),
+                                             thumb.leadingAnchor.constraint(equalTo: holder.leadingAnchor), thumb.trailingAnchor.constraint(equalTo: holder.trailingAnchor)])
+                ClipStill.load(clip) { [weak thumb] img in thumb?.image = img }
+                if state != "open" {
+                    let badge = UIImageView(image: mark.image); badge.tintColor = mark.tintColor
+                    badge.preferredSymbolConfiguration = .init(pointSize: 18, weight: .semibold)
+                    badge.backgroundColor = UIColor(white: 0.12, alpha: 1); badge.layer.cornerRadius = 11; badge.clipsToBounds = true
+                    badge.translatesAutoresizingMaskIntoConstraints = false
+                    holder.addSubview(badge)
+                    NSLayoutConstraint.activate([badge.widthAnchor.constraint(equalToConstant: 22), badge.heightAnchor.constraint(equalToConstant: 22),
+                                                 badge.trailingAnchor.constraint(equalTo: holder.trailingAnchor, constant: 4),
+                                                 badge.bottomAnchor.constraint(equalTo: holder.bottomAnchor, constant: 4)])
+                }
+                h.addArrangedSubview(holder)
+            } else if b.symbol != "none" { h.addArrangedSubview(mark) }
             h.addArrangedSubview(v)
             if let t = b.trailing ?? b.delta {
                 let tl = label(t, b.delta != nil ? .display(20, .heavy) : .body(14), b.delta?.hasPrefix("+") == true ? Lever.volt : Lever.muted, lines: 1)
