@@ -15,6 +15,8 @@ mkdirSync(new URL("_next/", out), { recursive: true });
 // data-native: CSS zeigt damit die Startanimation (Splash.tsx) schon im ersten Frame – nahtlos zum Startbild
 writeFileSync(new URL("index.html", out), readFileSync(page, "utf8").replace("<html ", "<html data-native=\"\" "));
 cpSync(new URL("static/", next), new URL("_next/static/", out), { recursive: true });
+// 3D-Übungsclips (public/clips) gehören ins App-Paket – offline im Gym
+if (existsSync(new URL("public/clips/", root))) cpSync(new URL("public/clips/", root), new URL("clips/", out), { recursive: true });
 for (const f of ["apple-touch-icon.png"]) if (existsSync(new URL(`public/${f}`, root))) cpSync(new URL(`public/${f}`, root), new URL(f, out));
 writeFileSync(new URL("build.txt", out), `${new Date().toISOString()}\n`);
 

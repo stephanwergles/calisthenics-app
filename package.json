@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
-    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=4096\" next build",
+    "build": "node scripts/clips-manifest.mjs && cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=4096\" next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "generate:types": "npm run payload -- generate:types",
@@ -18,7 +18,7 @@
     "catalog:extract": "node scripts/extract-catalog.ts",
     "test": "node test/smoke.cjs && node --test test/migrate.test.ts test/logic.test.ts test/sync.test.ts",
     "native:web": "node scripts/native-web.ts",
-    "native:build": "next build && node scripts/native-web.ts && cap sync ios",
+    "native:build": "node scripts/clips-manifest.mjs && next build && node scripts/native-web.ts && cap sync ios",
     "native:open": "cap open ios",
     "native:release": "bash scripts/ios-release.sh"
   },

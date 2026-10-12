@@ -8,7 +8,7 @@ import type { Training } from '../useTraining'
 import type { RestTimer } from '../useRestTimer'
 import { useNow } from '../useNow'
 import { Icon } from './Icon'
-import { Sketch } from './Sketch'
+import { ExerciseMedia } from './ExerciseMedia'
 import { tap } from '../native'
 import { useHoldTimer, type HoldTimer } from '../useHoldTimer'
 import { useNativeShell, usePanel } from '../useNativeSheet'
@@ -160,7 +160,7 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved, 
       <div className="f-figure">
         <span className="f-label">{L.BLOCK_LABEL[slot.block]} · {index + 1}/{total}{step.total > 1 && <span className="f-level"> · Stufe {step.index + 1}/{step.total}</span>}</span>
         <button className="btn btn-secondary btn-sm f-opts" onClick={() => openOptions(slot.pid)}>Technik</button>
-        <Sketch id={ex.media.sketch} label={`Skizze: ${ex.name}`} />
+        <ExerciseMedia exercise={ex} label={`Bewegung: ${ex.name}`} />
       </div>
 
       <div className="f-head">

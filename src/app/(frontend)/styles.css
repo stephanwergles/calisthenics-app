@@ -860,3 +860,11 @@ button.f-clock.rest:active { transform: scale(.95); }
 /* WebKit ignoriert padding-bottom in scrollenden Flex-Containern → Platz fürs native Panel als Element */
 .tsheet.native-panel .f-scroll { padding-bottom: 0; }
 .tsheet.native-panel .f-scroll::after { content: ""; display: block; flex: none; height: calc(var(--panel-h, 300px) + env(safe-area-inset-bottom) + 20px); }
+
+/* 3D-Clips in der Trainingsansicht: 4:3, randlos in der Karte; Skizze als Platzhalter bis zum ersten Bild */
+.f-figure:has(.clip) { padding: 0; }
+.clip { position: relative; width: 100%; aspect-ratio: 4 / 3; max-height: 46vh; margin: 0 auto; }
+.clip video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .25s; background: transparent; }
+.clip.ready video { opacity: 1; }
+.clip .sketch { position: absolute; inset: 0; margin: auto; width: 70%; height: 50%; }
+.f-figure:has(.clip) .f-label, .f-figure:has(.clip) .f-opts { z-index: 1; }
