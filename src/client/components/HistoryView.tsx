@@ -5,6 +5,7 @@ import type { Training } from '../useTraining'
 import type { RoutineItem, Session, SetLog } from '@/domain/model'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
+import { ask } from '../native'
 
 type Sub = 'cal' | 'prog'
 
@@ -54,13 +55,13 @@ function Month({ t, month, setMonth, openActivity, openDay }: {
         <div className="hv-head">
           <span className="display">{L.fmtMonth(month)}</span>
           <div className="hv-nav">
-            <button className="btn btn-ghost btn-icon" aria-label="Voriger Monat" onClick={() => setMonth(L.shiftMonth(month, -1))}><Icon name="left" size={20} /></button>
-            <button className="btn btn-ghost btn-icon" aria-label="Nächster Monat" disabled={month >= t.today.slice(0, 7)} onClick={() => setMonth(L.shiftMonth(month, 1))}><Icon name="right" size={20} /></button>
+            <button className="btn btn-secondary btn-icon" aria-label="Voriger Monat" onClick={() => setMonth(L.shiftMonth(month, -1))}><Icon name="left" size={20} /></button>
+            <button className="btn btn-secondary btn-icon" aria-label="Nächster Monat" disabled={month >= t.today.slice(0, 7)} onClick={() => setMonth(L.shiftMonth(month, 1))}><Icon name="right" size={20} /></button>
           </div>
         </div>
         <div className="hv-stats" aria-label={`Bilanz ${L.fmtMonth(month)}`}>
           <div><span className="num">{stats.sessions}</span><small>{stats.sessions === 1 ? 'Einheit' : 'Einheiten'}</small></div>
-          <div><span className="num">{hours ? `${hours}:${String(mins).padStart(2, '0')}` : mins}</span><small>{hours ? 'Stunden' : 'Minuten'}</small></div>
+          <div><span className="num">{hours ? `${hours}:${String(mins).padStart(2, '0')}` : mins}</span><small>{hours ? 'Stunden' : mins === 1 ? 'Minute' : 'Minuten'}</small></div>
           <div><span className="num">{stats.cardio}</span><small>Cardio</small></div>
         </div>
         <div className="cal-grid hv-cal">
@@ -126,8 +127,8 @@ export function DaySheet({ t, item, onClose }: { t: Training; item: DayItem; onC
       <Sheet title={L.activityTitle(a)} sub={L.fmtDate(a.date)} onClose={onClose}>
         {L.fmtActivity(a) && <p className="hv-sheet-meta">{L.fmtActivity(a)}</p>}
         {a.note && <p className="note-text"><Icon name="note" size={14} /><span>{a.note}</span></p>}
-        <button className="btn btn-danger btn-block hv-delete" onClick={() => {
-          if (confirm(`${L.activityTitle(a)} vom ${L.fmtDate(a.date)} löschen?`)) { t.removeActivity(a.id); onClose() }
+        <button className="btn btn-danger btn-block hv-delete" onClick={async () => {
+          if (await ask({ title: `${L.activityTitle(a)} löschen?`, message: `Eintrag vom ${L.fmtDate(a.date)}.`, ok: 'Löschen', destructive: true })) { t.removeActivity(a.id); onClose() }
         }}><Icon name="trash" size={18} /> Eintrag löschen</button>
       </Sheet>
     )
@@ -157,13 +158,13 @@ function SessionDetail({ t, s, onClose }: { t: Training; s: Session; onClose: ()
   return (
     <Sheet large title={w ? w.focus : s.workout} sub={`${L.fmtDate(s.date)}${w ? ` · ${w.name}` : ''}`} onClose={onClose}
       footer={
-        <button className="btn btn-danger btn-block" onClick={() => {
-          const what = `${w?.name ?? 'Einheit'} vom ${L.fmtDate(s.date)} mit ${s.sets.length} ${s.sets.length === 1 ? 'Satz' : 'Sätzen'}`
-          if (confirm(`${what} löschen?${running ? ' Das laufende Training wird dabei beendet.' : ''} Das lässt sich nicht rückgängig machen.`)) { t.removeSession(s.id); onClose() }
+        <button className="btn btn-danger btn-block" onClick={async () => {
+          const what = `${w?.name ?? 'Einheit'} vom ${L.fmtDate(s.date)} mit ${s.sets.length} ${s.sets.length === 1 ? 'Satz' : 'Sätzen'}.`
+          if (await ask({ title: 'Training löschen?', message: `${what}${running ? ' Das laufende Training wird dabei beendet.' : ''} Das lässt sich nicht rückgängig machen.`, ok: 'Löschen', destructive: true })) { t.removeSession(s.id); onClose() }
         }}><Icon name="trash" size={18} /> Training löschen</button>
       }>
       <div className="sm-stats sd-stats">
-        <div><span className="num">{sum.durationSec ? (h ? `${h}:${String(m).padStart(2, '0')}` : m) : '–'}</span><small>{h ? 'Stunden' : 'Minuten'}</small></div>
+        <div><span className="num">{sum.durationSec ? (h ? `${h}:${String(m).padStart(2, '0')}` : m) : '–'}</span><small>{h ? 'Stunden' : m === 1 ? 'Minute' : 'Minuten'}</small></div>
         <div><span className="num">{sum.sets}</span><small>Sätze</small></div>
         <div><span className="num">{sum.reps}</span><small>Wdh.{sum.repsDelta ? <> · <b className={sum.repsDelta > 0 ? 'up' : ''}>{sum.repsDelta > 0 ? '+' : '−'}{Math.abs(sum.repsDelta)}</b></> : ''}</small></div>
       </div>
@@ -187,7 +188,7 @@ function SessionDetail({ t, s, onClose }: { t: Training; s: Session; onClose: ()
         </section>
       )}
 
-      <section className="sm-block">
+      {rows.length > 0 && <section className="sm-block">
         <h3 className="display">Übungen</h3>
         <ul className="sd-ex">
           {rows.map(r => {
@@ -213,7 +214,8 @@ function SessionDetail({ t, s, onClose }: { t: Training; s: Session; onClose: ()
             )
           })}
         </ul>
-      </section>
+      </section>}
+      {rows.length === 0 && <p className="empty">Keine Sätze eingetragen{sum.durationSec ? ' – nur die Trainingszeit' : ''}.</p>}
 
       {(skipped.length > 0 || warm || cool) && (
         <ul className="f-facts sd-more">

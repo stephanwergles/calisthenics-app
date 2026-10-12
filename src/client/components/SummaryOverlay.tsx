@@ -25,7 +25,7 @@ export function SummaryOverlay({ t, session, onClose }: { t: Training; session: 
         <h2 className="display sm-title">Stark<span className="accent">.</span></h2>
 
         <div className="sm-stats">
-          <div><span className="num">{h ? `${h}:${String(m).padStart(2, '0')}` : m}</span><small>{h ? 'Stunden' : 'Minuten'}</small></div>
+          <div><span className="num">{h ? `${h}:${String(m).padStart(2, '0')}` : m}</span><small>{h ? 'Stunden' : m === 1 ? 'Minute' : 'Minuten'}</small></div>
           <div><span className="num">{sum.sets}</span><small>Sätze</small></div>
           <div><span className="num">{sum.reps}</span><small>Wdh.{sum.repsDelta ? <> · <b className={sum.repsDelta > 0 ? 'up' : ''}>{sum.repsDelta > 0 ? '+' : '−'}{Math.abs(sum.repsDelta)}</b></> : ''}</small></div>
         </div>

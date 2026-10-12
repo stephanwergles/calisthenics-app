@@ -73,6 +73,7 @@ interface LeverTabBarPlugin {
   setAction(o: { id: string; title?: string; symbol?: string; prominent?: boolean; position?: 'bottom' | 'topLeading' | 'topTrailing' }): Promise<void>
   removeAction(o: { id: string }): Promise<void>
   presentSheet(o: SheetSpec): Promise<{ action: string | null }>
+  confirm(o: { title: string; message?: string; ok: string; destructive?: boolean }): Promise<{ ok: boolean }>
   addListener(event: 'select' | 'action', cb: (d: { id: string }) => void): Promise<PluginListenerHandle>
 }
 export interface SheetSpec {
@@ -111,4 +112,13 @@ export const nativeActions = {
 export async function nativeSheet(spec: SheetSpec): Promise<string | null> {
   if (!isNative()) return null
   try { return (await TabBar.presentSheet(spec)).action } catch { return null }
+}
+
+/** Rückfrage vor folgenreichen Aktionen: in der App ein iOS-Alert mit deutschen Knöpfen
+    (rot bei destructive), im Browser der normale Dialog */
+export async function ask(o: { title: string; message?: string; ok: string; destructive?: boolean }): Promise<boolean> {
+  if (isNative()) {
+    try { return (await TabBar.confirm(o)).ok } catch { /* Plugin fehlt (alte App) → Browser-Dialog */ }
+  }
+  return window.confirm([o.title, o.message].filter(Boolean).join('\n\n'))
 }

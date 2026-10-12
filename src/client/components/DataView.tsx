@@ -3,6 +3,7 @@ import { useState } from 'react'
 import type { Training } from '../useTraining'
 import { APP_VERSION } from '../version'
 import { Icon } from './Icon'
+import { ask } from '../native'
 
 const fmtSync = (iso: string | null) => {
   if (!iso) return 'noch nie'
@@ -33,7 +34,7 @@ function Account({ t }: { t: Training }) {
         {s.phase !== 'error' && s.error && <p className="warn">Vom Server abgelehnt: {s.error}</p>}
         <div className="row-btns">
           <button className="btn btn-secondary grow" disabled={s.phase === 'syncing'} onClick={() => void t.syncNow()}>Jetzt abgleichen</button>
-          <button className="btn btn-ghost" onClick={() => { if (confirm('Abmelden? Die Daten bleiben auf diesem Gerät, werden aber nicht mehr abgeglichen.')) void t.signOut() }}>Abmelden</button>
+          <button className="btn btn-ghost" onClick={async () => { if (await ask({ title: 'Abmelden?', message: 'Die Daten bleiben auf diesem Gerät, werden aber nicht mehr abgeglichen.', ok: 'Abmelden' })) void t.signOut() }}>Abmelden</button>
         </div>
       </div>
     )
@@ -74,7 +75,7 @@ export function DataView({ t }: { t: Training }) {
     try {
       const v1 = JSON.parse(await file.text())
       if (!v1 || typeof v1.log !== 'object') throw new Error('Kein v1-Export')
-      if (!confirm('v1-Export übernehmen? Einheiten mit gleichem Datum und Workout werden ersetzt, alle anderen bleiben. Der Trainingsstand wird aus dem Export übernommen.')) return
+      if (!await ask({ title: 'v1-Export übernehmen?', message: 'Einheiten mit gleichem Datum und Workout werden ersetzt, alle anderen bleiben. Der Trainingsstand wird aus dem Export übernommen.', ok: 'Übernehmen' })) return
       const r = await t.importV1(v1)
       setMsg([
         `Übernommen: ${r.sessions} Einheiten, ${r.sets} Sätze, ${r.activities} Aktivitäten.`,

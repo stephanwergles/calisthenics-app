@@ -30,7 +30,7 @@ export function Sheet({ title, sub, onClose, children, large, footer }: {
               <h3>{title}</h3>
               {sub && <p className="sheet-sub">{sub}</p>}
             </div>
-            <button className="btn btn-ghost btn-icon" aria-label="Schließen" onClick={onClose}><Icon name="close" /></button>
+            <button className="btn btn-secondary btn-icon sheet-close" aria-label="Schließen" onClick={onClose}><Icon name="close" size={20} /></button>
           </div>
         </div>
         {large ? <div className="sheet-body">{children}</div> : children}

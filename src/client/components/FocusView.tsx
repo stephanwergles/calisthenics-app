@@ -88,7 +88,7 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
       <div className="f-scroll">
       <div className="f-figure">
         <span className="f-label">{L.BLOCK_LABEL[slot.block]} · {index + 1}/{total}{step.total > 1 && <span className="f-level"> · Stufe {step.index + 1}/{step.total}</span>}</span>
-        <button className="btn btn-ghost btn-sm f-opts" onClick={() => openOptions(slot.pid)}>Technik</button>
+        <button className="btn btn-secondary btn-sm f-opts" onClick={() => openOptions(slot.pid)}>Technik</button>
         <Sketch id={ex.media.sketch} label={`Skizze: ${ex.name}`} />
       </div>
 

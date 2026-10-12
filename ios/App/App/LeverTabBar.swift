@@ -250,6 +250,7 @@ public class LeverTabBarPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "setAction", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "removeAction", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "presentSheet", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "confirm", returnType: CAPPluginReturnPromise),
     ]
 
     /// Tab-Controller finden: über die Controller-Kette oder direkt als Wurzel des Fensters
@@ -338,6 +339,21 @@ extension LeverTabBarPlugin {
             // Scheitert das Präsentieren (z. B. System-Dialog offen), antwortet das Sheet nie –
             // dann mit nil auflösen, damit die Web-Seite nicht im Sheet-Zustand hängen bleibt
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { if vc.presentingViewController == nil { vc.finish(nil) } }
+        }
+    }
+
+    /// Rückfrage als iOS-Alert mit deutschen Knöpfen (Capacitors confirm() ist fest auf Englisch)
+    @objc func confirm(_ call: CAPPluginCall) {
+        let title = call.getString("title"), message = call.getString("message")
+        let ok = call.getString("ok") ?? "OK", destructive = call.getBool("destructive") ?? false
+        DispatchQueue.main.async {
+            guard let host = self.tabsRef else { call.reject("Kein Controller"); return }
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Abbrechen", style: .cancel) { _ in call.resolve(["ok": false]) })
+            alert.addAction(UIAlertAction(title: ok, style: destructive ? .destructive : .default) { _ in call.resolve(["ok": true]) })
+            var top: UIViewController = host
+            while let p = top.presentedViewController, !p.isBeingDismissed { top = p }
+            top.present(alert, animated: true)
         }
     }
 

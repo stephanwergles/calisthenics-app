@@ -778,3 +778,19 @@ label.btn { cursor: pointer; }
 .set-note .icon { color: var(--accent); vertical-align: -2px; }
 .sheet .sm-block { margin-top: 22px; }
 .sheet .sm-block h3 { margin-bottom: 10px; }
+/* Schließen-Knopf der Sheets: runder Liquid-Glass-Knopf wie bei iOS 26 */
+.sheet-close { width: 44px !important; height: 44px; min-height: 44px; margin-top: 0; border-radius: 50%;
+  background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, .26), rgba(255, 255, 255, .07) 60%, rgba(255, 255, 255, .04));
+  border: 1px solid rgba(255, 255, 255, .2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .38), inset 0 -1px 1px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .35);
+  -webkit-backdrop-filter: blur(16px) saturate(180%); backdrop-filter: blur(16px) saturate(180%); color: #fff; }
+.sheet-close .icon { stroke-width: 2.6; }
+/* Icon-Buttons: immer exakt rund (Breite = Höhe), auch wo ältere Regeln die Höhe setzen */
+.btn-icon { height: var(--tap); min-height: var(--tap); aspect-ratio: 1; }
+.sheet-head .sheet-close { width: 44px !important; height: 44px; min-height: 44px; margin: 0; }
+.hv-nav .btn-icon, .bar .stop { width: var(--tap); height: var(--tap); }
+/* Kalendertage: antippbar → Glas-Lichtkante wie die Buttons */
+.hv-day:not(.future) { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .06); }
+.hv-day.trained { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 4px 12px rgba(212, 255, 58, .18); border-color: transparent; }
+.hv-day.today:not(.trained) { box-shadow: inset 0 0 0 2px var(--text); }
+.hv-day.trained.today { box-shadow: inset 0 0 0 2px #101010, 0 0 0 2px var(--accent); }

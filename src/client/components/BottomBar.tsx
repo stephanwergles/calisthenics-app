@@ -4,6 +4,7 @@ import * as L from '../logic'
 import type { Training } from '../useTraining'
 import type { RestTimer } from '../useRestTimer'
 import { Icon } from './Icon'
+import { ask } from '../native'
 
 /** Eine Zeile: ohne Session nur „Workout starten“. Mit Session links Dauer + Workout (Tipp öffnet
     das Training), rechts außen Beenden. Während einer Pause stattdessen Timer + drei Längen zum Umschalten. */
@@ -42,7 +43,7 @@ export function BottomBar({ t, rest, onStart, onStop, onOpen }: { t: Training; r
               <Icon name="right" size={18} />
             </button>
           )}
-          <button className="btn btn-ghost btn-icon stop" onClick={() => { if (confirm('Workout beenden und Zeit speichern?')) onStop() }} aria-label="Workout beenden">
+          <button className="btn btn-secondary btn-icon stop" onClick={async () => { if (await ask({ title: 'Training beenden?', message: 'Die Zeit wird gespeichert.', ok: 'Beenden' })) onStop() }} aria-label="Workout beenden">
             <Icon name="stop" size={16} />
           </button>
         </>
