@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: 'Lever',
   description: 'Lever – progressionsbasiertes Calisthenics-Training',
   appleWebApp: { capable: true, title: 'Lever', statusBarStyle: 'black-translucent' },
-  icons: { apple: '/apple-touch-icon.png?v=2', icon: '/icon-512.png' },
+  icons: { apple: '/apple-touch-icon.png?v=3', icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }, { url: '/icon-512.png?v=3', sizes: '512x512' }] },
 }
 
 export const viewport: Viewport = {

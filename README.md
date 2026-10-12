@@ -110,7 +110,8 @@ Grafiken entstehen per Skript in Blender (headless, `art/vendor/Blender.app`, ni
 
 | Skript | Ergebnis |
 |---|---|
-| `art/blender/brand.py` | App-Icon (B2: Volt, Stange, „L“ aus Barlow Condensed Black Italic) und iOS-Startbildschirm |
+| `art/brand/mark.py` | Marke „Gelenk“: einzige Quelle der Geometrie (Modul M, 7°, Gehrungsfuge, Progressionsstufen); schreibt die SVG-Master in `art/brand/` und `public/favicon.svg` (`python3 art/brand/mark.py`) |
+| `art/blender/brand.py` | App-Icon (1024/512/180) und iOS-Startbild aus `mark.py`; Startbild zeigt die Tuck-Stufe, `Splash.tsx` verlängert den Hebel bis Full |
 | `art/blender/lever.py` | Übungsclips und Körperkarte aus den **Human Base Meshes** (Blender Foundation, CC0): realistischer Körper, per Skript athletischer geformt, eigenes Skelett, Posen als Gelenkwinkel |
 
 Rohdaten (`art/vendor/`: Blender 5.2, Human Base Meshes) und Zwischenstände (`art/out/`)

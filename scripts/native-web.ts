@@ -3,7 +3,7 @@
    Die App braucht keinen Server für die Oberfläche; nur der Sync geht an die Live-Instanz.
 
      npm run native:build    (next build → dieses Skript → cap sync ios) */
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
 const next = new URL(".next/", root), out = new URL("native/www/", root);
@@ -12,7 +12,8 @@ if (!existsSync(page)) throw new Error("Kein Build gefunden – erst `next build
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(new URL("_next/", out), { recursive: true });
-cpSync(page, new URL("index.html", out));
+// data-native: CSS zeigt damit die Startanimation (Splash.tsx) schon im ersten Frame – nahtlos zum Startbild
+writeFileSync(new URL("index.html", out), readFileSync(page, "utf8").replace("<html ", "<html data-native=\"\" "));
 cpSync(new URL("static/", next), new URL("_next/static/", out), { recursive: true });
 for (const f of ["apple-touch-icon.png"]) if (existsSync(new URL(`public/${f}`, root))) cpSync(new URL(`public/${f}`, root), new URL(f, out));
 writeFileSync(new URL("build.txt", out), `${new Date().toISOString()}\n`);

@@ -34,3 +34,6 @@ native/www/
 art/vendor/
 # gerenderte Zwischenstände
 art/out/
+
+# Python
+__pycache__/
