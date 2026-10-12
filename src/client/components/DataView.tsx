@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import type { Training } from '../useTraining'
 import { APP_VERSION } from '../version'
+import { Icon } from './Icon'
 
 const fmtSync = (iso: string | null) => {
   if (!iso) return 'noch nie'
@@ -119,7 +120,7 @@ export function DataView({ t }: { t: Training }) {
       <div className="card">
         <h2>Sichern</h2>
         <button className="btn btn-secondary btn-block" onClick={download}>Export (JSON)</button>
-        <a className="btn btn-ghost btn-block" href="/admin">Katalog verwalten →</a>
+        <a className="btn btn-ghost btn-block" href="/admin">Katalog verwalten <Icon name="right" size={18} /></a>
       </div>
       <p className="version"><span className="wordmark">LEVER</span> v{APP_VERSION}</p>
     </section>

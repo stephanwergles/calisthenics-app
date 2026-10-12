@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
+import type { RoutineItem, Session, SetLog } from '@/domain/model'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
 
@@ -133,39 +134,94 @@ export function DaySheet({ t, item, onClose }: { t: Training; item: DayItem; onC
   }
   const s = t.sessions.find(x => x.id === item.id)
   if (!s) return null
+  return <SessionDetail t={t} s={s} onClose={onClose} />
+}
+
+/** Eine Einheit mit allem: Kennzahlen, Bestwerte, jede Übung mit Stufe, Sätzen, Notizen und Vergleich */
+function SessionDetail({ t, s, onClose }: { t: Training; s: Session; onClose: () => void }) {
   const w = t.ix.workouts.get(s.workout)
+  const sum = useMemo(() => L.sessionSummary(t.ix, t.sessions, s), [t.ix, t.sessions, s])
   const rows = L.sessionExercises(t.ix, s)
-  const reps = s.sets.reduce((n, x) => n + (t.ix.exercises.get(x.exercise)?.unit === 'reps' ? x.value : 0), 0)
   const running = !!t.active && L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout) === s.id
+  const h = Math.floor(sum.durationSec / 3600), m = Math.round((sum.durationSec % 3600) / 60)
+  const stepOf = (x: SetLog) => {
+    const p = t.ix.progressions.get(x.progression)
+    const i = p?.steps.findIndex(st => st.exercise === x.exercise) ?? -1
+    return p && p.steps.length > 1 && i >= 0 ? `Stufe ${i + 1}/${p.steps.length}` : null
+  }
+  const routine = (items: RoutineItem[]) => items.filter(it => !it.cardio).length
+    ? `${items.filter(it => !it.cardio && s.routineDone.includes(it.id)).length}/${items.filter(it => !it.cardio).length}` : null
+  const warm = w ? routine(w.warmup) : null, cool = w ? routine(w.cooldown) : null
+  const skipped = s.skipped.map(id => t.ix.exercises.get(id)?.name).filter(Boolean)
+
   return (
-    <Sheet title={w ? w.focus : s.workout} sub={`${L.fmtDate(s.date)}${w ? ` · ${w.name}` : ''}`} onClose={onClose}
+    <Sheet large title={w ? w.focus : s.workout} sub={`${L.fmtDate(s.date)}${w ? ` · ${w.name}` : ''}`} onClose={onClose}
       footer={
         <button className="btn btn-danger btn-block" onClick={() => {
           const what = `${w?.name ?? 'Einheit'} vom ${L.fmtDate(s.date)} mit ${s.sets.length} ${s.sets.length === 1 ? 'Satz' : 'Sätzen'}`
           if (confirm(`${what} löschen?${running ? ' Das laufende Training wird dabei beendet.' : ''} Das lässt sich nicht rückgängig machen.`)) { t.removeSession(s.id); onClose() }
         }}><Icon name="trash" size={18} /> Training löschen</button>
       }>
-      <ul className="f-facts hv-facts">
-        {s.durationSec ? <li>{L.fmtDuration(s.durationSec)}</li> : null}
-        <li>{s.sets.length} {s.sets.length === 1 ? 'Satz' : 'Sätze'}</li>
-        {reps > 0 && <li>{reps} Wdh.</li>}
-      </ul>
-      {s.note && <p className="note-text"><Icon name="note" size={14} /><span>{s.note}</span></p>}
-      <ul className="day-ex">
-        {rows.map(r => (
-          <li key={r.exercise.id}>
-            <span className="day-ex-name">{r.exercise.name}</span>
-            <span className="day-sets">
-              {r.sets.map((x, i) => (
-                <span key={i} className={`num day-set${x.note ? ' has-note' : ''}`} title={x.note}>
-                  {x.value}{r.exercise.unit === 'seconds' ? <small>s</small> : null}{x.weightKg ? <small>+{x.weightKg}</small> : null}
+      <div className="sm-stats sd-stats">
+        <div><span className="num">{sum.durationSec ? (h ? `${h}:${String(m).padStart(2, '0')}` : m) : '–'}</span><small>{h ? 'Stunden' : 'Minuten'}</small></div>
+        <div><span className="num">{sum.sets}</span><small>Sätze</small></div>
+        <div><span className="num">{sum.reps}</span><small>Wdh.{sum.repsDelta ? <> · <b className={sum.repsDelta > 0 ? 'up' : ''}>{sum.repsDelta > 0 ? '+' : '−'}{Math.abs(sum.repsDelta)}</b></> : ''}</small></div>
+      </div>
+      {s.note && <p className="note-text sd-note"><Icon name="note" size={14} /><span>{s.note}</span></p>}
+
+      {sum.records.length > 0 && (
+        <section className="sm-block">
+          <h3 className="display">Bestwerte</h3>
+          {sum.records.map(r => (
+            <div key={`${r.exercise.id}-${r.kind}`} className="sm-record">
+              <span className="sm-badge"><Icon name="trophy" size={20} /></span>
+              <span className="sm-record-text">
+                <b>{r.exercise.name}</b>
+                <small>{r.kind === 'weight'
+                  ? (r.before ? `Zusatzgewicht +${r.value} kg · vorher +${r.before} kg` : `Erstmals mit +${r.value} kg`)
+                  : `Bester Satz ${r.value}${r.exercise.unit === 'seconds' ? ' s' : ''} · vorher ${r.before}`}</small>
+              </span>
+              <span className="num sm-record-value">{r.kind === 'weight' ? `+${r.value}` : r.value}</span>
+            </div>
+          ))}
+        </section>
+      )}
+
+      <section className="sm-block">
+        <h3 className="display">Übungen</h3>
+        <ul className="sd-ex">
+          {rows.map(r => {
+            const c = sum.compare.find(x => x.exercise.id === r.exercise.id)
+            const d = c ? c.now - c.before : null
+            const step = stepOf(r.sets[0])
+            const unit = r.exercise.unit === 'seconds' ? 's' : ''
+            return (
+              <li key={r.exercise.id} className="sd-row">
+                <div className="sd-row-head">
+                  <span className="sd-name"><b>{r.exercise.name}</b>{step && <small>{step}</small>}</span>
+                  {d !== null && <span className={`num sm-delta${d > 0 ? ' up' : ''}`} title="Summe zum letzten Mal">{d > 0 ? '+' : d < 0 ? '−' : '±'}{Math.abs(d)}</span>}
+                </div>
+                <span className="day-sets sd-sets">
+                  {r.sets.map((x, i) => (
+                    <span key={i} className={`num day-set${x.note ? ' has-note' : ''}`}>
+                      {x.value}{unit ? <small>{unit}</small> : null}{x.weightKg ? <small>+{x.weightKg}</small> : null}
+                    </span>
+                  ))}
                 </span>
-              ))}
-            </span>
-            {L.notesOf(r.sets).map(n => <span key={n.set} className="set-note">Satz {n.set}: {n.note}</span>)}
-          </li>
-        ))}
-      </ul>
+                {L.notesOf(r.sets).map(n => <span key={n.set} className="set-note"><Icon name="note" size={12} /> Satz {n.set}: {n.note}</span>)}
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+
+      {(skipped.length > 0 || warm || cool) && (
+        <ul className="f-facts sd-more">
+          {warm && <li>Warm-up {warm}</li>}
+          {cool && <li>Cool-down {cool}</li>}
+          {skipped.length > 0 && <li className="muted">Übersprungen: {skipped.join(', ')}</li>}
+        </ul>
+      )}
     </Sheet>
   )
 }
