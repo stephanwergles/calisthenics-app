@@ -115,6 +115,8 @@ export interface Session {
   note?: string;
   /** letzte Änderung in ms – Grundlage für den Sync */
   updatedAt?: number;
+  /** gelöscht: bleibt als leere Markierung erhalten, damit das Löschen per Sync auf allen Geräten ankommt */
+  deleted?: boolean;
 }
 
 export interface Activity {

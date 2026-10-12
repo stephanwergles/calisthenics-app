@@ -4,17 +4,21 @@ import type { RoutineItem } from '@/domain/model'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
 import { Icon } from './Icon'
+import { Sheet } from './Sheets'
 
 interface Props {
   t: Training
   slots: L.SlotView[]
   focus: string | undefined
   openFocus: (pid: string) => void
-  onHome?: () => void
   openActivity: () => void
+  onClose: () => void
+  /** ohne laufende Session: Start-Button in der Fußzeile */
+  onStart?: () => void
 }
 
-export function WorkoutView({ t, slots, focus, openFocus, onHome, openActivity }: Props) {
+/** Übungsplan des Tages als großes Sheet – vor dem Start als Vorschau, im Training als Liste zum Springen */
+export function PlanSheet({ t, slots, focus, openFocus, openActivity, onClose, onStart }: Props) {
   const w = t.ix.workouts.get(t.workout)!
   const counted = slots.filter(s => s.state !== 'skipped' && s.state !== 'paused')
   const planned = counted.reduce((n, s) => n + s.planned, 0)
@@ -23,28 +27,21 @@ export function WorkoutView({ t, slots, focus, openFocus, onHome, openActivity }
   const paused = slots.filter(s => s.state === 'paused').length
 
   return (
-    <>
-      <header className="ov-head">
-        {onHome && <button className="btn btn-ghost btn-icon" aria-label="Zurück zu Heute" onClick={onHome}><Icon name="left" size={20} /></button>}
-        <div>
-          <span className="h-label">Übungen · {w.name}</span>
-          <h2 className="display ov-title">{w.focus}</h2>
+    <Sheet large title={w.focus} onClose={onClose}
+      sub={`${w.name} · ${counted.length} Übungen · ${planned} Sätze${skipped ? ` · ${skipped} übersprungen` : ''}${paused ? ` · ${paused} pausiert` : ''}`}
+      footer={onStart && <button className="btn btn-primary btn-block bar-start" onClick={onStart}><Icon name="play" size={20} /> {w.name} starten</button>}>
+      {done > 0 && (
+        <div className="progress" role="progressbar" aria-label="Sätze erledigt" aria-valuemin={0} aria-valuemax={planned} aria-valuenow={done}>
+          <i style={{ width: `${planned ? (done / planned) * 100 : 0}%` }} />
         </div>
-      </header>
-      <p className="wmeta">
-        {counted.length} Übungen · {planned} Sätze{skipped ? ` · ${skipped} übersprungen` : ''}{paused ? ` · ${paused} pausiert` : ''}
-      </p>
-      <div className="progress" role="progressbar" aria-label="Sätze erledigt" aria-valuemin={0} aria-valuemax={planned} aria-valuenow={done}>
-        <i style={{ width: `${planned ? (done / planned) * 100 : 0}%` }} />
-      </div>
-
+      )}
       <Routine t={t} title="Warm-up" items={w.warmup} openActivity={openActivity} />
       <ol className="slots">
         {slots.map(s => <Row key={s.pid} s={s} next={s.pid === focus} onClick={() => openFocus(s.pid)} />)}
       </ol>
       <Routine t={t} title={w.cooldown.some(i => i.cardio) ? 'Cardio & Cool-down' : 'Cool-down & Dehnen'} items={w.cooldown} openActivity={openActivity} />
       <SessionNote key={`${t.today}-${t.workout}`} t={t} />
-    </>
+    </Sheet>
   )
 }
 

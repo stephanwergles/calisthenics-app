@@ -41,9 +41,13 @@ npm run import:v1 -- <v1-export.json> <email>   # Trainingshistorie übernehmen
 
 ## Trainingsansicht
 
-Unter `/`. Vor dem Training die Startseite **Heute** (Woche, Serie, Workout des Tages,
-nächste Skills), nach „Training beenden“ ein **Abschluss** mit Bestwerten. Training im **Fokus-Modus**: eine Übung pro Screen mit Kreide-Skizze, drei
-Kernpunkten, Muskeln und großem Zähler; nach dem Speichern ein Pausen-Screen mit Ring.
+Unter `/`. Der Training-Tab ist die Startseite **Heute** (Woche, Serie, Workout des Tages,
+nächste Skills). Alles Weitere läuft über **Sheets**: „Übungen ansehen“ öffnet den Plan als
+großes Sheet (mit Start-Button), „Starten“ das **Training als Vollbild-Sheet** – eine Übung pro
+Screen mit Kreide-Skizze, drei Kernpunkten, Muskeln und großem Zähler; die Erfassung unten ist
+ein eigenes, hochziehbares Sheet (Satz-Kacheln, Notiz). Nach unten wischen oder ⌄ minimiert das
+Training zur Session-Leiste über den Tabs (wie ein Mini-Player), ein Tipp darauf holt es zurück.
+Nach dem Speichern ein Pausen-Screen mit Ring, nach „Training beenden“ ein **Abschluss** mit Bestwerten.
 Kernpunkte und Muskeln stehen in `src/seed/coaching.json`. Vier Bereiche über die Tab-Leiste unten (darüber die Session-Leiste mit
 Timer, solange trainiert wird): **Training** (Fokus auf die aktive Übung; Notizen
 pro Satz im Satz-Editor und zur ganzen Einheit, die Satz-Notizen vom letzten Mal

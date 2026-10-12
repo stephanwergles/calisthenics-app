@@ -60,6 +60,16 @@ test('Einheit übersteht den Weg zum Server und zurück', () => {
   assert.equal('note' in C.docToSession(asPayload({ ...C.sessionToDoc({ ...session, note: undefined }) })), false)
 })
 
+test('Gelöschte Einheit kommt als Markierung an und überschreibt die alte Fassung', async () => {
+  const { takeRemote } = await import('../src/client/sync.ts')
+  const tomb: Session = { id: session.id, date: session.date, workout: session.workout, sets: [], skipped: [], routineDone: [], deleted: true, updatedAt: 1790000009999 }
+  assert.deepEqual(C.docToSession(asPayload({ id: 42, ...C.sessionToDoc(tomb) })), tomb)
+  assert.equal('deleted' in C.docToSession(asPayload({ ...C.sessionToDoc(session) })), false, 'nicht gelöscht = kein Feld')
+  assert.ok(C.isSession(tomb))
+  assert.equal(C.isSession({ ...tomb, deleted: 'ja' }), false)
+  assert.ok(takeRemote(session, tomb, true), 'jüngere Löschung gewinnt auch gegen ungesendete ältere Änderung')
+})
+
 test('Aktivität und Trainingsstand', () => {
   const a = { id: '2026-09-27-run-1', date: '2026-09-27', kind: 'run' as const, durationMin: 45, distanceKm: 8, updatedAt: 5 }
   assert.deepEqual(C.docToActivity(asPayload({ id: 7, ...C.activityToDoc(a) })), a)

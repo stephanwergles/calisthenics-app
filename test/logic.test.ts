@@ -257,3 +257,14 @@ test('Kalender: Monatsbilanz', () => {
   assert.deepEqual(L.monthStats(ss, [{ id: 'a', date: '2026-10-05', kind: 'run' }, { id: 'b', date: '2026-09-02', kind: 'ride' }], '2026-10'),
     { sessions: 2, durationSec: 5400, sets: 3, cardio: 1 })
 })
+
+test('Einheit löschen: leere Markierung, Neubeginn startet leer', () => {
+  const s: Session = { ...L.emptySession('2026-10-12', 'legs'), sets: [{ exercise: 'pistol-squat', progression: 'pistol', set: 1, value: 5 }], note: 'x', durationSec: 600 }
+  const d = L.deletedSession(s)
+  assert.equal(d.deleted, true)
+  assert.equal(d.id, s.id)
+  assert.deepEqual([d.sets, d.note, d.durationSec], [[], undefined, undefined])
+  assert.ok((d.updatedAt ?? 0) > 0, 'Änderung → wird synchronisiert')
+  assert.equal(L.live(d), undefined)
+  assert.equal(L.live(s), s)
+})

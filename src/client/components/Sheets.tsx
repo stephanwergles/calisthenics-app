@@ -6,25 +6,35 @@ import type { Training } from '../useTraining'
 import type { RestTimer } from '../useRestTimer'
 import { Icon } from './Icon'
 import type { SheetSpec } from '../native'
+import { useDrag } from '../useSheet'
 
-export function Sheet({ title, sub, onClose, children }: { title: string; sub?: string; onClose: () => void; children: ReactNode }) {
+/** Bottom-Sheet: Griff und Kopf lassen sich nach unten wegziehen. `large` = fast volle Höhe mit
+    scrollendem Inhalt und fester Fußzeile (z. B. Start-Button). */
+export function Sheet({ title, sub, onClose, children, large, footer }: {
+  title: string; sub?: string; onClose: () => void; children: ReactNode; large?: boolean; footer?: ReactNode
+}) {
   useEffect(() => {
     const esc = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', esc)
     return () => window.removeEventListener('keydown', esc)
   }, [onClose])
+  const drag = useDrag({ onDown: onClose })
   return (
     <>
       <div className="scrim" onClick={onClose} />
-      <div className="sheet" role="dialog" aria-modal="true" aria-label={title}>
-        <div className="sheet-head">
-          <div>
-            <h3>{title}</h3>
-            {sub && <p className="sheet-sub">{sub}</p>}
+      <div className={`sheet${large ? ' sheet-large' : ''}`} style={drag.style} role="dialog" aria-modal="true" aria-label={title}>
+        <div className="sheet-drag" {...drag.bind}>
+          <span className="grabber" aria-hidden="true" />
+          <div className="sheet-head">
+            <div>
+              <h3>{title}</h3>
+              {sub && <p className="sheet-sub">{sub}</p>}
+            </div>
+            <button className="btn btn-ghost btn-icon" aria-label="Schließen" onClick={onClose}><Icon name="close" /></button>
           </div>
-          <button className="btn btn-ghost btn-icon" aria-label="Schließen" onClick={onClose}><Icon name="close" /></button>
         </div>
-        {children}
+        {large ? <div className="sheet-body">{children}</div> : children}
+        {footer && <div className="sheet-foot">{footer}</div>}
       </div>
     </>
   )

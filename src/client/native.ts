@@ -70,7 +70,7 @@ interface LeverTabBarPlugin {
   select(o: { id: string }): Promise<void>
   setHidden(o: { hidden: boolean }): Promise<void>
   setBadge(o: { id: string; value: string | null; tone?: 'volt' | 'error' }): Promise<void>
-  setAction(o: { id: string; title?: string; symbol?: string; prominent?: boolean; position?: 'bottom' | 'topLeading' }): Promise<void>
+  setAction(o: { id: string; title?: string; symbol?: string; prominent?: boolean; position?: 'bottom' | 'topLeading' | 'topTrailing' }): Promise<void>
   removeAction(o: { id: string }): Promise<void>
   presentSheet(o: SheetSpec): Promise<{ action: string | null }>
   addListener(event: 'select' | 'action', cb: (d: { id: string }) => void): Promise<PluginListenerHandle>
@@ -102,7 +102,7 @@ export const nativeTabs = {
 
 /* ── Native Glas-Buttons und Sheets ── */
 export const nativeActions = {
-  set: (id: string, o: { title?: string; symbol?: string; prominent?: boolean; position?: 'bottom' | 'topLeading' }) => {
+  set: (id: string, o: { title?: string; symbol?: string; prominent?: boolean; position?: 'bottom' | 'topLeading' | 'topTrailing' }) => {
     if (isNative()) void TabBar.setAction({ id, ...o }).catch(() => undefined)
   },
   remove: (id: string) => { if (isNative()) void TabBar.removeAction({ id }).catch(() => undefined) },

@@ -3,120 +3,170 @@ import { useMemo, useState } from 'react'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
 import { Icon } from './Icon'
+import { Sheet } from './Sheets'
 
 type Sub = 'cal' | 'prog'
 
-/** Verlauf: Kalender mit Tagesansicht und Fortschritt pro Übung */
-export function HistoryView({ t, openActivity }: { t: Training; openActivity: (date: string) => void }) {
+export type DayItem = { kind: 'session' | 'activity'; id: string }
+
+/** Verlauf: Monat mit Kalender und allen Einheiten als Feed, daneben Fortschritt pro Übung */
+export function HistoryView({ t, openActivity, openDay }: { t: Training; openActivity: (date: string) => void; openDay: (d: DayItem) => void }) {
   const [sub, setSub] = useState<Sub>('cal')
+  const [month, setMonth] = useState(t.today.slice(0, 7))
   return (
     <section className="history">
+      <span className="h-date">{sub === 'cal' ? (n => `${n} ${n === 1 ? 'Einheit' : 'Einheiten'} insgesamt`)(t.sessions.filter(L.isTrained).length) : 'Pro Übung, über alle Stufen'}</span>
       <h2 className="page-title display">Verlauf</h2>
-      <div className="seg" role="group" aria-label="Ansicht">
-        {([['cal', 'Kalender'], ['prog', 'Fortschritt']] as const).map(([k, l]) => (
+      <div className="seg pill" role="group" aria-label="Ansicht">
+        {([['cal', 'Monat'], ['prog', 'Fortschritt']] as const).map(([k, l]) => (
           <button key={k} className={sub === k ? 'on' : ''} aria-pressed={sub === k} onClick={() => setSub(k)}>{l}</button>
         ))}
       </div>
-      {sub === 'cal' ? <Calendar t={t} openActivity={openActivity} /> : <Progress t={t} />}
+      {sub === 'cal' ? <Month t={t} month={month} setMonth={setMonth} openActivity={openActivity} openDay={openDay} /> : <Progress t={t} />}
     </section>
   )
 }
 
-/* ── Kalender ── */
+/* ── Monat ── */
 
-function Calendar({ t, openActivity }: { t: Training; openActivity: (date: string) => void }) {
-  const [month, setMonth] = useState(t.today.slice(0, 7))
-  const [sel, setSel] = useState(t.today)
+function Month({ t, month, setMonth, openActivity, openDay }: {
+  t: Training; month: string; setMonth: (m: string) => void; openActivity: (date: string) => void; openDay: (d: DayItem) => void
+}) {
   const marks = useMemo(() => L.calendarMarks(t.sessions, t.activities), [t.sessions, t.activities])
   const grid = L.monthGrid(month)
-  const atToday = sel === t.today && month === t.today.slice(0, 7)
-
-  const sessions = t.sessions.filter(s => s.date === sel && L.isTrained(s))
-  const activities = t.activities.filter(a => a.date === sel)
-  const anything = marks.trained.size > 0 || marks.cardio.size > 0
   const stats = useMemo(() => L.monthStats(t.sessions, t.activities, month), [t.sessions, t.activities, month])
   const hours = Math.floor(stats.durationSec / 3600), mins = Math.round((stats.durationSec % 3600) / 60)
+  // Feed: Einheiten und Cardio des Monats, neueste zuerst
+  const feed = useMemo(() => [
+    ...t.sessions.filter(s => s.date.startsWith(month) && L.isTrained(s)).map(s => ({ kind: 'session' as const, id: s.id, date: s.date, s })),
+    ...t.activities.filter(a => a.date.startsWith(month)).map(a => ({ kind: 'activity' as const, id: a.id, date: a.date, a })),
+  ].sort((x, y) => (x.date < y.date ? 1 : x.date > y.date ? -1 : x.kind === 'session' ? -1 : 1)), [t.sessions, t.activities, month])
+  const pickDay = (d: string) => {
+    const hit = feed.find(f => f.date === d)
+    if (hit) openDay({ kind: hit.kind, id: hit.id })
+    else openActivity(d)
+  }
 
   return (
     <>
-      <div className="sm-stats hv-stats" aria-label={`Bilanz ${L.fmtMonth(month)}`}>
-        <div><span className="num">{stats.sessions}</span><small>Einheiten</small></div>
-        <div><span className="num">{hours ? `${hours}:${String(mins).padStart(2, '0')}` : mins}</span><small>{hours ? 'Stunden' : 'Minuten'}</small></div>
-        <div><span className="num">{stats.cardio}</span><small>Cardio</small></div>
-      </div>
-      <div className="card cal">
-        <div className="cal-head">
+      <div className="card hv-month">
+        <div className="hv-head">
           <span className="display">{L.fmtMonth(month)}</span>
-          <div className="cal-ctrl">
-            {!atToday && <button className="btn btn-outline btn-sm" onClick={() => { setSel(t.today); setMonth(t.today.slice(0, 7)) }}>Heute</button>}
-            <button className="btn btn-secondary btn-icon" aria-label="Voriger Monat" onClick={() => setMonth(L.shiftMonth(month, -1))}><Icon name="left" size={20} /></button>
-            <button className="btn btn-secondary btn-icon" aria-label="Nächster Monat" onClick={() => setMonth(L.shiftMonth(month, 1))}><Icon name="right" size={20} /></button>
+          <div className="hv-nav">
+            <button className="btn btn-ghost btn-icon" aria-label="Voriger Monat" onClick={() => setMonth(L.shiftMonth(month, -1))}><Icon name="left" size={20} /></button>
+            <button className="btn btn-ghost btn-icon" aria-label="Nächster Monat" disabled={month >= t.today.slice(0, 7)} onClick={() => setMonth(L.shiftMonth(month, 1))}><Icon name="right" size={20} /></button>
           </div>
         </div>
-        <div className="cal-grid">
-          {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(w => <span key={w} className="cal-w">{w}</span>)}
+        <div className="hv-stats" aria-label={`Bilanz ${L.fmtMonth(month)}`}>
+          <div><span className="num">{stats.sessions}</span><small>{stats.sessions === 1 ? 'Einheit' : 'Einheiten'}</small></div>
+          <div><span className="num">{hours ? `${hours}:${String(mins).padStart(2, '0')}` : mins}</span><small>{hours ? 'Stunden' : 'Minuten'}</small></div>
+          <div><span className="num">{stats.cardio}</span><small>Cardio</small></div>
+        </div>
+        <div className="cal-grid hv-cal">
+          {['M', 'D', 'M', 'D', 'F', 'S', 'S'].map((w, i) => <span key={i} className="cal-w">{w}</span>)}
           {Array.from({ length: grid.lead }, (_, i) => <span key={`l${i}`} />)}
           {grid.days.map(d => {
-            const cls = ['cal-day', marks.trained.has(d) && 'trained', marks.cardio.has(d) && 'cardio', d === t.today && 'today', d === sel && 'sel'].filter(Boolean).join(' ')
+            const cls = ['hv-day', marks.trained.has(d) && 'trained', marks.cardio.has(d) && 'cardio', d === t.today && 'today', d > t.today && 'future'].filter(Boolean).join(' ')
             const label = [L.fmtDate(d), marks.trained.has(d) && 'Training', marks.cardio.has(d) && 'Cardio'].filter(Boolean).join(', ')
-            return <button key={d} className={cls} aria-label={label} aria-pressed={d === sel} onClick={() => setSel(d)}>{Number(d.slice(8))}</button>
+            return <button key={d} className={cls} aria-label={label} disabled={d > t.today} onClick={() => pickDay(d)}><span className="num">{Number(d.slice(8))}</span></button>
           })}
         </div>
       </div>
 
-      {!anything ? (
-        <p className="empty">Noch keine Einheiten.<br />Sobald du im Training einen Satz einträgst, erscheint der Tag hier orange.</p>
-      ) : !sessions.length && !activities.length ? (
-        <p className="empty">Nichts eingetragen am {L.fmtDate(sel)}<br />Orange markierte Tage haben Einträge.</p>
-      ) : null}
-
-      {sessions.map(s => {
-        const w = t.ix.workouts.get(s.workout)
-        const rows = L.sessionExercises(t.ix, s)
-        const reps = s.sets.reduce((n, x) => n + (t.ix.exercises.get(x.exercise)?.unit === 'reps' ? x.value : 0), 0)
-        return (
-          <div key={s.id} className="card day">
-            <span className="h-label">{L.fmtDate(s.date)}</span>
-            <h3 className="display day-title">{w ? `${w.name} · ${w.focus}` : s.workout}</h3>
-            <ul className="f-facts">
-              {s.durationSec ? <li>{L.fmtDuration(s.durationSec)}</li> : null}
-              <li>{s.sets.length} Sätze</li>
-              {reps > 0 && <li>{reps} Wdh.</li>}
-            </ul>
-            {s.note && <p className="note-text"><Icon name="note" size={14} /><span>{s.note}</span></p>}
-            {rows.length > 0 && (
-              <ul className="day-ex">
-                {rows.map(r => (
-                  <li key={r.exercise.id}>
-                    <span className="day-ex-name">{r.exercise.name}</span>
-                    <span className="day-sets">
-                      {r.sets.map((x, i) => (
-                        <span key={i} className={`num day-set${x.note ? ' has-note' : ''}`} title={x.note}>
-                          {x.value}{r.exercise.unit === 'seconds' ? <small>s</small> : null}{x.weightKg ? <small>+{x.weightKg}</small> : null}
-                        </span>
-                      ))}
-                    </span>
-                    {L.notesOf(r.sets).map(n => <span key={n.set} className="set-note">Satz {n.set}: {n.note}</span>)}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )
-      })}
-
-      {activities.map(a => (
-        <div key={a.id} className="card day">
-          <div className="day-head">
-            <h3 className="display day-title">{L.activityTitle(a)}</h3>
-            <button className="btn btn-ghost btn-sm" onClick={() => { if (confirm(`${L.activityTitle(a)} vom ${L.fmtDate(a.date)} löschen?`)) t.removeActivity(a.id) }}>Löschen</button>
-          </div>
-          <p className="meta">{L.fmtDate(a.date)}{L.fmtActivity(a) ? ` · ${L.fmtActivity(a)}` : ''}</p>
-        </div>
-      ))}
-
-      <button className="btn btn-outline btn-block" onClick={() => openActivity(sel)}>+ Cardio am {L.fmtDate(sel)}</button>
+      {feed.length === 0 && (
+        <p className="empty">Keine Einheiten im {L.fmtMonth(month)}.<br />Sobald du einen Satz einträgst, erscheint der Tag hier.</p>
+      )}
+      <ol className="hv-feed">
+        {feed.map(f => {
+          const day = new Date(`${f.date}T12:00`)
+          const date = (
+            <span className="hv-date" aria-hidden="true">
+              <small>{day.toLocaleDateString('de-DE', { weekday: 'short' }).replace('.', '')}</small>
+              <span className="num">{day.getDate()}</span>
+            </span>
+          )
+          if (f.kind === 'activity') return (
+            <li key={f.id}>
+              <button className="hv-item cardio" onClick={() => openDay({ kind: 'activity', id: f.id })}>
+                {date}
+                <span className="hv-main"><b className="display">{L.activityTitle(f.a)}</b><small>{L.fmtActivity(f.a) || 'Cardio'}</small></span>
+                <Icon name="right" size={18} />
+              </button>
+            </li>
+          )
+          const w = t.ix.workouts.get(f.s.workout)
+          const reps = f.s.sets.reduce((n, x) => n + (t.ix.exercises.get(x.exercise)?.unit === 'reps' ? x.value : 0), 0)
+          return (
+            <li key={f.id}>
+              <button className="hv-item" onClick={() => openDay({ kind: 'session', id: f.id })}>
+                {date}
+                <span className="hv-main">
+                  <b className="display">{w ? w.focus : f.s.workout}</b>
+                  <small>{[w?.name, f.s.durationSec ? L.fmtDuration(f.s.durationSec) : null, `${f.s.sets.length} ${f.s.sets.length === 1 ? 'Satz' : 'Sätze'}`, reps ? `${reps} Wdh.` : null].filter(Boolean).join(' · ')}</small>
+                </span>
+                {f.s.note && <Icon name="note" size={16} className="hv-noteicon" />}
+                <Icon name="right" size={18} />
+              </button>
+            </li>
+          )
+        })}
+      </ol>
+      <button className="btn btn-ghost btn-block" onClick={() => openActivity(month === t.today.slice(0, 7) ? t.today : `${month}-01`)}><Icon name="plus" size={18} /> Cardio eintragen</button>
     </>
+  )
+}
+
+/** Tag im Verlauf als Sheet: alle Sätze und Notizen, unten Löschen */
+export function DaySheet({ t, item, onClose }: { t: Training; item: DayItem; onClose: () => void }) {
+  if (item.kind === 'activity') {
+    const a = t.activities.find(x => x.id === item.id)
+    if (!a) return null
+    return (
+      <Sheet title={L.activityTitle(a)} sub={L.fmtDate(a.date)} onClose={onClose}>
+        {L.fmtActivity(a) && <p className="hv-sheet-meta">{L.fmtActivity(a)}</p>}
+        {a.note && <p className="note-text"><Icon name="note" size={14} /><span>{a.note}</span></p>}
+        <button className="btn btn-danger btn-block hv-delete" onClick={() => {
+          if (confirm(`${L.activityTitle(a)} vom ${L.fmtDate(a.date)} löschen?`)) { t.removeActivity(a.id); onClose() }
+        }}><Icon name="trash" size={18} /> Eintrag löschen</button>
+      </Sheet>
+    )
+  }
+  const s = t.sessions.find(x => x.id === item.id)
+  if (!s) return null
+  const w = t.ix.workouts.get(s.workout)
+  const rows = L.sessionExercises(t.ix, s)
+  const reps = s.sets.reduce((n, x) => n + (t.ix.exercises.get(x.exercise)?.unit === 'reps' ? x.value : 0), 0)
+  const running = !!t.active && L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout) === s.id
+  return (
+    <Sheet title={w ? w.focus : s.workout} sub={`${L.fmtDate(s.date)}${w ? ` · ${w.name}` : ''}`} onClose={onClose}
+      footer={
+        <button className="btn btn-danger btn-block" onClick={() => {
+          const what = `${w?.name ?? 'Einheit'} vom ${L.fmtDate(s.date)} mit ${s.sets.length} ${s.sets.length === 1 ? 'Satz' : 'Sätzen'}`
+          if (confirm(`${what} löschen?${running ? ' Das laufende Training wird dabei beendet.' : ''} Das lässt sich nicht rückgängig machen.`)) { t.removeSession(s.id); onClose() }
+        }}><Icon name="trash" size={18} /> Training löschen</button>
+      }>
+      <ul className="f-facts hv-facts">
+        {s.durationSec ? <li>{L.fmtDuration(s.durationSec)}</li> : null}
+        <li>{s.sets.length} {s.sets.length === 1 ? 'Satz' : 'Sätze'}</li>
+        {reps > 0 && <li>{reps} Wdh.</li>}
+      </ul>
+      {s.note && <p className="note-text"><Icon name="note" size={14} /><span>{s.note}</span></p>}
+      <ul className="day-ex">
+        {rows.map(r => (
+          <li key={r.exercise.id}>
+            <span className="day-ex-name">{r.exercise.name}</span>
+            <span className="day-sets">
+              {r.sets.map((x, i) => (
+                <span key={i} className={`num day-set${x.note ? ' has-note' : ''}`} title={x.note}>
+                  {x.value}{r.exercise.unit === 'seconds' ? <small>s</small> : null}{x.weightKg ? <small>+{x.weightKg}</small> : null}
+                </span>
+              ))}
+            </span>
+            {L.notesOf(r.sets).map(n => <span key={n.set} className="set-note">Satz {n.set}: {n.note}</span>)}
+          </li>
+        ))}
+      </ul>
+    </Sheet>
   )
 }
 

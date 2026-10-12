@@ -96,10 +96,14 @@ export function DataView({ t }: { t: Training }) {
 
   return (
     <section className="data">
+      <span className="h-date">{!t.sync.account ? 'Nur auf diesem Gerät' : t.sync.phase === 'error' ? 'Sync-Fehler' : t.sync.pending ? 'Änderungen warten auf Abgleich' : 'Abgeglichen'}</span>
       <h2 className="page-title display">Daten</h2>
-      <div className="card">
-        <h2>Auf diesem Gerät</h2>
-        <p className="meta">{t.sessions.length} Einheiten · {sets} Sätze · {t.activities.length} Aktivitäten</p>
+      <div className="card hv-month">
+        <div className="hv-stats" aria-label="Auf diesem Gerät">
+          <div><span className="num">{t.sessions.length}</span><small>Einheiten</small></div>
+          <div><span className="num">{sets}</span><small>Sätze</small></div>
+          <div><span className="num">{t.activities.length}</span><small>Cardio</small></div>
+        </div>
         {!t.persistent && <p className="warn">Dieser Browser erlaubt keinen dauerhaften Speicher – Daten gehen beim Schließen verloren.</p>}
       </div>
       <Account t={t} />

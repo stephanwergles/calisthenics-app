@@ -31,6 +31,7 @@ export function docToSession(d: Doc): Session {
     setPlan: opt(d.setPlan),
     note: opt<string>(d.note),
     updatedAt: opt<number>(d.clientUpdatedAt),
+    deleted: d.deleted === true ? true : undefined,
   })
 }
 
@@ -41,7 +42,7 @@ export const sessionToDoc = (s: Session) => ({
     weightKg: x.weightKg ?? null, attempts: x.attempts ?? null, note: x.note ?? null,
   })),
   skipped: s.skipped, routineDone: s.routineDone, setPlan: s.setPlan ?? null, note: s.note ?? null,
-  clientUpdatedAt: s.updatedAt ?? 0,
+  clientUpdatedAt: s.updatedAt ?? 0, deleted: s.deleted === true,
 })
 
 export function docToActivity(d: Doc): Activity {
@@ -80,7 +81,7 @@ export function isSession(s: any): s is Session {
   return !!s && isId(s.id) && isDate(s.date) && isId(s.workout) && s.id === `${s.date}-${s.workout}`
     && Array.isArray(s.sets) && s.sets.length <= 300
     && s.sets.every((x: any) => x && isId(x.exercise) && isId(x.progression) && isNum(x.set) && isNum(x.value) && isNote(x.note))
-    && isNote(s.note)
+    && isNote(s.note) && (s.deleted === undefined || typeof s.deleted === 'boolean')
     && Array.isArray(s.skipped) && s.skipped.every(isId)
     && Array.isArray(s.routineDone) && s.routineDone.every(isId)
 }

@@ -168,6 +168,10 @@ export interface Session {
     | boolean
     | null;
   /**
+   * In der App gelöscht – bleibt als Markierung, damit der Sync es an alle Geräte weitergibt
+   */
+  deleted?: boolean | null;
+  /**
    * Letzte Änderung auf dem Gerät (ms) – für den Sync
    */
   clientUpdatedAt?: number | null;
@@ -455,6 +459,7 @@ export interface SessionsSelect<T extends boolean = true> {
   routineDone?: T;
   note?: T;
   setPlan?: T;
+  deleted?: T;
   clientUpdatedAt?: T;
   updatedAt?: T;
   createdAt?: T;

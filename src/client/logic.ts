@@ -106,6 +106,10 @@ export function emptySession(date: string, workout: WorkoutId): Session {
   return { id: sessionId(date, workout), date, workout, sets: [], skipped: [], routineDone: [] }
 }
 const touch = (s: Session): Session => ({ ...s, updatedAt: Date.now() })
+/** Einheit löschen: Inhalt weg, Markierung bleibt (wird wie jede Änderung synchronisiert) */
+export const deletedSession = (s: Session): Session => touch({ ...emptySession(s.date, s.workout), deleted: true })
+/** gelöschte Einheiten zählen nirgends – wer sie wieder anfängt, beginnt leer */
+export const live = (s: Session | undefined): Session | undefined => (s && !s.deleted ? s : undefined)
 
 export function withSet(s: Session, set: SetLog): Session {
   const rest = s.sets.filter(x => !(x.exercise === set.exercise && x.set === set.set))

@@ -195,7 +195,7 @@ export function useTraining() {
 
   /* ── Abgeleitet ───────────────────────────────────────────────────────── */
 
-  const sessionList = useMemo(() => [...sessions.values()], [sessions])
+  const sessionList = useMemo(() => [...sessions.values()].filter(s => !s.deleted), [sessions])
   const recommended = useMemo(() => L.recommendWorkout(ix, sessionList, today), [ix, sessionList, today])
   /** Workout von heute: ausdrückliche Wahl > laufende/begonnene Einheit > Empfehlung */
   const workout: WorkoutId = useMemo(() => {
@@ -205,7 +205,7 @@ export function useTraining() {
       .sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))[0]
     return known(active?.workout) ?? known(started?.workout) ?? recommended
   }, [ix, choice, today, sessionList, active, recommended])
-  const todaySession = sessions.get(L.sessionId(today, workout))
+  const todaySession = L.live(sessions.get(L.sessionId(today, workout)))
 
   /* ── Ändern (immer lokal + Postausgang) ───────────────────────────────── */
 
@@ -217,7 +217,7 @@ export function useTraining() {
 
   const updateToday = useCallback((fn: (s: Session) => Session) => {
     const id = L.sessionId(today, workout)
-    putSession(fn(sessionsRef.current.get(id) ?? L.emptySession(today, workout)))
+    putSession(fn(L.live(sessionsRef.current.get(id)) ?? L.emptySession(today, workout)))
   }, [today, workout, putSession])
 
   const setState = useCallback((fn: (s: UserState) => UserState) => {
@@ -243,9 +243,17 @@ export function useTraining() {
     const seconds = (Date.now() - active.start) / 1000
     if (seconds >= 60) {
       const date = L.localDate(new Date(active.start)), id = L.sessionId(date, active.workout)
-      putSession(L.withDuration(sessionsRef.current.get(id) ?? L.emptySession(date, active.workout), seconds))
+      putSession(L.withDuration(L.live(sessionsRef.current.get(id)) ?? L.emptySession(date, active.workout), seconds))
     }
     setActive(null); void db.kvSet('active', undefined)
+  }, [active, putSession])
+
+  /** Einheit löschen – läuft sie gerade, endet die Session ohne Zeitgutschrift */
+  const removeSession = useCallback((id: string) => {
+    const s = sessionsRef.current.get(id)
+    if (!s || s.deleted) return
+    putSession(L.deletedSession(s))
+    if (active && L.sessionId(L.localDate(new Date(active.start)), active.workout) === id) { setActive(null); void db.kvSet('active', undefined) }
   }, [active, putSession])
 
   const addActivity = useCallback((a: Activity) => {
@@ -311,7 +319,7 @@ export function useTraining() {
   return {
     loaded, persistent, today, ix, sessions: sessionList, activities, state, active, workout, recommended,
     todaySession, updateToday, setState, chooseWorkout, startSession, endSession,
-    addActivity, removeActivity, importV1, exportData,
+    addActivity, removeActivity, removeSession, importV1, exportData,
     sync, syncNow: runSync, signIn, signOut,
   }
 }

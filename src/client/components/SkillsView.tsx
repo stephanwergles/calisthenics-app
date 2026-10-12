@@ -1,18 +1,15 @@
 'use client'
-/* Skill-Tree: jede Progression als Leiter. Eine ist aufgeklappt (Standard: die mit dem kürzesten
-   Weg zur nächsten Stufe), alle anderen als kompakte Zeilen mit Stufen-Balken. */
-import { useMemo, useState } from 'react'
+/* Skill-Tree: jede Progression als kompakte Zeile mit Stufen-Balken, nach Körperregion gruppiert.
+   Antippen öffnet die Leiter als Sheet. */
+import { useMemo } from 'react'
 import * as L from '../logic'
 import { REGIONS } from '@/domain/model'
 import type { Training } from '../useTraining'
 import { Icon } from './Icon'
+import { Sheet } from './Sheets'
 
-export function SkillsView({ t, toTop }: { t: Training; toTop: () => void }) {
+export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
   const tree = useMemo(() => L.skillTree(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
-  const best = useMemo(() => L.nextSkills(t.ix, t.state, t.sessions, 1)[0]?.pid, [t.ix, t.state, t.sessions])
-  const [open, setOpen] = useState<string | undefined>(undefined)
-  const selected = open ?? best ?? tree[0]?.pid
-  const current = tree.find(p => p.pid === selected)
   const unlocked = tree.reduce((n, p) => n + p.step.index, 0)
   // nach Körperregion – Workouts sind Planung, der Skill-Tree zeigt den Körper
   const groups = [...REGIONS, { id: undefined, label: 'Weitere', detail: '' }]
@@ -23,20 +20,32 @@ export function SkillsView({ t, toTop }: { t: Training; toTop: () => void }) {
     <section className="skills">
       <span className="h-date">{tree.length} Progressionen · {unlocked} {unlocked === 1 ? 'Stufe' : 'Stufen'} freigeschaltet</span>
       <h2 className="page-title display">Skill-Tree</h2>
-      {current && <Ladder key={current.pid} t={t} p={current} />}
       {groups.map(g => (
         <div key={g.label} className="sk-group">
           <h3 className="pg-day"><span className="display">{g.label}</span><span>{g.detail}</span></h3>
-          {g.paths.map(p => <Row key={p.pid} p={p} on={p.pid === selected} onOpen={() => { setOpen(p.pid); toTop() }} />)}
+          {g.paths.map(p => <Row key={p.pid} p={p} onOpen={() => onOpen(p.pid)} />)}
         </div>
       ))}
     </section>
   )
 }
 
-function Row({ p, on, onOpen }: { p: L.SkillPath; on: boolean; onOpen: () => void }) {
+/** Leiter einer Progression als Sheet – die Liste bleibt, wo sie war */
+export function SkillSheet({ t, pid, onClose }: { t: Training; pid: string; onClose: () => void }) {
+  const tree = useMemo(() => L.skillTree(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
+  const p = tree.find(x => x.pid === pid)
+  if (!p) return null
+  const region = REGIONS.find(r => r.id === p.region)?.label ?? p.workout.name
   return (
-    <button className={`sk-row${p.paused ? ' paused' : ''}${on ? ' on' : ''}`} onClick={onOpen} aria-pressed={on}>
+    <Sheet title={p.step.exercise.name} sub={`${region} · ${L.BLOCK_LABEL[p.block]} · Stufe ${p.step.index + 1}/${p.step.total}${p.paused ? ' · pausiert' : ''}`} onClose={onClose}>
+      <Ladder t={t} p={p} />
+    </Sheet>
+  )
+}
+
+function Row({ p, onOpen }: { p: L.SkillPath; onOpen: () => void }) {
+  return (
+    <button className={`sk-row${p.paused ? ' paused' : ''}`} onClick={onOpen}>
       <span className="sk-row-main">
         <b className="display">{p.step.exercise.name}</b>
         <small>{p.step.next ? `nächste: ${p.step.next.name}` : p.nodes.length > 1 ? 'höchste Stufe erreicht' : 'eine Stufe'}{p.paused ? ' · pausiert' : ''}</small>
@@ -54,10 +63,6 @@ function Ladder({ t, p }: { t: Training; p: L.SkillPath }) {
   const ready = !p.paused && prog?.done === 2 && !!p.step.next
   return (
     <div className="sk-ladder">
-      <div className="sk-head">
-        <span className="display">{REGIONS.find(r => r.id === p.region)?.label ?? p.workout.name} · {L.BLOCK_LABEL[p.block]}</span>
-        <span className="sk-level">Stufe {p.step.index + 1}/{p.step.total}{p.paused ? ' · pausiert' : ''}</span>
-      </div>
       <ol className="sk-nodes">
         {p.nodes.map((n, i) => (
           <li key={n.exercise.id} className={`sk-node ${n.state}`}>

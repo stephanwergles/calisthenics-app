@@ -124,9 +124,12 @@ final class LeverTabController: UITabBarController, UITabBarControllerDelegate {
         }, for: .touchUpInside)
         view.addSubview(b)
         let g = view.safeAreaLayoutGuide
-        if position == "topLeading" {
+        if position == "topLeading" || position == "topTrailing" {
+            let side = position == "topLeading"
+                ? b.leadingAnchor.constraint(equalTo: g.leadingAnchor, constant: 16)
+                : b.trailingAnchor.constraint(equalTo: g.trailingAnchor, constant: -16)
             NSLayoutConstraint.activate([
-                b.leadingAnchor.constraint(equalTo: g.leadingAnchor, constant: 16),
+                side,
                 b.topAnchor.constraint(equalTo: g.topAnchor, constant: 8),
                 b.widthAnchor.constraint(equalToConstant: 48), b.heightAnchor.constraint(equalToConstant: 48),
             ])

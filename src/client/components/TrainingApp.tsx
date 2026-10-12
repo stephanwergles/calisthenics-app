@@ -8,14 +8,16 @@ import { useRestTimer } from '../useRestTimer'
 import { BottomBar } from './BottomBar'
 import { DataView } from './DataView'
 import { Icon, type IconName } from './Icon'
-import { HistoryView } from './HistoryView'
+import { DaySheet, HistoryView, type DayItem } from './HistoryView'
 import { ActivitySheet, ExerciseSheet, SetSheet, exerciseSheetSpec } from './Sheets'
 import { FocusView } from './FocusView'
 import { HomeView } from './HomeView'
 import { SkillsView } from './SkillsView'
 import { SummaryOverlay } from './SummaryOverlay'
 import { RestOverlay } from './RestOverlay'
-import { WorkoutView } from './WorkoutView'
+import { PlanSheet } from './WorkoutView'
+import { SkillSheet } from './SkillsView'
+import { useDrag, usePresence } from '../useSheet'
 
 type SheetState = { kind: 'set'; pid: string; setNo: number } | { kind: 'activity'; date: string } | { kind: 'options'; pid: string } | null
 type View = 'train' | 'history' | 'skills' | 'data'
@@ -33,17 +35,20 @@ export function TrainingApp() {
   const [view, setView] = useState<View>('train')
   const [sheet, setSheet] = useState<SheetState>(null)
   const [picked, setPicked] = useState<string | undefined>()
-  const [focusMode, setFocusMode] = useState(false)
+  // Training als Vollbild-Sheet über allen Tabs; minimiert bleibt die Session-Leiste (wie ein Mini-Player)
+  const [trainOpen, setTrainOpen] = useState(false)
+  const [planOpen, setPlanOpen] = useState(false)          // Übungsplan als Sheet (vor und während des Trainings)
+  const [skillPid, setSkillPid] = useState<string | null>(null)
+  const [day, setDay] = useState<DayItem | null>(null)          // Einheit/Cardio aus dem Verlauf
   // Gescrollt wird nur der Inhaltsbereich, nie die Seite: iOS verschiebt fixierte Leisten sonst,
   // sobald sich die Seitenhöhe ändert (Tab-Wechsel von lang nach kurz)
   const scroller = useRef<HTMLElement>(null)
   const toTop = () => scroller.current?.scrollTo(0, 0)
   const [restView, setRestView] = useState<string | null>(null)
-  const [browse, setBrowse] = useState(false)                  // Übersicht ansehen, ohne zu starten
   const [summaryId, setSummaryId] = useState<string | null>(null)   // Rückmeldung zum gespeicherten Satz, solange der Pausen-Screen offen ist
 
   // Nach einem Neustart mitten im Training direkt zurück in den Fokus
-  useEffect(() => { if (t.loaded && t.active) setFocusMode(true) }, [t.loaded]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (t.loaded && t.active) setTrainOpen(true) }, [t.loaded]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Service Worker nur im Produktionsbuild – im Dev-Modus würde er Änderungen verdecken
   useEffect(() => {
@@ -68,31 +73,31 @@ export function TrainingApp() {
   const sheetSlot = sheet?.kind === 'set' || sheet?.kind === 'options' ? slots.find(s => s.pid === sheet.pid) : undefined
   const focusSlot = slots.find(s => s.pid === focus)
 
-  const inFocus = view === 'train' && focusMode
   const started = !!t.active || (t.todaySession?.sets.length ?? 0) > 0
-  // „Heute“ ist immer der Einstieg in den Training-Tab; die Übersicht nur auf Wunsch
-  const showHome = view === 'train' && !focusMode && !browse
-  const hideNativeTabs = inFocus || !!sheet || !!summaryId || restView !== null
-  const showBar = !inFocus && ((view === 'train' && !showHome) || !!t.active || rest.running || rest.ringing)
+  const showHome = view === 'train'
+  const overlay = !!sheet || planOpen || !!skillPid || !!day || !!summaryId || restView !== null
+  const hideNativeTabs = trainOpen || overlay
+  const showBar = !trainOpen && (!!t.active || rest.running || rest.ringing)
   const summarySession = summaryId ? t.sessions.find(s => s.id === summaryId) : undefined
-  const start = () => { t.startSession(); void askNotifications(); setBrowse(false); openFocus(undefined) }
+  const start = () => { t.startSession(); void askNotifications(); setPlanOpen(false); openFocus(undefined) }
   const doneToday = started && !L.upNext(slots, undefined)
   const finish = () => {
     if (!t.active) return
     const id = L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout)
-    t.endSession(); rest.stop(); setRestView(null); setFocusMode(false); setSummaryId(id)
+    t.endSession(); rest.stop(); setRestView(null); setTrainOpen(false); setPlanOpen(false); setSummaryId(id)
   }
-  const openFocus = (pid?: string) => { setPicked(pid); setFocusMode(true); toTop() }
+  const openFocus = (pid?: string) => { setPicked(pid); setTrainOpen(true); setPlanOpen(false) }
+  const train = usePresence(trainOpen)
+  const trainDrag = useDrag({ onDown: () => setTrainOpen(false), threshold: 120 })
 
   // iOS-App: native Liquid-Glass-Tab-Leiste statt der eigenen
   const [nativeShell, setNativeShell] = useState(false)
   const goTo = useRef<(k: View) => void>(() => undefined)
-  goTo.current = (k: View) => { setView(k); if (k === 'train') setBrowse(false); toTop() }
+  goTo.current = (k: View) => { setView(k); toTop() }
   const onAction = useRef<(id: string) => void>(() => undefined)
   onAction.current = (id: string) => {
-    if (id === 'start') start()
-    else if (id === 'back' && focusMode) { setFocusMode(false); setBrowse(true); toTop() }
-    else if (id === 'back') { setBrowse(false); toTop() }
+    if (id === 'back') setTrainOpen(false)
+    else if (id === 'list') setPlanOpen(true)
   }
   useEffect(() => {
     if (!t.loaded || !isNative()) return
@@ -101,17 +106,15 @@ export function TrainingApp() {
   }, [t.loaded]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (nativeShell) nativeTabs.select(view) }, [nativeShell, view])
   useEffect(() => { if (nativeShell) nativeTabs.hide(hideNativeTabs) }, [nativeShell, hideNativeTabs])
-  // Native Glas-Buttons: Start (Übersicht ohne Session) und Zurück (Übersicht, Fokus)
-  const overview = view === 'train' && !focusMode && !showHome
-  const overlay = !!sheet || !!summaryId || restView !== null
-  const startTitle = `${t.ix.workouts.get(t.workout)?.name ?? ''} starten`
+  // Native Glas-Buttons im Training: oben links minimieren, oben rechts Übungsliste
+  const trainButtons = nativeShell && trainOpen && !overlay
   useEffect(() => {
     if (!nativeShell) return
-    if (overview && !t.active && !overlay) nativeActions.set('start', { title: startTitle, symbol: 'play.fill', prominent: true, position: 'bottom' })
-    else nativeActions.remove('start')
-    if ((overview || inFocus) && !overlay) nativeActions.set('back', { symbol: inFocus ? 'list.bullet' : 'chevron.left', position: 'topLeading' })
-    else nativeActions.remove('back')
-  }, [nativeShell, overview, inFocus, overlay, t.active, startTitle])
+    if (trainButtons) {
+      nativeActions.set('back', { symbol: 'chevron.down', position: 'topLeading' })
+      nativeActions.set('list', { symbol: 'list.bullet', position: 'topTrailing' })
+    } else { nativeActions.remove('back'); nativeActions.remove('list') }
+  }, [nativeShell, trainButtons])
   // Technik & Optionen als natives Sheet
   useEffect(() => {
     if (!nativeShell || sheet?.kind !== 'options') return
@@ -129,47 +132,44 @@ export function TrainingApp() {
 
   return (
     <div className={`shell${nativeShell ? ' native' : ''}`}>
-    <main ref={scroller} className={`app${inFocus ? ' focus-mode' : showBar ? ' with-bar' : ''}${nativeShell && overview && !t.active ? ' with-start' : ''}`}>
+    <main ref={scroller} className={`app${showBar ? ' with-bar' : ''}`} aria-hidden={trainOpen || undefined}>
       <h1 className="sr-only">Lever</h1>
       {view === 'data' && <DataView t={t} />}
-      {view === 'skills' && <SkillsView t={t} toTop={toTop} />}
-      {view === 'history' && <HistoryView t={t} openActivity={date => setSheet({ kind: 'activity', date })} />}
+      {view === 'skills' && <SkillsView t={t} onOpen={setSkillPid} />}
+      {view === 'history' && <HistoryView t={t} openActivity={date => setSheet({ kind: 'activity', date })} openDay={setDay} />}
       {showHome && (
         <HomeView t={t} slots={slots} started={started} done={doneToday} onStart={t.active ? () => openFocus(undefined) : start}
           onSummary={t.todaySession ? () => setSummaryId(t.todaySession!.id) : undefined}
-          onBrowse={() => { setBrowse(true); toTop() }} onSkills={() => { setView('skills'); toTop() }} />
+          onBrowse={() => setPlanOpen(true)} onSkills={() => { setView('skills'); toTop() }} />
       )}
-      {view === 'train' && !focusMode && !showHome && (
-        <WorkoutView t={t} slots={slots} focus={focus} openFocus={openFocus}
-          onHome={() => { setBrowse(false); toTop() }}
-          openActivity={() => setSheet({ kind: 'activity', date: t.today })} />
-      )}
-      {inFocus && (
-        <FocusView t={t} rest={rest} slots={slots} slot={focusSlot}
-          onBack={() => { setFocusMode(false); setBrowse(true); toTop() }}
-          onPick={pid => { setPicked(pid); toTop() }}
-          openSet={(pid, setNo) => setSheet({ kind: 'set', pid, setNo })}
-          openOptions={pid => setSheet({ kind: 'options', pid })}
-          onFinish={finish}
-          onSaved={(s, setNo, summary) => {
-            // letzter geplanter Satz → nach der Pause geht es mit der nächsten offenen Übung weiter
-            if (L.nextSetNo({ sets: [...s.sets, { exercise: s.step.exercise.id, progression: s.pid, set: setNo, value: 0 }], planned: s.planned }) === null) setPicked(undefined)
-            if (s.step.target.restSec > 0) setRestView(summary)
-          }} />
-      )}
-      {inFocus && restView !== null && (rest.running || rest.ringing) && (
-        <RestOverlay rest={rest} saved={restView} next={L.upNext(slots, focus)} onClose={() => setRestView(null)} />
-      )}
-
-      {/* unten, in Daumenreichweite: Session-Leiste (im Training immer, sonst nur während Session/Pause) über den Tabs */}
     </main>
 
-      {!inFocus && <div className="dock">
-        {showBar && <BottomBar t={t} rest={rest} onStart={start} onStop={finish} onOpen={() => { setView('train'); setBrowse(false); openFocus(undefined) }} />}
+      {train.mounted && (
+        <div className={`tsheet${train.shown ? ' open' : ''}`} style={trainDrag.style} role="dialog" aria-modal="true" aria-label="Training">
+          <FocusView t={t} rest={rest} slots={slots} slot={focusSlot} drag={trainDrag.bind}
+            onMinimize={() => setTrainOpen(false)}
+            onList={() => setPlanOpen(true)}
+            onPick={pid => setPicked(pid)}
+            openSet={(pid, setNo) => setSheet({ kind: 'set', pid, setNo })}
+            openOptions={pid => setSheet({ kind: 'options', pid })}
+            onFinish={finish}
+            onSaved={(s, setNo, summary) => {
+              // letzter geplanter Satz → nach der Pause geht es mit der nächsten offenen Übung weiter
+              if (L.nextSetNo({ sets: [...s.sets, { exercise: s.step.exercise.id, progression: s.pid, set: setNo, value: 0 }], planned: s.planned }) === null) setPicked(undefined)
+              if (s.step.target.restSec > 0) setRestView(summary)
+            }} />
+          {restView !== null && (rest.running || rest.ringing) && (
+            <RestOverlay rest={rest} saved={restView} next={L.upNext(slots, focus)} onClose={() => setRestView(null)} />
+          )}
+        </div>
+      )}
+
+      <div className={`dock${trainOpen ? ' under' : ''}`}>
+        {showBar && <BottomBar t={t} rest={rest} onStart={start} onStop={finish} onOpen={() => setTrainOpen(true)} />}
         {!nativeShell && <nav className="tabs" aria-label="Bereiche">
           {VIEWS.map(([k, l, icon]) => (
             <button key={k} className={view === k ? 'on' : ''} aria-current={view === k ? 'page' : undefined}
-              onClick={() => { setView(k); if (k === 'train') setBrowse(false); toTop() }}>
+              onClick={() => { setView(k); toTop() }}>
               <span className="tab-icon">
                 <Icon name={icon} size={22} />
                 {k === 'data' && <span className={`sync-dot ${syncDot(t.sync)}`} role="img" aria-label={syncLabel(t.sync)} />}
@@ -178,7 +178,14 @@ export function TrainingApp() {
             </button>
           ))}
         </nav>}
-      </div>}
+      </div>
+
+      {planOpen && (
+        <PlanSheet t={t} slots={slots} focus={focus} onClose={() => setPlanOpen(false)} onStart={t.active ? undefined : start}
+          openFocus={openFocus} openActivity={() => setSheet({ kind: 'activity', date: t.today })} />
+      )}
+      {skillPid && <SkillSheet t={t} pid={skillPid} onClose={() => setSkillPid(null)} />}
+      {day && <DaySheet t={t} item={day} onClose={() => setDay(null)} />}
 
       {sheetSlot && sheet?.kind === 'set' && (
         <SetSheet key={`${sheet.pid}-${sheet.setNo}`} t={t} slot={sheetSlot} setNo={sheet.setNo} rest={rest}

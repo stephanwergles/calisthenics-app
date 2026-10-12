@@ -10,13 +10,17 @@ import { useNow } from '../useNow'
 import { Icon } from './Icon'
 import { Sketch } from './Sketch'
 import { tap } from '../native'
+import { useDrag } from '../useSheet'
+import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react'
 
 interface Props {
   t: Training
   rest: RestTimer
   slots: L.SlotView[]
   slot: L.SlotView | undefined
-  onBack: () => void
+  drag: { onPointerDown: (e: ReactPointerEvent) => void; onClickCapture: (e: ReactMouseEvent) => void }
+  onMinimize: () => void
+  onList: () => void
   onPick: (pid: string) => void
   openSet: (pid: string, setNo: number) => void
   openOptions: (pid: string) => void
@@ -24,14 +28,15 @@ interface Props {
   onFinish: () => void
 }
 
-export function FocusView({ t, rest, slots, slot, onBack, onPick, openSet, openOptions, onSaved, onFinish }: Props) {
+export function FocusView({ t, rest, slots, slot, drag, onMinimize, onList, onPick, openSet, openOptions, onSaved, onFinish }: Props) {
   const now = useNow(!!t.active)
   const index = slot ? slots.findIndex(s => s.pid === slot.pid) : -1
 
   return (
     <section className="focus">
-      <header className="f-top">
-        <button className="btn btn-secondary btn-icon" aria-label="Zur Übersicht" onClick={onBack}><Icon name="list" size={20} /></button>
+      <header className="f-top" {...drag}>
+        <span className="grabber f-grabber" aria-hidden="true" />
+        <button className="btn btn-secondary btn-icon f-min" aria-label="Training minimieren" onClick={onMinimize}><Icon name="down" size={22} /></button>
         <nav className="f-segs" aria-label="Übungen">
           {slots.map(s => (
             <button key={s.pid} className={`f-seg ${s.state}${s.pid === slot?.pid ? ' current' : ''}`}
@@ -42,9 +47,10 @@ export function FocusView({ t, rest, slots, slot, onBack, onPick, openSet, openO
         {rest.running || rest.ringing
           ? <span className={`f-clock rest${rest.ringing ? ' ringing' : ''}`}><Icon name="timer" size={16} />{rest.ringing ? '0:00' : L.fmtClock(rest.remaining)}</span>
           : <span className="f-clock num">{t.active ? L.fmtDuration(Math.max(0, now - t.active.start) / 1000) : ''}</span>}
+        <button className="btn btn-secondary btn-icon f-list" aria-label="Alle Übungen" onClick={onList}><Icon name="list" size={20} /></button>
       </header>
 
-      {!slot ? <AllDone onBack={onBack} onFinish={t.active ? onFinish : undefined} /> : (
+      {!slot ? <AllDone onBack={onList} onFinish={t.active ? onFinish : undefined} /> : (
         <Exercise key={slot.pid} t={t} rest={rest} slot={slot} index={index} total={slots.length}
           openSet={openSet} openOptions={openOptions} onSaved={onSaved} />
       )}
@@ -58,7 +64,7 @@ function AllDone({ onBack, onFinish }: { onBack: () => void; onFinish?: () => vo
       <span className="display f-done-title">Stark<span className="accent">.</span></span>
       <p>Alle Übungen erledigt oder übersprungen. In der Übersicht warten Cool-down und deine Notiz zur Einheit.</p>
       {onFinish && <button className="btn btn-primary btn-block f-cta" onClick={onFinish}><Icon name="check" size={20} /> Training beenden</button>}
-      <button className={`btn ${onFinish ? 'btn-secondary' : 'btn-primary f-cta'} btn-block`} onClick={onBack}><Icon name="list" /> Zur Übersicht</button>
+      <button className={`btn ${onFinish ? 'btn-secondary' : 'btn-primary f-cta'} btn-block`} onClick={onBack}><Icon name="list" /> Alle Übungen</button>
     </div>
   )
 }
@@ -73,6 +79,9 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
   const bars = Math.max(slot.planned, ...slot.sets.map(x => x.set))
   const muscles = ex.muscles ?? []
   const lastNotes = slot.last ? L.notesOf(slot.last.sets) : []
+  // Erfassung als Sheet: eingeklappt nur Zähler + Speichern, hochgezogen auch Satz-Kacheln, Notiz, Halte-Timer
+  const [expanded, setExpanded] = useState(false)
+  const sheetDrag = useDrag({ up: true, threshold: 50, onUp: () => setExpanded(true), onDown: () => setExpanded(false) })
 
   return (
     <>
@@ -115,7 +124,12 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
 
       </div>
 
-      <div className="f-bottom" role="region" aria-label="Satz erfassen">
+      <div className={`f-bottom${expanded ? ' expanded' : ''}`} style={sheetDrag.style} role="region" aria-label="Satz erfassen">
+        <button className="f-handle" {...sheetDrag.bind} onClick={() => setExpanded(e => !e)}
+          aria-expanded={expanded} aria-label={expanded ? 'Erfassung einklappen' : 'Mehr Optionen: Sätze, Notiz'}>
+          <span className="grabber" aria-hidden="true" />
+        </button>
+        <div className="f-more"><div>
         <div className="f-bars">
           {Array.from({ length: bars }, (_, i) => {
             const v = slot.sets.find(x => x.set === i + 1)
@@ -132,6 +146,7 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
           )}
           <button className="f-bar add" aria-label="Einen Satz mehr" onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned + 1))}><Icon name="plus" size={14} /></button>
         </div>
+        </div></div>
 
         {slot.state === 'skipped' || slot.state === 'paused' ? (
           <div className="f-state">
@@ -147,7 +162,8 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
             <p><Icon name="check" /> Alle {slot.planned} Sätze erfasst: {slot.sets.map(x => L.fmtSet(x, ex)).join(' · ')}</p>
           </div>
         ) : (
-          <SetInput key={`${slot.pid}-${setNo}`} t={t} rest={rest} slot={slot} setNo={setNo} seconds={seconds} onSaved={onSaved} />
+          <SetInput key={`${slot.pid}-${setNo}`} t={t} rest={rest} slot={slot} setNo={setNo} seconds={seconds} onSaved={onSaved}
+            expanded={expanded} onExpand={() => setExpanded(true)} />
         )}
       </div>
     </>
@@ -155,8 +171,9 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
 }
 
 /** Erfassung des nächsten Satzes direkt im Screen – Vorbelegung wie im Satz-Editor */
-function SetInput({ t, rest, slot, setNo, seconds, onSaved }: {
+function SetInput({ t, rest, slot, setNo, seconds, onSaved, expanded, onExpand }: {
   t: Training; rest: RestTimer; slot: L.SlotView; setNo: number; seconds: boolean; onSaved: (slot: L.SlotView, setNo: number, summary: string) => void
+  expanded: boolean; onExpand: () => void
 }) {
   const ex = slot.step.exercise, target = slot.step.target
   const init = L.prefill(slot.sets, slot.last?.sets ?? [], setNo, target, ex)
@@ -201,14 +218,14 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved }: {
           <Icon name="timer" /> {holding ? `Halten … ${rest.remaining} s` : `Halte-Timer ${value} s`}
         </button>
       )}
-      {noteOpen && (
+      {noteOpen && expanded && (
         <label className="field f-notefield">
           <span className="field-label">Notiz zu diesem Satz</span>
           <textarea rows={2} maxLength={L.NOTE_MAX} value={note} autoFocus placeholder="z. B. Ellenbogen gezwickt" onChange={e => setNote(e.target.value)} />
         </label>
       )}
       <div className="f-actions">
-        <button className={`btn btn-secondary f-notebtn${noteOpen ? ' on' : ''}`} aria-label="Notiz zu diesem Satz" aria-pressed={noteOpen} onClick={() => setNoteOpen(o => !o)}>
+        <button className={`btn btn-secondary f-notebtn${noteOpen ? ' on' : ''}`} aria-label="Notiz zu diesem Satz" aria-pressed={noteOpen && expanded} onClick={() => { if (noteOpen && expanded) setNoteOpen(false); else { setNoteOpen(true); onExpand() } }}>
           <Icon name="note" size={22} />
         </button>
         <button className="btn btn-primary grow f-cta" onClick={save}><Icon name="check" size={22} /> Satz speichern</button>

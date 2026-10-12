@@ -608,7 +608,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
 /* iOS-App: Start- und Zurück-Buttons sind native Glas-Buttons – Platz halten, Web-Version ausblenden */
 .shell.native .bar.start { display: none; }
-.shell.native .ov-head > .btn-icon, .shell.native .f-top > .btn:first-child { visibility: hidden; }
+.shell.native .ov-head > .btn-icon, .shell.native .f-top > .f-min, .shell.native .f-top > .f-list { visibility: hidden; }
 .shell.native .ov-head { padding-top: 4px; }
 
 /* Session-Leiste: Dauer + Workout ist ein Link ins Training */
@@ -634,3 +634,103 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .shell.native .ov-head > .btn-icon { width: 48px; height: 48px; margin: 0; }
 /* … und unten Platz für den schwebenden Start-Button über der Tab-Leiste */
 .shell.native .app.with-start { padding-bottom: calc(env(safe-area-inset-bottom) + 28px + 68px); }
+
+/* ══ Sheets mit Griff (seit dev.20) ═══════════════════════════════════════
+   Griff + Kopf ziehen nach unten zu; große Sheets mit scrollendem Inhalt und fester Fußzeile. */
+.grabber { display: block; width: 36px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .24); margin: 0 auto; }
+.sheet-drag { touch-action: none; cursor: grab; margin: -6px -20px 0; padding: 0 20px; }
+.sheet-drag .grabber { margin-bottom: 8px; }
+.sheet { transition: transform .3s cubic-bezier(.32, .72, 0, 1); }
+.sheet-large { display: flex; flex-direction: column; height: calc(100dvh - env(safe-area-inset-top) - 10px); max-height: none; overflow: hidden; padding-bottom: 0; }
+.sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 0 -20px; padding: 0 20px 20px; scrollbar-width: none; }
+.sheet-body::-webkit-scrollbar { display: none; }
+.sheet-foot { flex: none; margin: 0 -20px; padding: 12px 20px calc(env(safe-area-inset-bottom) + 12px); border-top: 1px solid var(--glass-line); }
+.sheet-large .slots { margin: 12px 0; }
+.sheet-large .progress { margin: 0 0 12px; }
+
+/* Training als Vollbild-Sheet: fährt von unten ein, minimiert zur Session-Leiste */
+.tsheet { position: fixed; inset: 0; z-index: 24; background: var(--bg); display: flex; flex-direction: column; overflow: hidden;
+  padding: calc(env(safe-area-inset-top) + 14px) max(16px, calc((100% - 560px) / 2)) 0;
+  transform: translateY(100%); transition: transform .38s cubic-bezier(.32, .72, 0, 1); box-shadow: 0 -20px 50px rgba(0, 0, 0, .6); }
+.tsheet.open { transform: none; }
+.tsheet .focus { flex: 1; min-height: 0; }
+.f-top { position: relative; touch-action: none; }
+.f-grabber { position: absolute; top: -10px; left: 50%; margin-left: -18px; }
+.f-list { flex: none; }
+.f-clock { min-width: 0; }
+@media (prefers-reduced-motion: reduce) { .tsheet { transition: none; } }
+
+/* Fokus-Inhalt nie stauchen – sonst wird die Skizze abgeschnitten, statt dass gescrollt wird */
+.f-scroll > * { flex-shrink: 0; }
+.f-figure { min-height: 168px; }
+
+/* Satz-Erfassung: echtes Sheet – Griff antippen oder hochziehen zeigt Satz-Kacheln und Notiz */
+.f-bottom { gap: 14px; padding-top: 4px; transition: transform .3s cubic-bezier(.32, .72, 0, 1); }
+.f-bottom::before { content: none; }
+.f-handle { display: flex; align-items: center; justify-content: center; width: 100%; height: 22px; margin-bottom: -6px;
+  border: none; background: none; padding: 0; cursor: grab; touch-action: none; }
+.f-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s cubic-bezier(.32, .72, 0, 1); margin-bottom: -14px; }
+.f-more > div { overflow: hidden; min-height: 0; }
+.f-bottom.expanded .f-more { grid-template-rows: 1fr; margin-bottom: 0; }
+.f-bottom .f-counter { padding: 2px 0; }
+.f-weight { display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 16px; border-radius: var(--r-lg, 18px); background: rgba(255, 255, 255, .04); border: 1px solid var(--glass-line); }
+.f-weight > span { flex: 1; color: var(--muted); font-size: 14px; font-weight: 600; }
+.f-weight output { min-width: 72px; text-align: center; font-size: 22px; }
+.f-notefield textarea { min-height: 64px; }
+
+/* App, keine Webseite: kein Markieren/Lupe beim Tippen und Ziehen – außer in Eingabefeldern */
+body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+input, textarea, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+
+/* ══ Verlauf (seit dev.20): Monatskarte, Kalender als Kacheln, Feed ═════════ */
+.history .page-title { margin-bottom: 14px; }
+.seg.pill { border-radius: 999px; padding: 4px; background: rgba(255, 255, 255, .05); border: 1px solid var(--glass-line); }
+.seg.pill button { border-radius: 999px; min-height: 40px; font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; }
+.seg.pill button.on { background: var(--accent); color: #101010; box-shadow: none; }
+.hv-month { padding: 18px 16px 14px; border-radius: var(--r-xl); margin-bottom: 18px; }
+.hv-stats { display: flex; align-items: flex-end; gap: 22px; margin-bottom: 16px; }
+.hv-stats > div:not(.hv-nav) { display: flex; flex-direction: column; }
+.hv-stats .num { font-family: var(--font-display); font-weight: 800; font-size: 38px; line-height: .9; }
+.hv-stats > div:first-child .num { color: var(--accent); }
+.hv-stats small { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-top: 4px; }
+.hv-nav { margin-left: auto; display: flex; gap: 4px; align-self: center; }
+.hv-nav .btn:disabled { opacity: .3; }
+.hv-cal { gap: 5px; justify-items: stretch; }
+.hv-cal .cal-w { text-align: center; }
+.hv-day { aspect-ratio: 1; border: none; border-radius: 10px; background: rgba(255, 255, 255, .04); color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; position: relative; padding: 0; font-size: 14px; min-height: 0; }
+.hv-day .num { font-variant-numeric: tabular-nums; font-weight: 600; }
+.hv-day.trained { background: var(--accent); color: #101010; }
+.hv-day.trained .num { font-weight: 800; }
+.hv-day.cardio::after { content: ""; position: absolute; bottom: 4px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--accent); }
+.hv-day.trained.cardio::after { background: #101010; }
+.hv-day.today { box-shadow: inset 0 0 0 2px var(--text); }
+.hv-day.trained.today { box-shadow: inset 0 0 0 2px #101010, 0 0 0 2px var(--accent); }
+.hv-day.future { background: none; opacity: .35; cursor: default; }
+.hv-day:active:not(:disabled) { transform: scale(.94); }
+.hv-feed { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.hv-item { width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px 14px 12px 12px; border-radius: var(--r-lg, 18px);
+  background: var(--card); border: 1px solid var(--line); color: var(--text); text-align: left; cursor: pointer; min-height: 64px; }
+.hv-item:active { background: var(--card2); }
+.hv-item > .icon:last-child { color: var(--muted); }
+.hv-date { flex: none; width: 44px; display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.hv-date small { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.hv-date .num { font-family: var(--font-display); font-weight: 800; font-size: 28px; margin-top: 3px; }
+.hv-item:not(.cardio) .hv-date .num { color: var(--accent); }
+.hv-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.hv-main b { font-size: 19px; line-height: 1.05; text-transform: uppercase; }
+.hv-main small { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hv-noteicon { color: var(--accent); }
+.hv-facts { margin-bottom: 12px; }
+.hv-sheet-meta { color: var(--muted); margin-bottom: 12px; }
+.hv-delete { margin-top: 14px; }
+.btn-danger { background: rgba(255, 90, 80, .1); border: 1px solid rgba(255, 90, 80, .28); }
+.hv-head { display: flex; align-items: center; justify-content: space-between; margin: -6px -6px 10px 0; }
+.hv-head > .display { font-size: 20px; letter-spacing: .04em; text-transform: uppercase; }
+.hv-nav { margin-left: 0; }
+.hv-stats { gap: 26px; }
+.sheet:not(.sheet-large) .sheet-foot { padding-bottom: 0; margin-top: 16px; border-top: none; }
+/* Daten: Seitentitel wie überall (die Kartenregel für h2 darf ihn nicht treffen) */
+.data h2.page-title { font-size: 44px; margin: 2px 0 16px; letter-spacing: 0; }
+.data .hv-stats { margin-bottom: 0; }
+.data .card + .card, .data .hv-month + * { margin-top: 0; }
