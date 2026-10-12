@@ -48,8 +48,9 @@ Startkriterium gilt als erfüllt: 16 Einheiten seit Juli, App wird ausschließli
 - [x] Deployment auf Ploi (blank-apps, Postgres) — https://calisthenics.apps.blank-studio.de, Anleitung in README.md
 - [x] Offline-Client (IndexedDB) mit Trainingsansicht: Fokus auf aktive Übung, Satz-Editor, Überspringen/Pausieren/Freischalten, Pausen- und Session-Timer, Wake Lock, Warm-up/Cool-down mit Cardio, v1-Import im Browser, Service Worker — lokal mit echter Historie und ohne Server getestet
 - [x] UI-Konzept „Kreide & Volt“ (Canvas), Schritt 1 umgesetzt: Fokus-Satz mit Skizze, Kernpunkten und Muskeln, Pausen-Screen mit Ring, Barlow, Lucide, Akzent Volt
-- [ ] UI Schritt 2: Startseite „Heute“ (Wochenleiste, Skill-Fortschritt) und Abschluss-Screen mit Bestwerten
-- [ ] UI Schritt 3: Skill-Tree
+- [x] UI Schritt 2: Startseite „Heute“ (Wochenleiste, Serie, Dauer-Schätzung, nächste Skills) und Abschluss-Screen mit Bestwerten und Vergleich
+- [x] UI Schritt 3: Skill-Tree als eigener Tab (Leitern, Stand zur Freischaltung, Freischalten)
+- [ ] Native iOS-App (Capacitor): Benachrichtigung am Pausenende, Haptik, Apple Health
 - [x] Notizen pro Satz und zur Einheit (sichtbar beim nächsten Mal und im Verlauf); UI-Update: Tab-Leiste unten, kompakte Workout-Wahl, eigenes Icon-Set
 - [x] Verlauf: Kalender mit Tagesansicht und Cardio für beliebige Tage, Fortschritt pro Übung über alle Stufen
 - [x] Sync zwischen Client und Payload: Postausgang, ein Endpunkt, jüngere Änderung gewinnt, Katalog kommt vom Server

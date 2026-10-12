@@ -331,3 +331,133 @@ export function upNext(slots: SlotView[], current: ProgressionId | undefined): {
   const next = slots.find(s => s.state === 'open' && nextSetNo(s))
   return next ? { slot: next, setNo: nextSetNo(next)! } : null
 }
+
+/* ── Startseite „Heute“ ──────────────────────────────────────────────────── */
+
+const addDays = (date: string, n: number) => {
+  const d = new Date(`${date}T12:00`); d.setDate(d.getDate() + n); return localDate(d)
+}
+/** Montag der Woche, in der `date` liegt */
+export const weekStart = (date: string) => addDays(date, -((new Date(`${date}T12:00`).getDay() + 6) % 7))
+
+export interface WeekDay { date: string; label: string; trained: boolean; cardio: boolean; today: boolean; planned: boolean }
+/** die laufende Woche Mo–So: trainiert, Cardio, heute, laut Wochenplan vorgesehen */
+export function weekStrip(ix: Index, sessions: Session[], activities: Activity[], today: string): WeekDay[] {
+  const marks = calendarMarks(sessions, activities), mon = weekStart(today)
+  return WEEK_ORDER.map((wd, i) => {
+    const date = addDays(mon, i)
+    return { date, label: WEEKDAY_SHORT[wd], trained: marks.trained.has(date), cardio: marks.cardio.has(date),
+      today: date === today, planned: !!ix.catalog.weekplan[wd] }
+  })
+}
+
+/** Wochen in Serie mit mindestens einer Einheit; die laufende Woche zählt mit, bricht die Serie aber nicht */
+export function streakWeeks(sessions: Session[], today: string): number {
+  const weeks = new Set(sessions.filter(isTrained).map(s => weekStart(s.date)))
+  let w = weekStart(today), n = 0
+  if (!weeks.has(w)) w = addDays(w, -7)
+  while (weeks.has(w)) { n++; w = addDays(w, -7) }
+  return n
+}
+
+/** typische Dauer eines Workouts in Minuten (Median der letzten fünf mit Dauer), sonst null */
+export function estimateMinutes(sessions: Session[], workout: WorkoutId): number | null {
+  const d = sessions.filter(s => s.workout === workout && (s.durationSec ?? 0) > 600)
+    .sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 5).map(s => s.durationSec!).sort((a, b) => a - b)
+  return d.length ? Math.round(d[Math.floor(d.length / 2)] / 60 / 5) * 5 : null
+}
+
+/** Wie nah die nächste Stufe ist (0–1): Anteil der Freischalt-Schwelle über die letzten zwei vollständigen
+    Einheiten, fehlende Einheiten zählen als 0. null = Stufe schaltet nie automatisch frei. */
+export function unlockReadiness(sessions: Session[], exercise: ExerciseId, target: Target): number | null {
+  if (target.unlockAt == null) return null
+  const complete = [...sessions].sort((a, b) => (a.date < b.date ? -1 : 1))
+    .map(s => setsOf(s, exercise)).filter(sets => sets.length >= target.sets).slice(-2)
+  const share = (sets: SetLog[]) => sets.slice(0, target.sets).reduce((n, x) => n + Math.min(1, x.value / target.unlockAt!), 0) / target.sets
+  return (complete.reduce((n, sets) => n + share(sets), 0)) / 2
+}
+
+/** Skills mit dem kürzesten Weg zur nächsten Stufe – Skill-Block zuerst */
+export function nextSkills(ix: Index, user: UserState, sessions: Session[], n = 2) {
+  const seen = new Set<ProgressionId>()
+  return ix.catalog.workouts.flatMap(w => w.slots).filter(sl => !seen.has(sl.progression) && seen.add(sl.progression))
+    .filter(sl => !user.paused.includes(sl.progression))
+    .map(sl => {
+      const step = currentStep(ix, user, sl.progression)
+      return { pid: sl.progression, skill: sl.block === 'skill', step, readiness: step.next ? unlockReadiness(sessions, step.exercise.id, step.target) : null }
+    })
+    .filter((p): p is typeof p & { readiness: number } => p.readiness !== null)
+    .sort((a, b) => Number(b.skill) - Number(a.skill) || b.readiness - a.readiness).slice(0, n)
+}
+
+/* ── Abschluss ───────────────────────────────────────────────────────────── */
+
+export interface SessionSummary {
+  durationSec: number
+  sets: number
+  reps: number                      // Summe der Wiederholungen (Halteübungen nicht mitgezählt)
+  repsDelta: number | null          // zur letzten Einheit desselben Workouts
+  records: { exercise: Exercise; kind: 'reps' | 'weight'; value: number; before: number }[]
+  compare: { exercise: Exercise; before: number; now: number }[]
+}
+
+/** Zusammenfassung einer Einheit: Kennzahlen, neue Bestwerte gegenüber allen früheren Einheiten,
+    Vergleich je Übung mit deren letzter Einheit */
+export function sessionSummary(ix: Index, sessions: Session[], s: Session): SessionSummary {
+  const earlier = sessions.filter(x => x.date < s.date)
+  const repsOf = (x: Session) => x.sets.reduce((n, set) => n + (ix.exercises.get(set.exercise)?.unit === 'reps' ? set.value : 0), 0)
+  const prev = earlier.filter(x => x.workout === s.workout && x.sets.length).sort((a, b) => (a.date < b.date ? 1 : -1))[0]
+  const rows = sessionExercises(ix, s)
+  const records: SessionSummary['records'] = []
+  const compare: SessionSummary['compare'] = []
+  for (const { exercise, sets } of rows) {
+    const before = earlier.flatMap(x => setsOf(x, exercise.id))
+    if (before.length) {
+      const best = Math.max(...sets.map(x => x.value)), bestBefore = Math.max(...before.map(x => x.value))
+      if (best > bestBefore) records.push({ exercise, kind: 'reps', value: best, before: bestBefore })
+      const kg = Math.max(0, ...sets.map(x => x.weightKg ?? 0)), kgBefore = Math.max(0, ...before.map(x => x.weightKg ?? 0))
+      if (kg > kgBefore) records.push({ exercise, kind: 'weight', value: kg, before: kgBefore })
+    }
+    const last = lastPerformance(sessions, exercise.id, s.date)
+    if (last) compare.push({ exercise, before: last.sets.reduce((n, x) => n + x.value, 0), now: sets.reduce((n, x) => n + x.value, 0) })
+  }
+  return { durationSec: s.durationSec ?? 0, sets: s.sets.length, reps: repsOf(s), repsDelta: prev ? repsOf(s) - repsOf(prev) : null, records, compare }
+}
+
+/* ── Skill-Tree ──────────────────────────────────────────────────────────── */
+
+/** Stand zur Freischaltung: wie viele der nötigen 2 Einheiten am Stück geschafft sind
+    und wie viele Sätze in der letzten vollständigen Einheit noch unter der Schwelle lagen */
+export function unlockProgress(sessions: Session[], exercise: ExerciseId, target: Target) {
+  if (target.unlockAt == null) return null
+  const complete = [...sessions].sort((a, b) => (a.date < b.date ? -1 : 1))
+    .map(s => setsOf(s, exercise)).filter(sets => sets.length >= target.sets)
+  const ok = (sets: SetLog[]) => sets.slice(0, target.sets).every(x => x.value >= target.unlockAt!)
+  const last = complete.at(-1), prev = complete.at(-2)
+  const done = last && ok(last) ? (prev && ok(prev) ? 2 : 1) : 0
+  const missing = last ? last.slice(0, target.sets).filter(x => x.value < target.unlockAt!).length : target.sets
+  return { done, needed: 2, missing, sessions: complete.length }
+}
+
+export interface SkillNode { exercise: Exercise; target: Target; state: 'done' | 'current' | 'locked'; sessions: number }
+export interface SkillPath { pid: ProgressionId; workout: Workout; block: string; step: Step; nodes: SkillNode[]; paused: boolean
+  progress: ReturnType<typeof unlockProgress>; readiness: number | null }
+
+/** alle Progressionen als Leitern, in Wochen- und Trainingsreihenfolge */
+export function skillTree(ix: Index, user: UserState, sessions: Session[]): SkillPath[] {
+  const count = (id: ExerciseId) => sessions.filter(s => s.sets.some(x => x.exercise === id)).length
+  const seen = new Set<ProgressionId>()
+  return workoutsInWeekOrder(ix).flatMap(w => w.slots.filter(sl => !seen.has(sl.progression) && seen.add(sl.progression)).map(sl => {
+    const step = currentStep(ix, user, sl.progression)
+    const p = ix.progressions.get(sl.progression)!
+    return {
+      pid: sl.progression, workout: w, block: sl.block, step, paused: user.paused.includes(sl.progression),
+      nodes: p.steps.map((st, i) => ({
+        exercise: ix.exercises.get(st.exercise)!, target: st.target, sessions: count(st.exercise),
+        state: i < step.index ? 'done' as const : i === step.index ? 'current' as const : 'locked' as const,
+      })),
+      progress: step.next ? unlockProgress(sessions, step.exercise.id, step.target) : null,
+      readiness: step.next ? unlockReadiness(sessions, step.exercise.id, step.target) : null,
+    }
+  }))
+}

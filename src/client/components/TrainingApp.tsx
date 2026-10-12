@@ -10,12 +10,15 @@ import { Icon, type IconName } from './Icon'
 import { HistoryView } from './HistoryView'
 import { ActivitySheet, ExerciseSheet, SetSheet } from './Sheets'
 import { FocusView } from './FocusView'
+import { HomeView } from './HomeView'
+import { SkillsView } from './SkillsView'
+import { SummaryOverlay } from './SummaryOverlay'
 import { RestOverlay } from './RestOverlay'
 import { WorkoutView } from './WorkoutView'
 
 type SheetState = { kind: 'set'; pid: string; setNo: number } | { kind: 'activity'; date: string } | { kind: 'options'; pid: string } | null
-type View = 'train' | 'history' | 'data'
-const VIEWS: [View, string, IconName][] = [['train', 'Training', 'training'], ['history', 'Verlauf', 'history'], ['data', 'Daten', 'data']]
+type View = 'train' | 'history' | 'skills' | 'data'
+const VIEWS: [View, string, IconName][] = [['train', 'Training', 'training'], ['history', 'Verlauf', 'history'], ['skills', 'Skills', 'skills'], ['data', 'Daten', 'data']]
 
 /** kleiner Punkt am „Daten“-Button: grün = abgeglichen, orange = läuft/wartet, rot = Fehler, grau = nicht angemeldet/offline */
 const syncDot = (s: Training['sync']) => !s.account ? '' : s.phase === 'error' ? 'err' : s.phase === 'syncing' || s.pending ? 'busy' : s.phase === 'offline' ? '' : 'on'
@@ -32,7 +35,9 @@ export function TrainingApp() {
   // sobald sich die Seitenhöhe ändert (Tab-Wechsel von lang nach kurz)
   const scroller = useRef<HTMLElement>(null)
   const toTop = () => scroller.current?.scrollTo(0, 0)
-  const [restView, setRestView] = useState<string | null>(null)   // Rückmeldung zum gespeicherten Satz, solange der Pausen-Screen offen ist
+  const [restView, setRestView] = useState<string | null>(null)
+  const [browse, setBrowse] = useState(false)                  // Übersicht ansehen, ohne zu starten
+  const [summaryId, setSummaryId] = useState<string | null>(null)   // Rückmeldung zum gespeicherten Satz, solange der Pausen-Screen offen ist
 
   // Nach einem Neustart mitten im Training direkt zurück in den Fokus
   useEffect(() => { if (t.loaded && t.active) setFocusMode(true) }, [t.loaded]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -60,7 +65,16 @@ export function TrainingApp() {
   const focusSlot = slots.find(s => s.pid === focus)
 
   const inFocus = view === 'train' && focusMode
-  const showBar = !inFocus && (view === 'train' || !!t.active || rest.running || rest.ringing)
+  const started = !!t.active || (t.todaySession?.sets.length ?? 0) > 0
+  const showHome = view === 'train' && !focusMode && !started && !browse
+  const showBar = !inFocus && ((view === 'train' && !showHome) || !!t.active || rest.running || rest.ringing)
+  const summarySession = summaryId ? t.sessions.find(s => s.id === summaryId) : undefined
+  const start = () => { t.startSession(); setBrowse(false); openFocus(undefined) }
+  const finish = () => {
+    if (!t.active) return
+    const id = L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout)
+    t.endSession(); rest.stop(); setRestView(null); setFocusMode(false); setSummaryId(id)
+  }
   const openFocus = (pid?: string) => { setPicked(pid); setFocusMode(true); toTop() }
 
   if (!t.loaded) return <div className="shell"><main className="app loading" aria-busy="true" /></div>
@@ -70,9 +84,14 @@ export function TrainingApp() {
     <main ref={scroller} className={`app${inFocus ? ' focus-mode' : ''}`}>
       <h1 className="sr-only">Calisthenics</h1>
       {view === 'data' && <DataView t={t} />}
+      {view === 'skills' && <SkillsView t={t} toTop={toTop} />}
       {view === 'history' && <HistoryView t={t} openActivity={date => setSheet({ kind: 'activity', date })} />}
-      {view === 'train' && !focusMode && (
+      {showHome && (
+        <HomeView t={t} slots={slots} onStart={start} onBrowse={() => { setBrowse(true); toTop() }} onSkills={() => { setView('skills'); toTop() }} />
+      )}
+      {view === 'train' && !focusMode && !showHome && (
         <WorkoutView t={t} slots={slots} focus={focus} setFocus={setPicked} openFocus={openFocus}
+          onHome={!started ? () => { setBrowse(false); toTop() } : undefined}
           openActivity={() => setSheet({ kind: 'activity', date: t.today })} />
       )}
       {inFocus && (
@@ -81,6 +100,7 @@ export function TrainingApp() {
           onPick={pid => { setPicked(pid); toTop() }}
           openSet={(pid, setNo) => setSheet({ kind: 'set', pid, setNo })}
           openOptions={pid => setSheet({ kind: 'options', pid })}
+          onFinish={finish}
           onSaved={(s, setNo, summary) => {
             // letzter geplanter Satz → nach der Pause geht es mit der nächsten offenen Übung weiter
             if (L.nextSetNo({ sets: [...s.sets, { exercise: s.step.exercise.id, progression: s.pid, set: setNo, value: 0 }], planned: s.planned }) === null) setPicked(undefined)
@@ -95,7 +115,7 @@ export function TrainingApp() {
     </main>
 
       {!inFocus && <div className="dock">
-        {showBar && <BottomBar t={t} rest={rest} onStart={() => { t.startSession(); openFocus(undefined) }} />}
+        {showBar && <BottomBar t={t} rest={rest} onStart={start} onStop={finish} />}
         <nav className="tabs" aria-label="Bereiche">
           {VIEWS.map(([k, l, icon]) => (
             <button key={k} className={view === k ? 'on' : ''} aria-current={view === k ? 'page' : undefined}
@@ -121,6 +141,7 @@ export function TrainingApp() {
       )}
       {sheetSlot && sheet?.kind === 'options' && <ExerciseSheet t={t} slot={sheetSlot} onClose={() => setSheet(null)} />}
       {sheet?.kind === 'activity' && <ActivitySheet t={t} date={sheet.date} onClose={() => setSheet(null)} />}
+      {summarySession && <SummaryOverlay t={t} session={summarySession} onClose={() => { setSummaryId(null); toTop() }} />}
     </div>
   )
 }

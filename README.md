@@ -41,12 +41,13 @@ npm run import:v1 -- <v1-export.json> <email>   # Trainingshistorie übernehmen
 
 ## Trainingsansicht
 
-Unter `/`. Training im **Fokus-Modus**: eine Übung pro Screen mit Kreide-Skizze, drei
+Unter `/`. Vor dem Training die Startseite **Heute** (Woche, Serie, Workout des Tages,
+nächste Skills), nach „Training beenden“ ein **Abschluss** mit Bestwerten. Training im **Fokus-Modus**: eine Übung pro Screen mit Kreide-Skizze, drei
 Kernpunkten, Muskeln und großem Zähler; nach dem Speichern ein Pausen-Screen mit Ring.
-Kernpunkte und Muskeln stehen in `src/seed/coaching.json`. Drei Bereiche über die Tab-Leiste unten (darüber die Session-Leiste mit
+Kernpunkte und Muskeln stehen in `src/seed/coaching.json`. Vier Bereiche über die Tab-Leiste unten (darüber die Session-Leiste mit
 Timer, solange trainiert wird): **Training** (Fokus auf die aktive Übung; Notizen
 pro Satz im Satz-Editor und zur ganzen Einheit, die Satz-Notizen vom letzten Mal
-stehen an der Übung), **Verlauf**
+stehen an der Übung), **Verlauf**, **Skills** (Skill-Tree)
 (Kalender mit Tagesansicht und Cardio-Erfassung für beliebige Tage; Fortschritt pro
 Übung über alle Stufen mit Summe, Delta zur vorigen Einheit derselben Stufe und
 Balkendiagramm) und **Daten**. Die App liest und schreibt **nur lokal** (IndexedDB) und gleicht im

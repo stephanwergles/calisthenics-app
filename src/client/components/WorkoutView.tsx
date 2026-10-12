@@ -11,10 +11,11 @@ interface Props {
   focus: string | undefined
   setFocus: (pid: string | undefined) => void
   openFocus: (pid: string) => void
+  onHome?: () => void
   openActivity: () => void
 }
 
-export function WorkoutView({ t, slots, focus, setFocus, openFocus, openActivity }: Props) {
+export function WorkoutView({ t, slots, focus, setFocus, openFocus, onHome, openActivity }: Props) {
   const w = t.ix.workouts.get(t.workout)!
   const counted = slots.filter(s => s.state !== 'skipped' && s.state !== 'paused')
   const planned = counted.reduce((n, s) => n + s.planned, 0)
@@ -29,6 +30,7 @@ export function WorkoutView({ t, slots, focus, setFocus, openFocus, openActivity
 
   return (
     <>
+      {onHome && <button className="btn btn-ghost btn-sm back-home" onClick={onHome}><Icon name="left" size={16} /> Heute</button>}
       {compact ? (
         <button className="wsel" onClick={() => setPickOpen(true)} aria-expanded={false}>
           <span className="display">{w.name}</span><span className="wsel-focus">{w.focus}</span>

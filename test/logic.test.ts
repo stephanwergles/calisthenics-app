@@ -191,3 +191,58 @@ test('Fokus: nächster Satz und was nach der Pause kommt', () => {
   const s2 = L.workoutSlots(ix, 'legs', { current: {}, paused: [] }, skipped, [skipped], '2026-10-12')
   assert.equal(L.upNext(s2, 'pistol')?.slot.pid, 'nordic', 'übersprungene fallen weg')
 })
+
+test('Heute: Wochenleiste, Serie, Dauer, Bereitschaft', () => {
+  const sessions = [
+    { ...sess('2026-09-28', 'legs', [['pistol-squat-assisted', [6]]]), durationSec: 4500 },
+    { ...sess('2026-10-05', 'legs', [['pistol-squat-assisted', [6]]]), durationSec: 4800 },
+    { ...sess('2026-10-12', 'legs', [['pistol-squat-assisted', [6]]]), durationSec: 3900 },
+  ]
+  const week = L.weekStrip(ix, sessions, [{ id: 'a', date: '2026-10-14', kind: 'run' }], '2026-10-13')
+  assert.deepEqual(week.map(d => d.label), ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'])
+  assert.equal(week[0].date, '2026-10-12')
+  assert.ok(week[0].trained && week[1].today && week[2].cardio && week[2].planned && !week[1].planned)
+  assert.equal(L.streakWeeks(sessions, '2026-10-13'), 3)
+  assert.equal(L.streakWeeks(sessions.slice(0, 2), '2026-10-13'), 2, 'laufende Woche ohne Training bricht nicht')
+  assert.equal(L.streakWeeks(sessions.slice(0, 1), '2026-10-13'), 0, 'eine Woche Lücke bricht')
+  assert.equal(L.estimateMinutes(sessions, 'legs'), 75)
+  assert.equal(L.estimateMinutes(sessions, 'push'), null)
+
+  const target = ix.progressions.get('muscle-up-pull')!.steps[1].target   // Chest-to-Bar, 5 × 3, Schwelle 5
+  const cb = (d: string, v: number[]) => sess(d, 'pull', [['chest-to-bar-pull-up', v]])
+  assert.equal(L.unlockReadiness([], 'chest-to-bar-pull-up', target), 0)
+  assert.equal(L.unlockReadiness([cb('2026-10-01', [5, 5, 5, 5, 5]), cb('2026-10-04', [5, 5, 5, 5, 5])], 'chest-to-bar-pull-up', target), 1)
+  assert.ok(Math.abs(L.unlockReadiness([cb('2026-10-04', [5, 5, 5, 5, 5])], 'chest-to-bar-pull-up', target)! - 0.5) < 1e-9)
+  const skills = L.nextSkills(ix, state, [cb('2026-10-04', [5, 5, 5, 5, 5])])
+  assert.equal(skills[0].pid, 'muscle-up-pull', 'Skill mit dem meisten Fortschritt zuerst')
+})
+
+test('Abschluss: Kennzahlen, Bestwerte, Vergleich', () => {
+  const before = sess('2026-09-30', 'pull', [['straight-bar-dip', [12, 12, 10]], ['pull-up', [5, 5, 5]]])
+  const now = { ...sess('2026-10-07', 'pull', [['straight-bar-dip', [14, 12, 12]], ['pull-up', [5, 5, 4]]]), durationSec: 6300 }
+  now.sets = now.sets.map(x => (x.exercise === 'pull-up' ? { ...x, weightKg: 5 } : x))
+  const sum = L.sessionSummary(ix, [before, now], now)
+  assert.equal(sum.sets, 6)
+  assert.equal(sum.reps, 52)
+  assert.equal(sum.repsDelta, 3)
+  assert.deepEqual(sum.records.map(r => [r.exercise.id, r.kind, r.value, r.before]), [['straight-bar-dip', 'reps', 14, 12], ['pull-up', 'weight', 5, 0]])
+  assert.deepEqual(sum.compare.map(c => [c.exercise.id, c.before, c.now]), [['straight-bar-dip', 34, 38], ['pull-up', 15, 14]])
+  assert.deepEqual(L.sessionSummary(ix, [now], now).records, [], 'ohne Vorgeschichte keine Bestwerte')
+})
+
+test('Skill-Tree: Leitern, Stand zur Freischaltung', () => {
+  const target = ix.progressions.get('muscle-up-pull')!.steps[1].target
+  const cb = (d: string, v: number[]) => sess(d, 'pull', [['chest-to-bar-pull-up', v]])
+  assert.deepEqual(L.unlockProgress([], 'chest-to-bar-pull-up', target), { done: 0, needed: 2, missing: 5, sessions: 0 })
+  assert.deepEqual(L.unlockProgress([cb('2026-10-01', [3, 3, 3, 3, 3]), cb('2026-10-04', [5, 5, 5, 5, 5])], 'chest-to-bar-pull-up', target),
+    { done: 1, needed: 2, missing: 0, sessions: 2 })
+  assert.equal(L.unlockProgress([cb('2026-10-01', [5, 5, 5, 5, 5]), cb('2026-10-04', [5, 5, 5, 5, 4])], 'chest-to-bar-pull-up', target)!.missing, 1)
+
+  const tree = L.skillTree(ix, state, [cb('2026-10-04', [5, 5, 5, 5, 5])])
+  assert.equal(tree.length, 24)
+  assert.equal(tree[0].workout.id, 'legs', 'Wochenreihenfolge: Mo zuerst')
+  const mu = tree.find(p => p.pid === 'muscle-up-pull')!
+  assert.deepEqual(mu.nodes.map(n => n.state), ['done', 'current', 'locked'])
+  assert.equal(mu.nodes[1].sessions, 1)
+  assert.equal(mu.progress?.done, 1)
+})

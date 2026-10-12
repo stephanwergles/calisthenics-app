@@ -7,7 +7,7 @@ import { Icon } from './Icon'
 
 /** Eine Zeile statt zwei: ohne Session nur „Workout starten“, mit Session links
     Dauer + Workout (reine Anzeige), dann Pausen-Timer bzw. drei Schnellstarts, rechts außen Beenden */
-export function BottomBar({ t, rest, onStart }: { t: Training; rest: RestTimer; onStart: () => void }) {
+export function BottomBar({ t, rest, onStart, onStop }: { t: Training; rest: RestTimer; onStart: () => void; onStop: () => void }) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
     if (!t.active) return
@@ -35,7 +35,7 @@ export function BottomBar({ t, rest, onStart }: { t: Training; rest: RestTimer; 
           {rest.running || rest.ringing
             ? <RestButton rest={rest} />
             : <div className="presets">{[90, 120, 180].map(s => <button key={s} className="btn btn-secondary btn-sm" onClick={() => rest.start(s)}>{L.fmtClock(s)}</button>)}</div>}
-          <button className="btn btn-ghost btn-icon stop" onClick={() => { if (confirm('Workout beenden und Zeit speichern?')) t.endSession() }} aria-label="Workout beenden">
+          <button className="btn btn-ghost btn-icon stop" onClick={() => { if (confirm('Workout beenden und Zeit speichern?')) onStop() }} aria-label="Workout beenden">
             <Icon name="stop" size={16} />
           </button>
         </>

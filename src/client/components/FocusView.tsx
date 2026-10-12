@@ -20,9 +20,10 @@ interface Props {
   openSet: (pid: string, setNo: number) => void
   openOptions: (pid: string) => void
   onSaved: (slot: L.SlotView, setNo: number, summary: string) => void
+  onFinish: () => void
 }
 
-export function FocusView({ t, rest, slots, slot, onBack, onPick, openSet, openOptions, onSaved }: Props) {
+export function FocusView({ t, rest, slots, slot, onBack, onPick, openSet, openOptions, onSaved, onFinish }: Props) {
   const now = useNow(!!t.active)
   const index = slot ? slots.findIndex(s => s.pid === slot.pid) : -1
 
@@ -42,7 +43,7 @@ export function FocusView({ t, rest, slots, slot, onBack, onPick, openSet, openO
           : <span className="f-clock num">{t.active ? L.fmtDuration(Math.max(0, now - t.active.start) / 1000) : ''}</span>}
       </header>
 
-      {!slot ? <AllDone onBack={onBack} /> : (
+      {!slot ? <AllDone onBack={onBack} onFinish={t.active ? onFinish : undefined} /> : (
         <Exercise key={slot.pid} t={t} rest={rest} slot={slot} index={index} total={slots.length}
           openSet={openSet} openOptions={openOptions} onSaved={onSaved} />
       )}
@@ -50,12 +51,13 @@ export function FocusView({ t, rest, slots, slot, onBack, onPick, openSet, openO
   )
 }
 
-function AllDone({ onBack }: { onBack: () => void }) {
+function AllDone({ onBack, onFinish }: { onBack: () => void; onFinish?: () => void }) {
   return (
     <div className="f-done">
       <span className="display f-done-title">Stark<span className="accent">.</span></span>
       <p>Alle Übungen erledigt oder übersprungen. In der Übersicht warten Cool-down und deine Notiz zur Einheit.</p>
-      <button className="btn btn-primary btn-block f-cta" onClick={onBack}><Icon name="list" /> Zur Übersicht</button>
+      {onFinish && <button className="btn btn-primary btn-block f-cta" onClick={onFinish}><Icon name="check" size={20} /> Training beenden</button>}
+      <button className={`btn ${onFinish ? 'btn-secondary' : 'btn-primary f-cta'} btn-block`} onClick={onBack}><Icon name="list" /> Zur Übersicht</button>
     </div>
   )
 }
