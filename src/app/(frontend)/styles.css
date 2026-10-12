@@ -590,3 +590,12 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .btn-primary { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 6px 18px rgba(212, 255, 58, .18); }
 .seg button.on { background: rgba(212, 255, 58, .14); box-shadow: inset 0 1px 0 rgba(212, 255, 58, .22); }
 .f-round:active { background: rgba(255, 255, 255, .14); }
+
+.h-skill.ready { border-color: rgba(212, 255, 58, .45); }
+.h-skill .ring-check { color: var(--accent); }
+.h-skill > .btn { flex: none; margin-left: auto; }
+
+/* iOS-App mit nativer Tab-Leiste: deren Höhe steckt schon im Safe-Area-Abstand */
+.shell.native .app { padding-bottom: calc(env(safe-area-inset-bottom) + 28px); }
+.shell.native .app.with-bar { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 28px); }
+.shell.native .app.focus-mode { padding-bottom: calc(env(safe-area-inset-bottom) + 14px); }

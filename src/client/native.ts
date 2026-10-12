@@ -5,7 +5,7 @@
      angemeldet per Token statt Cookie (anderer Ursprung)
    - Pausen-Ende als lokale Benachrichtigung, auch bei gesperrtem Display
    - Haptik beim Speichern und am Pausenende, Display bleibt während der Session an */
-import { Capacitor } from '@capacitor/core'
+import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core'
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { Preferences } from '@capacitor/preferences'
@@ -62,4 +62,30 @@ export async function nativeKeepAwake(on: boolean) {
   if (!isNative()) return false
   try { await (on ? KeepAwake.keepAwake() : KeepAwake.allowSleep()) } catch { /* egal */ }
   return true
+}
+
+/* ── Native Tab-Leiste (ios/App/App/LeverTabBar.swift) ── */
+interface LeverTabBarPlugin {
+  configure(o: { items: { id: string; title: string; symbol: string }[]; selected: string }): Promise<void>
+  select(o: { id: string }): Promise<void>
+  setHidden(o: { hidden: boolean }): Promise<void>
+  setBadge(o: { id: string; value: string | null; tone?: 'volt' | 'error' }): Promise<void>
+  addListener(event: 'select', cb: (d: { id: string }) => void): Promise<PluginListenerHandle>
+}
+const TabBar = registerPlugin<LeverTabBarPlugin>('LeverTabBar')
+
+export const nativeTabs = {
+  async configure(items: { id: string; title: string; symbol: string }[], selected: string, onSelect: (id: string) => void) {
+    if (!isNative()) return false
+    try {
+      await TabBar.addListener('select', d => onSelect(d.id))
+      await TabBar.configure({ items, selected })
+      return true
+    } catch { return false }
+  },
+  select: (id: string) => { if (isNative()) void TabBar.select({ id }).catch(() => undefined) },
+  hide: (hidden: boolean) => { if (isNative()) void TabBar.setHidden({ hidden }).catch(() => undefined) },
+  badge: (id: string, value: string | null, tone?: 'volt' | 'error') => {
+    if (isNative()) void TabBar.setBadge({ id, value, tone }).catch(() => undefined)
+  },
 }

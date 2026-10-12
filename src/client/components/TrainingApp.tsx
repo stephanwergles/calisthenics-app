@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as L from '../logic'
 import { keepAwake } from '../signals'
-import { askNotifications, isNative } from '../native'
+import { askNotifications, isNative, nativeTabs } from '../native'
 import { useTraining, type Training } from '../useTraining'
 import { useRestTimer } from '../useRestTimer'
 import { BottomBar } from './BottomBar'
@@ -20,6 +20,8 @@ import { WorkoutView } from './WorkoutView'
 type SheetState = { kind: 'set'; pid: string; setNo: number } | { kind: 'activity'; date: string } | { kind: 'options'; pid: string } | null
 type View = 'train' | 'history' | 'skills' | 'data'
 const VIEWS: [View, string, IconName][] = [['train', 'Training', 'training'], ['history', 'Verlauf', 'history'], ['skills', 'Skills', 'skills'], ['data', 'Daten', 'data']]
+/** SF Symbols für die native Tab-Leiste der iOS-App */
+const SYMBOLS: Record<View, string> = { train: 'figure.strengthtraining.traditional', history: 'calendar', skills: 'point.3.connected.trianglepath.dotted', data: 'icloud' }
 
 /** kleiner Punkt am „Daten“-Button: grün = abgeglichen, orange = läuft/wartet, rot = Fehler, grau = nicht angemeldet/offline */
 const syncDot = (s: Training['sync']) => !s.account ? '' : s.phase === 'error' ? 'err' : s.phase === 'syncing' || s.pending ? 'busy' : s.phase === 'offline' ? '' : 'on'
@@ -70,6 +72,7 @@ export function TrainingApp() {
   const started = !!t.active || (t.todaySession?.sets.length ?? 0) > 0
   // „Heute“ ist immer der Einstieg in den Training-Tab; die Übersicht nur auf Wunsch
   const showHome = view === 'train' && !focusMode && !browse
+  const hideNativeTabs = inFocus || !!sheet || !!summaryId || restView !== null
   const showBar = !inFocus && ((view === 'train' && !showHome) || !!t.active || rest.running || rest.ringing)
   const summarySession = summaryId ? t.sessions.find(s => s.id === summaryId) : undefined
   const start = () => { t.startSession(); void askNotifications(); setBrowse(false); openFocus(undefined) }
@@ -81,10 +84,26 @@ export function TrainingApp() {
   }
   const openFocus = (pid?: string) => { setPicked(pid); setFocusMode(true); toTop() }
 
+  // iOS-App: native Liquid-Glass-Tab-Leiste statt der eigenen
+  const [nativeShell, setNativeShell] = useState(false)
+  const goTo = useRef<(k: View) => void>(() => undefined)
+  goTo.current = (k: View) => { setView(k); if (k === 'train') setBrowse(false); toTop() }
+  useEffect(() => {
+    if (!t.loaded || !isNative()) return
+    void nativeTabs.configure(VIEWS.map(([id, title]) => ({ id, title, symbol: SYMBOLS[id] })), view, id => goTo.current(id as View))
+      .then(ok => setNativeShell(ok))
+  }, [t.loaded]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (nativeShell) nativeTabs.select(view) }, [nativeShell, view])
+  useEffect(() => { if (nativeShell) nativeTabs.hide(hideNativeTabs) }, [nativeShell, hideNativeTabs])
+  const dot = syncDot(t.sync)
+  useEffect(() => {
+    if (nativeShell) nativeTabs.badge('data', dot === 'err' ? '!' : dot === 'busy' ? '' : null, dot === 'err' ? 'error' : 'volt')
+  }, [nativeShell, dot])
+
   if (!t.loaded) return <div className="shell"><main className="app loading" aria-busy="true" /></div>
 
   return (
-    <div className="shell">
+    <div className={`shell${nativeShell ? ' native' : ''}`}>
     <main ref={scroller} className={`app${inFocus ? ' focus-mode' : showBar ? ' with-bar' : ''}`}>
       <h1 className="sr-only">Lever</h1>
       {view === 'data' && <DataView t={t} />}
@@ -122,7 +141,7 @@ export function TrainingApp() {
 
       {!inFocus && <div className="dock">
         {showBar && <BottomBar t={t} rest={rest} onStart={start} onStop={finish} />}
-        <nav className="tabs" aria-label="Bereiche">
+        {!nativeShell && <nav className="tabs" aria-label="Bereiche">
           {VIEWS.map(([k, l, icon]) => (
             <button key={k} className={view === k ? 'on' : ''} aria-current={view === k ? 'page' : undefined}
               onClick={() => { setView(k); if (k === 'train') setBrowse(false); toTop() }}>
@@ -133,7 +152,7 @@ export function TrainingApp() {
               {l}
             </button>
           ))}
-        </nav>
+        </nav>}
       </div>}
 
       {sheetSlot && sheet?.kind === 'set' && (
