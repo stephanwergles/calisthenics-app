@@ -37,3 +37,6 @@ art/out/
 
 # Python
 __pycache__/
+
+# erzeugt von scripts/clips-manifest.mjs (vor dev/build)
+src/seed/clips.json

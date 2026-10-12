@@ -5,7 +5,7 @@
   "description": "Calisthenics-Trainings-App: v1 = index.html (GitHub Pages), v2 = Next.js + Payload",
   "type": "module",
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "dev": "node scripts/clips-manifest.mjs && cross-env NODE_OPTIONS=--no-deprecation next dev",
     "build": "node scripts/clips-manifest.mjs && cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=4096\" next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
