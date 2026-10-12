@@ -146,8 +146,6 @@ export function ExerciseSheet({ t, slot, onClose }: { t: Training; slot: L.SlotV
       <div className="sheet-grid">
         {step.prev && <button className="btn btn-secondary" onClick={() => setStep(step.prev!.id)}><Icon name="left" /> {step.prev.name}</button>}
         {step.next && <button className="btn btn-outline" onClick={() => setStep(step.next!.id)}>{step.next.name} <Icon name="right" /></button>}
-        <button className="btn btn-secondary" disabled={slot.planned <= 1} onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned - 1))}><Icon name="minus" /> Satz weniger</button>
-        <button className="btn btn-secondary" onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned + 1))}><Icon name="plus" /> Satz mehr</button>
         {slot.state === 'skipped'
           ? <button className="btn btn-ghost" onClick={() => { t.updateToday(x => L.withSkip(x, ex.id, false)); onClose() }}><Icon name="undo" /> Doch machen</button>
           : <button className="btn btn-ghost" onClick={() => { t.updateToday(x => L.withSkip(x, ex.id, true)); onClose() }}><Icon name="skip" /> Heute überspringen</button>}
@@ -167,8 +165,6 @@ export function exerciseSheetSpec(t: Training, slot: L.SlotView): { spec: SheetS
   if (ex.media.videoQuery) acts.push({ id: 'video', title: 'Tutorial auf YouTube', symbol: 'play.rectangle', run: () => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.media.videoQuery!)}`, '_blank') })
   if (step.next) acts.push({ id: 'next', title: `Weiter: ${step.next.name}`, symbol: 'arrow.up.right', style: 'prominent', run: () => setStep(step.next!.id) })
   if (step.prev) acts.push({ id: 'prev', title: `Zurück: ${step.prev.name}`, symbol: 'arrow.down.left', run: () => setStep(step.prev!.id) })
-  acts.push({ id: 'more', title: 'Satz mehr', symbol: 'plus', run: () => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned + 1)) })
-  if (slot.planned > 1) acts.push({ id: 'less', title: 'Satz weniger', symbol: 'minus', run: () => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned - 1)) })
   acts.push(slot.state === 'skipped'
     ? { id: 'unskip', title: 'Doch machen', symbol: 'arrow.uturn.backward', run: () => t.updateToday(x => L.withSkip(x, ex.id, false)) }
     : { id: 'skip', title: 'Heute überspringen', symbol: 'forward.end', run: () => t.updateToday(x => L.withSkip(x, ex.id, true)) })

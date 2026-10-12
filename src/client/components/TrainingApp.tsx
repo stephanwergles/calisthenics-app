@@ -129,7 +129,7 @@ export function TrainingApp() {
 
   return (
     <div className={`shell${nativeShell ? ' native' : ''}`}>
-    <main ref={scroller} className={`app${inFocus ? ' focus-mode' : showBar ? ' with-bar' : ''}`}>
+    <main ref={scroller} className={`app${inFocus ? ' focus-mode' : showBar ? ' with-bar' : ''}${nativeShell && overview && !t.active ? ' with-start' : ''}`}>
       <h1 className="sr-only">Lever</h1>
       {view === 'data' && <DataView t={t} />}
       {view === 'skills' && <SkillsView t={t} toTop={toTop} />}
@@ -165,7 +165,7 @@ export function TrainingApp() {
     </main>
 
       {!inFocus && <div className="dock">
-        {showBar && <BottomBar t={t} rest={rest} onStart={start} onStop={finish} />}
+        {showBar && <BottomBar t={t} rest={rest} onStart={start} onStop={finish} onOpen={() => { setView('train'); setBrowse(false); openFocus(undefined) }} />}
         {!nativeShell && <nav className="tabs" aria-label="Bereiche">
           {VIEWS.map(([k, l, icon]) => (
             <button key={k} className={view === k ? 'on' : ''} aria-current={view === k ? 'page' : undefined}

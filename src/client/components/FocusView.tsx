@@ -1,7 +1,7 @@
 'use client'
 /* Fokus-Satz: eine Übung füllt den Screen – Skizze, Kernpunkte, riesiger Zähler, ein Button.
-   Gedacht für den Daumen zwischen zwei Sätzen; alles Seltene (Technik-Text, Stufe wechseln,
-   Überspringen, Pausieren) liegt im Optionen-Sheet. */
+   Gedacht für den Daumen zwischen zwei Sätzen; die Erfassung liegt unten als angedocktes Sheet,
+   Satzzahl ±1 direkt an den Satz-Kacheln. Technik, Stufe, Überspringen, Pausieren: Technik-Sheet. */
 import { useState } from 'react'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
@@ -115,7 +115,7 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
 
       </div>
 
-      <div className="f-bottom">
+      <div className="f-bottom" role="region" aria-label="Satz erfassen">
         <div className="f-bars">
           {Array.from({ length: bars }, (_, i) => {
             const v = slot.sets.find(x => x.set === i + 1)
@@ -127,6 +127,9 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
               </button>
             )
           })}
+          {slot.planned > Math.max(1, ...slot.sets.map(x => x.set)) && (
+            <button className="f-bar add" aria-label="Einen Satz weniger" onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned - 1))}><Icon name="minus" size={14} /></button>
+          )}
           <button className="f-bar add" aria-label="Einen Satz mehr" onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned + 1))}><Icon name="plus" size={14} /></button>
         </div>
 

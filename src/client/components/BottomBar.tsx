@@ -5,9 +5,9 @@ import type { Training } from '../useTraining'
 import type { RestTimer } from '../useRestTimer'
 import { Icon } from './Icon'
 
-/** Eine Zeile statt zwei: ohne Session nur „Workout starten“, mit Session links
-    Dauer + Workout (reine Anzeige), dann Pausen-Timer bzw. drei Schnellstarts, rechts außen Beenden */
-export function BottomBar({ t, rest, onStart, onStop }: { t: Training; rest: RestTimer; onStart: () => void; onStop: () => void }) {
+/** Eine Zeile: ohne Session nur „Workout starten“. Mit Session links Dauer + Workout (Tipp öffnet
+    das Training), rechts außen Beenden. Während einer Pause stattdessen Timer + drei Längen zum Umschalten. */
+export function BottomBar({ t, rest, onStart, onStop, onOpen }: { t: Training; rest: RestTimer; onStart: () => void; onStop: () => void; onOpen: () => void }) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
     if (!t.active) return
@@ -25,16 +25,23 @@ export function BottomBar({ t, rest, onStart, onStop }: { t: Training; rest: Res
         </>
       ) : (
         <>
-          <div className="session">
-            <span className="dot" aria-hidden="true" />
-            <span className="session-info">
-              <span className="session-time">{L.fmtDuration(Math.max(0, now - t.active.start) / 1000)}</span>
-              <span className="session-name">{t.ix.workouts.get(t.active.workout)!.name}</span>
-            </span>
-          </div>
-          {rest.running || rest.ringing
-            ? <RestButton rest={rest} />
-            : <div className="presets">{[90, 120, 180].map(s => <button key={s} className="btn btn-secondary btn-sm" onClick={() => rest.start(s)}>{L.fmtClock(s)}</button>)}</div>}
+          {rest.running || rest.ringing ? (
+            <>
+              <RestButton rest={rest} />
+              {rest.running && <div className="presets">{[90, 120, 180].map(s => (
+                <button key={s} className={`btn btn-secondary btn-sm${rest.total === s ? ' on' : ''}`} aria-pressed={rest.total === s} onClick={() => rest.start(s)}>{L.fmtClock(s)}</button>
+              ))}</div>}
+            </>
+          ) : (
+            <button className="session" onClick={onOpen} title="Training öffnen">
+              <span className="dot" aria-hidden="true" />
+              <span className="session-info">
+                <span className="session-time">{L.fmtDuration(Math.max(0, now - t.active.start) / 1000)}</span>
+                <span className="session-name">{t.ix.workouts.get(t.active.workout)!.name}</span>
+              </span>
+              <Icon name="right" size={18} />
+            </button>
+          )}
           <button className="btn btn-ghost btn-icon stop" onClick={() => { if (confirm('Workout beenden und Zeit speichern?')) onStop() }} aria-label="Workout beenden">
             <Icon name="stop" size={16} />
           </button>
