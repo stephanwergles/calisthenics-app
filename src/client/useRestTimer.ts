@@ -3,6 +3,7 @@
    am Ende Ton + Vibration + 6 s „ringing“ für das optische Signal. */
 import { useCallback, useEffect, useState } from 'react'
 import { alarm, primeAudio } from './signals'
+import { buzz, scheduleRestEnd } from './native'
 
 export function useRestTimer() {
   const [end, setEnd] = useState<number | null>(null)
@@ -15,7 +16,7 @@ export function useRestTimer() {
     const tick = () => {
       const t = Date.now()
       setNow(t)
-      if (t >= end) { setEnd(null); setRinging(true); alarm() }
+      if (t >= end) { setEnd(null); setRinging(true); alarm(); buzz() }
     }
     const id = setInterval(tick, 250)
     document.addEventListener('visibilitychange', tick)
@@ -27,6 +28,9 @@ export function useRestTimer() {
     const id = setTimeout(() => setRinging(false), 6000)
     return () => clearTimeout(id)
   }, [ringing])
+
+  // In der App zusätzlich eine lokale Benachrichtigung – klingelt auch bei gesperrtem Display
+  useEffect(() => { void scheduleRestEnd(end) }, [end])
 
   const start = useCallback((sec: number) => { primeAudio(); setRinging(false); setNow(Date.now()); setTotal(sec); setEnd(Date.now() + sec * 1000) }, [])
   const stop = useCallback(() => { setEnd(null); setRinging(false) }, [])

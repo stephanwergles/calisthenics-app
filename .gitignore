@@ -22,3 +22,6 @@ npm-debug.log*
 # Lokale Werkzeug-Konfiguration
 /.claude/launch.json
 /.claude/settings.local.json
+
+# iOS-App: erzeugte Oberfläche (scripts/native-web.ts)
+native/www/

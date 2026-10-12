@@ -90,7 +90,7 @@ export function HomeView({ t, slots, onStart, onBrowse, onSkills }: {
                 <div key={s.pid} className="h-skill">
                   <svg viewBox="0 0 52 52" role="img" aria-label={`${pct} Prozent bereit für ${s.step.next!.name}`}>
                     <circle cx="26" cy="26" r={R} className="ring-track" />
-                    <circle cx="26" cy="26" r={R} className="ring-arc" strokeDasharray={`${(s.readiness * C).toFixed(1)} ${C.toFixed(1)}`} transform="rotate(-90 26 26)" />
+                    {s.readiness > 0 && <circle cx="26" cy="26" r={R} className="ring-arc" strokeDasharray={`${(s.readiness * C).toFixed(1)} ${C.toFixed(1)}`} transform="rotate(-90 26 26)" />}
                     <text x="26" y="31" textAnchor="middle">{pct}%</text>
                   </svg>
                   <span>

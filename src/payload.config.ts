@@ -28,6 +28,8 @@ export default buildConfig({
   globals: [WeekPlan],
   // Abgleich mit der Trainings-App: POST /api/sync (siehe src/sync/endpoint.ts)
   endpoints: [{ path: '/sync', method: 'post', handler: syncHandler }],
+  // iOS-App (Capacitor) lädt die Oberfläche aus dem App-Paket und ruft die API von dort aus auf
+  cors: [process.env.NEXT_PUBLIC_SERVER_URL || '', 'capacitor://localhost'].filter(Boolean),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({

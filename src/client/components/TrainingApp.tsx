@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as L from '../logic'
 import { keepAwake } from '../signals'
+import { askNotifications, isNative } from '../native'
 import { useTraining, type Training } from '../useTraining'
 import { useRestTimer } from '../useRestTimer'
 import { BottomBar } from './BottomBar'
@@ -44,7 +45,8 @@ export function TrainingApp() {
 
   // Service Worker nur im Produktionsbuild – im Dev-Modus würde er Änderungen verdecken
   useEffect(() => {
-    if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) void navigator.serviceWorker.register('/sw.js')
+    // in der iOS-App liegt alles im App-Paket – dort kein Service Worker
+    if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator && !isNative()) void navigator.serviceWorker.register('/sw.js')
   }, [])
 
   // Display wach halten, solange eine Session läuft; nach App-Wechsel neu anfordern
@@ -69,7 +71,7 @@ export function TrainingApp() {
   const showHome = view === 'train' && !focusMode && !started && !browse
   const showBar = !inFocus && ((view === 'train' && !showHome) || !!t.active || rest.running || rest.ringing)
   const summarySession = summaryId ? t.sessions.find(s => s.id === summaryId) : undefined
-  const start = () => { t.startSession(); setBrowse(false); openFocus(undefined) }
+  const start = () => { t.startSession(); void askNotifications(); setBrowse(false); openFocus(undefined) }
   const finish = () => {
     if (!t.active) return
     const id = L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout)

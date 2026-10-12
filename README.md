@@ -74,6 +74,25 @@ Offline-Start über `public/sw.js`, nur im Produktionsbuild aktiv (`npm run buil
 Bei Änderungen am Service Worker `CACHE` hochzählen; bei jedem Deploy `APP_VERSION`
 in `src/client/version.ts` erhöhen.
 
+## iOS-App (Capacitor)
+
+Native Hülle um dieselbe Oberfläche, Projekt in `ios/`. Die Oberfläche liegt **im App-Paket**
+(startet immer offline), nur der Sync geht an die Live-Instanz – dort per Token statt Cookie,
+weil die App von `capacitor://localhost` kommt (in `payload.config.ts` unter `cors` erlaubt).
+Zusätzlich zur Web-App: Benachrichtigung am Pausenende (auch bei gesperrtem Display), Haptik,
+Display bleibt während der Session an. Native Teile stecken in `src/client/native.ts`
+und sind im Browser wirkungslos.
+
+```bash
+npm run native:build   # next build → native/www → cap sync ios
+npm run native:open    # Xcode öffnen
+```
+
+In Xcode einmalig unter *Signing & Capabilities* das eigene Team wählen
+(Bundle-ID `de.blankstudio.calisthenics`), dann aufs iPhone spielen (▶) oder über
+*Product → Archive* zu TestFlight hochladen. Nach jeder Änderung an der Oberfläche
+`npm run native:build` und neu bauen – die App zieht keine Updates vom Server.
+
 ## Schema ändern
 
 ```bash

@@ -4,6 +4,8 @@
    Bei aktivem Stummschalter bleibt der Ton aus – das Blinken in der Leiste ist
    das verlässliche Signal. */
 
+import { nativeKeepAwake } from './native'
+
 let actx: AudioContext | null = null
 
 export function primeAudio() {
@@ -35,6 +37,7 @@ export function alarm() {
 
 let lock: WakeLockSentinel | null = null
 export async function keepAwake(on: boolean) {
+  if (await nativeKeepAwake(on)) return
   try {
     if (on && !document.hidden && 'wakeLock' in navigator) lock = await navigator.wakeLock.request('screen')
     if (!on) { await lock?.release(); lock = null }

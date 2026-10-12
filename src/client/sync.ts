@@ -1,15 +1,18 @@
 /* Sync-Client: Anmeldung und Abgleich mit /api/sync. Die App liest und schreibt
-   ausschließlich lokal; das hier läuft im Hintergrund. Cookies (payload-token)
-   setzt Payload selbst, gleiche Domain – kein Token im JavaScript. */
+   ausschließlich lokal; das hier läuft im Hintergrund.
+   Browser: Cookie (payload-token) setzt Payload selbst, gleiche Domain – kein Token im JavaScript.
+   iOS-App: anderer Ursprung, deshalb Token aus dem Login im Header (native.ts). */
 import type { SyncRequest, SyncResponse } from '../sync/convert.ts'
+import { apiBase, getToken, isNative, setToken } from './native.ts'
 
 export class AuthError extends Error {}
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    credentials: 'same-origin',
+  const token = await getToken()
+  const res = await fetch(apiBase() + path, {
+    credentials: isNative() ? 'omit' : 'same-origin',
     ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `JWT ${token}` } : {}), ...(init?.headers ?? {}) },
   })
   if (res.status === 401 || res.status === 403) throw new AuthError('Nicht angemeldet')
   const data = await res.json().catch(() => ({}))
@@ -18,13 +21,15 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function me(): Promise<{ email: string } | null> {
+  if (isNative() && !(await getToken())) return null
   const r = await call<{ user: { email: string } | null }>('/api/users/me')
   return r.user ? { email: r.user.email } : null
 }
 
 export async function login(email: string, password: string): Promise<{ email: string }> {
   try {
-    const r = await call<{ user: { email: string } }>('/api/users/login', { method: 'POST', body: JSON.stringify({ email, password }) })
+    const r = await call<{ user: { email: string }; token?: string }>('/api/users/login', { method: 'POST', body: JSON.stringify({ email, password }) })
+    if (r.token) await setToken(r.token)
     return { email: r.user.email }
   } catch (e) {
     if (e instanceof AuthError) throw new Error('E-Mail oder Passwort stimmt nicht.')
@@ -32,10 +37,11 @@ export async function login(email: string, password: string): Promise<{ email: s
   }
 }
 
-export const logout = () => call('/api/users/logout', { method: 'POST' }).catch(() => undefined)
+export const logout = () => call('/api/users/logout', { method: 'POST' }).catch(() => undefined).finally(() => setToken(null))
 
 /** verlängert die Sitzung – bei jedem App-Start, solange die App benutzt wird */
-export const refresh = () => call('/api/users/refresh-token', { method: 'POST' }).catch(() => undefined)
+export const refresh = () => call<{ refreshedToken?: string }>('/api/users/refresh-token', { method: 'POST' })
+  .then(r => (r.refreshedToken ? setToken(r.refreshedToken) : undefined)).catch(() => undefined)
 
 export const postSync = (req: SyncRequest) => call<SyncResponse>('/api/sync', { method: 'POST', body: JSON.stringify(req) })
 

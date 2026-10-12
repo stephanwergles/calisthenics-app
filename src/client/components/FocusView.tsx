@@ -9,6 +9,7 @@ import type { RestTimer } from '../useRestTimer'
 import { useNow } from '../useNow'
 import { Icon } from './Icon'
 import { Sketch } from './Sketch'
+import { tap } from '../native'
 
 interface Props {
   t: Training
@@ -167,6 +168,7 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved }: {
     const n = L.cleanNote(note)
     t.updateToday(s => L.withSet(s, { exercise: ex.id, progression: slot.pid, set: setNo, value, ...(weight ? { weightKg: weight } : {}), ...(n ? { note: n } : {}) }))
     t.startSession()
+    tap()
     rest.start(target.restSec)
     // Rückmeldung für den Pausen-Screen: Wert und Vergleich zum gleichen Satz beim letzten Mal
     const before = slot.last?.sets.find(x => x.set === setNo)
