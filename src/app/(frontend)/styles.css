@@ -887,3 +887,16 @@ button.f-clock.rest:active { transform: scale(.95); }
 .row-thumb .still.ready { opacity: 1; }
 .row.skipped .row-thumb .still, .row.paused .row-thumb .still { opacity: .4; }
 .row-thumb .mark { position: absolute; right: -4px; bottom: -4px; width: 22px; height: 22px; }
+
+/* Skill-Tree: 3D-Standbild der aktuellen Stufe (Liste) bzw. jeder Stufe (Leiter) */
+.sk-thumb { flex: none; width: 52px; height: 52px; border-radius: 12px; overflow: hidden; background: rgba(255, 255, 255, .04); }
+.sk-thumb.lg { width: 64px; height: 64px; border-radius: 14px; }
+.sk-thumb .still { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; opacity: 0; transition: opacity .3s; }
+.sk-thumb .still.ready { opacity: 1; }
+.sk-thumb.locked .still.ready { opacity: .35; }
+.sk-row { gap: 12px; }
+img.still { display: block; }
+/* kleine Vorschauen: auf die Figur zoomen (Bild ist 4:3 mit viel Rand) */
+.sk-thumb .still, .row-thumb .still { transform: scale(1.55); transform-origin: 50% 42%; }
+.row-thumb { overflow: hidden; border-radius: 12px; }
+.row-thumb .mark { z-index: 1; right: 2px; bottom: 2px; }

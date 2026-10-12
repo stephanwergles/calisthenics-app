@@ -482,7 +482,31 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
             let v = UIStackView(arrangedSubviews: [label((b.title ?? "").uppercased(), .display(19, .heavy), state == "locked" ? Lever.muted : .white),
                                                   label(b.subtitle ?? "", .body(13.5), Lever.muted)])
             v.axis = .vertical; v.spacing = 2
-            let h = UIStackView(arrangedSubviews: [dot, v]); h.spacing = 14; h.alignment = .center
+            var lead: UIView = dot
+            if let clip = b.clip {
+                // 3D-Standbild der Stufe, Punkt (Nummer/Häkchen/Schloss) als Abzeichen darauf
+                let holder = UIView(); holder.translatesAutoresizingMaskIntoConstraints = false
+                let thumb = UIImageView(); thumb.contentMode = .scaleAspectFill; thumb.clipsToBounds = true
+                thumb.layer.cornerRadius = 14; thumb.layer.cornerCurve = .continuous
+                thumb.backgroundColor = UIColor(white: 1, alpha: 0.04)
+                thumb.alpha = state == "locked" ? 0.35 : 1
+                thumb.translatesAutoresizingMaskIntoConstraints = false
+                holder.addSubview(thumb)
+                dot.removeConstraints(dot.constraints.filter { $0.firstAttribute == .width || $0.firstAttribute == .height })
+                dot.translatesAutoresizingMaskIntoConstraints = false; dot.layer.cornerRadius = 13
+                dot.font = .display(14, .heavy); dot.layer.borderWidth = 2; dot.layer.borderColor = UIColor(white: 0.12, alpha: 1).cgColor
+                holder.addSubview(dot)
+                NSLayoutConstraint.activate([
+                    holder.widthAnchor.constraint(equalToConstant: 72), holder.heightAnchor.constraint(equalToConstant: 72),
+                    thumb.topAnchor.constraint(equalTo: holder.topAnchor), thumb.bottomAnchor.constraint(equalTo: holder.bottomAnchor),
+                    thumb.leadingAnchor.constraint(equalTo: holder.leadingAnchor), thumb.trailingAnchor.constraint(equalTo: holder.trailingAnchor),
+                    dot.widthAnchor.constraint(equalToConstant: 26), dot.heightAnchor.constraint(equalToConstant: 26),
+                    dot.trailingAnchor.constraint(equalTo: holder.trailingAnchor, constant: 5), dot.bottomAnchor.constraint(equalTo: holder.bottomAnchor, constant: 5),
+                ])
+                ClipStill.load(clip) { [weak thumb] img in thumb?.image = img }
+                lead = holder
+            }
+            let h = UIStackView(arrangedSubviews: [lead, v]); h.spacing = 14; h.alignment = .center
             return state == "current" ? card(h, tint: Lever.volt.withAlphaComponent(0.1), padding: 12) : h
 
         case "compare":

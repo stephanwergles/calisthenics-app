@@ -7,6 +7,7 @@ import { REGIONS } from '@/domain/model'
 import type { Training } from '../useTraining'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
+import { ExerciseStill, hasClip } from './ExerciseMedia'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import type { NBlock } from '../native'
 
@@ -54,6 +55,7 @@ export function SkillSheet({ t, pid, onClose }: { t: Training; pid: string; onCl
 function Row({ p, onOpen }: { p: L.SkillPath; onOpen: () => void }) {
   return (
     <button className={`sk-row${p.paused ? ' paused' : ''}`} onClick={onOpen}>
+      {hasClip(p.step.exercise.id) && <span className="sk-thumb" aria-hidden="true"><ExerciseStill exercise={p.step.exercise} /></span>}
       <span className="sk-row-main">
         <b className="display">{p.step.exercise.name}</b>
         <small>{p.step.next ? `nächste: ${p.step.next.name}` : p.nodes.length > 1 ? 'höchste Stufe erreicht' : 'eine Stufe'}{p.paused ? ' · pausiert' : ''}</small>
@@ -74,6 +76,7 @@ function Ladder({ t, p }: { t: Training; p: L.SkillPath }) {
       <ol className="sk-nodes">
         {p.nodes.map((n, i) => (
           <li key={n.exercise.id} className={`sk-node ${n.state}`}>
+            {hasClip(n.exercise.id) && <span className={`sk-thumb lg ${n.state}`} aria-hidden="true"><ExerciseStill exercise={n.exercise} /></span>}
             <span className="sk-dot" aria-hidden="true">
               {n.state === 'done' ? <Icon name="check" size={18} /> : n.state === 'locked' ? <Icon name="lock" size={16} /> : <span className="num">{i + 1}</span>}
             </span>
@@ -122,6 +125,7 @@ function ladderBlocks(p: L.SkillPath): NBlock[] {
   p.nodes.forEach((n, i) => {
     out.push({
       type: 'ladder', title: n.exercise.name, label: String(i + 1), state: n.state,
+      clip: hasClip(n.exercise.id) ? n.exercise.id : undefined,
       subtitle: n.state === 'done' ? `geschafft · ${n.sessions} ${n.sessions === 1 ? 'Einheit' : 'Einheiten'}`
         : n.state === 'current' ? `aktuell · Ziel ${n.target.label}${n.sessions ? ` · ${n.sessions} ${n.sessions === 1 ? 'Einheit' : 'Einheiten'}` : ''}`
         : i === p.nodes.length - 1 ? 'letzte Stufe dieser Leiter' : 'noch gesperrt',

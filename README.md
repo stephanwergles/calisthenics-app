@@ -121,6 +121,12 @@ Grafiken entstehen per Skript in Blender (headless, `art/vendor/Blender.app`, ni
 Jede Übung aus `src/seed/catalog.json` hat einen 2-Sekunden-Loop (48 Bilder, 24 fps, 800×600,
 Hintergrund `#1a1a1a` eingebrannt) unter `public/clips/<exercise-id>.mp4`.
 
+**In der App:** `scripts/clips-manifest.mjs` (läuft vor `dev`, `build`, `native:build`) erzeugt mit
+ffmpeg je Clip ein Standbild `public/clip-stills/<id>.jpg` (Schlüsselposition nach 1 s, nur wenn
+es fehlt oder älter als der Clip ist – **mitcommitten**, der Server hat kein ffmpeg) und schreibt
+`src/seed/clips.json` (nicht im Repo). Trainingsansicht zeigt den Loop (`ExerciseMedia`), Heute,
+Übungsliste, Pause und Skill-Tree das Standbild (`ExerciseStill`); ohne Clip bleibt die Skizze.
+
 ```bash
 art/blender/clips.sh pull-up muscle-up      # rendern (Cycles/Metal, ~5 min je Clip) + kodieren
 ```

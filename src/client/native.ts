@@ -147,7 +147,7 @@ export type NBlock =
   | { type: 'check'; id: string; title: string; subtitle?: string; on: boolean }
   | { type: 'disclosure'; id: string; title: string; trailing?: string; on: boolean }
   | { type: 'record'; title: string; subtitle: string; value: string }
-  | { type: 'ladder'; title: string; subtitle: string; state: 'done' | 'current' | 'locked'; label: string }
+  | { type: 'ladder'; title: string; subtitle: string; state: 'done' | 'current' | 'locked'; label: string; clip?: string }
   | { type: 'stepper'; id: string; label: string; value: string }
   | { type: 'segmented'; id: string; options: { id: string; title: string }[]; selected: string }
   | { type: 'field'; id: string; label?: string; value: string; placeholder?: string }
