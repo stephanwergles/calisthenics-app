@@ -854,3 +854,9 @@ label.btn { cursor: pointer; }
 .shell.native .dock { padding-left: 21px; padding-right: 21px; }
 /* iOS-App: Erfassung ist ein natives Panel – Inhalt darüber endet, wo das Panel beginnt */
 .tsheet.native-panel .f-scroll { padding-bottom: calc(var(--panel-h, 330px) + 12px); mask-image: none; }
+/* Pausen-Uhr im Training: antippbar → Pausen-Screen */
+button.f-clock.rest { border: none; color: var(--accent); cursor: pointer; min-height: 36px; touch-action: manipulation; }
+button.f-clock.rest:active { transform: scale(.95); }
+/* WebKit ignoriert padding-bottom in scrollenden Flex-Containern → Platz fürs native Panel als Element */
+.tsheet.native-panel .f-scroll { padding-bottom: 0; }
+.tsheet.native-panel .f-scroll::after { content: ""; display: block; flex: none; height: calc(var(--panel-h, 300px) + env(safe-area-inset-bottom) + 20px); }

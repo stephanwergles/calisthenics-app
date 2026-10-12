@@ -107,7 +107,12 @@ final class LeverTabController: UITabBarController, UITabBarControllerDelegate {
         }
         cfg.imagePadding = 8
         cfg.cornerStyle = .capsule
-        if prominent { cfg.baseBackgroundColor = LeverTabController.volt; cfg.baseForegroundColor = LeverTabController.ink }
+        if prominent {
+            let ink = LeverTabController.ink
+            cfg.baseBackgroundColor = LeverTabController.volt; cfg.baseForegroundColor = ink
+            cfg.imageColorTransformer = UIConfigurationColorTransformer { _ in ink }
+            cfg.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { a in var a = a; a.foregroundColor = ink; return a }
+        }
         else { cfg.baseForegroundColor = .white }
         return cfg
     }

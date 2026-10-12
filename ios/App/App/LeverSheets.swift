@@ -82,9 +82,15 @@ enum Lever {
         if let title {
             var t = AttributedString(display ? title.uppercased() : title)
             t.font = display ? UIFont.display(size + 2, .heavy) : UIFont.body(size, .semibold)
+            // prominentes Glas tönt Inhalte ein (wirkt dunkelgrün) – Schwarz fest vorgeben
+            if prominent { t.foregroundColor = ink }
             cfg.attributedTitle = t
         }
-        if prominent { cfg.baseBackgroundColor = volt; cfg.baseForegroundColor = ink }
+        if prominent {
+            cfg.baseBackgroundColor = volt; cfg.baseForegroundColor = ink
+            cfg.imageColorTransformer = UIConfigurationColorTransformer { _ in ink }
+            cfg.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { a in var a = a; a.foregroundColor = ink; return a }
+        }
         else if style == "destructive" { cfg.baseForegroundColor = danger }
         else { cfg.baseForegroundColor = .white }
         return cfg
@@ -561,7 +567,7 @@ final class PaddedLabel: UILabel {
 
 // MARK: - Erfassungs-Panel im Training
 
-struct NPanelTile: Decodable { let n: Int; let text: String; let state: String; let note: Bool? }
+struct NPanelTile: Decodable { let n: Int; let text: String; let sub: String?; let state: String; let note: Bool? }
 struct NPanelSpec: Decodable {
     let key: String                  // wechselt mit Übung/Satz → Notizfeld leeren
     let caption: String
@@ -605,6 +611,7 @@ final class LeverSetPanel: UIViewController, UISheetPresentationControllerDelega
     private let stateLabel = UILabel()
     private let more = UIStackView()
     private let tiles = UIStackView()
+    private let tileScroll = UIScrollView()
     private let note = UITextView()
     private let notePlaceholder = UILabel()
     private var essentialsHeight: CGFloat = 300
@@ -703,8 +710,19 @@ final class LeverSetPanel: UIViewController, UISheetPresentationControllerDelega
         // ausgeklappt: Satz-Kacheln und Notiz
         more.axis = .vertical; more.spacing = 8
         let tl = UILabel(); tl.text = "SÄTZE"; tl.font = .body(11.5, .bold); tl.textColor = Lever.muted
-        tiles.axis = .horizontal; tiles.spacing = 6; tiles.distribution = .fillEqually
-        tiles.heightAnchor.constraint(equalToConstant: 46).isActive = true
+        // Sätze als Kreise in einer waagrechten Reihe (scrollt, wenn es mehr werden)
+        tiles.axis = .horizontal; tiles.spacing = 8; tiles.alignment = .center
+        tiles.translatesAutoresizingMaskIntoConstraints = false
+        tileScroll.showsHorizontalScrollIndicator = false; tileScroll.clipsToBounds = false
+        tileScroll.addSubview(tiles)
+        NSLayoutConstraint.activate([
+            tiles.topAnchor.constraint(equalTo: tileScroll.contentLayoutGuide.topAnchor),
+            tiles.bottomAnchor.constraint(equalTo: tileScroll.contentLayoutGuide.bottomAnchor),
+            tiles.leadingAnchor.constraint(equalTo: tileScroll.contentLayoutGuide.leadingAnchor),
+            tiles.trailingAnchor.constraint(equalTo: tileScroll.contentLayoutGuide.trailingAnchor),
+            tiles.heightAnchor.constraint(equalTo: tileScroll.frameLayoutGuide.heightAnchor),
+            tileScroll.heightAnchor.constraint(equalToConstant: SetCircle.size),
+        ])
         let nl = UILabel(); nl.text = "NOTIZ ZU DIESEM SATZ"; nl.font = .body(11.5, .bold); nl.textColor = Lever.muted
         let bg = UIView(); bg.backgroundColor = UIColor(white: 0, alpha: 0.35); bg.layer.cornerRadius = 16; bg.layer.borderWidth = 1; bg.layer.borderColor = Lever.line.cgColor
         note.font = .body(16); note.textColor = .white; note.backgroundColor = .clear; note.delegate = self
@@ -718,8 +736,8 @@ final class LeverSetPanel: UIViewController, UISheetPresentationControllerDelega
             bg.heightAnchor.constraint(equalToConstant: 76),
             notePlaceholder.topAnchor.constraint(equalTo: bg.topAnchor, constant: 12), notePlaceholder.leadingAnchor.constraint(equalTo: bg.leadingAnchor, constant: 15),
         ])
-        more.addArrangedSubview(tl); more.addArrangedSubview(tiles)
-        more.setCustomSpacing(14, after: tiles)
+        more.addArrangedSubview(tl); more.addArrangedSubview(tileScroll)
+        more.setCustomSpacing(16, after: tileScroll)
         more.addArrangedSubview(nl); more.addArrangedSubview(bg)
         root.setCustomSpacing(44, after: actions)
         root.addArrangedSubview(more)
@@ -772,20 +790,19 @@ final class LeverSetPanel: UIViewController, UISheetPresentationControllerDelega
         // Satz-Kacheln
         tiles.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for tile in s.tiles {
-            let b = Lever.button(title: tile.text.isEmpty ? " " : tile.text, style: tile.state == "done" ? "glass" : "glass", size: 17, display: true)
-            if tile.state == "done" { b.configuration?.baseForegroundColor = Lever.ink; b.configuration?.background.backgroundColor = UIColor(white: 0.95, alpha: 1) }
-            if tile.state == "current" { b.layer.borderWidth = 2; b.layer.borderColor = Lever.volt.cgColor; b.layer.cornerRadius = 23 }
-            b.accessibilityLabel = "Satz \(tile.n)"
-            b.addAction(UIAction { [weak self] _ in self?.emit("tile", tile.n) }, for: .touchUpInside)
-            tiles.addArrangedSubview(b)
+            let c = SetCircle(tile)
+            c.addAction(UIAction { [weak self] _ in self?.emit("tile", tile.n) }, for: .touchUpInside)
+            tiles.addArrangedSubview(c)
         }
         if s.canRemove {
             let r = Lever.button(title: nil, symbol: "minus", size: 15)
+            r.widthAnchor.constraint(equalToConstant: SetCircle.size).isActive = true; r.heightAnchor.constraint(equalToConstant: SetCircle.size).isActive = true
             r.accessibilityLabel = "Einen Satz weniger"
             r.addAction(UIAction { [weak self] _ in self?.emit("remove", nil) }, for: .touchUpInside)
             tiles.addArrangedSubview(r)
         }
         let a = Lever.button(title: nil, symbol: "plus", size: 15)
+        a.widthAnchor.constraint(equalToConstant: SetCircle.size).isActive = true; a.heightAnchor.constraint(equalToConstant: SetCircle.size).isActive = true
         a.accessibilityLabel = "Einen Satz mehr"
         a.addAction(UIAction { [weak self] _ in self?.emit("add", nil) }, for: .touchUpInside)
         tiles.addArrangedSubview(a)
@@ -831,6 +848,49 @@ final class LeverSetPanel: UIViewController, UISheetPresentationControllerDelega
     func sheetPresentationControllerDidChangeSelectedDetentIdentifier(_ sheet: UISheetPresentationController) {
         if sheet.selectedDetentIdentifier == Self.small { note.resignFirstResponder() }
     }
+}
+
+/// Satz als Kreis: erledigt = Kreideweiß mit dunkler Zahl (bei Zusatzgewicht zweizeilig),
+/// aktueller Satz = Volt-Ring, offen = dezente Fläche mit Satznummer. Notiz = Volt-Punkt.
+final class SetCircle: UIControl {
+    static let size: CGFloat = 50
+    init(_ t: NPanelTile) {
+        super.init(frame: .zero)
+        translatesAutoresizingMaskIntoConstraints = false
+        widthAnchor.constraint(equalToConstant: Self.size).isActive = true
+        heightAnchor.constraint(equalToConstant: Self.size).isActive = true
+        layer.cornerRadius = Self.size / 2
+        let done = t.state == "done", current = t.state == "current"
+        backgroundColor = done ? UIColor(white: 0.95, alpha: 1) : UIColor(white: 1, alpha: current ? 0.1 : 0.07)
+        layer.borderWidth = done ? 0 : current ? 2.5 : 1
+        layer.borderColor = (current ? Lever.volt : UIColor(white: 1, alpha: 0.16)).cgColor
+        let value = UILabel()
+        value.text = done ? t.text : String(t.n)
+        value.font = .display(done ? (t.sub == nil ? 22 : 19) : 19, .heavy)
+        value.textColor = done ? Lever.ink : current ? Lever.volt : UIColor(white: 1, alpha: 0.45)
+        value.textAlignment = .center
+        let col = UIStackView(arrangedSubviews: [value]); col.axis = .vertical; col.alignment = .center; col.spacing = -3
+        if done, let sub = t.sub {
+            let w = UILabel(); w.text = sub; w.font = .body(11, .bold); w.textColor = UIColor(white: 0.06, alpha: 0.7)
+            col.addArrangedSubview(w)
+        }
+        col.isUserInteractionEnabled = false; col.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(col)
+        NSLayoutConstraint.activate([col.centerXAnchor.constraint(equalTo: centerXAnchor), col.centerYAnchor.constraint(equalTo: centerYAnchor)])
+        if t.note == true {
+            let dot = UIView(); dot.backgroundColor = Lever.volt; dot.layer.cornerRadius = 4.5
+            dot.layer.borderWidth = 2; dot.layer.borderColor = UIColor(white: 0.12, alpha: 1).cgColor
+            dot.translatesAutoresizingMaskIntoConstraints = false; dot.isUserInteractionEnabled = false
+            addSubview(dot)
+            NSLayoutConstraint.activate([dot.widthAnchor.constraint(equalToConstant: 9), dot.heightAnchor.constraint(equalToConstant: 9),
+                                         dot.topAnchor.constraint(equalTo: topAnchor, constant: 2), dot.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -2)])
+        }
+        isAccessibilityElement = true
+        accessibilityTraits = .button
+        accessibilityLabel = done ? "Satz \(t.n): \(t.text)\(t.sub.map { " \($0) kg" } ?? "") – ändern" : "Satz \(t.n) erfassen"
+    }
+    required init?(coder: NSCoder) { fatalError() }
+    override var isHighlighted: Bool { didSet { UIView.animate(withDuration: 0.12) { self.transform = self.isHighlighted ? CGAffineTransform(scaleX: 0.92, y: 0.92) : .identity } } }
 }
 
 /// Ring für den Halte-Timer: läuft flüssig (Anteil kommt 10×/s, dazwischen animiert)

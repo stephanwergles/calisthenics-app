@@ -169,7 +169,8 @@ export interface NPanel {
   key: string; caption: string; value: string; unit?: string; weight?: string; seconds: boolean
   timerPhase: 'idle' | 'prep' | 'hold' | 'done'; timerLeft?: number; timerShare?: number; timerTitle?: string
   primary: 'save' | 'timer'; doneHint?: string
-  tiles: { n: number; text: string; state: 'done' | 'current' | 'open'; note?: boolean }[]
+  /** sub = Zusatzgewicht („+5“), zweite Zeile im Kreis */
+  tiles: { n: number; text: string; sub?: string; state: 'done' | 'current' | 'open'; note?: boolean }[]
   canRemove: boolean; stateText?: string; stateButton?: string
 }
 export interface PanelEvent { type: 'minus' | 'plus' | 'wminus' | 'wplus' | 'timer' | 'cancel' | 'save' | 'tile' | 'add' | 'remove' | 'state' | 'height'; value?: unknown }

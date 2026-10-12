@@ -28,11 +28,13 @@ interface Props {
   openOptions: (pid: string) => void
   onSaved: (slot: L.SlotView, setNo: number, summary: string) => void
   onFinish: () => void
+  /** laufende Pause wieder groß zeigen (Tipp auf die Uhr oben) */
+  onRest: () => void
   /** iOS-App: natives Erfassungs-Panel zeigen (aus, solange Pause/Abschluss darüber liegen) */
   panel?: boolean
 }
 
-export function FocusView({ t, rest, slots, slot, drag, onMinimize, onList, onPick, openSet, openOptions, onSaved, onFinish, panel = false }: Props) {
+export function FocusView({ t, rest, slots, slot, drag, onMinimize, onList, onPick, openSet, openOptions, onSaved, onFinish, onRest, panel = false }: Props) {
   const now = useNow(!!t.active)
   const index = slot ? slots.findIndex(s => s.pid === slot.pid) : -1
 
@@ -49,7 +51,9 @@ export function FocusView({ t, rest, slots, slot, drag, onMinimize, onList, onPi
           ))}
         </nav>
         {rest.running || rest.ringing
-          ? <span className={`f-clock rest${rest.ringing ? ' ringing' : ''}`}><Icon name="timer" size={16} />{rest.ringing ? '0:00' : L.fmtClock(rest.remaining)}</span>
+          ? <button className={`f-clock rest${rest.ringing ? ' ringing' : ''}`} onClick={onRest} aria-label="Pause öffnen">
+              <Icon name="timer" size={16} />{rest.ringing ? '0:00' : L.fmtClock(rest.remaining)}
+            </button>
           : <span className="f-clock num">{t.active ? L.fmtDuration(Math.max(0, now - t.active.start) / 1000) : ''}</span>}
         <button className="btn btn-secondary btn-icon f-list" aria-label="Alle Übungen" onClick={onList}><Icon name="list" size={20} /></button>
       </header>
@@ -130,7 +134,8 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved, 
   const native = useNativeShell()
   const tiles: NPanel['tiles'] = Array.from({ length: bars }, (_, i) => {
     const v = slot.sets.find(x => x.set === i + 1)
-    return { n: i + 1, text: v ? String(v.value) : '', state: v ? 'done' : i + 1 === setNo ? 'current' : 'open', note: !!v?.note }
+    return { n: i + 1, text: v ? String(v.value) : '', sub: v?.weightKg ? `+${String(v.weightKg).replace('.', ',')}` : undefined,
+      state: v ? 'done' : i + 1 === setNo ? 'current' : 'open', note: !!v?.note }
   })
   const canRemove = slot.planned > Math.max(1, ...slot.sets.map(x => x.set))
   const undoState = () => slot.state === 'skipped'

@@ -172,7 +172,7 @@ export function TrainingApp() {
             onPick={pid => setPicked(pid)}
             openSet={(pid, setNo) => setSheet({ kind: 'set', pid, setNo })}
             openOptions={pid => setSheet({ kind: 'options', pid })}
-            onFinish={finish} panel={panelOn}
+            onFinish={finish} panel={panelOn} onRest={() => setRestView('')}
             onSaved={(s, setNo, summary) => {
               // letzter geplanter Satz → nach der Pause geht es mit der nächsten offenen Übung weiter
               if (L.nextSetNo({ sets: [...s.sets, { exercise: s.step.exercise.id, progression: s.pid, set: setNo, value: 0 }], planned: s.planned }) === null) setPicked(undefined)
