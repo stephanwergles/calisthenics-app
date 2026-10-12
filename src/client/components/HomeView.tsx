@@ -9,8 +9,9 @@ import { Sketch } from './Sketch'
 
 const R = 22, C = 2 * Math.PI * R
 
-export function HomeView({ t, slots, onStart, onBrowse, onSkills }: {
-  t: Training; slots: L.SlotView[]; onStart: () => void; onBrowse: () => void; onSkills: () => void
+export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse, onSkills }: {
+  t: Training; slots: L.SlotView[]; started: boolean; done: boolean
+  onStart: () => void; onSummary?: () => void; onBrowse: () => void; onSkills: () => void
 }) {
   const w = t.ix.workouts.get(t.workout)!
   const [picking, setPicking] = useState(false)
@@ -24,13 +25,15 @@ export function HomeView({ t, slots, onStart, onBrowse, onSkills }: {
   const [first, ...rest] = w.focus.split(' · ')
   const hero = active[0]?.step.exercise
   const dateLabel = new Date(`${t.today}T12:00`).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })
+  const doneSets = active.reduce((n, s) => n + Math.min(s.sets.length, s.planned), 0)
+  const cta = t.active ? 'Weiter trainieren' : done ? 'Noch eine Runde' : started ? 'Training fortsetzen' : 'Training starten'
 
   return (
     <section className="home">
       <header className="h-head">
         <div>
           <span className="h-date">{dateLabel}</span>
-          <h2 className="display h-title">Bereit für<br /><span className="accent">{first}.</span></h2>
+          <h2 className="display h-title">{done ? <>Heute<br /><span className="accent">erledigt.</span></> : t.active ? <>Weiter mit<br /><span className="accent">{first}.</span></> : <>Bereit für<br /><span className="accent">{first}.</span></>}</h2>
         </div>
         {streak > 0 && (
           <div className="h-streak">
@@ -52,14 +55,19 @@ export function HomeView({ t, slots, onStart, onBrowse, onSkills }: {
 
       <div className="h-hero">
         {hero && <Sketch id={hero.media.sketch} label="" />}
-        <span className="h-label">Heute · {w.name}</span>
+        <span className="h-label">Heute · {w.name}{started ? ` · ${doneSets}/${sets} Sätze` : ''}</span>
         <h3 className="display h-focus">{first}{rest.length > 0 && <><br />{rest.join(' · ')}</>}</h3>
-        <p className="h-meta">{active.length} Übungen · {sets} Sätze{minutes ? ` · ca. ${minutes} min` : ''}</p>
+        {started
+          ? <div className="h-progress" role="progressbar" aria-label="Sätze erledigt" aria-valuemin={0} aria-valuemax={sets} aria-valuenow={doneSets}><i style={{ width: `${sets ? (doneSets / sets) * 100 : 0}%` }} /></div>
+          : <p className="h-meta">{active.length} Übungen · {sets} Sätze{minutes ? ` · ca. ${minutes} min` : ''}</p>}
         <ul className="h-chips">
           {active.slice(0, 3).map(s => <li key={s.pid}>{s.step.exercise.name}</li>)}
           {active.length > 3 && <li className="more">+{active.length - 3}</li>}
         </ul>
-        <button className="btn btn-primary btn-block f-cta" onClick={onStart}><Icon name="play" size={20} /> Training starten</button>
+        {done && onSummary
+          ? <button className="btn btn-primary btn-block f-cta" onClick={onSummary}><Icon name="trophy" size={20} /> Abschluss ansehen</button>
+          : <button className="btn btn-primary btn-block f-cta" onClick={onStart}><Icon name="play" size={20} /> {cta}</button>}
+        {done && <button className="btn btn-secondary btn-block" onClick={onStart}><Icon name="play" size={18} /> {cta}</button>}
         <div className="h-links">
           <button className="btn btn-ghost btn-sm" onClick={onBrowse}><Icon name="list" size={16} /> Übungen ansehen</button>
           <button className="btn btn-ghost btn-sm" aria-expanded={picking} onClick={() => setPicking(p => !p)}>Anderes Workout <Icon name="down" size={16} className={picking ? 'flip' : ''} /></button>

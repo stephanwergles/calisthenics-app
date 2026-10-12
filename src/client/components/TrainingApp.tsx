@@ -68,10 +68,12 @@ export function TrainingApp() {
 
   const inFocus = view === 'train' && focusMode
   const started = !!t.active || (t.todaySession?.sets.length ?? 0) > 0
-  const showHome = view === 'train' && !focusMode && !started && !browse
+  // „Heute“ ist immer der Einstieg in den Training-Tab; die Übersicht nur auf Wunsch
+  const showHome = view === 'train' && !focusMode && !browse
   const showBar = !inFocus && ((view === 'train' && !showHome) || !!t.active || rest.running || rest.ringing)
   const summarySession = summaryId ? t.sessions.find(s => s.id === summaryId) : undefined
   const start = () => { t.startSession(); void askNotifications(); setBrowse(false); openFocus(undefined) }
+  const doneToday = started && !L.upNext(slots, undefined)
   const finish = () => {
     if (!t.active) return
     const id = L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout)
@@ -89,16 +91,18 @@ export function TrainingApp() {
       {view === 'skills' && <SkillsView t={t} toTop={toTop} />}
       {view === 'history' && <HistoryView t={t} openActivity={date => setSheet({ kind: 'activity', date })} />}
       {showHome && (
-        <HomeView t={t} slots={slots} onStart={start} onBrowse={() => { setBrowse(true); toTop() }} onSkills={() => { setView('skills'); toTop() }} />
+        <HomeView t={t} slots={slots} started={started} done={doneToday} onStart={t.active ? () => openFocus(undefined) : start}
+          onSummary={t.todaySession ? () => setSummaryId(t.todaySession!.id) : undefined}
+          onBrowse={() => { setBrowse(true); toTop() }} onSkills={() => { setView('skills'); toTop() }} />
       )}
       {view === 'train' && !focusMode && !showHome && (
         <WorkoutView t={t} slots={slots} focus={focus} setFocus={setPicked} openFocus={openFocus}
-          onHome={!started ? () => { setBrowse(false); toTop() } : undefined}
+          onHome={() => { setBrowse(false); toTop() }}
           openActivity={() => setSheet({ kind: 'activity', date: t.today })} />
       )}
       {inFocus && (
         <FocusView t={t} rest={rest} slots={slots} slot={focusSlot}
-          onBack={() => { setFocusMode(false); toTop() }}
+          onBack={() => { setFocusMode(false); setBrowse(true); toTop() }}
           onPick={pid => { setPicked(pid); toTop() }}
           openSet={(pid, setNo) => setSheet({ kind: 'set', pid, setNo })}
           openOptions={pid => setSheet({ kind: 'options', pid })}
@@ -121,7 +125,7 @@ export function TrainingApp() {
         <nav className="tabs" aria-label="Bereiche">
           {VIEWS.map(([k, l, icon]) => (
             <button key={k} className={view === k ? 'on' : ''} aria-current={view === k ? 'page' : undefined}
-              onClick={() => { setView(k); toTop() }}>
+              onClick={() => { setView(k); if (k === 'train') setBrowse(false); toTop() }}>
               <span className="tab-icon">
                 <Icon name={icon} size={22} />
                 {k === 'data' && <span className={`sync-dot ${syncDot(t.sync)}`} role="img" aria-label={syncLabel(t.sync)} />}

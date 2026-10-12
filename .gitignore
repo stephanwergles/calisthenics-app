@@ -25,3 +25,7 @@ npm-debug.log*
 
 # iOS-App: erzeugte Oberfläche (scripts/native-web.ts)
 native/www/
+
+# App Store Connect API-Key (scripts/ios-release.sh) – nie committen
+.env.ios
+*.p8

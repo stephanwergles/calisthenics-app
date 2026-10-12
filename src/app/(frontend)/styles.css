@@ -525,3 +525,6 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .sheet-actions .btn-primary { font-family: var(--font-display); font-weight: 800; font-size: 20px; letter-spacing: .04em; text-transform: uppercase; min-height: 56px; }
 .row-main b { font-size: 15.5px; }
 .routine summary { font-family: var(--font-display); font-weight: 800; font-size: 17px; letter-spacing: .04em; }
+
+.h-progress { position: relative; height: 6px; border-radius: 3px; background: var(--card2); overflow: hidden; margin: 2px 0; }
+.h-progress i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }

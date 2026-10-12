@@ -88,6 +88,13 @@ npm run native:build   # next build → native/www → cap sync ios
 npm run native:open    # Xcode öffnen
 ```
 
+**TestFlight** (Updates ohne Kabel): App einmalig in App Store Connect anlegen, API-Key
+in `.env.ios` eintragen (Vorlage im Kopf von `scripts/ios-release.sh`), dann pro Update:
+
+```bash
+npm run native:release   # native:build → Archiv (Build-Nummer = Zeitstempel) → Upload
+```
+
 In Xcode einmalig unter *Signing & Capabilities* das eigene Team wählen
 (Bundle-ID `de.blankstudio.calisthenics`), dann aufs iPhone spielen (▶) oder über
 *Product → Archive* zu TestFlight hochladen. Nach jeder Änderung an der Oberfläche
