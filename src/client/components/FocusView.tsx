@@ -2,7 +2,7 @@
 /* Fokus-Satz: eine Übung füllt den Screen – Skizze, Kernpunkte, riesiger Zähler, ein Button.
    Gedacht für den Daumen zwischen zwei Sätzen; die Erfassung liegt unten als angedocktes Sheet,
    Satzzahl ±1 direkt an den Satz-Kacheln. Technik, Stufe, Überspringen, Pausieren: Technik-Sheet. */
-import { useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as PE } from 'react'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
 import type { RestTimer } from '../useRestTimer'
@@ -10,7 +10,6 @@ import { useNow } from '../useNow'
 import { Icon } from './Icon'
 import { Sketch } from './Sketch'
 import { tap } from '../native'
-import { useDrag } from '../useSheet'
 import { useHoldTimer, type HoldTimer } from '../useHoldTimer'
 import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react'
 
@@ -80,9 +79,47 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
   const bars = Math.max(slot.planned, ...slot.sets.map(x => x.set))
   const muscles = ex.muscles ?? []
   const lastNotes = slot.last ? L.notesOf(slot.last.sets) : []
-  // Erfassung als Sheet: eingeklappt nur Zähler + Speichern, hochgezogen auch Satz-Kacheln, Notiz, Halte-Timer
+  // Erfassung als Sheet: eingeklappt Zähler + Speichern, hochgezogen zusätzlich Satz-Kacheln und Notiz.
+  // Der Zusatzbereich folgt beim Ziehen 1:1 dem Finger und rastet beim Loslassen ein (Schwung oder halber Weg).
   const [expanded, setExpanded] = useState(false)
-  const sheetDrag = useDrag({ up: true, threshold: 50, onUp: () => setExpanded(true), onDown: () => setExpanded(false) })
+  const [dragH, setDragH] = useState<number | null>(null)
+  const [full, setFull] = useState(0)
+  const moreRef = useRef<HTMLDivElement>(null)
+  const [note, setNote] = useState('')
+  useEffect(() => { setNote('') }, [setNo])
+  useLayoutEffect(() => {
+    const el = moreRef.current
+    if (!el) return
+    const measure = () => setFull(el.scrollHeight)
+    measure()
+    const ro = new ResizeObserver(measure); ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const onSheetDown = (e: PE) => {
+    if (e.button !== 0) return
+    const target = e.target as HTMLElement
+    // Buttons und Eingaben behalten ihre eigene Bedienung – gezogen wird auf der Fläche oder am Griff
+    if (target.closest('button:not(.f-handle), input, textarea, label, a')) return
+    const startY = e.clientY, startH = expanded ? full : 0
+    let moved = false, lastY = startY, lastT = performance.now(), vel = 0
+    const clampH = (y: number) => Math.min(full, Math.max(0, startH - (y - startY)))
+    const move = (ev: PointerEvent) => {
+      if (!moved && Math.abs(ev.clientY - startY) < 6) return
+      moved = true
+      const now = performance.now()
+      vel = (ev.clientY - lastY) / Math.max(1, now - lastT); lastY = ev.clientY; lastT = now
+      setDragH(clampH(ev.clientY))
+    }
+    const end = (ev: PointerEvent) => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', end); window.removeEventListener('pointercancel', end)
+      if (!moved) { if (target.closest('.f-handle')) setExpanded(x => !x); return }
+      const h = clampH(ev.clientY)
+      setExpanded(vel < -0.35 ? true : vel > 0.35 ? false : h > full / 2)
+      setDragH(null)
+    }
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end)
+  }
+  const moreH = dragH ?? (expanded ? full : 0)
 
   return (
     <>
@@ -125,12 +162,14 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
 
       </div>
 
-      <div className={`f-bottom${expanded ? ' expanded' : ''}`} style={sheetDrag.style} role="region" aria-label="Satz erfassen">
-        <button className="f-handle" {...sheetDrag.bind} onClick={() => setExpanded(e => !e)}
-          aria-expanded={expanded} aria-label={expanded ? 'Erfassung einklappen' : 'Mehr Optionen: Sätze, Notiz'}>
+      <div className={`f-bottom${expanded ? ' expanded' : ''}`} role="region" aria-label="Satz erfassen" onPointerDown={onSheetDown}>
+        {/* Tastatur/Screenreader: Griff ist ein Button; Zeiger-Tipp schaltet in onSheetDown um */}
+        <button className="f-handle" onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(x => !x) } }}
+          aria-expanded={expanded} aria-label={expanded ? 'Erfassung einklappen' : 'Mehr: Sätze und Notiz'}>
           <span className="grabber" aria-hidden="true" />
         </button>
-        <div className="f-more"><div>
+        <div className={`f-more${dragH !== null ? ' dragging' : ''}`} style={{ height: moreH }} aria-hidden={!expanded}><div ref={moreRef}>
+        <span className="f-more-label">Sätze</span>
         <div className="f-bars">
           {Array.from({ length: bars }, (_, i) => {
             const v = slot.sets.find(x => x.set === i + 1)
@@ -147,6 +186,12 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
           )}
           <button className="f-bar add" aria-label="Einen Satz mehr" onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned + 1))}><Icon name="plus" size={14} /></button>
         </div>
+        {setNo !== null && (
+          <label className="field f-notefield">
+            <span className="f-more-label">Notiz zu Satz {setNo}</span>
+            <textarea rows={2} maxLength={L.NOTE_MAX} value={note} placeholder="z. B. Ellenbogen gezwickt" onChange={e => setNote(e.target.value)} />
+          </label>
+        )}
         </div></div>
 
         {slot.state === 'skipped' || slot.state === 'paused' ? (
@@ -164,7 +209,7 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
           </div>
         ) : (
           <SetInput key={`${slot.pid}-${setNo}`} t={t} rest={rest} slot={slot} setNo={setNo} seconds={seconds} onSaved={onSaved}
-            expanded={expanded} onExpand={() => setExpanded(true)} />
+            note={note} onNoteToggle={() => setExpanded(x => !x)} />
         )}
       </div>
     </>
@@ -172,16 +217,14 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved }
 }
 
 /** Erfassung des nächsten Satzes direkt im Screen – Vorbelegung wie im Satz-Editor */
-function SetInput({ t, rest, slot, setNo, seconds, onSaved, expanded, onExpand }: {
+function SetInput({ t, rest, slot, setNo, seconds, onSaved, note, onNoteToggle }: {
   t: Training; rest: RestTimer; slot: L.SlotView; setNo: number; seconds: boolean; onSaved: (slot: L.SlotView, setNo: number, summary: string) => void
-  expanded: boolean; onExpand: () => void
+  note: string; onNoteToggle: () => void
 }) {
   const ex = slot.step.exercise, target = slot.step.target
   const init = L.prefill(slot.sets, slot.last?.sets ?? [], setNo, target, ex)
   const [value, setValue] = useState(init.value)
   const [weight, setWeight] = useState(init.weightKg)
-  const [note, setNote] = useState('')
-  const [noteOpen, setNoteOpen] = useState(false)
   const stepBy = seconds ? 5 : 1
   // Halteübungen: Timer mit Vorlauf; bis er durch ist, ist „Timer starten“ die Hauptaktion
   const hold = useHoldTimer()
@@ -225,14 +268,8 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, expanded, onExpand }
             <Icon name="timer" size={22} /> {hold.phase === 'done' ? `Nochmal · ${value} s` : `Timer starten · ${value} s`}
           </button>)}
       {hold.phase === 'done' && <p className="f-holddone"><Icon name="check" size={16} /> {value} s gehalten – jetzt speichern</p>}
-      {noteOpen && expanded && (
-        <label className="field f-notefield">
-          <span className="field-label">Notiz zu diesem Satz</span>
-          <textarea rows={2} maxLength={L.NOTE_MAX} value={note} autoFocus placeholder="z. B. Ellenbogen gezwickt" onChange={e => setNote(e.target.value)} />
-        </label>
-      )}
       <div className="f-actions">
-        <button className={`btn btn-secondary f-notebtn${noteOpen ? ' on' : ''}`} aria-label="Notiz zu diesem Satz" aria-pressed={noteOpen && expanded} onClick={() => { if (noteOpen && expanded) setNoteOpen(false); else { setNoteOpen(true); onExpand() } }}>
+        <button className={`btn btn-secondary f-notebtn${note.trim() ? ' on' : ''}`} aria-label="Notiz zu diesem Satz" onClick={onNoteToggle}>
           <Icon name="note" size={22} />
         </button>
         <button className={`btn ${timerFirst ? 'btn-secondary' : 'btn-primary'} grow f-cta`} onClick={save}><Icon name="check" size={22} /> Satz speichern</button>

@@ -820,3 +820,17 @@ label.btn { cursor: pointer; }
 .f-hold.prep .fh-center small { color: var(--text); }
 .f-holddone { display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--accent); font-weight: 700; font-size: 14px; margin-top: -4px; }
 @media (prefers-reduced-motion: reduce) { .fh-arc, .rs-arc { transition: none; } }
+
+/* Satz-Sheet v2: Zusatzbereich über die Höhe, beim Ziehen ohne Übergang (folgt dem Finger) */
+.f-bottom { touch-action: none; transform: none !important; }
+.f-bottom textarea { touch-action: auto; }
+.f-handle { height: 28px; margin: -4px 0 -10px; }
+.f-more { display: block; overflow: hidden; margin-bottom: -14px; transition: height .36s cubic-bezier(.32, .72, 0, 1); grid-template-rows: none; }
+.f-bottom.expanded .f-more { margin-bottom: -14px; }
+.f-more.dragging { transition: none; }
+.f-more > div { overflow: visible; padding: 6px 0 14px; display: flex; flex-direction: column; gap: 8px; }
+.f-more-label { display: block; color: var(--muted); font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.f-more .f-notefield { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.f-more textarea { min-height: 64px; resize: none; }
+.f-notebtn.on { color: var(--accent); border-color: rgba(212, 255, 58, .45); }
+@media (prefers-reduced-motion: reduce) { .f-more { transition: none; } }
