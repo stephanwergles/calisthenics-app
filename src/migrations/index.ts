@@ -10,6 +10,7 @@ import * as migration_20261013_203657_user_plans from './20261013_203657_user_pl
 import * as migration_20261013_205009_session_adjust from './20261013_205009_session_adjust';
 import * as migration_20261013_211919_user_profile from './20261013_211919_user_profile';
 import * as migration_20261013_212741_user_phases from './20261013_212741_user_phases';
+import * as migration_20261013_222148_feedback from './20261013_222148_feedback';
 
 export const migrations = [
   {
@@ -70,6 +71,11 @@ export const migrations = [
   {
     up: migration_20261013_212741_user_phases.up,
     down: migration_20261013_212741_user_phases.down,
-    name: '20261013_212741_user_phases'
+    name: '20261013_212741_user_phases',
+  },
+  {
+    up: migration_20261013_222148_feedback.up,
+    down: migration_20261013_222148_feedback.down,
+    name: '20261013_222148_feedback'
   },
 ];

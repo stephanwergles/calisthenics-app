@@ -54,6 +54,10 @@ export const refresh = () => call<{ refreshedToken?: string }>('/api/users/refre
 /** Konto samt Server-Daten löschen – danach ist niemand mehr angemeldet */
 export const deleteAccount = () => call('/api/account/delete', { method: 'POST' }).finally(() => setToken(null))
 
+/** Feedback aus der App (nur angemeldet; lesen können es nur Admins) */
+export const sendFeedback = (f: { category: 'bug' | 'idea' | 'other'; message: string; appVersion: string; platform: 'ios' | 'web'; screen?: string }) =>
+  call('/api/feedback?depth=0', { method: 'POST', body: JSON.stringify(f) })
+
 export const postSync = (req: SyncRequest) => call<SyncResponse>('/api/sync', { method: 'POST', body: JSON.stringify(req) })
 
 /** Ersetzt das Server-Dokument das lokale? Saubere lokale Dokumente immer;

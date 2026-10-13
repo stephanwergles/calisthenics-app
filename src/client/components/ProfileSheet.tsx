@@ -9,10 +9,10 @@ import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { HEALTH_CONSENT, PRIVACY_URL } from '../consent'
 import { DataView, syncStatus } from './DataView'
 import { Sheet } from './Sheets'
-import { AssessmentPage, DaysSheet, EquipmentSheet, GoalPicker, profileSummary } from './ProfileParts'
+import { AssessmentPage, FeedbackPage, DaysSheet, EquipmentSheet, GoalPicker, profileSummary } from './ProfileParts'
 import { Icon } from './Icon'
 
-type Part = 'goals' | 'equipment' | 'days' | 'assessment' | null
+type Part = 'goals' | 'equipment' | 'days' | 'assessment' | 'feedback' | null
 
 export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void }) {
   const native = useNativeShell()
@@ -49,6 +49,7 @@ export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void 
   const parts = <>
     {part === 'goals' && <GoalPicker t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
     {part === 'equipment' && <EquipmentSheet t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
+    {part === 'feedback' && <FeedbackPage t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
     {part === 'assessment' && <AssessmentPage t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
     {part === 'days' && <DaysSheet t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
   </>
@@ -89,6 +90,8 @@ export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void 
       { type: 'section', title: 'Daten' },
       { type: 'buttons', buttons: [{ id: 'export', title: 'Export (JSON)', symbol: 'square.and.arrow.up' }, { id: 'import', title: 'v1-Import', symbol: 'square.and.arrow.down' }] },
       ...(dataMsg ? [{ type: 'text', text: dataMsg, style: dataMsg.startsWith('Import fehlgeschlagen') ? 'warn' : 'small' } as NBlock] : []),
+      { type: 'section', title: 'Hilfe' },
+      { type: 'row', id: 'p:feedback', title: 'Feedback senden', subtitle: 'Fehler, Ideen – direkt an das Lever-Team', symbol: 'none' },
       { type: 'section', title: 'Rechtliches' },
       { type: 'button', id: 'privacy', title: 'Datenschutzerklärung', symbol: 'doc.text' },
       ...(s.account ? [{ type: 'button', id: 'delete', title: 'Konto löschen', symbol: 'trash', style: 'destructive' } as NBlock] : []),
@@ -128,6 +131,10 @@ export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void 
             ))}
           </ul>
         </div>
+        <button className="card pf-row pf-feedback" onClick={() => setPart('feedback')}>
+          <span><b>Feedback senden</b><small>Fehler, Ideen – direkt an das Lever-Team</small></span>
+          <Icon name="right" size={16} />
+        </button>
         <DataView t={t} embedded />
       </Sheet>
       {parts}

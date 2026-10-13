@@ -182,7 +182,8 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 - [x] **Tagesanpassung:** Übungen für eine Einheit hinzufügen/weglassen (`sessions.adjust`), danach „Als neues Workout speichern“ (Übungsplan → „Heute anpassen“)
 - [x] Onboarding: Willkommen → Kurztest → Ziele → Equipment → Tage & Dauer → Planvorschlag mit Begründung je Übung (`Onboarding.tsx`, ein Sheet mit Push-Seiten; nur bei frischer Installation, jeder Schritt überspringbar). Offen: Sprache (mit i18n)
 - [ ] Apple Health / Health Connect (Android): Workouts speichern
-- [ ] **TestFlight, geschlossene Beta** mit 5–10 Fortgeschrittenen, Feedback-Kanal in der App
+- [ ] **TestFlight, geschlossene Beta** mit 5–10 Fortgeschrittenen
+- [x] Feedback-Kanal in der App: Profil → Feedback senden (Fehler/Idee/Sonstiges) → Collection `feedback`; anlegen nur angemeldet, lesen/Status nur Admins (Admin → Betrieb → Feedback), Konto löschen entfernt es mit
 
 ### Phase 3.3 — Englisch & Store-Bereitschaft
 

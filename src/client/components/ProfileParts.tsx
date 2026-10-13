@@ -8,7 +8,9 @@ import splitsJson from '@/seed/splits.json'
 import assessmentJson from '@/seed/assessment.json'
 import { placement, type AssessmentData } from '@/domain/assessment'
 import { useState } from 'react'
-import { ask } from '../native'
+import { ask, isNative } from '../native'
+import { sendFeedback } from '../sync'
+import { APP_VERSION } from '../version'
 import type { Skill, SplitTemplate } from '@/domain/model'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
@@ -224,6 +226,56 @@ export function AssessmentPage({ t, onClose, parent, onDone }: { t: Training; on
           {changes.map(c => <li key={c.pid} className="as-change"><b>{c.ladder}</b><span>{c.fromName} → {c.toName} · Stufe {c.from + 1} → {c.to + 1}</span></li>)}
         </ul>
       ) : <p className="hint">Mit diesen Werten bleibt jede Leiter, wo sie ist.</p>}
+    </Sheet>
+  )
+}
+
+/** Feedback senden (Push-Seite im Profil) – landet in der Datenbank, nur Admins lesen es */
+export function FeedbackPage({ t, onClose, parent }: { t: Training; onClose: () => void; parent?: { id: string; title: string } }) {
+  const native = useNativeShell()
+  const [category, setCategory] = useState<'bug' | 'idea' | 'other'>('idea')
+  const [text, setText] = useState('')
+  const [state, setState] = useState<'idle' | 'sending' | 'sent' | string>('idle')
+  const signedIn = !!t.sync.account
+  const send = async () => {
+    const message = text.trim()
+    if (message.length < 3 || state === 'sending') return
+    setState('sending')
+    try {
+      await sendFeedback({ category, message, appVersion: APP_VERSION, platform: isNative() ? 'ios' : 'web' })
+      setState('sent'); setText('')
+    } catch (e) { setState(`Senden fehlgeschlagen: ${(e as Error).message}`) }
+  }
+  const sub = signedIn ? 'Fehler, Ideen, alles was auffällt – geht direkt an das Lever-Team.' : 'Zum Senden bitte im Profil anmelden.'
+  const CATS = [{ id: 'bug', title: 'Fehler' }, { id: 'idea', title: 'Idee' }, { id: 'other', title: 'Sonstiges' }] as const
+  const status = state === 'sent' ? 'Danke! Dein Feedback ist angekommen.' : state === 'sending' ? 'Sende …' : state !== 'idle' ? state : null
+  useNativeSheet(native ? {
+    id: 'feedback', parent: parent?.id, title: 'Feedback', subtitle: sub, detents: ['large'],
+    blocks: signedIn ? [
+      { type: 'segmented', id: 'cat', options: CATS.map(c => ({ id: c.id, title: c.title })), selected: category },
+      { type: 'field', id: 'msg', label: 'Nachricht', value: text, placeholder: 'Was ist passiert, was wünschst du dir?' },
+      ...(status ? [{ type: 'text', text: status, style: state.startsWith('Senden fehl') ? 'warn' : 'accent' } as NBlock] : []),
+    ] : [],
+    footer: signedIn ? [{ id: 'send', title: 'Senden', symbol: 'paperplane', style: 'prominent' }] : undefined,
+  } : null, e => {
+    if (e.type === 'tap' && e.id?.startsWith('cat:')) setCategory(e.id.slice(4) as typeof category)
+    else if (e.type === 'text' && e.id === 'msg') { setText(String(e.value ?? '')); if (state !== 'idle' && state !== 'sending') setState('idle') }
+    else if (e.type === 'tap' && e.id === 'send') void send()
+    else if (e.type === 'dismiss') onClose()
+  })
+  if (native) return null
+  return (
+    <Sheet title="Feedback" sub={sub} back={parent?.title} onClose={onClose}
+      footer={signedIn && <button className="btn btn-primary btn-block" disabled={text.trim().length < 3 || state === 'sending'} onClick={() => void send()}>Senden</button>}>
+      {signedIn && <>
+        <div className="seg pill" role="group" aria-label="Art">
+          {CATS.map(c => <button key={c.id} className={category === c.id ? 'on' : ''} aria-pressed={category === c.id} onClick={() => setCategory(c.id)}>{c.title}</button>)}
+        </div>
+        <label className="field">Nachricht
+          <textarea rows={6} maxLength={4000} value={text} placeholder="Was ist passiert, was wünschst du dir?" onChange={e => { setText(e.target.value); if (state !== 'idle' && state !== 'sending') setState('idle') }} />
+        </label>
+        {status && <p className={state.startsWith('Senden fehl') ? 'warn' : 'hint'} role="status">{status}</p>}
+      </>}
     </Sheet>
   )
 }

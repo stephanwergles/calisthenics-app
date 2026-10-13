@@ -70,6 +70,7 @@ export interface Config {
     sessions: Session;
     activities: Activity;
     plans: Plan;
+    feedback: Feedback;
     exercises: Exercise;
     progressions: Progression;
     workouts: Workout;
@@ -84,6 +85,7 @@ export interface Config {
     sessions: SessionsSelect<false> | SessionsSelect<true>;
     activities: ActivitiesSelect<false> | ActivitiesSelect<true>;
     plans: PlansSelect<false> | PlansSelect<true>;
+    feedback: FeedbackSelect<false> | FeedbackSelect<true>;
     exercises: ExercisesSelect<false> | ExercisesSelect<true>;
     progressions: ProgressionsSelect<false> | ProgressionsSelect<true>;
     workouts: WorkoutsSelect<false> | WorkoutsSelect<true>;
@@ -434,6 +436,22 @@ export interface Plan {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feedback".
+ */
+export interface Feedback {
+  id: number;
+  user: number | User;
+  category: 'bug' | 'idea' | 'other';
+  message: string;
+  appVersion?: string | null;
+  platform?: ('ios' | 'web') | null;
+  screen?: string | null;
+  status?: ('new' | 'read' | 'done') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -467,6 +485,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'plans';
         value: number | Plan;
+      } | null)
+    | ({
+        relationTo: 'feedback';
+        value: number | Feedback;
       } | null)
     | ({
         relationTo: 'exercises';
@@ -592,6 +614,21 @@ export interface PlansSelect<T extends boolean = true> {
   weekplan?: T;
   inputs?: T;
   clientUpdatedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feedback_select".
+ */
+export interface FeedbackSelect<T extends boolean = true> {
+  user?: T;
+  category?: T;
+  message?: T;
+  appVersion?: T;
+  platform?: T;
+  screen?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -12,6 +12,8 @@ export const deleteAccountHandler: PayloadHandler = async req => {
   await payload.delete({ collection: 'sessions', where: mine, req, overrideAccess: false })
   await payload.delete({ collection: 'activities', where: mine, req, overrideAccess: false })
   await payload.delete({ collection: 'plans', where: mine, req, overrideAccess: false })
+  // Feedback dürfen Personen selbst nicht löschen (nur Admins) – hier mit Systemrechten, aber nur das eigene
+  await payload.delete({ collection: 'feedback', where: mine, overrideAccess: true })
   await payload.delete({ collection: 'users', id: user, overrideAccess: true })
   payload.logger.info(`Konto ${user} auf eigenen Wunsch gelöscht`)
   // Browser: Anmelde-Cookie entwerten

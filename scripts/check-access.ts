@@ -68,6 +68,13 @@ try {
     await payload.delete({ collection: 'users', id: stranger.id })
   }
 
+  // Feedback: anlegen ja (Besitz wird gesetzt), lesen/ändern nur Admins
+  const fb = await payload.create({ ...as, collection: 'feedback', data: { category: 'bug', message: 'Test-Feedback', user: 999999 } as never, depth: 0 })
+  results.push(['Feedback: anlegen erlaubt, Besitz = Person', fb.user === athlete.id || (fb.user as { id?: unknown })?.id === athlete.id])
+  await expectDenied('Feedback: lesen verweigert', () => payload.findByID({ ...as, collection: 'feedback', id: fb.id }))
+  await expectDenied('Feedback: Status ändern verweigert', () => payload.update({ ...as, collection: 'feedback', id: fb.id, data: { status: 'done' } as never }))
+  await payload.delete({ collection: 'feedback', id: fb.id })
+
   const panel = payload.collections.users.config.access.admin
   results.push(['Admin-Panel verweigert', !(await panel?.({ req } as never))])
 } finally {
@@ -83,16 +90,18 @@ try {
     await payload.create({ collection: 'sessions', data: { key: `2026-01-02-${w}`, date: '2026-01-02', workout: w, user: u.id, sets: [] } as never })
     await payload.create({ collection: 'activities', data: { key: `2026-01-02-run-${u.id}`, date: '2026-01-02', kind: 'run', user: u.id } as never })
     await payload.create({ collection: 'plans', data: { key: 'main', name: 'Mein Plan', version: 1, source: 'custom', workouts: [], weekplan: {}, user: u.id } as never })
+    await payload.create({ collection: 'feedback', data: { category: 'idea', message: 'Feedback zum Löschen', user: u.id } as never })
   }
   const res = await deleteAccountHandler({ payload, user: { ...gone, collection: 'users' } } as never)
-  const count = async (c: 'sessions' | 'activities' | 'plans', u: number | string) => (await payload.count({ collection: c, where: { user: { equals: u } } })).totalDocs
+  const count = async (c: 'sessions' | 'activities' | 'plans' | 'feedback', u: number | string) => (await payload.count({ collection: c, where: { user: { equals: u } } })).totalDocs
   results.push(['Konto löschen: Antwort ok', res.status === 200])
   results.push(['Konto löschen: Person weg', (await payload.count({ collection: 'users', where: { id: { equals: gone.id } } })).totalDocs === 0])
-  results.push(['Konto löschen: eigene Einheiten/Aktivitäten/Pläne weg', (await count('sessions', gone.id)) + (await count('activities', gone.id)) + (await count('plans', gone.id)) === 0])
-  results.push(['Konto löschen: fremde Daten bleiben', (await count('sessions', other.id)) === 1 && (await count('activities', other.id)) === 1 && (await count('plans', other.id)) === 1])
+  results.push(['Konto löschen: eigene Einheiten/Aktivitäten/Pläne weg', (await count('sessions', gone.id)) + (await count('activities', gone.id)) + (await count('plans', gone.id)) + (await count('feedback', gone.id)) === 0])
+  results.push(['Konto löschen: fremde Daten bleiben', (await count('sessions', other.id)) === 1 && (await count('activities', other.id)) === 1 && (await count('plans', other.id)) === 1 && (await count('feedback', other.id)) === 1])
   await payload.delete({ collection: 'sessions', where: { user: { equals: other.id } } })
   await payload.delete({ collection: 'activities', where: { user: { equals: other.id } } })
   await payload.delete({ collection: 'plans', where: { user: { equals: other.id } } })
+  await payload.delete({ collection: 'feedback', where: { user: { equals: other.id } } })
   await payload.delete({ collection: 'users', id: other.id })
 }
 
