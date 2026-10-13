@@ -4,7 +4,7 @@
    Payload liefert leere Felder als null, Relationen je nach depth als ID oder
    Objekt und Array-Zeilen mit eigener `id`. Das App-Modell kennt nichts davon. */
 import { NOTE_MAX } from '../domain/model.ts'
-import type { Activity, AssessmentData, Catalog, Equipment, Exercise, ExerciseMeta, Phase, Plan, Profile, Skill, SplitTemplate, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
+import type { Activity, AssessmentData, Catalog, Equipment, Exercise, ExerciseMeta, Phase, Plan, Profile, Skill, SplitTemplate, Template, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
 
 type Doc = Record<string, any>
 const idOf = (v: any): string => (v && typeof v === 'object' ? v.id : v)
@@ -171,7 +171,7 @@ export function catalogToDocs(c: Catalog) {
 
 /** Payload-Dokumente → Katalog im App-Format */
 export function buildCatalog(exs: Doc[], progs: Doc[], works: Doc[], week: Doc | null,
-  extra: { skills?: Doc[]; splits?: Doc[]; assessment?: Doc | null } = {}): Catalog {
+  extra: { skills?: Doc[]; splits?: Doc[]; assessment?: Doc | null; templates?: Doc[] } = {}): Catalog {
   const target = (t: Doc): Target => tidy({
     label: t.label, sets: t.sets, min: opt<number>(t.min), max: opt<number>(t.max),
     restSec: t.restSec, unlockAt: t.unlockAt ?? null,
@@ -207,7 +207,7 @@ export function buildCatalog(exs: Doc[], progs: Doc[], works: Doc[], week: Doc |
 }
 
 /** Metadaten, Skills, Split-Vorlagen und Einstufung aus Payload – nur was gepflegt ist */
-function v3Catalog(exs: Doc[], progs: Doc[], extra: { skills?: Doc[]; splits?: Doc[]; assessment?: Doc | null }): Partial<Catalog> {
+function v3Catalog(exs: Doc[], progs: Doc[], extra: { skills?: Doc[]; splits?: Doc[]; assessment?: Doc | null; templates?: Doc[] }): Partial<Catalog> {
   const meta: Record<string, ExerciseMeta> = {}
   for (const e of exs) {
     const m = e.meta
@@ -228,7 +228,13 @@ function v3Catalog(exs: Doc[], progs: Doc[], extra: { skills?: Doc[]; splits?: D
   const tests = (extra.assessment?.tests ?? []).map((t: Doc) => tidy({ id: t.key, name: t.name, unit: t.unit, levels: t.levels?.length ? t.levels : undefined }))
   const rules = progs.filter(p => p.assessment?.test && p.assessment?.thresholds?.length)
     .map(p => ({ progression: p.id as string, test: p.assessment.test as string, thresholds: p.assessment.thresholds as number[] }))
+  const templates = (extra.templates ?? []).map((d): Template => tidy({
+    id: d.id, kind: d.kind, name: d.name, description: d.description ?? '', level: d.level ?? 'beginner', minutes: d.minutes ?? 45,
+    equipment: (d.equipment ?? []) as Equipment[], days: opt<number>(d.days),
+    workouts: (d.workouts ?? []) as Workout[], weekplan: opt(d.weekplan) as Template['weekplan'],
+  }))
   return {
+    ...(templates.length ? { templates } : {}),
     ...(Object.keys(meta).length ? { meta } : {}),
     ...(skills.length ? { skills } : {}),
     ...(splits.length ? { splits } : {}),
@@ -243,6 +249,7 @@ export const metaToDoc = (m: ExerciseMeta) => ({
   unsure: m.unsure ?? null,
 })
 export const skillToDoc = (s: Skill) => ({ name: s.name, targets: s.targets, support: s.support, prerequisites: s.prerequisites })
+export const templateToDoc = (t: Template) => ({ name: t.name, kind: t.kind, level: t.level, days: t.days ?? null, minutes: t.minutes, description: t.description, equipment: t.equipment, workouts: t.workouts, weekplan: t.weekplan ?? null })
 export const splitToDoc = (t: SplitTemplate) => ({ name: t.name, themes: t.themes.map(x => ({ key: x.id, name: x.name, regions: x.regions })) })
 
 /** Mindestprüfung, bevor ein Katalog vom Server den eingebauten ersetzt */

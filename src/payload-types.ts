@@ -76,6 +76,7 @@ export interface Config {
     workouts: Workout;
     skills: Skill;
     splits: Split;
+    templates: Template;
     users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -93,6 +94,7 @@ export interface Config {
     workouts: WorkoutsSelect<false> | WorkoutsSelect<true>;
     skills: SkillsSelect<false> | SkillsSelect<true>;
     splits: SplitsSelect<false> | SplitsSelect<true>;
+    templates: TemplatesSelect<false> | TemplatesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -550,6 +552,49 @@ export interface Split {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "templates".
+ */
+export interface Template {
+  /**
+   * Stabile ID (Slug, z. B. „chest-to-bar-pull-up“). Einmal vergeben, nie ändern.
+   */
+  id: string;
+  name: string;
+  kind: 'plan' | 'workout';
+  level: 'beginner' | 'intermediate' | 'advanced';
+  days?: number | null;
+  minutes: number;
+  description: string;
+  equipment?: ('bar' | 'rings' | 'parallettes' | 'dip-bars' | 'band' | 'box' | 'weight')[] | null;
+  /**
+   * Im App-Format (wie im Plan): id, name, focus, slots [{ block, progression, sets }], warmup, cooldown
+   */
+  workouts:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Nur bei Plänen: { "mon": "<workout-id>", … }
+   */
+  weekplan?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -607,6 +652,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'splits';
         value: string | Split;
+      } | null)
+    | ({
+        relationTo: 'templates';
+        value: string | Template;
       } | null)
     | ({
         relationTo: 'users';
@@ -891,6 +940,24 @@ export interface SplitsSelect<T extends boolean = true> {
         regions?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "templates_select".
+ */
+export interface TemplatesSelect<T extends boolean = true> {
+  id?: T;
+  name?: T;
+  kind?: T;
+  level?: T;
+  days?: T;
+  minutes?: T;
+  description?: T;
+  equipment?: T;
+  workouts?: T;
+  weekplan?: T;
   updatedAt?: T;
   createdAt?: T;
 }

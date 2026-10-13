@@ -2,7 +2,7 @@
    Die Oberfläche ruft diese Funktionen auf; getestet wird direkt mit node --test. */
 import type {
   Activity, Catalog, Equipment, Exercise, ExerciseId, Plan, Profile, Progression, ProgressionId, Region, Session, SetLog,
-  Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId, GeneratedPlan, GeneratorInput, SplitTemplate, Phase, PhaseKind, Tendon, ExerciseMeta,
+  Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId, GeneratedPlan, GeneratorInput, SplitTemplate, Phase, PhaseKind, Tendon, ExerciseMeta, Template,
 } from '../domain/model.ts'
 import { usable } from '../domain/generator.ts'
 import { suggestSkills, suggestSplits, type SkillSuggestion } from '../domain/assessment.ts'
@@ -845,3 +845,28 @@ export function withPlacement(ix: Index, user: UserState, changes: PlacementChan
   for (const c of changes) { const ex = ix.progressions.get(c.pid)?.steps[c.to]?.exercise; if (ex) current[c.pid] = ex }
   return { ...user, current }
 }
+
+/* ── Vorlagen (Bibliothek) ───────────────────────────────────────────────── */
+
+/** Plan-Vorlage → Nutzerplan. Workouts bekommen Keys `<vorlage>-<workout>`; passt die Zahl der
+    Profil-Trainingstage, liegen die Workouts auf deinen Tagen (in Wochenreihenfolge), sonst auf
+    denen der Vorlage. Bisherige Workouts bleiben (eigene aktiv, andere als gelöscht – Verlauf). */
+export function planFromTemplate(ix: Index, base: Plan, tpl: Template, days: Weekday[] = []): Plan {
+  const key = (id: WorkoutId) => `${tpl.id}-${id}`.slice(0, 80)
+  const known = new Set(ix.progressions.keys())
+  const workouts = tpl.workouts.map(w => ({ ...structuredClone(w), id: key(w.id), slots: w.slots.filter(s => known.has(s.progression)) }))
+  const tplDays = WEEK_ORDER.filter(d => tpl.weekplan?.[d])
+  const mine = WEEK_ORDER.filter(d => days.includes(d))
+  const target = mine.length === tplDays.length ? mine : tplDays
+  const weekplan = Object.fromEntries(tplDays.map((d, i) => [target[i], key(tpl.weekplan![d]!)])) as Plan['weekplan']
+  const fresh = new Set(workouts.map(w => w.id))
+  const kept = base.workouts.filter(w => !fresh.has(w.id)).map(w => (w.custom ? w : { ...w, archived: true }))
+  return { ...base, source: 'catalog', name: tpl.name, workouts: [...workouts, ...kept], weekplan }
+}
+/** Workout-Vorlage → eigenes Workout (eigener Key, ohne Wochentag) */
+export function workoutFromTemplate(ix: Index, tpl: Template): Workout {
+  const w = tpl.workouts[0]
+  const known = new Set(ix.progressions.keys())
+  return { ...structuredClone(w), id: workoutKey(tpl.name, ix.workouts.keys()), name: tpl.name, slots: w.slots.filter(s => known.has(s.progression)), custom: true }
+}
+export const LEVEL_LABEL: Record<Template['level'], string> = { beginner: 'Einsteiger', intermediate: 'Fortgeschritten', advanced: 'Erfahren' }

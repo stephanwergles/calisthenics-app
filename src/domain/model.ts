@@ -96,6 +96,22 @@ export interface Catalog {
   skills?: Skill[];
   splits?: SplitTemplate[];
   assessment?: AssessmentData;
+  templates?: Template[];
+}
+
+/** Vorlage aus der Bibliothek: ein ganzer Plan (mehrere Workouts + Wochentage) oder ein einzelnes
+    Workout. Slots zeigen auf Progressionen – übernommen startet sie auf der aktuellen Stufe. */
+export interface Template {
+  id: string;
+  kind: 'plan' | 'workout';
+  name: string;
+  description: string;
+  level: 'beginner' | 'intermediate' | 'advanced';
+  minutes: number;
+  equipment: Equipment[];
+  days?: number;
+  workouts: Workout[];
+  weekplan?: Partial<Record<Weekday, WorkoutId>>;
 }
 
 /* ── Nutzerdaten ─────────────────────────────────────────────────────────── */

@@ -491,3 +491,22 @@ test('Einstufung: nur höher, nie zurück; übernehmen setzt die Stufe', async (
   assert.equal(L.currentStep(ix, next, 'pull-up').index, 1)
   assert.deepEqual(L.placementChanges(ix, next, placed), [], 'danach nichts mehr zu tun')
 })
+
+test('Vorlagen: Plan auf deine Trainingstage, Workout als eigene Kopie', () => {
+  const templates = JSON.parse(readFileSync(new URL('../src/seed/templates.json', import.meta.url), 'utf8')).templates
+  const pids = new Set(catalog.progressions.map(p => p.id))
+  for (const tp of templates) for (const w of tp.workouts) for (const s of w.slots) assert.ok(pids.has(s.progression), `${tp.id}: ${s.progression}`)
+  const beg = templates.find((x: { id: string }) => x.id === 'beginner-full-3')
+  const base = L.planFromCatalog(catalog)
+  const onTpl = L.planFromTemplate(ix, base, beg)
+  assert.deepEqual(Object.keys(onTpl.weekplan).sort(), ['fri', 'mon', 'wed'], 'ohne passende Tage: Tage der Vorlage')
+  const onMine = L.planFromTemplate(ix, base, beg, ['tue', 'thu', 'sat'])
+  assert.deepEqual(onMine.weekplan, { tue: 'beginner-full-3-a', thu: 'beginner-full-3-b', sat: 'beginner-full-3-c' }, 'auf deinen Tagen, in Reihenfolge')
+  assert.ok(onMine.workouts.find(w => w.id === 'pull')!.archived, 'alte Workouts bleiben für den Verlauf')
+  assert.equal(L.samePlan(L.indexCatalog(L.effectiveCatalog(catalog, onMine)), onMine), true)
+  const fin = templates.find((x: { id: string }) => x.id === 'core-finisher')
+  const w = L.workoutFromTemplate(ix, fin)
+  assert.equal(w.custom, true)
+  assert.equal(w.id, 'core-finisher')
+  assert.equal(w.slots.length, fin.workouts[0].slots.length)
+})

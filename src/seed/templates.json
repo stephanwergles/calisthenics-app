@@ -1,0 +1,1633 @@
+{
+ "_info": "Plan- und Workout-Vorlagen (Seed; Quelle danach Payload → Katalog → Vorlagen). Slots zeigen auf Progressionen – jede Vorlage startet auf der aktuellen Stufe.",
+ "templates": [
+  {
+   "id": "lever-ppl",
+   "kind": "plan",
+   "name": "Lever Pull / Push / Beine",
+   "level": "intermediate",
+   "days": 3,
+   "minutes": 85,
+   "equipment": [
+    "bar",
+    "rings",
+    "parallettes",
+    "dip-bars",
+    "band"
+   ],
+   "description": "Der Lever-Standard: Skill-Arbeit zuerst, je ein Tag Zug (Muscle-up), Druck (Handstand, L-Sit) und Beine/Rumpf. Für Fortgeschrittene mit 8–10 Klimmzügen.",
+   "workouts": [
+    {
+     "id": "pull",
+     "name": "Tag A",
+     "focus": "Pull · Muscle-up",
+     "slots": [
+      {
+       "block": "skill",
+       "progression": "muscle-up-pull"
+      },
+      {
+       "block": "skill",
+       "progression": "bar-dip"
+      },
+      {
+       "block": "skill",
+       "progression": "muscle-up-transition"
+      },
+      {
+       "block": "strength",
+       "progression": "pull-up"
+      },
+      {
+       "block": "strength",
+       "progression": "one-arm-pull"
+      },
+      {
+       "block": "strength",
+       "progression": "row"
+      },
+      {
+       "block": "accessory",
+       "progression": "scapula"
+      },
+      {
+       "block": "accessory",
+       "progression": "biceps"
+      }
+     ],
+     "warmup": [
+      {
+       "id": "pull-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts, groß und langsam"
+      },
+      {
+       "id": "pull-warm-band-pull-aparts",
+       "name": "Band Pull-Aparts",
+       "detail": "2 × 15 — hintere Schulter aufwecken"
+      },
+      {
+       "id": "pull-warm-scapula-pull-ups",
+       "name": "Scapula Pull-ups",
+       "detail": "2 × 8 an der Stange, Arme bleiben gestreckt"
+      },
+      {
+       "id": "pull-warm-dead-hang-locker",
+       "name": "Dead Hang locker",
+       "detail": "30 s, Schultern bewusst loslassen"
+      },
+      {
+       "id": "pull-warm-ellenbogen-aufwaermen",
+       "name": "Ellenbogen aufwärmen",
+       "detail": "20 Curls ohne Gewicht, dann 20 s Unterarme kreisen"
+      },
+      {
+       "id": "pull-warm-2-3-leichte-klimmzuege",
+       "name": "2–3 leichte Klimmzüge",
+       "detail": "betont langsam, als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "pull-cool-cardio-locker",
+       "name": "Cardio locker",
+       "detail": "15–25 min Rad oder Laufen im Unterhaltungstempo — antippen zum Eintragen",
+       "cardio": true
+      },
+      {
+       "id": "pull-cool-lat-dehnung-an-der-stange",
+       "name": "Lat-Dehnung an der Stange",
+       "detail": "30 s pro Seite, Hüfte weg vom Griff schieben"
+      },
+      {
+       "id": "pull-cool-brust-bizepsdehnung-an-der-wand",
+       "name": "Brust-/Bizepsdehnung an der Wand",
+       "detail": "30 s pro Seite, Arm auf Schulterhöhe"
+      },
+      {
+       "id": "pull-cool-unterarme-dehnen",
+       "name": "Unterarme dehnen",
+       "detail": "je 20 s Beuger und Strecker — wichtig nach viel Griffarbeit"
+      },
+      {
+       "id": "pull-cool-passiver-dead-hang",
+       "name": "Passiver Dead Hang",
+       "detail": "30 s, komplett hängen lassen (Dekompression)"
+      },
+      {
+       "id": "pull-cool-nacken-seitlich",
+       "name": "Nacken seitlich",
+       "detail": "20 s pro Seite, Schulter bleibt unten"
+      }
+     ]
+    },
+    {
+     "id": "push",
+     "name": "Tag B",
+     "focus": "Push · L-Sit",
+     "slots": [
+      {
+       "block": "skill",
+       "progression": "handstand"
+      },
+      {
+       "block": "skill",
+       "progression": "l-sit"
+      },
+      {
+       "block": "skill",
+       "progression": "planche"
+      },
+      {
+       "block": "strength",
+       "progression": "dip"
+      },
+      {
+       "block": "strength",
+       "progression": "vertical-push"
+      },
+      {
+       "block": "strength",
+       "progression": "horizontal-push"
+      },
+      {
+       "block": "accessory",
+       "progression": "fly"
+      },
+      {
+       "block": "accessory",
+       "progression": "triceps"
+      }
+     ],
+     "warmup": [
+      {
+       "id": "push-warm-handgelenke-mobilisieren",
+       "name": "Handgelenke mobilisieren",
+       "detail": "60 s: kreisen, Handflächen und Handrücken am Boden wiegen — Pflicht vor PPPU"
+      },
+      {
+       "id": "push-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts"
+      },
+      {
+       "id": "push-warm-schulterdislokationen",
+       "name": "Schulterdislokationen",
+       "detail": "2 × 10 mit Band oder Besenstiel, weiter Griff"
+      },
+      {
+       "id": "push-warm-cat-cow",
+       "name": "Cat-Cow",
+       "detail": "10 Wiederholungen, Wirbelsäule Segment für Segment"
+      },
+      {
+       "id": "push-warm-scapula-push-ups",
+       "name": "Scapula Push-ups",
+       "detail": "2 × 10 — Protraktion für Planche und L-Sit"
+      },
+      {
+       "id": "push-warm-2-8-leichte-liegestuetze",
+       "name": "2 × 8 leichte Liegestütze",
+       "detail": "als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "push-cool-cardio-locker",
+       "name": "Cardio locker",
+       "detail": "15–25 min Rad oder Laufen im Unterhaltungstempo — antippen zum Eintragen",
+       "cardio": true
+      },
+      {
+       "id": "push-cool-brustdehnung-im-tuerrahmen",
+       "name": "Brustdehnung im Türrahmen",
+       "detail": "30 s pro Seite, Unterarm am Rahmen, Brust nach vorn"
+      },
+      {
+       "id": "push-cool-trizeps-ueber-kopf",
+       "name": "Trizeps über Kopf",
+       "detail": "20 s pro Seite, Ellenbogen sanft nach hinten ziehen"
+      },
+      {
+       "id": "push-cool-handgelenke-dehnen",
+       "name": "Handgelenke dehnen",
+       "detail": "je 20 s Beuger und Strecker"
+      },
+      {
+       "id": "push-cool-kindhaltung-mit-langen-armen",
+       "name": "Kindhaltung mit langen Armen",
+       "detail": "45 s, Achseln Richtung Boden sinken lassen"
+      },
+      {
+       "id": "push-cool-schulter-quer-dehnen",
+       "name": "Schulter quer dehnen",
+       "detail": "20 s pro Seite"
+      }
+     ]
+    },
+    {
+     "id": "legs",
+     "name": "Tag C",
+     "focus": "Beine · Core",
+     "slots": [
+      {
+       "block": "skill",
+       "progression": "pistol"
+      },
+      {
+       "block": "strength",
+       "progression": "split-squat"
+      },
+      {
+       "block": "strength",
+       "progression": "nordic"
+      },
+      {
+       "block": "strength",
+       "progression": "calf"
+      },
+      {
+       "block": "core",
+       "progression": "leg-raise"
+      },
+      {
+       "block": "core",
+       "progression": "hollow"
+      },
+      {
+       "block": "core",
+       "progression": "side-plank"
+      },
+      {
+       "block": "extra",
+       "progression": "hang"
+      }
+     ],
+     "warmup": [
+      {
+       "id": "legs-warm-knoechel-mobilisieren",
+       "name": "Knöchel mobilisieren",
+       "detail": "2 × 10 pro Seite: Knie über die Zehen schieben, Ferse bleibt unten — Pflicht für Pistols"
+      },
+      {
+       "id": "legs-warm-hueftkreisen",
+       "name": "Hüftkreisen",
+       "detail": "je 10 pro Richtung"
+      },
+      {
+       "id": "legs-warm-beinschwingen",
+       "name": "Beinschwingen",
+       "detail": "10 pro Seite vor/zurück, dann 10 seitlich"
+      },
+      {
+       "id": "legs-warm-bodyweight-squats",
+       "name": "Bodyweight Squats",
+       "detail": "15 Wiederholungen, tief und kontrolliert"
+      },
+      {
+       "id": "legs-warm-glute-bridges",
+       "name": "Glute Bridges",
+       "detail": "15 Wiederholungen, oben 1 s halten"
+      },
+      {
+       "id": "legs-warm-leichte-ausfallschritte",
+       "name": "Leichte Ausfallschritte",
+       "detail": "8 pro Seite"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+       "name": "Hüftbeuger im Ausfallschritt",
+       "detail": "30 s pro Seite, Becken aufrichten"
+      },
+      {
+       "id": "legs-cool-hamstrings-im-sitzen",
+       "name": "Hamstrings im Sitzen",
+       "detail": "30 s pro Seite, Rücken lang statt rund"
+      },
+      {
+       "id": "legs-cool-quadrizeps-im-stand",
+       "name": "Quadrizeps im Stand",
+       "detail": "30 s pro Seite, Knie zeigt nach unten"
+      },
+      {
+       "id": "legs-cool-waden-an-der-wand",
+       "name": "Waden an der Wand",
+       "detail": "30 s pro Seite, Ferse am Boden"
+      },
+      {
+       "id": "legs-cool-taubenstellung",
+       "name": "Taubenstellung",
+       "detail": "30 s pro Seite — Gesäß und Piriformis"
+      }
+     ]
+    }
+   ],
+   "weekplan": {
+    "sun": "pull",
+    "mon": "legs",
+    "wed": "push"
+   }
+  },
+  {
+   "id": "beginner-full-3",
+   "kind": "plan",
+   "name": "Einsteiger Ganzkörper 3×",
+   "level": "beginner",
+   "days": 3,
+   "minutes": 50,
+   "equipment": [
+    "bar"
+   ],
+   "description": "Drei kurze Ganzkörper-Einheiten mit den Grundmustern Ziehen, Drücken, Beine und Rumpf. Ideal für den Einstieg oder nach einer längeren Pause.",
+   "workouts": [
+    {
+     "id": "a",
+     "name": "Ganzkörper A",
+     "focus": "Ziehen · Drücken · Beine · Rumpf",
+     "slots": [
+      {
+       "block": "strength",
+       "progression": "pull-up",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "horizontal-push",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "pistol",
+       "sets": 3
+      },
+      {
+       "block": "core",
+       "progression": "hollow",
+       "sets": 3
+      }
+     ],
+     "warmup": [
+      {
+       "id": "pull-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts, groß und langsam"
+      },
+      {
+       "id": "pull-warm-band-pull-aparts",
+       "name": "Band Pull-Aparts",
+       "detail": "2 × 15 — hintere Schulter aufwecken"
+      },
+      {
+       "id": "pull-warm-scapula-pull-ups",
+       "name": "Scapula Pull-ups",
+       "detail": "2 × 8 an der Stange, Arme bleiben gestreckt"
+      },
+      {
+       "id": "pull-warm-dead-hang-locker",
+       "name": "Dead Hang locker",
+       "detail": "30 s, Schultern bewusst loslassen"
+      },
+      {
+       "id": "pull-warm-ellenbogen-aufwaermen",
+       "name": "Ellenbogen aufwärmen",
+       "detail": "20 Curls ohne Gewicht, dann 20 s Unterarme kreisen"
+      },
+      {
+       "id": "pull-warm-2-3-leichte-klimmzuege",
+       "name": "2–3 leichte Klimmzüge",
+       "detail": "betont langsam, als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+       "name": "Hüftbeuger im Ausfallschritt",
+       "detail": "30 s pro Seite, Becken aufrichten"
+      },
+      {
+       "id": "legs-cool-hamstrings-im-sitzen",
+       "name": "Hamstrings im Sitzen",
+       "detail": "30 s pro Seite, Rücken lang statt rund"
+      },
+      {
+       "id": "legs-cool-quadrizeps-im-stand",
+       "name": "Quadrizeps im Stand",
+       "detail": "30 s pro Seite, Knie zeigt nach unten"
+      },
+      {
+       "id": "legs-cool-waden-an-der-wand",
+       "name": "Waden an der Wand",
+       "detail": "30 s pro Seite, Ferse am Boden"
+      },
+      {
+       "id": "legs-cool-taubenstellung",
+       "name": "Taubenstellung",
+       "detail": "30 s pro Seite — Gesäß und Piriformis"
+      }
+     ]
+    },
+    {
+     "id": "b",
+     "name": "Ganzkörper B",
+     "focus": "Ziehen · Drücken · Beine · Rumpf",
+     "slots": [
+      {
+       "block": "strength",
+       "progression": "row",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "dip",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "split-squat",
+       "sets": 3
+      },
+      {
+       "block": "core",
+       "progression": "leg-raise",
+       "sets": 3
+      }
+     ],
+     "warmup": [
+      {
+       "id": "push-warm-handgelenke-mobilisieren",
+       "name": "Handgelenke mobilisieren",
+       "detail": "60 s: kreisen, Handflächen und Handrücken am Boden wiegen — Pflicht vor PPPU"
+      },
+      {
+       "id": "push-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts"
+      },
+      {
+       "id": "push-warm-schulterdislokationen",
+       "name": "Schulterdislokationen",
+       "detail": "2 × 10 mit Band oder Besenstiel, weiter Griff"
+      },
+      {
+       "id": "push-warm-cat-cow",
+       "name": "Cat-Cow",
+       "detail": "10 Wiederholungen, Wirbelsäule Segment für Segment"
+      },
+      {
+       "id": "push-warm-scapula-push-ups",
+       "name": "Scapula Push-ups",
+       "detail": "2 × 10 — Protraktion für Planche und L-Sit"
+      },
+      {
+       "id": "push-warm-2-8-leichte-liegestuetze",
+       "name": "2 × 8 leichte Liegestütze",
+       "detail": "als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+       "name": "Hüftbeuger im Ausfallschritt",
+       "detail": "30 s pro Seite, Becken aufrichten"
+      },
+      {
+       "id": "legs-cool-hamstrings-im-sitzen",
+       "name": "Hamstrings im Sitzen",
+       "detail": "30 s pro Seite, Rücken lang statt rund"
+      },
+      {
+       "id": "legs-cool-quadrizeps-im-stand",
+       "name": "Quadrizeps im Stand",
+       "detail": "30 s pro Seite, Knie zeigt nach unten"
+      },
+      {
+       "id": "legs-cool-waden-an-der-wand",
+       "name": "Waden an der Wand",
+       "detail": "30 s pro Seite, Ferse am Boden"
+      },
+      {
+       "id": "legs-cool-taubenstellung",
+       "name": "Taubenstellung",
+       "detail": "30 s pro Seite — Gesäß und Piriformis"
+      }
+     ]
+    },
+    {
+     "id": "c",
+     "name": "Ganzkörper C",
+     "focus": "Ziehen · Drücken · Beine · Rumpf",
+     "slots": [
+      {
+       "block": "strength",
+       "progression": "pull-up",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "vertical-push",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "nordic",
+       "sets": 2
+      },
+      {
+       "block": "core",
+       "progression": "side-plank",
+       "sets": 2
+      }
+     ],
+     "warmup": [
+      {
+       "id": "pull-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts, groß und langsam"
+      },
+      {
+       "id": "pull-warm-band-pull-aparts",
+       "name": "Band Pull-Aparts",
+       "detail": "2 × 15 — hintere Schulter aufwecken"
+      },
+      {
+       "id": "pull-warm-scapula-pull-ups",
+       "name": "Scapula Pull-ups",
+       "detail": "2 × 8 an der Stange, Arme bleiben gestreckt"
+      },
+      {
+       "id": "pull-warm-dead-hang-locker",
+       "name": "Dead Hang locker",
+       "detail": "30 s, Schultern bewusst loslassen"
+      },
+      {
+       "id": "pull-warm-ellenbogen-aufwaermen",
+       "name": "Ellenbogen aufwärmen",
+       "detail": "20 Curls ohne Gewicht, dann 20 s Unterarme kreisen"
+      },
+      {
+       "id": "pull-warm-2-3-leichte-klimmzuege",
+       "name": "2–3 leichte Klimmzüge",
+       "detail": "betont langsam, als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+       "name": "Hüftbeuger im Ausfallschritt",
+       "detail": "30 s pro Seite, Becken aufrichten"
+      },
+      {
+       "id": "legs-cool-hamstrings-im-sitzen",
+       "name": "Hamstrings im Sitzen",
+       "detail": "30 s pro Seite, Rücken lang statt rund"
+      },
+      {
+       "id": "legs-cool-quadrizeps-im-stand",
+       "name": "Quadrizeps im Stand",
+       "detail": "30 s pro Seite, Knie zeigt nach unten"
+      },
+      {
+       "id": "legs-cool-waden-an-der-wand",
+       "name": "Waden an der Wand",
+       "detail": "30 s pro Seite, Ferse am Boden"
+      },
+      {
+       "id": "legs-cool-taubenstellung",
+       "name": "Taubenstellung",
+       "detail": "30 s pro Seite — Gesäß und Piriformis"
+      }
+     ]
+    }
+   ],
+   "weekplan": {
+    "mon": "a",
+    "wed": "b",
+    "fri": "c"
+   }
+  },
+  {
+   "id": "home-3",
+   "kind": "plan",
+   "name": "Zuhause ohne Geräte 3×",
+   "level": "beginner",
+   "days": 3,
+   "minutes": 45,
+   "equipment": [
+    "band"
+   ],
+   "description": "Nur Boden, Wand und ein Widerstandsband. Drücken, Beine und Rumpf mit vollen Progressionen – Ziehen über das Band.",
+   "workouts": [
+    {
+     "id": "a",
+     "name": "Zuhause A",
+     "focus": "Drücken · Beine",
+     "slots": [
+      {
+       "block": "skill",
+       "progression": "handstand",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "horizontal-push",
+       "sets": 4
+      },
+      {
+       "block": "strength",
+       "progression": "pistol",
+       "sets": 4
+      },
+      {
+       "block": "core",
+       "progression": "hollow",
+       "sets": 3
+      }
+     ],
+     "warmup": [
+      {
+       "id": "push-warm-handgelenke-mobilisieren",
+       "name": "Handgelenke mobilisieren",
+       "detail": "60 s: kreisen, Handflächen und Handrücken am Boden wiegen — Pflicht vor PPPU"
+      },
+      {
+       "id": "push-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts"
+      },
+      {
+       "id": "push-warm-schulterdislokationen",
+       "name": "Schulterdislokationen",
+       "detail": "2 × 10 mit Band oder Besenstiel, weiter Griff"
+      },
+      {
+       "id": "push-warm-cat-cow",
+       "name": "Cat-Cow",
+       "detail": "10 Wiederholungen, Wirbelsäule Segment für Segment"
+      },
+      {
+       "id": "push-warm-scapula-push-ups",
+       "name": "Scapula Push-ups",
+       "detail": "2 × 10 — Protraktion für Planche und L-Sit"
+      },
+      {
+       "id": "push-warm-2-8-leichte-liegestuetze",
+       "name": "2 × 8 leichte Liegestütze",
+       "detail": "als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+       "name": "Hüftbeuger im Ausfallschritt",
+       "detail": "30 s pro Seite, Becken aufrichten"
+      },
+      {
+       "id": "legs-cool-hamstrings-im-sitzen",
+       "name": "Hamstrings im Sitzen",
+       "detail": "30 s pro Seite, Rücken lang statt rund"
+      },
+      {
+       "id": "legs-cool-quadrizeps-im-stand",
+       "name": "Quadrizeps im Stand",
+       "detail": "30 s pro Seite, Knie zeigt nach unten"
+      },
+      {
+       "id": "legs-cool-waden-an-der-wand",
+       "name": "Waden an der Wand",
+       "detail": "30 s pro Seite, Ferse am Boden"
+      },
+      {
+       "id": "legs-cool-taubenstellung",
+       "name": "Taubenstellung",
+       "detail": "30 s pro Seite — Gesäß und Piriformis"
+      }
+     ]
+    },
+    {
+     "id": "b",
+     "name": "Zuhause B",
+     "focus": "Beine · Rumpf · Ziehen",
+     "slots": [
+      {
+       "block": "strength",
+       "progression": "split-squat",
+       "sets": 4
+      },
+      {
+       "block": "strength",
+       "progression": "nordic",
+       "sets": 3
+      },
+      {
+       "block": "accessory",
+       "progression": "biceps",
+       "sets": 3
+      },
+      {
+       "block": "core",
+       "progression": "side-plank",
+       "sets": 3
+      },
+      {
+       "block": "accessory",
+       "progression": "calf",
+       "sets": 3
+      }
+     ],
+     "warmup": [
+      {
+       "id": "legs-warm-knoechel-mobilisieren",
+       "name": "Knöchel mobilisieren",
+       "detail": "2 × 10 pro Seite: Knie über die Zehen schieben, Ferse bleibt unten — Pflicht für Pistols"
+      },
+      {
+       "id": "legs-warm-hueftkreisen",
+       "name": "Hüftkreisen",
+       "detail": "je 10 pro Richtung"
+      },
+      {
+       "id": "legs-warm-beinschwingen",
+       "name": "Beinschwingen",
+       "detail": "10 pro Seite vor/zurück, dann 10 seitlich"
+      },
+      {
+       "id": "legs-warm-bodyweight-squats",
+       "name": "Bodyweight Squats",
+       "detail": "15 Wiederholungen, tief und kontrolliert"
+      },
+      {
+       "id": "legs-warm-glute-bridges",
+       "name": "Glute Bridges",
+       "detail": "15 Wiederholungen, oben 1 s halten"
+      },
+      {
+       "id": "legs-warm-leichte-ausfallschritte",
+       "name": "Leichte Ausfallschritte",
+       "detail": "8 pro Seite"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+       "name": "Hüftbeuger im Ausfallschritt",
+       "detail": "30 s pro Seite, Becken aufrichten"
+      },
+      {
+       "id": "legs-cool-hamstrings-im-sitzen",
+       "name": "Hamstrings im Sitzen",
+       "detail": "30 s pro Seite, Rücken lang statt rund"
+      },
+      {
+       "id": "legs-cool-quadrizeps-im-stand",
+       "name": "Quadrizeps im Stand",
+       "detail": "30 s pro Seite, Knie zeigt nach unten"
+      },
+      {
+       "id": "legs-cool-waden-an-der-wand",
+       "name": "Waden an der Wand",
+       "detail": "30 s pro Seite, Ferse am Boden"
+      },
+      {
+       "id": "legs-cool-taubenstellung",
+       "name": "Taubenstellung",
+       "detail": "30 s pro Seite — Gesäß und Piriformis"
+      }
+     ]
+    },
+    {
+     "id": "c",
+     "name": "Zuhause C",
+     "focus": "Drücken · Beine",
+     "slots": [
+      {
+       "block": "strength",
+       "progression": "vertical-push",
+       "sets": 4
+      },
+      {
+       "block": "strength",
+       "progression": "horizontal-push",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "pistol",
+       "sets": 3
+      },
+      {
+       "block": "core",
+       "progression": "hollow",
+       "sets": 3
+      }
+     ],
+     "warmup": [
+      {
+       "id": "push-warm-handgelenke-mobilisieren",
+       "name": "Handgelenke mobilisieren",
+       "detail": "60 s: kreisen, Handflächen und Handrücken am Boden wiegen — Pflicht vor PPPU"
+      },
+      {
+       "id": "push-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts"
+      },
+      {
+       "id": "push-warm-schulterdislokationen",
+       "name": "Schulterdislokationen",
+       "detail": "2 × 10 mit Band oder Besenstiel, weiter Griff"
+      },
+      {
+       "id": "push-warm-cat-cow",
+       "name": "Cat-Cow",
+       "detail": "10 Wiederholungen, Wirbelsäule Segment für Segment"
+      },
+      {
+       "id": "push-warm-scapula-push-ups",
+       "name": "Scapula Push-ups",
+       "detail": "2 × 10 — Protraktion für Planche und L-Sit"
+      },
+      {
+       "id": "push-warm-2-8-leichte-liegestuetze",
+       "name": "2 × 8 leichte Liegestütze",
+       "detail": "als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+       "name": "Hüftbeuger im Ausfallschritt",
+       "detail": "30 s pro Seite, Becken aufrichten"
+      },
+      {
+       "id": "legs-cool-hamstrings-im-sitzen",
+       "name": "Hamstrings im Sitzen",
+       "detail": "30 s pro Seite, Rücken lang statt rund"
+      },
+      {
+       "id": "legs-cool-quadrizeps-im-stand",
+       "name": "Quadrizeps im Stand",
+       "detail": "30 s pro Seite, Knie zeigt nach unten"
+      },
+      {
+       "id": "legs-cool-waden-an-der-wand",
+       "name": "Waden an der Wand",
+       "detail": "30 s pro Seite, Ferse am Boden"
+      },
+      {
+       "id": "legs-cool-taubenstellung",
+       "name": "Taubenstellung",
+       "detail": "30 s pro Seite — Gesäß und Piriformis"
+      }
+     ]
+    }
+   ],
+   "weekplan": {
+    "tue": "a",
+    "thu": "b",
+    "sat": "c"
+   }
+  },
+  {
+   "id": "compact-2",
+   "kind": "plan",
+   "name": "Kompakt 2×",
+   "level": "intermediate",
+   "days": 2,
+   "minutes": 60,
+   "equipment": [
+    "bar",
+    "dip-bars"
+   ],
+   "description": "Zwei Ganzkörper-Einheiten pro Woche, wenn wenig Zeit bleibt. Jede Einheit deckt alle Grundmuster ab.",
+   "workouts": [
+    {
+     "id": "a",
+     "name": "Kompakt A",
+     "focus": "Ziehen · Drücken · Beine · Rumpf",
+     "slots": [
+      {
+       "block": "strength",
+       "progression": "pull-up",
+       "sets": 4
+      },
+      {
+       "block": "strength",
+       "progression": "dip",
+       "sets": 4
+      },
+      {
+       "block": "strength",
+       "progression": "pistol",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "row",
+       "sets": 3
+      },
+      {
+       "block": "core",
+       "progression": "hollow",
+       "sets": 3
+      }
+     ],
+     "warmup": [
+      {
+       "id": "pull-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts, groß und langsam"
+      },
+      {
+       "id": "pull-warm-band-pull-aparts",
+       "name": "Band Pull-Aparts",
+       "detail": "2 × 15 — hintere Schulter aufwecken"
+      },
+      {
+       "id": "pull-warm-scapula-pull-ups",
+       "name": "Scapula Pull-ups",
+       "detail": "2 × 8 an der Stange, Arme bleiben gestreckt"
+      },
+      {
+       "id": "pull-warm-dead-hang-locker",
+       "name": "Dead Hang locker",
+       "detail": "30 s, Schultern bewusst loslassen"
+      },
+      {
+       "id": "pull-warm-ellenbogen-aufwaermen",
+       "name": "Ellenbogen aufwärmen",
+       "detail": "20 Curls ohne Gewicht, dann 20 s Unterarme kreisen"
+      },
+      {
+       "id": "pull-warm-2-3-leichte-klimmzuege",
+       "name": "2–3 leichte Klimmzüge",
+       "detail": "betont langsam, als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+       "name": "Hüftbeuger im Ausfallschritt",
+       "detail": "30 s pro Seite, Becken aufrichten"
+      },
+      {
+       "id": "legs-cool-hamstrings-im-sitzen",
+       "name": "Hamstrings im Sitzen",
+       "detail": "30 s pro Seite, Rücken lang statt rund"
+      },
+      {
+       "id": "legs-cool-quadrizeps-im-stand",
+       "name": "Quadrizeps im Stand",
+       "detail": "30 s pro Seite, Knie zeigt nach unten"
+      },
+      {
+       "id": "legs-cool-waden-an-der-wand",
+       "name": "Waden an der Wand",
+       "detail": "30 s pro Seite, Ferse am Boden"
+      },
+      {
+       "id": "legs-cool-taubenstellung",
+       "name": "Taubenstellung",
+       "detail": "30 s pro Seite — Gesäß und Piriformis"
+      }
+     ]
+    },
+    {
+     "id": "b",
+     "name": "Kompakt B",
+     "focus": "Ziehen · Drücken · Beine · Rumpf",
+     "slots": [
+      {
+       "block": "strength",
+       "progression": "one-arm-pull",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "vertical-push",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "split-squat",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "horizontal-push",
+       "sets": 3
+      },
+      {
+       "block": "core",
+       "progression": "leg-raise",
+       "sets": 3
+      }
+     ],
+     "warmup": [
+      {
+       "id": "push-warm-handgelenke-mobilisieren",
+       "name": "Handgelenke mobilisieren",
+       "detail": "60 s: kreisen, Handflächen und Handrücken am Boden wiegen — Pflicht vor PPPU"
+      },
+      {
+       "id": "push-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts"
+      },
+      {
+       "id": "push-warm-schulterdislokationen",
+       "name": "Schulterdislokationen",
+       "detail": "2 × 10 mit Band oder Besenstiel, weiter Griff"
+      },
+      {
+       "id": "push-warm-cat-cow",
+       "name": "Cat-Cow",
+       "detail": "10 Wiederholungen, Wirbelsäule Segment für Segment"
+      },
+      {
+       "id": "push-warm-scapula-push-ups",
+       "name": "Scapula Push-ups",
+       "detail": "2 × 10 — Protraktion für Planche und L-Sit"
+      },
+      {
+       "id": "push-warm-2-8-leichte-liegestuetze",
+       "name": "2 × 8 leichte Liegestütze",
+       "detail": "als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+       "name": "Hüftbeuger im Ausfallschritt",
+       "detail": "30 s pro Seite, Becken aufrichten"
+      },
+      {
+       "id": "legs-cool-hamstrings-im-sitzen",
+       "name": "Hamstrings im Sitzen",
+       "detail": "30 s pro Seite, Rücken lang statt rund"
+      },
+      {
+       "id": "legs-cool-quadrizeps-im-stand",
+       "name": "Quadrizeps im Stand",
+       "detail": "30 s pro Seite, Knie zeigt nach unten"
+      },
+      {
+       "id": "legs-cool-waden-an-der-wand",
+       "name": "Waden an der Wand",
+       "detail": "30 s pro Seite, Ferse am Boden"
+      },
+      {
+       "id": "legs-cool-taubenstellung",
+       "name": "Taubenstellung",
+       "detail": "30 s pro Seite — Gesäß und Piriformis"
+      }
+     ]
+    }
+   ],
+   "weekplan": {
+    "tue": "a",
+    "fri": "b"
+   }
+  },
+  {
+   "id": "muscle-up-3",
+   "kind": "plan",
+   "name": "Muscle-up-Programm 3×",
+   "level": "intermediate",
+   "days": 3,
+   "minutes": 75,
+   "equipment": [
+    "bar",
+    "dip-bars",
+    "band"
+   ],
+   "description": "Alles auf den ersten Muscle-up: explosive Zugkraft, Übergang und Stütz an der Stange, dazu Dips und Rumpf. Voraussetzung: etwa 8 saubere Klimmzüge.",
+   "workouts": [
+    {
+     "id": "a",
+     "name": "Zug & Übergang",
+     "focus": "Ziehen · Muscle-up",
+     "slots": [
+      {
+       "block": "skill",
+       "progression": "muscle-up-pull",
+       "sets": 5
+      },
+      {
+       "block": "skill",
+       "progression": "muscle-up-transition",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "pull-up",
+       "sets": 3
+      },
+      {
+       "block": "accessory",
+       "progression": "scapula",
+       "sets": 2
+      },
+      {
+       "block": "core",
+       "progression": "leg-raise",
+       "sets": 3
+      }
+     ],
+     "warmup": [
+      {
+       "id": "pull-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts, groß und langsam"
+      },
+      {
+       "id": "pull-warm-band-pull-aparts",
+       "name": "Band Pull-Aparts",
+       "detail": "2 × 15 — hintere Schulter aufwecken"
+      },
+      {
+       "id": "pull-warm-scapula-pull-ups",
+       "name": "Scapula Pull-ups",
+       "detail": "2 × 8 an der Stange, Arme bleiben gestreckt"
+      },
+      {
+       "id": "pull-warm-dead-hang-locker",
+       "name": "Dead Hang locker",
+       "detail": "30 s, Schultern bewusst loslassen"
+      },
+      {
+       "id": "pull-warm-ellenbogen-aufwaermen",
+       "name": "Ellenbogen aufwärmen",
+       "detail": "20 Curls ohne Gewicht, dann 20 s Unterarme kreisen"
+      },
+      {
+       "id": "pull-warm-2-3-leichte-klimmzuege",
+       "name": "2–3 leichte Klimmzüge",
+       "detail": "betont langsam, als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "pull-cool-lat-dehnung-an-der-stange",
+       "name": "Lat-Dehnung an der Stange",
+       "detail": "30 s pro Seite, Hüfte weg vom Griff schieben"
+      },
+      {
+       "id": "pull-cool-brust-bizepsdehnung-an-der-wand",
+       "name": "Brust-/Bizepsdehnung an der Wand",
+       "detail": "30 s pro Seite, Arm auf Schulterhöhe"
+      },
+      {
+       "id": "pull-cool-unterarme-dehnen",
+       "name": "Unterarme dehnen",
+       "detail": "je 20 s Beuger und Strecker — wichtig nach viel Griffarbeit"
+      },
+      {
+       "id": "pull-cool-passiver-dead-hang",
+       "name": "Passiver Dead Hang",
+       "detail": "30 s, komplett hängen lassen (Dekompression)"
+      },
+      {
+       "id": "pull-cool-nacken-seitlich",
+       "name": "Nacken seitlich",
+       "detail": "20 s pro Seite, Schulter bleibt unten"
+      }
+     ]
+    },
+    {
+     "id": "b",
+     "name": "Stütz & Druck",
+     "focus": "Drücken · Muscle-up",
+     "slots": [
+      {
+       "block": "skill",
+       "progression": "bar-dip",
+       "sets": 4
+      },
+      {
+       "block": "strength",
+       "progression": "dip",
+       "sets": 4
+      },
+      {
+       "block": "strength",
+       "progression": "horizontal-push",
+       "sets": 3
+      },
+      {
+       "block": "accessory",
+       "progression": "triceps",
+       "sets": 3
+      },
+      {
+       "block": "core",
+       "progression": "hollow",
+       "sets": 3
+      }
+     ],
+     "warmup": [
+      {
+       "id": "push-warm-handgelenke-mobilisieren",
+       "name": "Handgelenke mobilisieren",
+       "detail": "60 s: kreisen, Handflächen und Handrücken am Boden wiegen — Pflicht vor PPPU"
+      },
+      {
+       "id": "push-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts"
+      },
+      {
+       "id": "push-warm-schulterdislokationen",
+       "name": "Schulterdislokationen",
+       "detail": "2 × 10 mit Band oder Besenstiel, weiter Griff"
+      },
+      {
+       "id": "push-warm-cat-cow",
+       "name": "Cat-Cow",
+       "detail": "10 Wiederholungen, Wirbelsäule Segment für Segment"
+      },
+      {
+       "id": "push-warm-scapula-push-ups",
+       "name": "Scapula Push-ups",
+       "detail": "2 × 10 — Protraktion für Planche und L-Sit"
+      },
+      {
+       "id": "push-warm-2-8-leichte-liegestuetze",
+       "name": "2 × 8 leichte Liegestütze",
+       "detail": "als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "push-cool-brustdehnung-im-tuerrahmen",
+       "name": "Brustdehnung im Türrahmen",
+       "detail": "30 s pro Seite, Unterarm am Rahmen, Brust nach vorn"
+      },
+      {
+       "id": "push-cool-trizeps-ueber-kopf",
+       "name": "Trizeps über Kopf",
+       "detail": "20 s pro Seite, Ellenbogen sanft nach hinten ziehen"
+      },
+      {
+       "id": "push-cool-handgelenke-dehnen",
+       "name": "Handgelenke dehnen",
+       "detail": "je 20 s Beuger und Strecker"
+      },
+      {
+       "id": "push-cool-kindhaltung-mit-langen-armen",
+       "name": "Kindhaltung mit langen Armen",
+       "detail": "45 s, Achseln Richtung Boden sinken lassen"
+      },
+      {
+       "id": "push-cool-schulter-quer-dehnen",
+       "name": "Schulter quer dehnen",
+       "detail": "20 s pro Seite"
+      }
+     ]
+    },
+    {
+     "id": "c",
+     "name": "Beine & Zug leicht",
+     "focus": "Beine · Ziehen",
+     "slots": [
+      {
+       "block": "strength",
+       "progression": "pistol",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "split-squat",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "row",
+       "sets": 3
+      },
+      {
+       "block": "accessory",
+       "progression": "hang",
+       "sets": 2
+      },
+      {
+       "block": "core",
+       "progression": "side-plank",
+       "sets": 2
+      }
+     ],
+     "warmup": [
+      {
+       "id": "legs-warm-knoechel-mobilisieren",
+       "name": "Knöchel mobilisieren",
+       "detail": "2 × 10 pro Seite: Knie über die Zehen schieben, Ferse bleibt unten — Pflicht für Pistols"
+      },
+      {
+       "id": "legs-warm-hueftkreisen",
+       "name": "Hüftkreisen",
+       "detail": "je 10 pro Richtung"
+      },
+      {
+       "id": "legs-warm-beinschwingen",
+       "name": "Beinschwingen",
+       "detail": "10 pro Seite vor/zurück, dann 10 seitlich"
+      },
+      {
+       "id": "legs-warm-bodyweight-squats",
+       "name": "Bodyweight Squats",
+       "detail": "15 Wiederholungen, tief und kontrolliert"
+      },
+      {
+       "id": "legs-warm-glute-bridges",
+       "name": "Glute Bridges",
+       "detail": "15 Wiederholungen, oben 1 s halten"
+      },
+      {
+       "id": "legs-warm-leichte-ausfallschritte",
+       "name": "Leichte Ausfallschritte",
+       "detail": "8 pro Seite"
+      }
+     ],
+     "cooldown": [
+      {
+       "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+       "name": "Hüftbeuger im Ausfallschritt",
+       "detail": "30 s pro Seite, Becken aufrichten"
+      },
+      {
+       "id": "legs-cool-hamstrings-im-sitzen",
+       "name": "Hamstrings im Sitzen",
+       "detail": "30 s pro Seite, Rücken lang statt rund"
+      },
+      {
+       "id": "legs-cool-quadrizeps-im-stand",
+       "name": "Quadrizeps im Stand",
+       "detail": "30 s pro Seite, Knie zeigt nach unten"
+      },
+      {
+       "id": "legs-cool-waden-an-der-wand",
+       "name": "Waden an der Wand",
+       "detail": "30 s pro Seite, Ferse am Boden"
+      },
+      {
+       "id": "legs-cool-taubenstellung",
+       "name": "Taubenstellung",
+       "detail": "30 s pro Seite — Gesäß und Piriformis"
+      }
+     ]
+    }
+   ],
+   "weekplan": {
+    "mon": "a",
+    "wed": "b",
+    "sat": "c"
+   }
+  },
+  {
+   "id": "core-finisher",
+   "kind": "workout",
+   "name": "Core-Finisher",
+   "level": "beginner",
+   "minutes": 15,
+   "equipment": [
+    "bar"
+   ],
+   "description": "15 Minuten Rumpf zum Anhängen an eine Einheit oder für zwischendurch.",
+   "workouts": [
+    {
+     "id": "w",
+     "name": "Core-Finisher",
+     "focus": "Rumpf",
+     "slots": [
+      {
+       "block": "core",
+       "progression": "hollow",
+       "sets": 3
+      },
+      {
+       "block": "core",
+       "progression": "leg-raise",
+       "sets": 3
+      },
+      {
+       "block": "core",
+       "progression": "side-plank",
+       "sets": 2
+      }
+     ],
+     "warmup": [],
+     "cooldown": []
+    }
+   ]
+  },
+  {
+   "id": "handstand-practice",
+   "kind": "workout",
+   "name": "Handstand-Praxis",
+   "level": "intermediate",
+   "minutes": 20,
+   "equipment": [],
+   "description": "Kurze, häufige Handstand-Einheit – Balance lernt man durch Wiederholung, nicht durch Erschöpfung.",
+   "workouts": [
+    {
+     "id": "w",
+     "name": "Handstand-Praxis",
+     "focus": "Handstand",
+     "slots": [
+      {
+       "block": "skill",
+       "progression": "handstand",
+       "sets": 5
+      },
+      {
+       "block": "strength",
+       "progression": "vertical-push",
+       "sets": 3
+      },
+      {
+       "block": "core",
+       "progression": "hollow",
+       "sets": 2
+      }
+     ],
+     "warmup": [
+      {
+       "id": "push-warm-handgelenke-mobilisieren",
+       "name": "Handgelenke mobilisieren",
+       "detail": "60 s: kreisen, Handflächen und Handrücken am Boden wiegen — Pflicht vor PPPU"
+      },
+      {
+       "id": "push-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts"
+      },
+      {
+       "id": "push-warm-schulterdislokationen",
+       "name": "Schulterdislokationen",
+       "detail": "2 × 10 mit Band oder Besenstiel, weiter Griff"
+      },
+      {
+       "id": "push-warm-cat-cow",
+       "name": "Cat-Cow",
+       "detail": "10 Wiederholungen, Wirbelsäule Segment für Segment"
+      },
+      {
+       "id": "push-warm-scapula-push-ups",
+       "name": "Scapula Push-ups",
+       "detail": "2 × 10 — Protraktion für Planche und L-Sit"
+      },
+      {
+       "id": "push-warm-2-8-leichte-liegestuetze",
+       "name": "2 × 8 leichte Liegestütze",
+       "detail": "als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": []
+    }
+   ]
+  },
+  {
+   "id": "recovery",
+   "kind": "workout",
+   "name": "Regeneration",
+   "level": "beginner",
+   "minutes": 25,
+   "equipment": [
+    "bar"
+   ],
+   "description": "Leichte Einheit für Ruhetage: Hängen, Schulterblätter, Waden und Seitstütz – Durchblutung statt Ermüdung.",
+   "workouts": [
+    {
+     "id": "w",
+     "name": "Regeneration",
+     "focus": "Leicht · Mobilität",
+     "slots": [
+      {
+       "block": "accessory",
+       "progression": "hang",
+       "sets": 2
+      },
+      {
+       "block": "accessory",
+       "progression": "scapula",
+       "sets": 2
+      },
+      {
+       "block": "accessory",
+       "progression": "calf",
+       "sets": 2
+      },
+      {
+       "block": "core",
+       "progression": "side-plank",
+       "sets": 2
+      }
+     ],
+     "warmup": [],
+     "cooldown": [
+      {
+       "id": "legs-cool-hueftbeuger-im-ausfallschritt",
+       "name": "Hüftbeuger im Ausfallschritt",
+       "detail": "30 s pro Seite, Becken aufrichten"
+      },
+      {
+       "id": "legs-cool-hamstrings-im-sitzen",
+       "name": "Hamstrings im Sitzen",
+       "detail": "30 s pro Seite, Rücken lang statt rund"
+      },
+      {
+       "id": "legs-cool-quadrizeps-im-stand",
+       "name": "Quadrizeps im Stand",
+       "detail": "30 s pro Seite, Knie zeigt nach unten"
+      },
+      {
+       "id": "legs-cool-waden-an-der-wand",
+       "name": "Waden an der Wand",
+       "detail": "30 s pro Seite, Ferse am Boden"
+      },
+      {
+       "id": "legs-cool-taubenstellung",
+       "name": "Taubenstellung",
+       "detail": "30 s pro Seite — Gesäß und Piriformis"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "quick-30",
+   "kind": "workout",
+   "name": "Kurz & knackig",
+   "level": "intermediate",
+   "minutes": 30,
+   "equipment": [
+    "bar",
+    "dip-bars"
+   ],
+   "description": "Ganzkörper in 30 Minuten, wenn der Tag voll ist: je eine Übung Ziehen, Drücken, Beine, Rumpf.",
+   "workouts": [
+    {
+     "id": "w",
+     "name": "Kurz & knackig",
+     "focus": "Ganzkörper",
+     "slots": [
+      {
+       "block": "strength",
+       "progression": "pull-up",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "dip",
+       "sets": 3
+      },
+      {
+       "block": "strength",
+       "progression": "pistol",
+       "sets": 3
+      },
+      {
+       "block": "core",
+       "progression": "hollow",
+       "sets": 2
+      }
+     ],
+     "warmup": [
+      {
+       "id": "pull-warm-armkreisen",
+       "name": "Armkreisen",
+       "detail": "je 20 s vor- und rückwärts, groß und langsam"
+      },
+      {
+       "id": "pull-warm-band-pull-aparts",
+       "name": "Band Pull-Aparts",
+       "detail": "2 × 15 — hintere Schulter aufwecken"
+      },
+      {
+       "id": "pull-warm-scapula-pull-ups",
+       "name": "Scapula Pull-ups",
+       "detail": "2 × 8 an der Stange, Arme bleiben gestreckt"
+      },
+      {
+       "id": "pull-warm-dead-hang-locker",
+       "name": "Dead Hang locker",
+       "detail": "30 s, Schultern bewusst loslassen"
+      },
+      {
+       "id": "pull-warm-ellenbogen-aufwaermen",
+       "name": "Ellenbogen aufwärmen",
+       "detail": "20 Curls ohne Gewicht, dann 20 s Unterarme kreisen"
+      },
+      {
+       "id": "pull-warm-2-3-leichte-klimmzuege",
+       "name": "2–3 leichte Klimmzüge",
+       "detail": "betont langsam, als letzte Vorbereitung"
+      }
+     ],
+     "cooldown": []
+    }
+   ]
+  }
+ ]
+}

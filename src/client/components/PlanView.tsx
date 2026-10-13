@@ -12,6 +12,7 @@ import { SuggestionSheet } from './SuggestionSheet'
 import { GoalPicker } from './ProfileParts'
 import { ask } from '../native'
 import { PhaseSheet } from './PhaseSheet'
+import { TemplatesSheet } from './TemplatesSheet'
 import type { PhaseKind } from '@/domain/model'
 
 const count = (n: number) => `${n} ${n === 1 ? 'Übung' : 'Übungen'}`
@@ -21,6 +22,7 @@ export function PlanView({ t, ps }: { t: Training; ps: PlanSuggestion }) {
   const [viewing, setViewing] = useState(false)
   const [goals, setGoals] = useState(false)
   const [phase, setPhase] = useState<PhaseKind | null>(null)
+  const [library, setLibrary] = useState(false)
   const active = L.activePhases(t.state, t.today)
   const upcoming = (t.state.phases ?? []).filter(p => p.from > t.today)
   const shown = ps.suggestion ?? (viewing ? ps.hidden : null)
@@ -59,6 +61,12 @@ export function PlanView({ t, ps }: { t: Training; ps: PlanSuggestion }) {
           if (await ask({ title: 'Vorherigen Plan wiederherstellen?', message: 'Der zuletzt übernommene Vorschlag wird zurückgenommen. Deine Einheiten bleiben, wie sie sind.', ok: 'Wiederherstellen' })) ps.undo()
         }}><Icon name="undo" size={16} /> Letzten Vorschlag rückgängig</button>
       )}
+
+      <button className="pl-suggest quiet pl-library" onClick={() => setLibrary(true)}>
+        <b className="display">Vorlagen</b>
+        <small>Fertige Pläne und Workouts – Einsteiger, Zuhause, Muscle-up, Core-Finisher …</small>
+        <em>Ansehen <Icon name="right" size={14} /></em>
+      </button>
 
       <h3 className="pl-head display">Woche</h3>
       <ol className="pl-week card">
@@ -115,6 +123,7 @@ export function PlanView({ t, ps }: { t: Training; ps: PlanSuggestion }) {
       {viewing && shown && <SuggestionSheet t={t} s={shown} ps={ps} onClose={() => setViewing(false)} />}
       {goals && <GoalPicker t={t} onClose={() => setGoals(false)} />}
       {phase && <PhaseSheet t={t} kind={phase} onClose={() => setPhase(null)} />}
+      {library && <TemplatesSheet t={t} ps={ps} onClose={() => setLibrary(false)} />}
     </section>
   )
 }

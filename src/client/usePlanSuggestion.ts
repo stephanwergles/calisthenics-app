@@ -40,6 +40,12 @@ export function usePlanSuggestion(t: Training) {
     t.savePlan(suggestion.plan)
     dismiss()
   }
+  /** beliebigen Plan übernehmen (z. B. eine Vorlage) – rückgängig wie ein Vorschlag */
+  const apply = (plan: Plan) => {
+    const prev = JSON.stringify(t.plan ?? null)
+    write(PREVIOUS, prev); setPrevious(prev)
+    t.savePlan(plan)
+  }
   const undo = () => {
     if (previous === null) return
     const prev = JSON.parse(previous) as Plan | null
@@ -51,7 +57,7 @@ export function usePlanSuggestion(t: Training) {
     suggestion: suggestion && dismissed !== sig ? suggestion : null,
     /** ein ausgeblendeter Vorschlag lässt sich wieder ansehen */
     hidden: suggestion && dismissed === sig ? suggestion : null,
-    hasGoals: !!input, accept, dismiss, undo, canUndo: previous !== null,
+    hasGoals: !!input, accept, dismiss, undo, apply, canUndo: previous !== null,
     show: () => { write(DISMISSED, null); setDismissed(null) },
   }
 }

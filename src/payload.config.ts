@@ -9,6 +9,7 @@ import { Activities } from './collections/Activities'
 import { Exercises } from './collections/Exercises'
 import { Progressions } from './collections/Progressions'
 import { Sessions } from './collections/Sessions'
+import { Templates } from './collections/Templates'
 import { Skills } from './collections/Skills'
 import { Splits } from './collections/Splits'
 import { Assessment } from './globals/Assessment'
@@ -30,7 +31,7 @@ export default buildConfig({
     meta: { titleSuffix: ' · Lever' },
   },
   i18n: { supportedLanguages: { de, en }, fallbackLanguage: 'de' },
-  collections: [Sessions, Activities, Plans, Feedback, Exercises, Progressions, Workouts, Skills, Splits, Users],
+  collections: [Sessions, Activities, Plans, Feedback, Exercises, Progressions, Workouts, Skills, Splits, Templates, Users],
   globals: [WeekPlan, Assessment],
   // Abgleich mit der Trainings-App: POST /api/sync (siehe src/sync/endpoint.ts)
   endpoints: [

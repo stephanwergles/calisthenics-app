@@ -187,6 +187,11 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 - [ ] **TestFlight, geschlossene Beta** mit 5–10 Fortgeschrittenen
 - [x] Feedback-Kanal in der App: Profil → Feedback senden (Fehler/Idee/Sonstiges) → Collection `feedback`; anlegen nur angemeldet, lesen/Status nur Admins (Admin → Betrieb → Feedback), Konto löschen entfernt es mit
 
+### Vorlagen-Bibliothek
+- [x] Plan- und Workout-Vorlagen (Collection `templates`, Plan-Tab → Vorlagen): 5 Pläne (Lever Pull/Push/Beine, Einsteiger Ganzkörper 3×, Zuhause ohne Geräte 3×, Kompakt 2×, Muscle-up-Programm 3×), 4 Workouts (Core-Finisher, Handstand-Praxis, Regeneration, Kurz & knackig); Plan übernehmen nach Rückfrage (rückgängig), Workout → Meine Workouts oder heute
+- [ ] Onboarding: „Vorlage wählen“ als Alternative zu „Aus Zielen erzeugen“
+- [ ] Coach-Prüfung der Vorlagen
+
 ### Phase 3.3 — Englisch & Store-Bereitschaft
 
 - [ ] Englische Fassung aller Oberflächentexte, Technik-Texte, Kernpunkte, Muskeln

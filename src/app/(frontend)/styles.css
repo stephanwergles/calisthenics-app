@@ -1063,3 +1063,13 @@ button.clip { display: block; border: none; padding: 0; background: none; color:
 .plan .pl-note:last-child { margin-top: 20px; }
 .sk-cues { margin: 6px 0 2px; padding-left: 18px; font-size: 13px; line-height: 1.45; color: var(--text); }
 .sk-cues li::marker { color: var(--accent); }
+
+/* Vorlagen */
+.plan .pl-library { margin-top: 10px; }
+.tp-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.tp-card { min-height: 0; gap: 4px; }
+.tp-card small { line-height: 1.4; }
+.tp-ex { list-style: none; padding: 0; margin: 0 0 8px; }
+.tp-ex li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--line); font-size: 15px; }
+.tp-ex em { font-style: normal; color: var(--muted); font-size: 13px; white-space: nowrap; }
+.tp-added { color: var(--accent); }

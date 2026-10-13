@@ -200,3 +200,11 @@ test('v3-Katalog: Metadaten, Skills, Splits, Einstufung überstehen Payload und 
     [...assess.rules].sort((a: { progression: string }, b: { progression: string }) => a.progression.localeCompare(b.progression)))
   assert.equal('meta' in C.buildCatalog(exs.map(e => ({ ...e, meta: undefined })) as never, progs as never, works as never, null), false, 'ohne Pflege kein Feld')
 })
+
+test('Vorlagen überstehen Payload und zurück', () => {
+  const tpls = JSON.parse(readFileSync(new URL('../src/seed/templates.json', import.meta.url), 'utf8')).templates
+  const docs = C.catalogToDocs(catalog)
+  const out = C.buildCatalog(docs.exercises.map(e => ({ id: e.id, ...e.data })) as never, docs.progressions.map(p => ({ id: p.id, ...p.data })) as never,
+    docs.workouts.map(w => ({ id: w.id, ...w.data })) as never, null, { templates: tpls.map((t: { id: string }) => ({ id: t.id, ...C.templateToDoc(t as never) })) })
+  assert.deepEqual(out.templates, tpls)
+})
