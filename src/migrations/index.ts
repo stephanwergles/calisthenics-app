@@ -4,6 +4,7 @@ import * as migration_20261012_121337_session_note from './20261012_121337_sessi
 import * as migration_20261012_122912_exercise_coaching from './20261012_122912_exercise_coaching';
 import * as migration_20261012_133753_progression_region from './20261012_133753_progression_region';
 import * as migration_20261012_154049_session_deleted from './20261012_154049_session_deleted';
+import * as migration_20261013_193014_add_user_roles from './20261013_193014_add_user_roles';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261012_154049_session_deleted.up,
     down: migration_20261012_154049_session_deleted.down,
-    name: '20261012_154049_session_deleted'
+    name: '20261012_154049_session_deleted',
+  },
+  {
+    up: migration_20261013_193014_add_user_roles.up,
+    down: migration_20261013_193014_add_user_roles.down,
+    name: '20261013_193014_add_user_roles'
   },
 ];

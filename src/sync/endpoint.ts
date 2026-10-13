@@ -23,45 +23,48 @@ export const syncHandler: PayloadHandler = async req => {
   const rejected: string[] = []
   const list = <T>(v: unknown): T[] => (Array.isArray(v) ? v.slice(0, MAX_DOCS) : [])
   const mine = (key: string): Where => ({ and: [{ user: { equals: user } }, { key: { equals: key } }] })
+  // Alle Zugriffe mit den Rechten der anfragenden Person (die Local API übergeht sie sonst):
+  // fremde Nutzerdaten bleiben unsichtbar, Katalog nur lesbar, die Rolle nicht änderbar
+  const asUser = { req, overrideAccess: false } as const
 
   /* ── Push ── */
   for (const s of list<C.SyncRequest['sessions'][number]>(body.sessions)) {
     if (!C.isSession(s)) { rejected.push(`Einheit ${String((s as { id?: string })?.id)}: ungültig`); continue }
     try {
-      const found = await payload.find({ collection: 'sessions', where: mine(s.id), limit: 1, depth: 0, pagination: false })
+      const found = await payload.find({ ...asUser, collection: 'sessions', where: mine(s.id), limit: 1, depth: 0, pagination: false })
       const doc = found.docs[0]
       if (doc && (doc.clientUpdatedAt ?? 0) >= (s.updatedAt ?? 0)) continue
       const data = C.sessionToDoc(s)
-      if (doc) await payload.update({ collection: 'sessions', id: doc.id, data: data as never, depth: 0 })
-      else await payload.create({ collection: 'sessions', data: { ...data, user } as never, depth: 0 })
+      if (doc) await payload.update({ ...asUser, collection: 'sessions', id: doc.id, data: data as never, depth: 0 })
+      else await payload.create({ ...asUser, collection: 'sessions', data: { ...data, user } as never, depth: 0 })
     } catch (e) { rejected.push(`Einheit ${s.id}: ${(e as Error).message}`) }
   }
 
   for (const a of list<C.SyncRequest['activities'][number]>(body.activities)) {
     if (!C.isActivity(a)) { rejected.push(`Aktivität ${String((a as { id?: string })?.id)}: ungültig`); continue }
     try {
-      const found = await payload.find({ collection: 'activities', where: mine(a.id), limit: 1, depth: 0, pagination: false })
+      const found = await payload.find({ ...asUser, collection: 'activities', where: mine(a.id), limit: 1, depth: 0, pagination: false })
       const doc = found.docs[0]
       if (doc && (doc.clientUpdatedAt ?? 0) >= (a.updatedAt ?? 0)) continue
       const data = C.activityToDoc(a)
-      if (doc) await payload.update({ collection: 'activities', id: doc.id, data: data as never, depth: 0 })
-      else await payload.create({ collection: 'activities', data: { ...data, user } as never, depth: 0 })
+      if (doc) await payload.update({ ...asUser, collection: 'activities', id: doc.id, data: data as never, depth: 0 })
+      else await payload.create({ ...asUser, collection: 'activities', data: { ...data, user } as never, depth: 0 })
     } catch (e) { rejected.push(`Aktivität ${a.id}: ${(e as Error).message}`) }
   }
 
   for (const key of list<string>(body.deletedActivities)) {
     if (typeof key !== 'string') continue
-    try { await payload.delete({ collection: 'activities', where: mine(key) }) }
+    try { await payload.delete({ ...asUser, collection: 'activities', where: mine(key) }) }
     catch (e) { rejected.push(`Löschen ${key}: ${(e as Error).message}`) }
   }
 
-  const me = await payload.findByID({ collection: 'users', id: user, depth: 0 })
+  const me = await payload.findByID({ ...asUser, collection: 'users', id: user, depth: 0 })
   let state = C.docToState((me as { state?: Record<string, unknown> }).state)
   if (body.state) {
     if (!C.isState(body.state)) rejected.push('Trainingsstand: ungültig')
     else if ((body.state.updatedAt ?? 0) > (state.updatedAt ?? 0)) {
       const next = { current: body.state.current, paused: body.state.paused, clientUpdatedAt: body.state.updatedAt ?? Date.now() }
-      await payload.update({ collection: 'users', id: user, data: { state: next } as never, depth: 0 })
+      await payload.update({ ...asUser, collection: 'users', id: user, data: { state: next } as never, depth: 0 })
       state = C.docToState(next)
     }
   }
@@ -70,19 +73,19 @@ export const syncHandler: PayloadHandler = async req => {
   const since = typeof body.since === 'string' ? body.since : null
   const changed: Where = since ? { and: [{ user: { equals: user } }, { updatedAt: { greater_than: since } }] } : { user: { equals: user } }
   const [sessions, activities] = await Promise.all([
-    payload.find({ collection: 'sessions', where: changed, depth: 0, pagination: false }),
-    payload.find({ collection: 'activities', where: changed, depth: 0, pagination: false }),
+    payload.find({ ...asUser, collection: 'sessions', where: changed, depth: 0, pagination: false }),
+    payload.find({ ...asUser, collection: 'activities', where: changed, depth: 0, pagination: false }),
   ])
 
   // Katalogversion = jüngste Änderung an Übungen, Progressionen, Workouts, Wochenplan
   const latest = await Promise.all((['exercises', 'progressions', 'workouts'] as const).map(collection =>
-    payload.find({ collection, sort: '-updatedAt', limit: 1, depth: 0 }).then(r => r.docs[0]?.updatedAt ?? '')))
-  const week = await payload.findGlobal({ slug: 'weekplan', depth: 0 })
+    payload.find({ ...asUser, collection, sort: '-updatedAt', limit: 1, depth: 0 }).then(r => r.docs[0]?.updatedAt ?? '')))
+  const week = await payload.findGlobal({ ...asUser, slug: 'weekplan', depth: 0 })
   const catalogVersion = [...latest, week?.updatedAt ?? ''].sort().pop() ?? ''
   let catalog: C.SyncResponse['catalog']
   if (catalogVersion !== body.catalogVersion) {
     const [exs, progs, works] = await Promise.all((['exercises', 'progressions', 'workouts'] as const).map(collection =>
-      payload.find({ collection, depth: 0, pagination: false }).then(r => r.docs as unknown as Record<string, unknown>[])))
+      payload.find({ ...asUser, collection, depth: 0, pagination: false }).then(r => r.docs as unknown as Record<string, unknown>[])))
     catalog = C.buildCatalog(exs, progs, works, week as unknown as Record<string, unknown>)
   }
 

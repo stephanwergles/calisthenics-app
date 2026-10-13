@@ -98,6 +98,7 @@ Typo: System-Stack, Display-Stil über `font-stretch: condensed` + Uppercase (Kl
 
 Liegt im selben Repo neben der v1-`index.html` – Aufbau und Befehle in `README.md`. Wichtig für die Arbeit daran:
 
+- **Rechte** (`src/access.ts`): Katalog (exercises, progressions, workouts, weekplan) lesen alle Angemeldeten, ändern nur `role: admin`; `users` sieht/ändert nur sich selbst, Rolle nur durch Admins, Admin-Panel nur Admins; Nutzerdaten über `ownDocs`/`setOwner`. Local-API-Aufrufe mit Nutzereingaben **immer** mit `{ req, overrideAccess: false }` (Standard der Local API ist `true` = keine Rechteprüfung) – siehe `src/sync/endpoint.ts`. Nach Änderungen an Rechten: `npm run check:access` (gegen die lokale DB).
 - **Stabile IDs:** Übungen, Progressionen und Workouts haben Slug-IDs als Primärschlüssel (`slugId`-Feld). Nie aus Namen ableiten, nie ändern. Nutzerdaten (`sessions`, `activities`) haben Payload-IDs plus einen `key` (`datum-workout`), über den Import und Sync abgleichen.
 - **Schema nur über Migrationen** (`push: false`): Collection ändern → `npm run payload -- migrate:create <name>` → `migrate` → `generate:types`, Migration committen. `migrate:create` fragt interaktiv nach, wenn sich nichts geändert hat – das heißt: keine Migration nötig.
 - **`payload run` reicht nur Positionsargumente durch**, Flags wie `--email` verschluckt es. Skripte deshalb mit Positionsargumenten bauen.

@@ -100,8 +100,8 @@ Historie hängt weiter **pro Übungs-ID**, nie am Plan — deshalb darf ein Plan
 
 Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Features.
 
-- [ ] **Katalog-Rechte:** Lesen für alle, Schreiben nur Rolle `admin` (heute darf jede angemeldete Person den Katalog ändern und löschen — `loggedIn` in `src/access.ts`)
-- [ ] Rollen an `users` (`admin` / `athlete`), Admin-Panel nur für `admin`
+- [x] **Katalog-Rechte:** Lesen für Angemeldete, Schreiben nur Rolle `admin` (`isAdmin` in `src/access.ts`; Sync-Endpunkt läuft mit den Rechten der Person, `npm run check:access` prüft gegen die DB)
+- [x] Rollen an `users` (`admin` / `athlete`), Admin-Panel nur für `admin` (Rolle nur durch Admins änderbar; Migration macht das älteste Konto zum Admin)
 - [ ] `plans` einführen, `workouts` → mein Plan migrieren, Sessions auf Plan-Workout-Keys umstellen (Migration + Sync + Tests)
 - [ ] **App ohne Account nutzbar** (lokal, offline); Account nur für Sync/Backup und Käufe
 - [ ] Anmeldung: **Sign in with Apple** + E-Mail

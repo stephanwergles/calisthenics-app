@@ -1,12 +1,12 @@
 import type { CollectionConfig } from 'payload'
-import { loggedIn } from '../access'
+import { isAdmin, loggedIn } from '../access'
 import { slugId } from './fields'
 
 export const Progressions: CollectionConfig = {
   slug: 'progressions',
   labels: { singular: 'Progression', plural: 'Progressionen' },
   admin: { useAsTitle: 'id', defaultColumns: ['id', 'steps'], group: 'Katalog' },
-  access: { read: loggedIn, create: loggedIn, update: loggedIn, delete: loggedIn },
+  access: { read: loggedIn, create: isAdmin, update: isAdmin, delete: isAdmin },
   fields: [
     slugId,
     {

@@ -184,6 +184,7 @@ export interface Session {
  */
 export interface User {
   id: number;
+  role: 'athlete' | 'admin';
   state?: {
     /**
      * Progressions-ID → Übungs-ID (nicht Stufen-Index)
@@ -579,6 +580,7 @@ export interface WorkoutsSelect<T extends boolean = true> {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
   state?:
     | T
     | {

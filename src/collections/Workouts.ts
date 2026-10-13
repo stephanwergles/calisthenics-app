@@ -1,5 +1,5 @@
 import type { CollectionConfig, Field } from 'payload'
-import { loggedIn } from '../access'
+import { isAdmin, loggedIn } from '../access'
 import { slugId } from './fields'
 
 const routine = (name: string, label: string): Field => ({
@@ -16,7 +16,7 @@ export const Workouts: CollectionConfig = {
   slug: 'workouts',
   labels: { singular: 'Workout', plural: 'Workouts' },
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'focus', 'id'], group: 'Katalog' },
-  access: { read: loggedIn, create: loggedIn, update: loggedIn, delete: loggedIn },
+  access: { read: loggedIn, create: isAdmin, update: isAdmin, delete: isAdmin },
   fields: [
     slugId,
     { type: 'row', fields: [{ name: 'name', type: 'text', required: true }, { name: 'focus', type: 'text', label: 'Fokus' }] },

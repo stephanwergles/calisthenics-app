@@ -1,12 +1,12 @@
 import type { CollectionConfig } from 'payload'
-import { loggedIn } from '../access'
+import { isAdmin, loggedIn } from '../access'
 import { slugId } from './fields'
 
 export const Exercises: CollectionConfig = {
   slug: 'exercises',
   labels: { singular: 'Übung', plural: 'Übungen' },
   admin: { useAsTitle: 'name', defaultColumns: ['name', 'id', 'unit', 'weighted'], group: 'Katalog' },
-  access: { read: loggedIn, create: loggedIn, update: loggedIn, delete: loggedIn },
+  access: { read: loggedIn, create: isAdmin, update: isAdmin, delete: isAdmin },
   fields: [
     slugId,
     { name: 'name', type: 'text', required: true },
