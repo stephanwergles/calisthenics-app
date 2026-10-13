@@ -1154,7 +1154,10 @@ extension LeverTabBarPlugin {
                 vc.hostSheet = nav.sheetPresentationController
                 vc.backTitle = spec.parent.flatMap { Self.sheets[$0]?.spec.title }
                 nav.pushViewController(vc, animated: true)
-                if spec.detents == ["large"] { nav.sheetPresentationController?.animateChanges { nav.sheetPresentationController?.selectedDetentIdentifier = .large } }
+                // Unterseiten brauchen Platz: Sheet auf volle Höhe, sofern es die erlaubt
+                if let sheet = nav.sheetPresentationController, sheet.detents.contains(where: { $0.identifier == .large }) {
+                    sheet.animateChanges { sheet.selectedDetentIdentifier = .large }
+                }
                 call.resolve(); return
             }
             guard let top = self.topController() else { call.reject("Kein Controller"); return }

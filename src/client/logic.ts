@@ -886,3 +886,26 @@ export function workoutFromTemplate(ix: Index, tpl: Template): Workout {
   return { ...structuredClone(w), id: workoutKey(tpl.name, ix.workouts.keys()), name: tpl.name, slots: w.slots.filter(s => known.has(s.progression)), custom: true }
 }
 export const LEVEL_LABEL: Record<Template['level'], string> = labels(['beginner', 'intermediate', 'advanced'] as const, k => `logic.level.${k}`)
+
+/* ── Skills-Übersicht ────────────────────────────────────────────────────── */
+
+export interface SkillCard {
+  skill: Skill; share: number; stage: string; current: string; lead?: ProgressionId
+  region?: Region; goal: boolean; started: boolean; reached: boolean; missing: string[]; score: number
+}
+/** Alle Skills mit Fortschritt – Ziele zuerst, dann begonnene (nach Fortschritt), dann die
+    realistischsten, erreichte am Ende */
+export function skillOverview(ix: Index, user: UserState, sessions: Session[], skills: Skill[]): SkillCard[] {
+  const goals = profileOf(ix, user).goals
+  const choice = new Map(skillChoices(ix, user, skills).map(c => [c.skill, c]))
+  const cards = skills.filter(s => choice.has(s.id)).map((skill): SkillCard => {
+    const p = goalProgress(ix, user, sessions, skill)
+    const c = choice.get(skill.id)!
+    const touched = skill.targets.some(pid => ix.progressions.has(pid) && (currentStep(ix, user, pid).index > 0
+      || sessions.some(s => s.sets.some(x => ix.progressions.get(pid)!.steps.some(st => st.exercise === x.exercise)))))
+    return { skill, share: p.share, stage: p.stage, current: p.current, lead: p.pid, region: ix.progressions.get(skill.targets[0])?.region,
+      goal: goals.includes(skill.id), started: touched, reached: c.reached, missing: c.missing, score: c.score }
+  })
+  const rank = (c: SkillCard) => (c.goal ? 0 : c.reached ? 3 : c.started ? 1 : 2)
+  return cards.sort((a, b) => rank(a) - rank(b) || (rank(a) === 1 ? b.share - a.share : b.score - a.score))
+}

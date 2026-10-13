@@ -1,6 +1,6 @@
 'use client'
-/* Skill-Tree: jede Progression als kompakte Zeile mit Stufen-Balken, nach Körperregion gruppiert.
-   Antippen öffnet die Leiter als Sheet. */
+/* Skills-Tab: Ziele, nächster realistischer Skill, alle Skills kompakt (Filter nach Region),
+   Skill-Seite mit Progressionen, Stufen-Ansicht als Push-Seite; Grundlagen ganz unten. */
 import { useMemo, useState } from 'react'
 import * as L from '../logic'
 import { REGIONS, type Session } from '@/domain/model'
@@ -13,46 +13,141 @@ import { ask, type NBlock } from '../native'
 import { GoalPicker, useProfile } from './ProfileParts'
 import { catalogData } from '../data'
 
+type Filter = 'all' | 'pull' | 'push' | 'core' | 'legs'
+const FILTERS: [Filter, string][] = [['all', 'Alle'], ['pull', 'Ziehen'], ['push', 'Drücken'], ['core', 'Rumpf'], ['legs', 'Beine']]
+
+/** Skills: deine Ziele, der realistischste nächste Skill, dann alle Skills als kompakte Liste (Filter
+    nach Körperregion). Ein Skill öffnet seine Seite mit den Progressionen; Grundlagen ganz unten. */
 export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
   const tree = useMemo(() => L.skillTree(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
-  const unlocked = tree.reduce((n, p) => n + p.step.index, 0)
-  // nach Skill: deine Ziele zuerst, dann die übrigen Skills; was zu keinem Skill gehört, nach Körperregion
   const { skills } = catalogData(t.ix.catalog)
-  const goals = L.profileOf(t.ix, t.state).goals
-  const seen = new Set<string>()
-  const bySkill = [...skills].sort((a, b) => Number(goals.includes(b.id)) - Number(goals.includes(a.id)))
-    .map(sk => ({
-      key: sk.id, label: sk.name, detail: goals.includes(sk.id) ? 'Dein Ziel' : 'Skill',
-      // Ziel-Progressionen immer beim Skill, Hilfs-Progressionen nur beim ersten Skill
-      paths: [...sk.targets.map(pid => ({ pid, always: true })), ...sk.support.map(pid => ({ pid, always: false }))].flatMap(({ pid, always }) => {
-        const p = tree.find(x => x.pid === pid)
-        if (!p || (!always && seen.has(pid))) return []
-        seen.add(pid)
-        return [p]
-      }).filter((p, i, all) => all.findIndex(x => x.pid === p.pid) === i),
-    })).filter(g => g.paths.length)
-  const groups = [...bySkill, ...[...REGIONS, { id: undefined, label: 'Weitere', detail: '' }]
-    .map(r => ({ key: r.label, label: `${r.label}`, detail: 'Grundlagen', paths: tree.filter(p => p.region === r.id && !seen.has(p.pid)) }))
-    .filter(g => g.paths.length)]
+  const cards = useMemo(() => L.skillOverview(t.ix, t.state, t.sessions, skills), [t.ix, t.state, t.sessions, skills])
+  const [filter, setFilter] = useState<Filter>('all')
+  const [open, setOpen] = useState<string | null>(null)
+  const shown = cards.filter(c => filter === 'all' || c.region === filter)
+  const inSkill = new Set(skills.flatMap(sk => [...sk.targets, ...sk.support]))
+  const basics = tree.filter(p => !inSkill.has(p.pid))
+  const started = cards.filter(c => c.started).length
+  const detail = cards.find(c => c.skill.id === open)
 
   return (
     <section className="skills">
-      <span className="h-date">{tree.length} Progressionen · {unlocked} {unlocked === 1 ? 'Stufe' : 'Stufen'} freigeschaltet</span>
+      <span className="h-date">{cards.length} Skills · {started} begonnen</span>
       <h2 className="page-title display">Skills</h2>
-      <Goals t={t} onOpen={onOpen} />
-      <h3 className="pl-head display">Alle Progressionen</h3>
-      {groups.map(g => (
-        <div key={g.key} className="sk-group">
-          <h3 className="pg-day"><span className="display">{g.label}</span><span>{g.detail}</span></h3>
-          {g.paths.map(p => <Row key={p.pid} p={p} name={L.progressionName(t.ix, p.pid)} onOpen={() => onOpen(p.pid)} />)}
-        </div>
-      ))}
+      <Goals t={t} onOpen={id => setOpen(id)} />
+
+      <h3 className="pl-head display">Alle Skills</h3>
+      <div className="seg pill sk-filter" role="group" aria-label="Körperregion">
+        {FILTERS.map(([k, l]) => <button key={k} className={filter === k ? 'on' : ''} aria-pressed={filter === k} onClick={() => setFilter(k)}>{l}</button>)}
+      </div>
+      <ol className="sk-list">
+        {shown.map(c => (
+          <li key={c.skill.id}>
+            <button className={`sk-item${c.goal ? ' goal' : ''}${!c.started && c.missing.length ? ' later' : ''}`} onClick={() => setOpen(c.skill.id)}>
+              <span className="sk-item-main">
+                <b className="display">{c.skill.name}{c.goal && <em className="sk-badge">Ziel</em>}</b>
+                <small>{c.reached ? 'erreicht' : c.started || !c.missing.length ? `${c.stage} · ${c.current}` : `fehlt noch: ${c.missing.join(', ')}`}</small>
+              </span>
+              <span className="sk-item-side" aria-label={`${Math.round(c.share * 100)} Prozent`}>
+                <span className="goal-bar"><i style={{ width: `${Math.round(c.share * 100)}%` }} /></span>
+                <small>{Math.round(c.share * 100)} %</small>
+              </span>
+              <Icon name="right" size={16} className="sk-chev" />
+            </button>
+          </li>
+        ))}
+      </ol>
+
+      {basics.length > 0 && <>
+        <h3 className="pl-head display">Grundlagen</h3>
+        <p className="hint pl-note sk-basics-hint">Progressionen, die zu keinem Skill gehören – Kraft und Ausgleich.</p>
+        <ol className="sk-list">
+          {basics.map(p => (
+            <li key={p.pid}>
+              <button className="sk-item" onClick={() => onOpen(p.pid)}>
+                <span className="sk-item-main">
+                  <b className="display">{L.progressionName(t.ix, p.pid)}</b>
+                  <small>{p.nodes.length === 1 ? p.step.exercise.name : `${p.step.exercise.name} · Stufe ${p.step.index + 1}/${p.step.total}`}</small>
+                </span>
+                <Icon name="right" size={16} className="sk-chev" />
+              </button>
+            </li>
+          ))}
+        </ol>
+      </>}
+      {detail && <SkillDetail t={t} card={detail} onClose={() => setOpen(null)} />}
     </section>
   )
 }
 
+/** Seite eines Skills: Weg (Ziel-Progressionen), Unterstützung, Voraussetzungen, Ziel an/aus.
+    Eine Progression schiebt die Stufen-Ansicht hinein. */
+function SkillDetail({ t, card, onClose }: { t: Training; card: L.SkillCard; onClose: () => void }) {
+  const native = useNativeShell()
+  const { change } = useProfile(t)
+  const [pid, setPid] = useState<string | null>(null)
+  const sk = card.skill
+  const goals = L.profileOf(t.ix, t.state).goals
+  const full = goals.length >= 3 && !card.goal
+  const row = (id: string) => {
+    const step = L.currentStep(t.ix, t.state, id)
+    return { id, name: L.progressionName(t.ix, id), sub: step.total === 1 ? step.exercise.name : `${step.exercise.name} · Stufe ${step.index + 1}/${step.total}`, ex: step.exercise }
+  }
+  const targets = sk.targets.filter(id => t.ix.progressions.has(id)).map(row)
+  const support = sk.support.filter(id => t.ix.progressions.has(id)).map(row)
+  const prereqs = sk.prerequisites.filter(x => t.ix.progressions.has(x.progression)).map(x => {
+    const done = L.currentStep(t.ix, t.state, x.progression).index >= x.minStep
+    const name = t.ix.exercises.get(t.ix.progressions.get(x.progression)!.steps[Math.min(x.minStep, t.ix.progressions.get(x.progression)!.steps.length - 1)].exercise)?.name ?? x.progression
+    return { name, done }
+  })
+  const sub = card.reached ? 'Erreicht' : `${Math.round(card.share * 100)} % · ${card.stage}${card.goal ? ' · dein Ziel' : ''}`
+  const toggle = () => { if (!full) change(p => L.withGoal(p, sk.id, !card.goal)) }
+  const cta = card.goal ? 'Als Ziel entfernen' : full ? 'Schon drei Ziele gewählt' : 'Als Ziel wählen'
+  useNativeSheet(native ? {
+    id: 'skill-detail', title: sk.name, subtitle: sub, detents: ['medium', 'large'],
+    blocks: [
+      { type: 'section', title: 'Weg zum Skill' },
+      ...targets.map((x): NBlock => ({ type: 'row', id: `p:${x.id}`, title: x.name, subtitle: x.sub, clip: hasClip(x.ex.id) ? x.ex.id : undefined })),
+      ...(support.length ? [{ type: 'section', title: 'Unterstützt durch' } as NBlock, ...support.map((x): NBlock => ({ type: 'row', id: `p:${x.id}`, title: x.name, subtitle: x.sub, clip: hasClip(x.ex.id) ? x.ex.id : undefined }))] : []),
+      ...(prereqs.length ? [{ type: 'section', title: 'Voraussetzungen' } as NBlock,
+        { type: 'text', text: prereqs.map(x => `${x.name} – ${x.done ? 'erfüllt' : 'fehlt noch'}`).join('\n'), style: 'body' } as NBlock] : []),
+    ],
+    footer: [{ id: 'goal', title: cta, symbol: card.goal ? 'minus' : 'plus', style: card.goal ? undefined : 'prominent' }],
+  } : null, e => {
+    if (e.type === 'tap' && e.id?.startsWith('p:')) setPid(e.id.slice(2))
+    else if (e.type === 'tap' && e.id === 'goal') toggle()
+    else if (e.type === 'dismiss') onClose()
+  })
+  const ladder = pid && <SkillSheet t={t} pid={pid} parent={{ id: 'skill-detail', title: sk.name }} onClose={() => setPid(null)} />
+  if (native) return ladder || null
+  const list = (xs: typeof targets) => (
+    <ol className="sk-list">{xs.map(x => (
+      <li key={x.id}><button className="sk-item" onClick={() => setPid(x.id)}>
+        {hasClip(x.ex.id) && <span className="sk-thumb" aria-hidden="true"><ExerciseStill exercise={x.ex} /></span>}
+        <span className="sk-item-main"><b className="display">{x.name}</b><small>{x.sub}</small></span>
+        <Icon name="right" size={16} className="sk-chev" />
+      </button></li>
+    ))}</ol>
+  )
+  return (
+    <>
+      <Sheet large title={sk.name} sub={sub} onClose={onClose}
+        footer={<button className={`btn ${card.goal ? 'btn-secondary' : 'btn-primary'} btn-block`} disabled={full} onClick={toggle}>{cta}</button>}>
+        <h4 className="pe-section">Weg zum Skill</h4>
+        {list(targets)}
+        {support.length > 0 && <><h4 className="pe-section">Unterstützt durch</h4>{list(support)}</>}
+        {prereqs.length > 0 && <>
+          <h4 className="pe-section">Voraussetzungen</h4>
+          <ul className="sk-prereq">{prereqs.map(x => <li key={x.name} className={x.done ? 'done' : ''}><Icon name={x.done ? 'check' : 'minus'} size={14} /> {x.name}</li>)}</ul>
+        </>}
+      </Sheet>
+      {ladder}
+    </>
+  )
+}
+
 /** Leiter einer Progression als Sheet – die Liste bleibt, wo sie war */
-export function SkillSheet({ t, pid, onClose }: { t: Training; pid: string; onClose: () => void }) {
+export function SkillSheet({ t, pid, onClose, parent }: { t: Training; pid: string; onClose: () => void; parent?: { id: string; title: string } }) {
   const tree = useMemo(() => L.skillTree(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
   const p = tree.find(x => x.pid === pid)
   const native = useNativeShell()
@@ -62,35 +157,18 @@ export function SkillSheet({ t, pid, onClose }: { t: Training; pid: string; onCl
   const goal = p ? L.progressionName(t.ix, p.pid) : ''
   // Stufe wechseln: wie im Technik-Sheet auch von Hand – vor dem Kriterium mit Rückfrage
   const act = (id: string) => { if (p) void switchStep(t, p, id) }
-  useNativeSheet(native && p ? { id: 'skill', title: goal, subtitle: sub, detents: ['auto', 'large'], blocks: ladderBlocks(p, t.sessions) } : null, e => {
+  useNativeSheet(native && p ? { id: 'skill', parent: parent?.id, title: goal, subtitle: sub, detents: ['auto', 'large'], blocks: ladderBlocks(p, t.sessions) } : null, e => {
     if (e.type === 'dismiss') onClose()
     else if (e.type === 'tap' && e.id) act(e.id)
   })
   if (!p || native) return null
   return (
-    <Sheet title={goal} sub={sub} onClose={onClose}>
+    <Sheet title={goal} sub={sub} back={parent?.title} onClose={onClose}>
       <Ladder t={t} p={p} onAct={act} />
     </Sheet>
   )
 }
 
-function Row({ p, name, onOpen }: { p: L.SkillPath; name: string; onOpen: () => void }) {
-  return (
-    <button className={`sk-row${p.paused ? ' paused' : ''}`} onClick={onOpen}>
-      {hasClip(p.step.exercise.id) && <span className="sk-thumb" aria-hidden="true"><ExerciseStill exercise={p.step.exercise} /></span>}
-      <span className="sk-row-main">
-        {/* Titel = Name der Progression, darunter wo man gerade steht */}
-        <b className="display">{name}</b>
-        <small>{p.nodes.length === 1 ? 'eine Stufe'
-          : !p.step.next ? 'Ziel erreicht'
-          : `${p.step.exercise.name} · Stufe ${p.step.index + 1}/${p.step.total}`}{p.paused ? ' · pausiert' : ''}</small>
-      </span>
-      <span className="sk-steps" aria-label={`Stufe ${p.step.index + 1} von ${p.step.total}`}>
-        {p.nodes.map((n, i) => <i key={i} className={n.state} />)}
-      </span>
-    </button>
-  )
-}
 
 /** Aktionen der Leiter: unlock (Kriterium erfüllt), force (vorzeitig, mit Rückfrage), back (eine Stufe zurück) */
 async function switchStep(t: Training, p: L.SkillPath, action: string) {
@@ -223,7 +301,7 @@ function Goals({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
       {goals.length ? (
         <div className="pl-grid">
           {goals.map(({ skill, p }) => (
-            <button key={skill.id} className="pl-card goal" onClick={() => p.pid && onOpen(p.pid)}>
+            <button key={skill.id} className="pl-card goal" onClick={() => onOpen(skill.id)}>
               <b className="display">{skill.name}</b>
               <span className="goal-bar" aria-hidden="true"><i style={{ width: `${Math.round(p.share * 100)}%` }} /></span>
               <small>{p.stage} · {p.current}</small>
