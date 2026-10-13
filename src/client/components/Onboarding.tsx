@@ -10,6 +10,7 @@ import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { DISCLAIMER_VERSION } from '../consent'
 import { AssessmentPage, DaysSheet, EquipmentSheet, GoalPicker } from './ProfileParts'
 import { SuggestionSheet } from './SuggestionSheet'
+import { TemplatesSheet } from './TemplatesSheet'
 import { Sheet } from './Sheets'
 import { Icon } from './Icon'
 
@@ -32,27 +33,31 @@ const TITLE: Record<(typeof STEPS)[number], string> = {
 export function Onboarding({ t, ps, onClose }: { t: Training; ps: PlanSuggestion; onClose: () => void }) {
   const native = useNativeShell()
   const [at, setAt] = useState(0)
+  const [library, setLibrary] = useState(false)
   const finish = () => { markDone(); onClose() }
   const go = (i: number) => setAt(i)
   const parentOf = (i: number) => ({ id: SHEET_ID[STEPS[i - 1]], title: TITLE[STEPS[i - 1]] })
   const back = (i: number) => () => setAt(i - 1)
   const hasGoals = ps.hasGoals
-  const intro = 'In fünf kurzen Schritten zu deinem Plan: Kurztest für die Startstufen, Ziele, Ausrüstung und Trainingstage. Du kannst jeden Schritt überspringen und alles später im Profil ändern.'
+  const intro = 'Zwei Wege zu deinem Plan: In fünf kurzen Schritten aus deinen Zielen (Kurztest, Ziele, Ausrüstung, Tage) – oder du wählst einen fertigen Plan aus der Bibliothek. Alles lässt sich später ändern.'
 
   useNativeSheet(native ? {
     id: 'onboarding', title: 'Willkommen bei Lever', subtitle: 'Calisthenics mit Plan – jede Übung ist eine Stufe auf dem Weg zu deinem Skill.', detents: ['large'],
     blocks: [
       { type: 'text', text: intro, style: 'body' },
+      { type: 'button', id: 'library', title: 'Fertigen Plan wählen', symbol: 'square.grid.2x2' },
       { type: 'button', id: 'skip', title: 'Überspringen – Standardplan nutzen' },
     ] as NBlock[],
-    footer: [{ id: 'start', title: 'Los geht’s', symbol: 'arrow.right', style: 'prominent' }],
+    footer: [{ id: 'start', title: 'Aus meinen Zielen', symbol: 'arrow.right', style: 'prominent' }],
   } : null, e => {
     if (e.type === 'tap' && e.id === 'start') go(1)
+    else if (e.type === 'tap' && e.id === 'library') setLibrary(true)
     else if (e.type === 'tap' && e.id === 'skip') finish()
     else if (e.type === 'dismiss') finish()
   })
 
   const pages = <>
+    {library && <TemplatesSheet t={t} ps={ps} plansOnly parent={{ id: 'onboarding', title: 'Willkommen' }} onClose={() => setLibrary(false)} onDone={finish} />}
     {at >= 1 && <AssessmentPage t={t} parent={parentOf(1)} onClose={back(1)} onDone={() => go(2)} />}
     {at >= 2 && <GoalPicker t={t} parent={parentOf(2)} onClose={back(2)} next={{ title: 'Weiter', onNext: () => go(3) }} />}
     {at >= 3 && <EquipmentSheet t={t} parent={parentOf(3)} onClose={back(3)} next={{ title: 'Weiter', onNext: () => go(4) }} />}
@@ -65,7 +70,8 @@ export function Onboarding({ t, ps, onClose }: { t: Training; ps: PlanSuggestion
     <>
       <Sheet large title="Willkommen bei Lever" sub="Calisthenics mit Plan – jede Übung ist eine Stufe auf dem Weg zu deinem Skill." onClose={finish}
         footer={<div className="sg-foot">
-          <button className="btn btn-primary btn-block" onClick={() => go(1)}>Los geht’s <Icon name="right" size={18} /></button>
+          <button className="btn btn-primary btn-block" onClick={() => go(1)}>Aus meinen Zielen <Icon name="right" size={18} /></button>
+          <button className="btn btn-secondary btn-block" onClick={() => setLibrary(true)}>Fertigen Plan wählen</button>
           <button className="btn btn-ghost btn-block" onClick={finish}>Überspringen – Standardplan nutzen</button>
         </div>}>
         <p className="hint">{intro}</p>

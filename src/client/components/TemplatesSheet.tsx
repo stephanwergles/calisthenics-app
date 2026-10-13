@@ -19,7 +19,11 @@ const meta = (tp: Template) => [L.LEVEL_LABEL[tp.level], tp.days ? `${tp.days}×
 const gear = (tp: Template) => tp.equipment.length
   ? tp.equipment.map(e => L.EQUIPMENT_LABEL[e as keyof typeof L.EQUIPMENT_LABEL] ?? e).join(', ') : 'nur Boden und Wand'
 
-export function TemplatesSheet({ t, ps, onClose }: { t: Training; ps: PlanSuggestion; onClose: () => void }) {
+export function TemplatesSheet({ t, ps, onClose, parent, plansOnly, onDone }: {
+  t: Training; ps: PlanSuggestion; onClose: () => void
+  /** Onboarding: als Push-Seite, nur Pläne, nach dem Übernehmen onDone */
+  parent?: { id: string; title: string }; plansOnly?: boolean; onDone?: () => void
+}) {
   const native = useNativeShell()
   const [kind, setKind] = useState<'plan' | 'workout'>('plan')
   const [open, setOpen] = useState<string | null>(null)
@@ -28,9 +32,9 @@ export function TemplatesSheet({ t, ps, onClose }: { t: Training; ps: PlanSugges
   const tpl = all.find(x => x.id === open)
   const sub = 'Fertige Pläne und Workouts – sie starten auf deiner aktuellen Stufe jeder Progression.'
   useNativeSheet(native ? {
-    id: 'templates', title: 'Vorlagen', subtitle: sub, detents: ['large'],
+    id: 'templates', parent: parent?.id, title: plansOnly ? 'Plan-Vorlagen' : 'Vorlagen', subtitle: sub, detents: ['large'],
     blocks: [
-      { type: 'segmented', id: 'kind', options: [{ id: 'plan', title: 'Pläne' }, { id: 'workout', title: 'Workouts' }], selected: kind },
+      ...(plansOnly ? [] : [{ type: 'segmented', id: 'kind', options: [{ id: 'plan', title: 'Pläne' }, { id: 'workout', title: 'Workouts' }], selected: kind } as NBlock]),
       ...list.map((x): NBlock => ({ type: 'row', id: `tpl:${x.id}`, title: x.name, subtitle: meta(x), symbol: 'none' })),
     ],
   } : null, e => {
@@ -38,14 +42,14 @@ export function TemplatesSheet({ t, ps, onClose }: { t: Training; ps: PlanSugges
     else if (e.type === 'tap' && e.id?.startsWith('tpl:')) setOpen(e.id.slice(4))
     else if (e.type === 'dismiss') onClose()
   })
-  const detail = tpl && <TemplatePage t={t} ps={ps} tpl={tpl} onBack={() => setOpen(null)} onDone={onClose} />
+  const detail = tpl && <TemplatePage t={t} ps={ps} tpl={tpl} onBack={() => setOpen(null)} onDone={onDone ?? onClose} />
   if (native) return detail ?? null
   return (
     <>
-      <Sheet large title="Vorlagen" sub={sub} onClose={onClose}>
-        <div className="seg pill" role="group" aria-label="Art">
+      <Sheet large title={plansOnly ? 'Plan-Vorlagen' : 'Vorlagen'} sub={sub} back={parent?.title} onClose={onClose}>
+        {!plansOnly && <div className="seg pill" role="group" aria-label="Art">
           {(['plan', 'workout'] as const).map(k => <button key={k} className={kind === k ? 'on' : ''} aria-pressed={kind === k} onClick={() => setKind(k)}>{k === 'plan' ? 'Pläne' : 'Workouts'}</button>)}
-        </div>
+        </div>}
         <div className="tp-list">
           {list.map(x => (
             <button key={x.id} className="pl-card tp-card" onClick={() => setOpen(x.id)}>
