@@ -5,7 +5,7 @@ import { clientUpdatedAt, localDate, owner } from './fields'
 export const Sessions: CollectionConfig = {
   slug: 'sessions',
   labels: { singular: 'Einheit', plural: 'Einheiten' },
-  admin: { useAsTitle: 'key', defaultColumns: ['date', 'workout', 'durationSec'], group: 'Training' },
+  admin: { useAsTitle: 'key', defaultColumns: ['date', 'workoutKey', 'durationSec'], group: 'Training' },
   defaultSort: '-date',
   access: { read: ownDocs, create: loggedIn, update: ownDocs, delete: ownDocs },
   hooks: { beforeChange: [setOwner] },
@@ -17,7 +17,9 @@ export const Sessions: CollectionConfig = {
     },
     { type: 'row', fields: [
       localDate,
-      { name: 'workout', type: 'relationship', relationTo: 'workouts', required: true },
+      // Plan-Schlüssel des Workouts (eigene Workouts stehen nicht im Katalog); die Verknüpfung nur, wenn es ein Katalog-Workout ist
+      { name: 'workoutKey', type: 'text', index: true, label: 'Workout' },
+      { name: 'workout', type: 'relationship', relationTo: 'workouts', label: 'Katalog-Workout' },
       { name: 'durationSec', type: 'number', label: 'Dauer (s)' },
     ] },
     {

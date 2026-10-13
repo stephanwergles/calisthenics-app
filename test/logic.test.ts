@@ -295,3 +295,18 @@ test('Freischalten: Sätze mit Zusatzgewicht zählen ab dem Mindestwert der näc
   assert.equal(L.unlockProgress(weighted, 'dip', target, next)!.done, 2)
   assert.equal(L.unlockReadiness(weighted, 'dip', target, next), 1)
 })
+
+test('Eigener Plan: ohne Plan gilt der Katalog, mit Plan dessen Workouts und Wochenplan', () => {
+  assert.equal(L.effectiveCatalog(catalog, null), catalog, 'ohne Plan unverändert')
+  const plan = L.planFromCatalog(catalog)
+  assert.deepEqual(L.effectiveCatalog(catalog, plan).workouts, catalog.workouts, 'Kopie des Katalogs = gleicher Plan')
+  assert.deepEqual(L.effectiveCatalog(catalog, plan).weekplan, catalog.weekplan)
+  plan.workouts[0].name = 'geändert'
+  assert.notEqual(catalog.workouts[0].name, 'geändert', 'Kopie, keine Referenz')
+  const own = { ...plan, workouts: [{ ...plan.workouts[0], id: 'mein-tag', slots: [...plan.workouts[0].slots, { block: 'strength' as const, progression: 'gibt-es-nicht' }] }], weekplan: { thu: 'mein-tag' } }
+  const eff = L.effectiveCatalog(catalog, own)
+  assert.deepEqual(eff.workouts.map(w => w.id), ['mein-tag'])
+  assert.equal(eff.workouts[0].slots.length, plan.workouts[0].slots.length, 'unbekannte Leiter fällt weg')
+  assert.equal(L.indexCatalog(eff).workouts.get('mein-tag')?.id, 'mein-tag')
+  assert.equal(eff.progressions, catalog.progressions, 'Leitern bleiben aus dem Katalog')
+})

@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import catalogJson from '@/seed/catalog.json'
 import positionsJson from '@/migrate/v1-positions.json'
-import type { Activity, Catalog, Dataset, Session, UserState, WorkoutId } from '@/domain/model'
+import type { Activity, Catalog, Dataset, Plan, Session, UserState, WorkoutId } from '@/domain/model'
 import { migrate, type V1Positions } from '@/migrate/core'
 import { catalogUsable } from '@/sync/convert'
 import * as db from './db'
@@ -44,7 +44,10 @@ export function useTraining() {
   const [today, setToday] = useState(L.localDate())
   const [sync, setSync] = useState<SyncStatus>({ account: undefined, phase: 'idle', lastSync: null, pending: 0 })
 
-  const ix = useMemo(() => L.indexCatalog(catalog), [catalog])
+  // eigener Plan (null = Katalog-Plan, also der bisherige Plan unverändert)
+  const [plan, setPlanRaw] = useState<Plan | null>(null)
+  const planRef = useRef(plan); planRef.current = plan
+  const ix = useMemo(() => L.indexCatalog(L.effectiveCatalog(catalog, plan)), [catalog, plan])
 
   // Refs: der Sync arbeitet asynchron und braucht immer den aktuellen Stand
   const sessionsRef = useRef(sessions); sessionsRef.current = sessions
@@ -84,11 +87,13 @@ export function useTraining() {
         ...sessionsOut.map(s => [`s:${s.id}`, s.updatedAt] as const),
         ...activitiesOut.map(a => [`a:${a.id}`, a.updatedAt] as const),
       ])
+      const planSentAt = planRef.current?.updatedAt
       const stateSentAt = stateRef.current.updatedAt
       const res = await api.postSync({
         since: meta.current.lastSync, catalogVersion: meta.current.catalogVersion,
         sessions: sessionsOut, activities: activitiesOut,
         deletedActivities: ob.deletedActivities, state: first || ob.state ? stateRef.current : null,
+        ...((first || ob.plan) && planRef.current ? { plan: planRef.current } : {}),
       })
 
       // Postausgang leeren – außer was sich während des Syncs schon wieder geändert hat
@@ -97,6 +102,7 @@ export function useTraining() {
         activities: ob.activities.filter(id => activitiesRef.current.find(a => a.id === id)?.updatedAt !== sentAt.get(`a:${id}`)),
         deletedActivities: outbox.current.deletedActivities.filter(id => !ob.deletedActivities.includes(id)),
         state: outbox.current.state && stateRef.current.updatedAt !== stateSentAt,
+        plan: !!outbox.current.plan && planRef.current?.updatedAt !== planSentAt,
       }
 
       // Server-Stand einarbeiten
@@ -114,6 +120,9 @@ export function useTraining() {
       }
       if (api.takeRemote(stateRef.current, res.state, outbox.current.state) && (res.state.updatedAt ?? 0) > 0) {
         setStateRaw(res.state); void db.kvSet('state', res.state)
+      }
+      if (res.plan && api.takeRemote(planRef.current ?? undefined, res.plan, !!outbox.current.plan)) {
+        planRef.current = res.plan; setPlanRaw(res.plan); void db.kvSet('plan', res.plan)
       }
       if (res.catalog && catalogUsable(res.catalog)) {
         setCatalog(res.catalog); void db.kvSet('catalog', res.catalog)
@@ -142,9 +151,10 @@ export function useTraining() {
     timer.current = setTimeout(() => void runSync(), delay)
   }, [runSync])
 
-  const markDirty = useCallback((kind: 'sessions' | 'activities' | 'deletedActivities' | 'state', id?: string) => {
+  const markDirty = useCallback((kind: 'sessions' | 'activities' | 'deletedActivities' | 'state' | 'plan', id?: string) => {
     const o = outbox.current
     if (kind === 'state') o.state = true
+    else if (kind === 'plan') o.plan = true
     else if (id && !o[kind].includes(id)) o[kind] = [...o[kind], id]
     if (kind === 'deletedActivities' && id) o.activities = o.activities.filter(x => x !== id)
     saveOutbox()
@@ -155,7 +165,7 @@ export function useTraining() {
 
   useEffect(() => {
     void (async () => {
-      const [ss, as, st, ac, ch, ok, cat, ob, m, acct, cons] = await Promise.all([
+      const [ss, as, st, ac, ch, ok, cat, ob, m, acct, cons, pl] = await Promise.all([
         db.getAll<Session>('sessions'), db.getAll<Activity>('activities'),
         db.kvGet<UserState>('state'), db.kvGet<ActiveSession>('active'),
         db.kvGet<{ date: string; workout: WorkoutId }>('choice'), db.persistent(),
@@ -163,6 +173,7 @@ export function useTraining() {
         db.kvGet<{ lastSync: string | null; catalogVersion: string | null }>('meta'),
         db.kvGet<api.Who | null>('account'),
         db.kvGet<{ health: string | null; disclaimer: string | null }>('consent'),
+        db.kvGet<Plan | null>('plan'),
       ])
       setSessions(new Map(ss.map(s => [s.id, s])))
       setActivities(as)
@@ -171,6 +182,7 @@ export function useTraining() {
       setChoice(ch ?? null)
       setPersistent(ok)
       if (cons) { consentRef.current = cons; setConsentRaw(cons) }
+      if (pl) { planRef.current = pl; setPlanRaw(pl) }
       if (catalogUsable(cat)) setCatalog(cat)
       outbox.current = { ...api.EMPTY_OUTBOX, ...ob }
       meta.current = { lastSync: m?.lastSync ?? null, catalogVersion: m?.catalogVersion ?? null, account: acct ?? undefined }
@@ -347,6 +359,13 @@ export function useTraining() {
     setSync(s => ({ ...s, account: null, consentMissing: false }))
   }, [])
 
+  /** Plan speichern (eigene Workouts, Wochenplan) – neue Version, wird abgeglichen */
+  const savePlan = useCallback((next: Plan) => {
+    const p = { ...next, version: (planRef.current?.version ?? 0) + 1, updatedAt: Date.now() }
+    planRef.current = p; setPlanRaw(p); void db.kvSet('plan', p)
+    markDirty('plan')
+  }, [markDirty])
+
   /** Konto löschen (Server: Konto + alle Trainingsdaten); auf dem Gerät bleibt alles, ohne Abgleich */
   const deleteAccount = useCallback(async () => {
     await api.deleteAccount()
@@ -363,6 +382,7 @@ export function useTraining() {
     addActivity, removeActivity, removeSession, importV1, exportData,
     sync, syncNow: runSync, signIn, signOut, deleteAccount,
     consent, acceptHealthConsent, acceptDisclaimer,
+    plan, savePlan, baseCatalog: catalog,
   }
 }
 export type Training = ReturnType<typeof useTraining>

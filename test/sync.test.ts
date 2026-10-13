@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import type { Catalog, Session } from '../src/domain/model.ts'
+import type { Catalog, Plan, Session } from '../src/domain/model.ts'
 import * as C from '../src/sync/convert.ts'
 
 const catalog: Catalog = JSON.parse(readFileSync(new URL('../src/seed/catalog.json', import.meta.url), 'utf8'))
@@ -99,4 +99,40 @@ test('Konfliktregel: wann ersetzt die Server-Fassung die lokale?', async () => {
   assert.equal(takeRemote({ updatedAt: 9 }, { updatedAt: 1 }, false), true, 'lokal sauber: Server ist maßgeblich')
   assert.equal(takeRemote({ updatedAt: 9 }, { updatedAt: 1 }, true), false, 'lokal ungesendet und jünger: bleibt')
   assert.equal(takeRemote({ updatedAt: 1 }, { updatedAt: 9 }, true), true, 'Server jünger: gewinnt')
+})
+
+test('Einheit: Plan-Schlüssel statt Katalog-Verknüpfung, ältere Einheiten weiter lesbar', () => {
+  const custom = { ...session, id: '2026-09-30-mein-oberkoerper', workout: 'mein-oberkoerper' }
+  const doc = C.sessionToDoc(custom)
+  assert.equal(doc.workoutKey, 'mein-oberkoerper')
+  assert.deepEqual(C.docToSession(asPayload({ ...doc, workout: null })), custom, 'eigenes Workout ohne Katalog-Verknüpfung')
+  const old = asPayload({ ...C.sessionToDoc(session), workoutKey: null, workout: { id: 'pull', name: 'Tag A' } })
+  assert.equal(C.docToSession(old).workout, 'pull', 'alte Einheit ohne Schlüssel → Katalog-Workout')
+})
+
+const plan: Plan = {
+  id: 'main', version: 3, name: 'Mein Plan', source: 'custom', updatedAt: 1790000000500,
+  workouts: [
+    { ...catalog.workouts[0] },
+    { id: 'mein-oberkoerper', name: 'Oberkörper kurz', focus: 'Zug · Druck', warmup: [], cooldown: [],
+      slots: [{ block: 'strength', progression: 'pull-up' }, { block: 'strength', progression: 'dip' }] },
+  ],
+  weekplan: { sun: catalog.workouts[0].id, thu: 'mein-oberkoerper' },
+  inputs: { skills: ['muscle-up'], equipment: ['bar'], days: ['sun', 'thu'], minutes: 60 },
+}
+
+test('Plan übersteht den Weg zum Server und zurück', () => {
+  // workouts/weekplan/inputs sind JSON-Felder: Payload gibt sie unverändert zurück (keine Zeilen-IDs)
+  const fromDb = (p: Plan) => { const d = C.planToDoc(p); return { id: 9, user: 1, ...asPayload({ ...d, workouts: undefined, weekplan: undefined, inputs: undefined }), workouts: d.workouts, weekplan: d.weekplan, inputs: d.inputs } }
+  assert.deepEqual(C.docToPlan(fromDb(plan)), plan)
+  assert.equal('inputs' in C.docToPlan(fromDb({ ...plan, inputs: undefined })), false)
+})
+
+test('Plan-Eingaben werden geprüft', () => {
+  assert.ok(C.isPlan(plan))
+  assert.equal(C.isPlan({ ...plan, weekplan: { mon: 'gibt-es-nicht' } }), false, 'Wochenplan zeigt auf unbekanntes Workout')
+  assert.equal(C.isPlan({ ...plan, weekplan: { funday: plan.workouts[0].id } }), false)
+  assert.equal(C.isPlan({ ...plan, workouts: [{ ...plan.workouts[0], id: '<x>' }] }), false)
+  assert.equal(C.isPlan({ ...plan, version: 1.5 }), false)
+  assert.equal(C.isPlan({ ...plan, name: 'x'.repeat(81) }), false)
 })

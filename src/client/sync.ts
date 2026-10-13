@@ -62,6 +62,6 @@ export function takeRemote(local: { updatedAt?: number } | undefined, remote: { 
   return !local || !localDirty || (remote.updatedAt ?? 0) > (local.updatedAt ?? 0)
 }
 
-export interface Outbox { sessions: string[]; activities: string[]; deletedActivities: string[]; state: boolean }
-export const EMPTY_OUTBOX: Outbox = { sessions: [], activities: [], deletedActivities: [], state: false }
-export const pendingCount = (o: Outbox) => o.sessions.length + o.activities.length + o.deletedActivities.length + (o.state ? 1 : 0)
+export interface Outbox { sessions: string[]; activities: string[]; deletedActivities: string[]; state: boolean; plan?: boolean }
+export const EMPTY_OUTBOX: Outbox = { sessions: [], activities: [], deletedActivities: [], state: false, plan: false }
+export const pendingCount = (o: Outbox) => o.sessions.length + o.activities.length + o.deletedActivities.length + (o.state ? 1 : 0) + (o.plan ? 1 : 0)

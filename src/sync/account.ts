@@ -11,6 +11,7 @@ export const deleteAccountHandler: PayloadHandler = async req => {
   const mine = { user: { equals: user } }
   await payload.delete({ collection: 'sessions', where: mine, req, overrideAccess: false })
   await payload.delete({ collection: 'activities', where: mine, req, overrideAccess: false })
+  await payload.delete({ collection: 'plans', where: mine, req, overrideAccess: false })
   await payload.delete({ collection: 'users', id: user, overrideAccess: true })
   payload.logger.info(`Konto ${user} auf eigenen Wunsch gelöscht`)
   // Browser: Anmelde-Cookie entwerten

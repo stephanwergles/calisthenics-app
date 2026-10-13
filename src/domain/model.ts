@@ -88,6 +88,21 @@ export interface Catalog {
 
 /* ── Nutzerdaten ─────────────────────────────────────────────────────────── */
 
+/** Persönlicher Plan (pro Person, synchronisiert). Fehlt er, gilt der Plan aus dem Katalog –
+    so bleibt jeder bestehende Plan unverändert, bis die Person ihn selbst ändert. */
+export interface Plan {
+  id: string;                   // „main“ – später evtl. mehrere
+  version: number;              // jede bestätigte Änderung +1
+  name: string;
+  source: "catalog" | "generated" | "custom";
+  workouts: Workout[];          // gleiche Form wie im Katalog; Workout-IDs sind Plan-Schlüssel
+  weekplan: Partial<Record<Weekday, WorkoutId>>;
+  /** Eingaben, aus denen der Plan erzeugt wurde (Generator) */
+  inputs?: { skills: string[]; equipment: string[]; days: Weekday[]; minutes: number; split?: string };
+  updatedAt?: number;
+}
+
+
 export interface SetLog {
   exercise: ExerciseId;         // die Historie folgt der Übung, egal wo sie im Plan steht
   progression: ProgressionId;   // Kontext: über welchen Slot sie trainiert wurde

@@ -34,6 +34,10 @@ export const syncHandler: PayloadHandler = async req => {
   // fremde Nutzerdaten bleiben unsichtbar, Katalog nur lesbar, die Rolle nicht änderbar
   const asUser = { req, overrideAccess: false } as const
 
+  // Katalog-Workouts: Einheiten eigener Workouts haben keine Katalog-Verknüpfung, nur den Plan-Schlüssel
+  const catalogWorkouts = new Set((await payload.find({ ...asUser, collection: 'workouts', depth: 0, pagination: false, select: {} }))
+    .docs.map(d => String(d.id)))
+
   /* ── Push ── */
   for (const s of list<C.SyncRequest['sessions'][number]>(body.sessions)) {
     if (!C.isSession(s)) { rejected.push(`Einheit ${String((s as { id?: string })?.id)}: ungültig`); continue }
@@ -41,7 +45,8 @@ export const syncHandler: PayloadHandler = async req => {
       const found = await payload.find({ ...asUser, collection: 'sessions', where: mine(s.id), limit: 1, depth: 0, pagination: false })
       const doc = found.docs[0]
       if (doc && (doc.clientUpdatedAt ?? 0) >= (s.updatedAt ?? 0)) continue
-      const data = C.sessionToDoc(s)
+      const data: Record<string, unknown> = C.sessionToDoc(s)
+      if (!catalogWorkouts.has(s.workout)) data.workout = null
       if (doc) await payload.update({ ...asUser, collection: 'sessions', id: doc.id, data: data as never, depth: 0 })
       else await payload.create({ ...asUser, collection: 'sessions', data: { ...data, user } as never, depth: 0 })
     } catch (e) { rejected.push(`Einheit ${s.id}: ${(e as Error).message}`) }
@@ -63,6 +68,20 @@ export const syncHandler: PayloadHandler = async req => {
     if (typeof key !== 'string') continue
     try { await payload.delete({ ...asUser, collection: 'activities', where: mine(key) }) }
     catch (e) { rejected.push(`Löschen ${key}: ${(e as Error).message}`) }
+  }
+
+  // eigener Plan: neuere Fassung gewinnt (wie bei Einheiten)
+  if (body.plan) {
+    if (!C.isPlan(body.plan)) rejected.push('Plan: ungültig')
+    else try {
+      const found = await payload.find({ ...asUser, collection: 'plans', where: mine(body.plan.id), limit: 1, depth: 0, pagination: false })
+      const doc = found.docs[0]
+      if (!doc || (doc.clientUpdatedAt ?? 0) < (body.plan.updatedAt ?? 0)) {
+        const data = C.planToDoc(body.plan)
+        if (doc) await payload.update({ ...asUser, collection: 'plans', id: doc.id, data: data as never, depth: 0 })
+        else await payload.create({ ...asUser, collection: 'plans', data: { ...data, user } as never, depth: 0 })
+      }
+    } catch (e) { rejected.push(`Plan: ${(e as Error).message}`) }
   }
 
   const me = await payload.findByID({ ...asUser, collection: 'users', id: user, depth: 0 })
@@ -96,7 +115,9 @@ export const syncHandler: PayloadHandler = async req => {
     catalog = C.buildCatalog(exs, progs, works, week as unknown as Record<string, unknown>)
   }
 
+  const planDoc = (await payload.find({ ...asUser, collection: 'plans', where: mine('main'), limit: 1, depth: 0, pagination: false })).docs[0]
   const res: C.SyncResponse = {
+    plan: planDoc ? C.docToPlan(planDoc as unknown as Record<string, unknown>) : null,
     serverTime, rejected, state, catalogVersion,
     sessions: sessions.docs.map(d => C.docToSession(d as unknown as Record<string, unknown>)),
     activities: activities.docs.map(d => C.docToActivity(d as unknown as Record<string, unknown>)),

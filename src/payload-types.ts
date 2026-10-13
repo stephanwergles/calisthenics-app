@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     sessions: Session;
     activities: Activity;
+    plans: Plan;
     exercises: Exercise;
     progressions: Progression;
     workouts: Workout;
@@ -82,6 +83,7 @@ export interface Config {
   collectionsSelect: {
     sessions: SessionsSelect<false> | SessionsSelect<true>;
     activities: ActivitiesSelect<false> | ActivitiesSelect<true>;
+    plans: PlansSelect<false> | PlansSelect<true>;
     exercises: ExercisesSelect<false> | ExercisesSelect<true>;
     progressions: ProgressionsSelect<false> | ProgressionsSelect<true>;
     workouts: WorkoutsSelect<false> | WorkoutsSelect<true>;
@@ -141,7 +143,8 @@ export interface Session {
    */
   key: string;
   date: string;
-  workout: string | Workout;
+  workoutKey?: string | null;
+  workout?: (string | null) | Workout;
   durationSec?: number | null;
   sets?:
     | {
@@ -350,6 +353,54 @@ export interface Activity {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans".
+ */
+export interface Plan {
+  id: number;
+  user: number | User;
+  /**
+   * z. B. „main“
+   */
+  key: string;
+  name: string;
+  version: number;
+  source: 'catalog' | 'generated' | 'custom';
+  workouts:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  weekplan:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  inputs?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Letzte Änderung auf dem Gerät (ms) – für den Sync
+   */
+  clientUpdatedAt?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -379,6 +430,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'activities';
         value: number | Activity;
+      } | null)
+    | ({
+        relationTo: 'plans';
+        value: number | Plan;
       } | null)
     | ({
         relationTo: 'exercises';
@@ -446,6 +501,7 @@ export interface SessionsSelect<T extends boolean = true> {
   user?: T;
   key?: T;
   date?: T;
+  workoutKey?: T;
   workout?: T;
   durationSec?: T;
   sets?:
@@ -484,6 +540,23 @@ export interface ActivitiesSelect<T extends boolean = true> {
   elevationM?: T;
   rounds?: T;
   note?: T;
+  clientUpdatedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans_select".
+ */
+export interface PlansSelect<T extends boolean = true> {
+  user?: T;
+  key?: T;
+  name?: T;
+  version?: T;
+  source?: T;
+  workouts?: T;
+  weekplan?: T;
+  inputs?: T;
   clientUpdatedAt?: T;
   updatedAt?: T;
   createdAt?: T;

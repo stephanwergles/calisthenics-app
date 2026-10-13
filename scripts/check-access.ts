@@ -52,6 +52,22 @@ try {
   results.push(['Sync: Wochenplan lesbar', true])
   await payload.delete({ collection: 'sessions', id: sess.id })
 
+  // eigener Plan: Besitz wird gesetzt, fremde Pläne bleiben unsichtbar
+  const stranger = await payload.create({ collection: 'users', data: { email: `plan-${email}`, password: crypto.randomUUID() } as never })
+  const planData = { key: 'main', name: 'Mein Plan', version: 1, source: 'custom', workouts: [], weekplan: {} }
+  try {
+    const foreign = await payload.create({ collection: 'plans', data: { ...planData, user: stranger.id } as never })
+    const own = await payload.create({ ...as, collection: 'plans', data: { ...planData, user: stranger.id } as never, depth: 0 })
+    results.push(['Plan: Besitz immer die anlegende Person', own.user === athlete.id])
+    const plans = await payload.find({ ...as, collection: 'plans', depth: 0, pagination: false })
+    results.push(['Plan: sieht nur den eigenen', plans.docs.length === 1 && plans.docs[0].id === own.id])
+    await expectDenied('Plan: fremden ändern verweigert', () => payload.update({ ...as, collection: 'plans', id: foreign.id, data: { name: 'x' } as never }))
+    await expectDenied('Plan: fremden löschen verweigert', () => payload.delete({ ...as, collection: 'plans', id: foreign.id }))
+  } finally {
+    await payload.delete({ collection: 'plans', where: { user: { in: [athlete.id, stranger.id] } } })
+    await payload.delete({ collection: 'users', id: stranger.id })
+  }
+
   const panel = payload.collections.users.config.access.admin
   results.push(['Admin-Panel verweigert', !(await panel?.({ req } as never))])
 } finally {
@@ -66,15 +82,17 @@ try {
   for (const u of [gone, other]) {
     await payload.create({ collection: 'sessions', data: { key: `2026-01-02-${w}`, date: '2026-01-02', workout: w, user: u.id, sets: [] } as never })
     await payload.create({ collection: 'activities', data: { key: `2026-01-02-run-${u.id}`, date: '2026-01-02', kind: 'run', user: u.id } as never })
+    await payload.create({ collection: 'plans', data: { key: 'main', name: 'Mein Plan', version: 1, source: 'custom', workouts: [], weekplan: {}, user: u.id } as never })
   }
   const res = await deleteAccountHandler({ payload, user: { ...gone, collection: 'users' } } as never)
-  const count = async (c: 'sessions' | 'activities', u: number | string) => (await payload.count({ collection: c, where: { user: { equals: u } } })).totalDocs
+  const count = async (c: 'sessions' | 'activities' | 'plans', u: number | string) => (await payload.count({ collection: c, where: { user: { equals: u } } })).totalDocs
   results.push(['Konto löschen: Antwort ok', res.status === 200])
   results.push(['Konto löschen: Person weg', (await payload.count({ collection: 'users', where: { id: { equals: gone.id } } })).totalDocs === 0])
-  results.push(['Konto löschen: eigene Einheiten/Aktivitäten weg', (await count('sessions', gone.id)) + (await count('activities', gone.id)) === 0])
-  results.push(['Konto löschen: fremde Daten bleiben', (await count('sessions', other.id)) === 1 && (await count('activities', other.id)) === 1])
+  results.push(['Konto löschen: eigene Einheiten/Aktivitäten/Pläne weg', (await count('sessions', gone.id)) + (await count('activities', gone.id)) + (await count('plans', gone.id)) === 0])
+  results.push(['Konto löschen: fremde Daten bleiben', (await count('sessions', other.id)) === 1 && (await count('activities', other.id)) === 1 && (await count('plans', other.id)) === 1])
   await payload.delete({ collection: 'sessions', where: { user: { equals: other.id } } })
   await payload.delete({ collection: 'activities', where: { user: { equals: other.id } } })
+  await payload.delete({ collection: 'plans', where: { user: { equals: other.id } } })
   await payload.delete({ collection: 'users', id: other.id })
 }
 

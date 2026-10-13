@@ -4,7 +4,7 @@
    Payload liefert leere Felder als null, Relationen je nach depth als ID oder
    Objekt und Array-Zeilen mit eigener `id`. Das App-Modell kennt nichts davon. */
 import { NOTE_MAX } from '../domain/model.ts'
-import type { Activity, Catalog, Exercise, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
+import type { Activity, Catalog, Exercise, Plan, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
 
 type Doc = Record<string, any>
 const idOf = (v: any): string => (v && typeof v === 'object' ? v.id : v)
@@ -20,7 +20,8 @@ export function docToSession(d: Doc): Session {
   return tidy({
     id: d.key as string,
     date: d.date as string,
-    workout: idOf(d.workout),
+    // Plan-Schlüssel; ältere Einheiten kennen nur die Katalog-Verknüpfung
+    workout: (d.workoutKey as string) || idOf(d.workout),
     durationSec: opt<number>(d.durationSec),
     sets: (d.sets ?? []).map((s: Doc): SetLog => tidy({
       exercise: idOf(s.exercise), progression: idOf(s.progression), set: s.set, value: s.value,
@@ -36,7 +37,7 @@ export function docToSession(d: Doc): Session {
 }
 
 export const sessionToDoc = (s: Session) => ({
-  key: s.id, date: s.date, workout: s.workout, durationSec: s.durationSec ?? null,
+  key: s.id, date: s.date, workoutKey: s.workout, workout: s.workout, durationSec: s.durationSec ?? null,
   sets: s.sets.map(x => ({
     exercise: x.exercise, progression: x.progression, set: x.set, value: x.value,
     weightKg: x.weightKg ?? null, attempts: x.attempts ?? null, note: x.note ?? null,
@@ -58,6 +59,19 @@ export const activityToDoc = (a: Activity) => ({
   key: a.id, date: a.date, kind: a.kind, name: a.name ?? null, durationMin: a.durationMin ?? null,
   distanceKm: a.distanceKm ?? null, elevationM: a.elevationM ?? null, rounds: a.rounds ?? null,
   note: a.note ?? null, clientUpdatedAt: a.updatedAt ?? 0,
+})
+
+export function docToPlan(d: Doc): Plan {
+  return tidy({
+    id: d.key as string, version: d.version ?? 1, name: d.name ?? 'Mein Plan', source: d.source ?? 'custom',
+    workouts: (d.workouts ?? []) as Workout[], weekplan: (d.weekplan ?? {}) as Plan['weekplan'],
+    inputs: opt(d.inputs) as Plan['inputs'], updatedAt: opt<number>(d.clientUpdatedAt),
+  })
+}
+
+export const planToDoc = (p: Plan) => ({
+  key: p.id, version: p.version, name: p.name, source: p.source, workouts: p.workouts, weekplan: p.weekplan,
+  inputs: p.inputs ?? null, clientUpdatedAt: p.updatedAt ?? 0,
 })
 
 export function docToState(state: Doc | null | undefined): UserState {
@@ -84,6 +98,17 @@ export function isSession(s: any): s is Session {
     && isNote(s.note) && (s.deleted === undefined || typeof s.deleted === 'boolean')
     && Array.isArray(s.skipped) && s.skipped.every(isId)
     && Array.isArray(s.routineDone) && s.routineDone.every(isId)
+}
+const isRoutine = (r: any) => !!r && isId(r.id) && typeof r.name === 'string' && r.name.length <= 200
+export function isPlan(p: any): p is Plan {
+  return !!p && isId(p.id) && Number.isInteger(p.version) && typeof p.name === 'string' && p.name.length <= 80
+    && ['catalog', 'generated', 'custom'].includes(p.source)
+    && Array.isArray(p.workouts) && p.workouts.length <= 14
+    && p.workouts.every((w: any) => w && isId(w.id) && typeof w.name === 'string' && w.name.length <= 80 && typeof w.focus === 'string'
+      && Array.isArray(w.slots) && w.slots.length <= 30 && w.slots.every((s: any) => s && isId(s.progression) && typeof s.block === 'string')
+      && Array.isArray(w.warmup) && w.warmup.every(isRoutine) && Array.isArray(w.cooldown) && w.cooldown.every(isRoutine))
+    && !!p.weekplan && typeof p.weekplan === 'object'
+    && Object.entries(p.weekplan).every(([d, w]) => WEEKDAYS.includes(d as Weekday) && p.workouts.some((x: any) => x.id === w))
 }
 export function isActivity(a: any): a is Activity {
   return !!a && isId(a.id) && isDate(a.date) && ['run', 'ride', 'workout'].includes(a.kind)
@@ -165,6 +190,8 @@ export interface SyncRequest {
   activities: Activity[]
   deletedActivities: string[]
   state: UserState | null
+  /** eigener Plan, nur wenn lokal geändert (ältere Apps schicken ihn nie) */
+  plan?: Plan | null
 }
 export interface SyncResponse {
   serverTime: string
@@ -174,4 +201,6 @@ export interface SyncResponse {
   catalogVersion: string
   catalog?: Catalog
   rejected: string[]
+  /** eigener Plan (null = es gilt der Katalog-Plan) */
+  plan?: Plan | null
 }

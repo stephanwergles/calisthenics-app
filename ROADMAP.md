@@ -117,7 +117,7 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 
 - [x] **Katalog-Rechte:** Lesen für Angemeldete, Schreiben nur Rolle `admin` (`isAdmin` in `src/access.ts`; Sync-Endpunkt läuft mit den Rechten der Person, `npm run check:access` prüft gegen die DB)
 - [x] Rollen an `users` (`admin` / `athlete`), Admin-Panel nur für `admin` (Rolle nur durch Admins änderbar; Migration macht das älteste Konto zum Admin)
-- [ ] `plans` einführen, `workouts` → mein Plan migrieren, Sessions auf Plan-Workout-Keys umstellen (Migration + Sync + Tests)
+- [x] `plans` einführen, Sessions auf Plan-Workout-Keys umstellen (Migration + Sync + Tests) – ohne eigenen Plan gilt weiter der Katalog-Plan (`effectiveCatalog`), angelegt wird er erst beim ersten Ändern; `sessions.workoutKey` trägt den Key, die Relation zeigt nur noch auf Katalog-Workouts
 - [x] **App ohne Account nutzbar** (lokal, offline); Account nur für Sync/Backup und Käufe (seit v2: IndexedDB, Anmeldung optional unter „Daten“)
 - [ ] Anmeldung: **Sign in with Apple** + E-Mail
 - [x] **Account-Löschung in der App** (Apple 5.1.1(v)) inkl. Server-Daten (`POST /api/account/delete`, „Daten“ → „Konto löschen“, geprüft in `check:access`); Datenexport als JSON (gab es schon)

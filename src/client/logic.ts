@@ -1,7 +1,7 @@
 /* Trainingslogik der v2-App – rein funktional, ohne React, DOM oder Speicher.
    Die Oberfläche ruft diese Funktionen auf; getestet wird direkt mit node --test. */
 import type {
-  Activity, Catalog, Exercise, ExerciseId, Progression, ProgressionId, Region, Session, SetLog,
+  Activity, Catalog, Exercise, ExerciseId, Plan, Progression, ProgressionId, Region, Session, SetLog,
   Target, UserState, Weekday, Workout, WorkoutId,
 } from '../domain/model.ts'
 import { NOTE_MAX } from '../domain/model.ts'
@@ -28,6 +28,20 @@ export interface Index {
   progressions: Map<ProgressionId, Progression>
   workouts: Map<WorkoutId, Workout>
 }
+/** Katalog mit dem eigenen Plan überlagert: dessen Workouts und Wochenplan statt der aus dem Katalog.
+    Slots mit Leitern, die der Katalog nicht (mehr) kennt, fallen weg. Ohne Plan: der Katalog unverändert. */
+export function effectiveCatalog(catalog: Catalog, plan: Plan | null | undefined): Catalog {
+  if (!plan || !plan.workouts.length) return catalog
+  const known = new Set(catalog.progressions.map(p => p.id))
+  return { ...catalog, workouts: plan.workouts.map(w => ({ ...w, slots: w.slots.filter(s => known.has(s.progression)) })), weekplan: plan.weekplan }
+}
+
+/** Plan aus dem Katalog als Ausgangspunkt für eigene Änderungen (gleiche Workouts, gleicher Wochenplan) */
+export const planFromCatalog = (catalog: Catalog): Plan => ({
+  id: 'main', version: 1, name: 'Mein Plan', source: 'catalog',
+  workouts: structuredClone(catalog.workouts), weekplan: { ...catalog.weekplan },
+})
+
 export function indexCatalog(catalog: Catalog): Index {
   return {
     catalog,
