@@ -9,7 +9,7 @@ import { Icon } from './Icon'
 import { Sheet } from './Sheets'
 import { ExerciseStill, hasClip } from './ExerciseMedia'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
-import type { NBlock } from '../native'
+import { ask, type NBlock } from '../native'
 
 export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
   const tree = useMemo(() => L.skillTree(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
@@ -40,14 +40,16 @@ export function SkillSheet({ t, pid, onClose }: { t: Training; pid: string; onCl
   const native = useNativeShell()
   const region = p ? REGIONS.find(r => r.id === p.region)?.label ?? p.workout.name : ''
   const sub = p ? `${region} · ${L.BLOCK_LABEL[p.block]} · Stufe ${p.step.index + 1}/${p.step.total}${p.paused ? ' · pausiert' : ''}` : ''
+  // Stufe wechseln: wie im Technik-Sheet auch von Hand – vor dem Kriterium mit Rückfrage
+  const act = (id: string) => { if (p) void switchStep(t, p, id) }
   useNativeSheet(native && p ? { id: 'skill', title: p.step.exercise.name, subtitle: sub, detents: ['auto', 'large'], blocks: ladderBlocks(p) } : null, e => {
     if (e.type === 'dismiss') onClose()
-    else if (e.type === 'tap' && e.id === 'unlock' && p?.step.next) t.setState(st => ({ ...st, current: { ...st.current, [p.pid]: p.step.next!.id } }))
+    else if (e.type === 'tap' && e.id) act(e.id)
   })
   if (!p || native) return null
   return (
     <Sheet title={p.step.exercise.name} sub={sub} onClose={onClose}>
-      <Ladder t={t} p={p} />
+      <Ladder t={t} p={p} onAct={act} />
     </Sheet>
   )
 }
@@ -67,7 +69,24 @@ function Row({ p, onOpen }: { p: L.SkillPath; onOpen: () => void }) {
   )
 }
 
-function Ladder({ t, p }: { t: Training; p: L.SkillPath }) {
+/** Aktionen der Leiter: unlock (Kriterium erfüllt), force (vorzeitig, mit Rückfrage), back (eine Stufe zurück) */
+async function switchStep(t: Training, p: L.SkillPath, action: string) {
+  const to = action === 'back' ? p.step.prev : p.step.next
+  if (!to) return
+  if (action === 'force') {
+    const at = p.step.target.unlockAt, done = p.progress?.done ?? 0
+    const ok = await ask({
+      title: `Jetzt zu ${to.name}?`,
+      message: at == null ? 'Für diese Stufe gibt es kein festes Kriterium – wechsle, wenn sich die aktuelle sauber anfühlt.'
+        : `Das Kriterium ist noch nicht erfüllt (${done} von 2 Einheiten mit allen Sätzen ≥ ${at}${p.step.exercise.unit === 'seconds' ? ' s' : ''}). Du kannst jederzeit zurück.`,
+      ok: 'Wechseln',
+    })
+    if (!ok) return
+  }
+  t.setState(st => ({ ...st, current: { ...st.current, [p.pid]: to.id } }))
+}
+
+function Ladder({ t, p, onAct }: { t: Training; p: L.SkillPath; onAct: (id: string) => void }) {
   const prog = p.progress, at = p.step.target.unlockAt
   const unit = p.step.exercise.unit === 'seconds' ? ' s' : ''
   const ready = !p.paused && prog?.done === 2 && !!p.step.next
@@ -90,7 +109,10 @@ function Ladder({ t, p }: { t: Training; p: L.SkillPath }) {
               {n.state === 'current' && p.step.next && (
                 <span className="sk-unlock">
                   {at == null ? (
-                    <span>Kein festes Kriterium – wechsle über „Technik“, wenn es sich sauber anfühlt.</span>
+                    <>
+                      <span>Kein festes Kriterium – wechsle, wenn es sich sauber anfühlt.</span>
+                      <button className="btn btn-secondary btn-block" onClick={() => onAct('force')}><Icon name="up" /> Zu {p.step.next.name} wechseln</button>
+                    </>
                   ) : (
                     <>
                       <span>Freischalten: <b>2 Einheiten</b>, alle Sätze ≥ <b>{at}{unit}</b></span>
@@ -99,9 +121,13 @@ function Ladder({ t, p }: { t: Training; p: L.SkillPath }) {
                       </span>
                       <small>{prog?.done ?? 0} von 2{prog && prog.done < 2 && prog.sessions > 0 && prog.missing > 0
                         ? ` · zuletzt ${prog.missing} ${prog.missing === 1 ? 'Satz' : 'Sätze'} unter ${at}${unit}` : ''}</small>
-                      {ready && (
-                        <button className="btn btn-primary btn-block" onClick={() => t.setState(st => ({ ...st, current: { ...st.current, [p.pid]: p.step.next!.id } }))}>
+                      {ready ? (
+                        <button className="btn btn-primary btn-block" onClick={() => onAct('unlock')}>
                           <Icon name="up" /> {p.step.next.name} freischalten
+                        </button>
+                      ) : (
+                        <button className="btn btn-secondary btn-block" onClick={() => onAct('force')}>
+                          <Icon name="up" /> Trotzdem wechseln
                         </button>
                       )}
                     </>
@@ -112,6 +138,7 @@ function Ladder({ t, p }: { t: Training; p: L.SkillPath }) {
           </li>
         ))}
       </ol>
+      {p.step.prev && <button className="btn btn-ghost btn-block sk-back" onClick={() => onAct('back')}><Icon name="undo" /> Zurück zu {p.step.prev.name}</button>}
     </div>
   )
 }
@@ -131,11 +158,18 @@ function ladderBlocks(p: L.SkillPath): NBlock[] {
         : i === p.nodes.length - 1 ? 'letzte Stufe dieser Leiter' : 'noch gesperrt',
     })
     if (n.state !== 'current' || !p.step.next) return
-    if (at == null) { out.push({ type: 'text', style: 'muted', text: 'Kein festes Kriterium – wechsle über „Technik“, wenn es sich sauber anfühlt.' }); return }
+    if (at == null) {
+      out.push({ type: 'text', style: 'muted', text: 'Kein festes Kriterium – wechsle, wenn es sich sauber anfühlt.' })
+      out.push({ type: 'button', id: 'force', title: `Zu ${p.step.next.name} wechseln`, symbol: 'arrow.up' })
+      return
+    }
     out.push({ type: 'text', text: `Freischalten: 2 Einheiten in Folge, alle Sätze ≥ ${at}${unit}` })
     out.push({ type: 'segments', done: prog?.done ?? 0, total: 2,
       label: `${prog?.done ?? 0} von 2${prog && prog.done < 2 && prog.sessions > 0 && prog.missing > 0 ? ` · zuletzt ${prog.missing} ${prog.missing === 1 ? 'Satz' : 'Sätze'} unter ${at}${unit}` : ''}` })
-    if (ready) out.push({ type: 'button', id: 'unlock', title: `${p.step.next.name} freischalten`, symbol: 'arrow.up', style: 'prominent' })
+    out.push(ready
+      ? { type: 'button', id: 'unlock', title: `${p.step.next.name} freischalten`, symbol: 'arrow.up', style: 'prominent' }
+      : { type: 'button', id: 'force', title: 'Trotzdem wechseln', symbol: 'arrow.up' })
   })
+  if (p.step.prev) out.push({ type: 'button', id: 'back', title: `Zurück zu ${p.step.prev.name}`, symbol: 'arrow.uturn.backward' })
   return out
 }
