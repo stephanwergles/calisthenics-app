@@ -193,6 +193,7 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 ### Vorlagen-Bibliothek
 - [x] Plan- und Workout-Vorlagen (Collection `templates`, Plan-Tab → Vorlagen): 5 Pläne (Lever Pull/Push/Beine, Einsteiger Ganzkörper 3×, Zuhause ohne Geräte 3×, Kompakt 2×, Muscle-up-Programm 3×), 4 Workouts (Core-Finisher, Handstand-Praxis, Regeneration, Kurz & knackig); Plan übernehmen nach Rückfrage (rückgängig), Workout → Meine Workouts oder heute
 - [x] Onboarding: „Fertigen Plan wählen“ (Plan-Vorlagen als Push-Seite) neben „Aus meinen Zielen“
+- [x] Vorlagen für die neuen Skills: Front-Lever-Programm 3×, Hebel-Programm Front & Back Lever 3×, Handstand & Press 3×, Planche-Programm 3×, Oberkörper / Beine 4×; Workouts Hebel-Praxis, Flag & Core (jetzt 10 Pläne, 6 Workouts)
 - [ ] Coach-Prüfung der Vorlagen
 
 ### Phase 3.3 — Englisch & Store-Bereitschaft
