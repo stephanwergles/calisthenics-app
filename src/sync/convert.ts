@@ -146,6 +146,8 @@ export function isProfile(p: any): p is Profile {
     && Array.isArray(p.days) && p.days.length <= 7 && p.days.every((d: any) => WEEKDAYS.includes(d))
     && Number.isInteger(p.minutes) && p.minutes >= 15 && p.minutes <= 180
     && (p.split === undefined || isId(p.split))
+    && (p.assessment === undefined || (!!p.assessment && isDate(p.assessment.date) && typeof p.assessment.results === 'object'
+      && Object.entries(p.assessment.results).every(([k, v]) => isId(k) && isNum(v) && (v as number) >= 0 && (v as number) <= 1000)))
 }
 
 /* ── Katalog ─────────────────────────────────────────────────────────────── */

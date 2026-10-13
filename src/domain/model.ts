@@ -163,6 +163,8 @@ export interface Profile {
   days: Weekday[];              // gewünschte Trainingstage
   minutes: number;              // Budget je Einheit inkl. Warm-up
   split?: string;               // Split-Vorlage; fehlt = automatisch (suggestSplits)
+  /** letzter Kurztest: Ergebnis je Test-ID (Wdh., Sekunden oder Level-Index) */
+  assessment?: { date: string; results: Record<string, number> };
 }
 
 /** Phase: Zeitraum, in dem der Plan anders gilt. `to` fehlt = bis auf Weiteres (bis „Beenden“). */

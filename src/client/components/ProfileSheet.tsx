@@ -9,10 +9,10 @@ import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { HEALTH_CONSENT, PRIVACY_URL } from '../consent'
 import { DataView, syncStatus } from './DataView'
 import { Sheet } from './Sheets'
-import { DaysSheet, EquipmentSheet, GoalPicker, profileSummary } from './ProfileParts'
+import { AssessmentPage, DaysSheet, EquipmentSheet, GoalPicker, profileSummary } from './ProfileParts'
 import { Icon } from './Icon'
 
-type Part = 'goals' | 'equipment' | 'days' | null
+type Part = 'goals' | 'equipment' | 'days' | 'assessment' | null
 
 export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void }) {
   const native = useNativeShell()
@@ -28,10 +28,12 @@ export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void 
     { id: 'goals' as const, title: 'Ziele', sub: sum.goals },
     { id: 'equipment' as const, title: 'Ausrüstung', sub: sum.equipment },
     { id: 'days' as const, title: 'Trainingstage & Dauer', sub: sum.days },
+    { id: 'assessment' as const, title: 'Einstufung', sub: sum.assessment },
   ]
   const parts = <>
     {part === 'goals' && <GoalPicker t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
     {part === 'equipment' && <EquipmentSheet t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
+    {part === 'assessment' && <AssessmentPage t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
     {part === 'days' && <DaysSheet t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
   </>
 

@@ -817,3 +817,24 @@ export function withPhaseEnded(user: UserState, id: string, today: string): User
 }
 export const fmtPhase = (p: Phase) => `${PHASE_LABEL[p.kind]}${p.kind === 'injury' && p.tendons?.length ? ` · ${p.tendons.map(t => TENDON_LABEL[t]).join(', ')}` : ''}`
   + (p.to ? ` · bis ${fmtShortDate(p.to)}` : ' · bis auf Weiteres')
+
+/* ── Einstufung (Kurztest) ───────────────────────────────────────────────── */
+
+export interface PlacementChange { pid: ProgressionId; ladder: string; from: number; to: number; total: number; fromName: string; toName: string }
+/** Was der Kurztest höher einstufen würde – nie zurück (Freischaltungen bleiben verdient) */
+export function placementChanges(ix: Index, user: UserState, placed: Record<ProgressionId, number>): PlacementChange[] {
+  return Object.entries(placed).flatMap(([pid, to]) => {
+    const p = ix.progressions.get(pid)
+    if (!p) return []
+    const step = currentStep(ix, user, pid)
+    if (to <= step.index) return []
+    const name = (i: number) => ix.exercises.get(p.steps[i].exercise)?.name ?? ''
+    return [{ pid, ladder: name(p.steps.length - 1), from: step.index, to, total: p.steps.length, fromName: step.exercise.name, toName: name(to) }]
+  })
+}
+/** Einstufung übernehmen: aktuelle Stufe je Leiter setzen */
+export function withPlacement(ix: Index, user: UserState, changes: PlacementChange[]): UserState {
+  const current = { ...user.current }
+  for (const c of changes) { const ex = ix.progressions.get(c.pid)?.steps[c.to]?.exercise; if (ex) current[c.pid] = ex }
+  return { ...user, current }
+}

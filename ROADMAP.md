@@ -121,7 +121,7 @@ Vier Tabs **Heute · Plan · Skills · Log**, Profil über den Avatar rechts obe
 - [ ] KI: Freitext → Phase („Schulter links zwickt bei Dips“)
 - [x] Split-Vorlage im Profil wählbar (Trainingstage & Dauer → Aufteilung; sonst automatisch per `suggestSplits`)
 - [x] Skills-Tab: „Deine Ziele“ (bis zu drei, Fortschritt der Ziel-Leitern) und „Realistisch als Nächstes“ (`suggestSkills`); Profil: Ziele, Ausrüstung, Trainingstage & Dauer (`state.profile`, synchronisiert)
-- [ ] Profil: Einstufung wiederholen (Kurztest)
+- [x] Profil: Einstufung wiederholen (Kurztest, `placementChanges` – stuft nur höher ein, erst nach „Übernehmen“; Ergebnis in `profile.assessment`). Schwellen in `assessment.json` sind Prototyp-Werte (teils sehr großzügig, z. B. 15 Klimmzüge → Muscle-up) – Teil der Coach-Prüfung
 - [ ] Profil nativ: Import/Export (Teilen-Sheet statt Download)
 
 ### Phase 3.0 — Mehrbenutzer-Fundament

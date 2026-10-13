@@ -478,3 +478,16 @@ test('Phasen: Ersatzübung mit gleichem Muster; Split aus dem Profil', () => {
   assert.equal(withSplit('ppl-3'), 'ppl-3')
   assert.equal(withSplit('ul-4'), 'full-3', 'passt nicht zu drei Tagen → automatisch')
 })
+
+test('Einstufung: nur höher, nie zurück; übernehmen setzt die Stufe', async () => {
+  const { placement } = await import('../src/domain/assessment.ts')
+  const data = JSON.parse(readFileSync(new URL('../src/seed/assessment.json', import.meta.url), 'utf8'))
+  const placed = placement(data, catalog, { 'pull-ups': 16, dips: 0 })
+  const changes = L.placementChanges(ix, state, placed)
+  assert.ok(changes.some(c => c.pid === 'pull-up' && c.to === 1))
+  assert.ok(changes.every(c => c.to > c.from), 'nie zurück')
+  assert.equal(changes.some(c => c.pid === 'muscle-up-pull'), true, 'Muscle-up-Zug: 16 Klimmzüge → Stufe 3')
+  const next = L.withPlacement(ix, state, changes)
+  assert.equal(L.currentStep(ix, next, 'pull-up').index, 1)
+  assert.deepEqual(L.placementChanges(ix, next, placed), [], 'danach nichts mehr zu tun')
+})
