@@ -1,0 +1,670 @@
+{
+ "_info": "Generator-Metadaten (Prototyp, v3). equipment = Alternativen, jede eine Liste nötiger Geräte; floor und wall gelten als immer vorhanden. stress 0–2 je Sehne. unsure = fachlich zu prüfen.",
+ "exercises": {
+  "explosive-pull-up": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 3,
+   "stress": {
+    "elbow": 1,
+    "shoulder": 1
+   }
+  },
+  "chest-to-bar-pull-up": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 4,
+   "stress": {
+    "elbow": 2,
+    "shoulder": 1
+   }
+  },
+  "muscle-up": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 5,
+   "stress": {
+    "wrist": 1,
+    "elbow": 2,
+    "shoulder": 2
+   }
+  },
+  "straight-bar-dip": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 1,
+    "elbow": 1,
+    "shoulder": 2
+   }
+  },
+  "russian-dip": {
+   "equipment": [
+    [
+     "dip-bars"
+    ],
+    [
+     "parallettes"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 1,
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Russian Dip auf Parallettes nur bedingt sinnvoll"
+  },
+  "muscle-up-band": {
+   "equipment": [
+    [
+     "bar",
+     "band"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 1,
+    "elbow": 2,
+    "shoulder": 2
+   }
+  },
+  "muscle-up-negative": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 1,
+    "elbow": 2,
+    "shoulder": 2
+   }
+  },
+  "pull-up": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 2,
+   "stress": {
+    "elbow": 1,
+    "shoulder": 1
+   }
+  },
+  "pull-up-weighted": {
+   "equipment": [
+    [
+     "bar",
+     "weight"
+    ],
+    [
+     "rings",
+     "weight"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 3,
+   "stress": {
+    "elbow": 2,
+    "shoulder": 1
+   }
+  },
+  "body-row": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "tuck-front-lever-row": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 4,
+   "stress": {
+    "elbow": 1,
+    "shoulder": 1
+   }
+  },
+  "uneven-pull-up": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 3,
+   "stress": {
+    "elbow": 2,
+    "shoulder": 1
+   }
+  },
+  "archer-pull-up": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 4,
+   "stress": {
+    "elbow": 2,
+    "shoulder": 1
+   }
+  },
+  "typewriter-pull-up": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 5,
+   "stress": {
+    "elbow": 2,
+    "shoulder": 2
+   }
+  },
+  "scapula-shrug": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "biceps-curl": {
+   "equipment": [
+    [
+     "band"
+    ],
+    [
+     "rings"
+    ],
+    [
+     "weight"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {
+    "elbow": 1
+   }
+  },
+  "l-sit-floor": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 2
+   },
+   "unsure": "Handgelenk-Belastung am Boden hoch, auf Parallettes geringer"
+  },
+  "l-sit-parallettes": {
+   "equipment": [
+    [
+     "parallettes"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 1
+   }
+  },
+  "v-sit-prep": {
+   "equipment": [
+    [
+     "parallettes"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1
+   }
+  },
+  "pseudo-planche-push-up": {
+   "equipment": [
+    [
+     "floor"
+    ],
+    [
+     "parallettes"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 2,
+    "elbow": 1,
+    "shoulder": 1
+   }
+  },
+  "pseudo-planche-push-up-elevated": {
+   "equipment": [
+    [
+     "parallettes"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 1,
+    "elbow": 1,
+    "shoulder": 2
+   }
+  },
+  "tuck-planche": {
+   "equipment": [
+    [
+     "parallettes"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 2,
+    "elbow": 1,
+    "shoulder": 2
+   }
+  },
+  "dip": {
+   "equipment": [
+    [
+     "dip-bars"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 2,
+   "stress": {
+    "elbow": 1,
+    "shoulder": 1
+   },
+   "unsure": "Ring-Dips deutlich schwerer als Barren-Dips"
+  },
+  "dip-weighted": {
+   "equipment": [
+    [
+     "dip-bars",
+     "weight"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 3,
+   "stress": {
+    "elbow": 2,
+    "shoulder": 2
+   }
+  },
+  "pike-push-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 2,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1
+   }
+  },
+  "pike-push-up-elevated": {
+   "equipment": [
+    [
+     "box"
+    ],
+    [
+     "parallettes"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 2
+   }
+  },
+  "handstand-push-up-wall": {
+   "equipment": [
+    [
+     "wall"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 2,
+    "elbow": 1,
+    "shoulder": 2
+   }
+  },
+  "decline-push-up": {
+   "equipment": [
+    [
+     "box"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 1,
+   "stress": {
+    "wrist": 1
+   },
+   "unsure": "Füße erhöht – Stuhl/Bank als box gezählt, sonst Boden"
+  },
+  "ring-push-up": {
+   "equipment": [
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 2,
+   "stress": {
+    "shoulder": 1
+   }
+  },
+  "fly": {
+   "equipment": [
+    [
+     "rings"
+    ],
+    [
+     "band"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 2,
+   "stress": {
+    "shoulder": 1
+   }
+  },
+  "triceps-extension": {
+   "equipment": [
+    [
+     "rings"
+    ],
+    [
+     "band"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {
+    "elbow": 1
+   }
+  },
+  "handstand-wall": {
+   "equipment": [
+    [
+     "wall"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 2,
+   "stress": {
+    "wrist": 2,
+    "shoulder": 1
+   }
+  },
+  "handstand-heel-pull": {
+   "equipment": [
+    [
+     "wall"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 2,
+    "shoulder": 1
+   }
+  },
+  "handstand-free": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 5,
+   "stress": {
+    "wrist": 2,
+    "shoulder": 1
+   }
+  },
+  "pistol-squat-assisted": {
+   "equipment": [
+    [
+     "band"
+    ],
+    [
+     "rings"
+    ],
+    [
+     "box"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 2,
+   "stress": {
+    "knee": 1
+   }
+  },
+  "pistol-squat": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 3,
+   "stress": {
+    "knee": 2
+   }
+  },
+  "pistol-squat-weighted": {
+   "equipment": [
+    [
+     "weight"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 4,
+   "stress": {
+    "knee": 2
+   }
+  },
+  "bulgarian-split-squat": {
+   "equipment": [
+    [
+     "box"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 2,
+   "stress": {
+    "knee": 1
+   },
+   "unsure": "braucht Bank/Stuhl (box)"
+  },
+  "nordic-curl-negative": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "hinge",
+   "difficulty": 3,
+   "stress": {
+    "knee": 2
+   },
+   "unsure": "braucht Fußverankerung (Sprossenwand, Partner, Sofa) – als floor gezählt"
+  },
+  "nordic-curl-band": {
+   "equipment": [
+    [
+     "band"
+    ]
+   ],
+   "pattern": "hinge",
+   "difficulty": 4,
+   "stress": {
+    "knee": 2
+   },
+   "unsure": "Band als Hilfe – Verankerung wie oben"
+  },
+  "calf-raise-single-leg": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "hanging-leg-raise": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 2,
+   "stress": {
+    "shoulder": 1
+   }
+  },
+  "toes-to-bar": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 3,
+   "stress": {
+    "shoulder": 1
+   }
+  },
+  "hollow-hold": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "hollow-rock": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 2,
+   "stress": {}
+  },
+  "side-plank-rotation": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 1,
+   "stress": {
+    "shoulder": 1
+   }
+  },
+  "dead-hang": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {
+    "shoulder": 1
+   }
+  }
+ }
+}

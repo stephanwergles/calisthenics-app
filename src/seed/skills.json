@@ -1,0 +1,85 @@
+{
+ "_info": "Skills für den Generator (Prototyp). targets = Leitern des Skills, support = immer mittrainierte Leitern, prerequisites = Mindeststufe (0-basiert) einer anderen Leiter.",
+ "skills": [
+  {
+   "id": "muscle-up",
+   "name": "Muscle-up",
+   "targets": [
+    "muscle-up-pull",
+    "muscle-up-transition"
+   ],
+   "support": [
+    "bar-dip"
+   ],
+   "prerequisites": [
+    {
+     "progression": "pull-up",
+     "minStep": 1
+    },
+    {
+     "progression": "dip",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "handstand",
+   "name": "Handstand",
+   "targets": [
+    "handstand"
+   ],
+   "support": [
+    "vertical-push"
+   ],
+   "prerequisites": [
+    {
+     "progression": "hollow",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "l-sit",
+   "name": "L-Sit",
+   "targets": [
+    "l-sit"
+   ],
+   "support": [
+    "leg-raise"
+   ],
+   "prerequisites": [
+    {
+     "progression": "hollow",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "pistol",
+   "name": "Pistol Squat",
+   "targets": [
+    "pistol"
+   ],
+   "support": [
+    "split-squat"
+   ],
+   "prerequisites": []
+  },
+  {
+   "id": "planche",
+   "name": "Planche",
+   "targets": [
+    "planche"
+   ],
+   "support": [
+    "horizontal-push"
+   ],
+   "prerequisites": [
+    {
+     "progression": "dip",
+     "minStep": 1
+    }
+   ]
+  }
+ ]
+}

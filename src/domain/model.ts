@@ -148,3 +148,53 @@ export interface Dataset {
   activities: Activity[];
   state: UserState;
 }
+
+/* ── v3-Prototyp: Training aus Skills (Generator, src/domain/generator.ts) ── */
+
+export type Equipment = "bar" | "rings" | "parallettes" | "dip-bars" | "band" | "box" | "weight" | "floor" | "wall";
+/** kleines, festes Set an Bewegungsmustern – Grundlage für ausgeglichene Pläne */
+export type Pattern = "vertical-pull" | "horizontal-pull" | "vertical-push" | "horizontal-push" | "squat" | "hinge" | "core" | "isolation";
+export type Tendon = "wrist" | "elbow" | "shoulder" | "knee";
+
+export interface ExerciseMeta {
+  /** Alternativen – jede eine Liste nötiger Geräte; floor und wall gelten als immer vorhanden */
+  equipment: Equipment[][];
+  pattern: Pattern;
+  difficulty: number;            // 1–5
+  stress: Partial<Record<Tendon, number>>; // 0–2 je Sehne
+  unsure?: string;               // fachlich zu prüfen
+}
+
+export type SkillId = string;
+export interface Skill {
+  id: SkillId;
+  name: string;
+  /** Leitern, die den Skill selbst trainieren (Skill-Slots) */
+  targets: ProgressionId[];
+  /** Leitern, die immer mittrainiert werden (z. B. Bar Dips für den Muscle-up) */
+  support: ProgressionId[];
+  /** Kraft-Voraussetzungen: andere Leiter mindestens auf Stufe minStep (0-basiert) */
+  prerequisites: { progression: ProgressionId; minStep: number }[];
+}
+
+export interface GeneratorInput {
+  skills: SkillId[];              // 1–3 Ziel-Skills
+  equipment: Equipment[];
+  days: Weekday[];                // Trainingstage
+  minutes: number;                // Budget je Einheit inkl. Warm-up
+  /** aktuelle Stufe (0-basiert) je Progression; fehlt = 0 */
+  current: Record<ProgressionId, number>;
+}
+
+export type SlotKind = "skill" | "support" | "prerequisite" | "base" | "balance";
+export interface PlanSlot {
+  progression: ProgressionId;
+  exercise: ExerciseId;
+  kind: SlotKind;
+  block: Block;
+  sets: number;
+  minutes: number;
+  reason: string;                 // kurze Begründung, z. B. „Muscle-up“, „Ausgleich Druck“
+}
+export interface PlanDay { day: Weekday; restBefore: number; slots: PlanSlot[]; minutes: number }
+export interface GeneratedPlan { days: PlanDay[]; warnings: string[] }
