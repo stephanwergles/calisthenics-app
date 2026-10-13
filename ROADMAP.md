@@ -1,5 +1,7 @@
 # ROADMAP
 
+> **Richtung seit Okt 2026:** Lever geht in den App Store — Deutsch und Englisch, das Training entsteht aus den Skills. Technischer Plan: [v3](#v3--app-store-training-aus-skills). Produktstrategie liegt bewusst nicht im (öffentlichen) Repo.
+
 ## Status quo (v1.4 — Juli 2026)
 
 Single-File-App, feature-complete für die Selbst-Validierung:
@@ -51,8 +53,8 @@ Startkriterium gilt als erfüllt: 16 Einheiten seit Juli, App wird ausschließli
 - [x] UI Schritt 2: Startseite „Heute“ (Wochenleiste, Serie, Dauer-Schätzung, nächste Skills) und Abschluss-Screen mit Bestwerten und Vergleich
 - [x] UI Schritt 3: Skill-Tree als eigener Tab (Leitern, Stand zur Freischaltung, Freischalten)
 - [x] Native iOS-App (Capacitor): Oberfläche im App-Paket, Sync per Token, Benachrichtigung am Pausenende, Haptik, Display wach
-- [ ] Apple Health: Workouts speichern
-- [ ] TestFlight-Verteilung
+- [ ] Apple Health: Workouts speichern → Phase 3.2
+- [ ] TestFlight-Verteilung → Phase 3.2 (geschlossene Beta)
 - [x] Notizen pro Satz und zur Einheit (sichtbar beim nächsten Mal und im Verlauf); UI-Update: Tab-Leiste unten, kompakte Workout-Wahl, eigenes Icon-Set
 - [x] Verlauf: Kalender mit Tagesansicht und Cardio für beliebige Tage, Fortschritt pro Übung über alle Stufen
 - [x] Sync zwischen Client und Payload: Postausgang, ein Endpunkt, jüngere Änderung gewinnt, Katalog kommt vom Server
@@ -66,27 +68,103 @@ Startkriterium gilt als erfüllt: 16 Einheiten seit Juli, App wird ausschließli
 - v1-Feature-Parität als PWA (installierbar, offline-first mit Sync-Queue)
 - **Meilenstein: eigener Umstieg von v1 auf v2 mit importierter Historie**
 
-### Phase 2.1 — Adaptive Planung (der eigentliche Kern der App-Idee)
-- Regelbasierte Session-Generierung statt statischem Plan: Volumen-Anpassung nach letzter Leistung, automatische Deload-Erkennung, Übungsrotation im Zubehör-Block
-- Readiness-Check vor der Einheit (Schlaf/Energie/Gelenke, 3 Taps) → Tagesanpassung
-- Skill-Tree-Visualisierung über alle Progressionen (die Ladder aus v1, aber als Graph)
-- Erst Regeln, kein ML — die v1/v2-Daten sind die Grundlage, um Regeln überhaupt formulieren zu können
+---
 
-### Phase 2.2 — Inhalte & Politur
-- Echte Übungsmedien (eigene Videos/Fotos statt Kreide-SVGs — selbst produzierbar, keine Rechteprobleme)
-- Warm-up-Routinen als eigene Plan-Blöcke
-- Statistiken: Volumen-Trends, Zeit unter Spannung, Kraft-zu-Gewicht (InBody-Werte manuell erfassbar)
+## v3 — App Store: Training aus Skills
 
-### Phase 2.3 — nur falls aus dem Projekt ein Produkt werden soll
-- Multi-User, Onboarding mit Level-Einstufung, Plan-Templates
-- Trainer-/Team-Features, Sharing
-- Entscheidung bewusst vertagt: erst wenn v2 den eigenen Anwendungsfall monatelang trägt
+Produktstrategie, Positionierung, Wettbewerb und Bezahlmodell stehen bewusst **nicht** in diesem öffentlichen Repo. Hier nur der technische Plan.
+
+### Leitidee
+
+**Das Workout ist die Summe der Skill-Leitern.** Wer die App nutzt, wählt Ziel-Skills, gibt Equipment und Trainingstage an und macht einen Kurztest. Daraus setzt Lever die Einheiten zusammen: Jede Übung ist die aktuelle Stufe einer Leiter, eine Freischaltung ändert das Workout automatisch. Alles bleibt anpassbar. Regeln (Zug/Druck/Beine im Gleichgewicht, Erholung für Sehnen) warnen, sie sperren nicht.
+
+| Ebene | Gehört | Inhalt |
+|---|---|---|
+| **Katalog** | global, nur Admin pflegt | Übungen, Progressionen, Skills — zweisprachig |
+| **Nutzerplan** | Nutzer, synchronisiert | vom Generator erzeugt, danach frei anpassbar (Überschreibungen pro Slot) |
+
+Historie hängt weiter **pro Übungs-ID**, nie am Plan — deshalb darf ein Plan neu erzeugt oder umgebaut werden, ohne Daten zu verlieren. Der bisherige feste Plan (3er-Split A/B/C) wird mein Nutzerplan und zugleich der **Abnahmetest des Generators**: Mit meinen Zielen und Wochentagen muss etwas Vergleichbares herauskommen.
+
+### Datenmodell (Zielbild)
+
+- `exercises` + **Metadaten**: `equipment[]` (Stange, Ringe, Parallettes, Band, Boden, Wand), `pattern` (vertikal/horizontal ziehen/drücken, Kniebeuge, Hüftstreckung, Rumpf …), `difficulty`, `stress` (Handgelenk, Ellenbogen, Schulter, Knie). Texte lokalisiert (de/en).
+- `progressions`: Stufen-Vorgabe (`target`) wird **Standardwert**, den der Nutzerplan überschreiben darf.
+- **`skills` (neu):** Ziel-Skill → Ziel-Leiter(n) + **Voraussetzungen** über Leitern hinweg (z. B. Muscle-up: Klimmzug-, Dip- und Chest-to-Bar-Stufe). Ergibt den Skill-Tree als Graph und ist die Eingabe des Generators.
+- **`plans` (neu, Nutzerdaten):** `user`, Generator-Eingaben (Ziel-Skills, Equipment, Wochentage, Einheitendauer), Workouts mit stabilen Keys und Slots `{ block, progression, pinned?, overrides? { sets, min, max, restSec, unlockAt } }`, Warm-up/Cool-down.
+- `workouts` (global) entfällt nach der Migration; die drei bisherigen Workouts werden mein Plan und eine Test-Fixture.
+- **Sessions:** `workout` zeigt heute per Relationship auf den globalen Katalog — Umstellung auf **Plan-Workout-Key + Namens-Snapshot**, sonst lassen sich erzeugte Workouts nicht loggen.
+- **Profil** (Users `state` erweitert): Einstufungs-Ergebnisse, Sprache, Einwilligungen (Datum + Version), Rolle.
+- Jedes neue Nutzerfeld durch `src/sync/convert.ts` + Roundtrip-Test (siehe CLAUDE.md).
+
+### Phase 3.0 — Mehrbenutzer-Fundament
+
+Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Features.
+
+- [ ] **Katalog-Rechte:** Lesen für alle, Schreiben nur Rolle `admin` (heute darf jede angemeldete Person den Katalog ändern und löschen — `loggedIn` in `src/access.ts`)
+- [ ] Rollen an `users` (`admin` / `athlete`), Admin-Panel nur für `admin`
+- [ ] `plans` einführen, `workouts` → mein Plan migrieren, Sessions auf Plan-Workout-Keys umstellen (Migration + Sync + Tests)
+- [ ] **App ohne Account nutzbar** (lokal, offline); Account nur für Sync/Backup und Käufe
+- [ ] Anmeldung: **Sign in with Apple** + E-Mail
+- [ ] **Account-Löschung in der App** (Apple 5.1.1(v)) inkl. Server-Daten; Datenexport als JSON
+- [ ] Einwilligung Gesundheitsdaten (Art. 9 DSGVO), Datenschutzerklärung de/en, Gesundheits-Disclaimer
+- [ ] **i18n-Gerüst:** UI-Strings in Wörterbücher (de/en), Payload-Localization für Katalogfelder, Datums-/Zahlenformat per Locale
+- [ ] Server: Rate-Limits am Sync-Endpunkt, tägliche DB-Backups, Fehler-Monitoring
+
+### Phase 3.1 — Katalog als Generator-Grundlage
+
+- [ ] `skills`-Collection + Voraussetzungs-Graph; Skill-Tree-Tab zeigt den Graph
+- [ ] Metadaten (`equipment`, `pattern`, `difficulty`, `stress`) für alle bestehenden 47 Übungen
+- [ ] Lücken in den Grundmustern schließen, damit jeder Plan ausgeglichen werden kann (je Muster mindestens eine Leiter pro gängiger Equipment-Kombination)
+- [ ] Erste neue Skill-Leitern: Front Lever · Back Lever · Planche · Handstand-Push-up (weitere in 3.4)
+- [ ] Fachliche Prüfung der Leitern und Freischalt-Schwellen durch einen Coach
+
+### Phase 3.2 — Training aus Skills (Herzstück) → geschlossene Beta
+
+- [ ] **Kurztest:** Max-Tests (Klimmzüge, Dips, Liegestütze, Hollow Hold, L-Sit, Pistol-Tiefe) → Startstufe jeder Leiter; wiederholbar; bei vorhandener Historie aus den Logs abgeleitet
+- [ ] **Eingaben:** Ziel-Skills (1–3), Equipment, Trainingstage (Wochentage), Einheitendauer
+- [ ] **Generator** als reine, deterministische Funktion (Domain-Schicht, Client und Server):
+  1. Skills → Leitern: Ziel-Leiter + noch nicht erfüllte Voraussetzungs-Leitern
+  2. Grundmuster auffüllen (Zug vertikal/horizontal, Druck vertikal/horizontal, Beine, Rumpf), gefiltert nach Equipment
+  3. Verteilen auf Tage: Skill-Slots zuerst in der Einheit, anspruchsvollste Skills an den Tag mit der längsten Pause davor, gleiche Sehnen-Belastung nicht an Folgetagen
+  4. Volumen aus den Stufen-Standards, an das Dauer-Budget angepasst
+- [ ] **Leitplanken** als dieselben Regeln in `logic.ts`: Der Generator hält sie ein, bei manuellen Änderungen erscheinen sie als Hinweise
+- [ ] Tests: Eigenschaften für beliebige Eingaben (Balance, keine Sehnen-Kollision an Folgetagen, Dauer-Budget, nur verfügbares Equipment) + Abnahmetest mit meinen Eingaben
+- [ ] **Anpassen:** Übung tauschen (andere Stufe oder gleiches `pattern`), Slot festpinnen, Volumen überschreiben, Slot entfernen; neu erzeugen behält gepinnte Slots und Überschreibungen
+- [ ] Ziel erreicht → Vorschlag für den nächsten Skill; Ziele ändern → Plan neu erzeugen
+- [ ] Onboarding: Sprache → Kurztest → Ziele → Equipment/Tage → erzeugter Plan mit Begründung pro Slot („wegen Muscle-up“, „Ausgleich Druck“)
+- [ ] Apple Health: Workouts speichern
+- [ ] **TestFlight, geschlossene Beta** mit 5–10 Fortgeschrittenen, Feedback-Kanal in der App
+
+### Phase 3.3 — Englisch & Store-Bereitschaft
+
+- [ ] Englische Fassung aller Oberflächentexte, Technik-Texte, Kernpunkte, Muskeln
+- [ ] App-Name und Bundle-Anzeigename final (Markenprüfung muss abgeschlossen sein)
+- [ ] Store-Eintrag de/en: Texte, Screenshots, Vorschauvideo, Privacy-Label, Support- und Datenschutz-URL, Altersfreigabe
+- [ ] Impressum/Anbieter, AGB/EULA
+- [ ] Datenschutzfreundliche Nutzungsstatistik (ohne Tracking-SDK) für Onboarding-Abbrüche
+- [ ] Review-Vorbereitung: Demo-Account, Guideline 4.2 (native Funktionen: Tab-Leiste, Benachrichtigungen, HealthKit, Haptik)
+- [ ] In-App-Purchase technisch (StoreKit, serverseitige Prüfung, Freischaltung im Profil) — Modell wird außerhalb des Repos entschieden
+
+### Phase 3.4 — Ausbau nach dem Release
+
+- [ ] Weitere Skill-Leitern: One-Arm Pull-up · Human Flag · V-Sit/Manna-Vorstufen · Dragon Flag · Shrimp Squat · Nordic Curl
+- [ ] Skizzen/3D-Clips für alle neuen Stufen (Pipeline in `art/`)
+- [ ] Adaptiv: Volumen-Anpassung nach letzter Leistung, Deload-Erkennung (Stagnation über 2+ Einheiten), Rotation im Zubehör-Block
+- [ ] Readiness-Check vor der Einheit (Schlaf/Energie/Gelenke, 3 Taps) → Tagesanpassung
+- [ ] Statistiken: Volumen-Trends, Zeit unter Spannung, Kraft-zu-Gewicht
+- [ ] Erst Regeln, kein ML
+
+### Später / bewusst nicht jetzt
+
+- Android (Capacitor macht es möglich, erst nach stabilem iOS-Release)
+- Trainer-/Team-Features, Plan-Sharing, Community
+- Apple Watch
 
 ---
 
-## Offene Fragen (während der v1-Phase beantworten)
+## Offene Fragen aus der v1-Phase (weiter beobachten)
 
 1. Reicht regelbasierte Progression oder braucht es echte Tagesform-Anpassung? (→ beobachten, wie oft der Plan sich falsch anfühlt)
-2. Wie oft wird der Technik-Toggle nach Woche 2 noch geöffnet? (→ entscheidet, wie viel v2 in Lern-Inhalte investiert)
-3. Werden die Zubehör-Übungen langweilig? (→ entscheidet Priorität der Übungsrotation in 2.1)
+2. Wie oft wird der Technik-Toggle nach Woche 2 noch geöffnet? (→ entscheidet, wie viel in Lern-Inhalte investiert wird)
+3. Werden die Zubehör-Übungen langweilig? (→ entscheidet Priorität der Rotation in 3.4)
 4. ~~Cardio-Tracking in der App oder bewusst draußen lassen?~~ **Beantwortet (Aug 2026):** Rad und Lauf ersetzen regelmäßig geplante Einheiten — ohne Erfassung fehlte im Kalender die halbe Trainingswoche. Seit v1.12.0 drin, bewusst minimal (Art, Dauer, Distanz, Höhenmeter; keine Pace, kein GPS, keine Herzfrequenz).
