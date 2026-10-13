@@ -109,7 +109,7 @@ export function ProfileSheet({ t, onClose, localeChoice, changeLocale }: {
       { type: 'section', title: tr('profile.section.legal') },
       { type: 'list', rows: [{ id: 'privacy', title: tr('common.privacy'), symbol: 'hand.raised' }] },
       ...(s.account ? [{ type: 'button', id: 'delete', title: tr('profile.deleteAccount'), symbol: 'trash', style: 'destructive' } as NBlock] : []),
-      { type: 'text', text: tr('profile.version', { v: APP_VERSION }), style: 'small' },
+      { type: 'brand', text: tr('profile.footer', { v: APP_VERSION }) },
     ],
   } : null, e => {
     if (e.type === 'text' && (e.id === 'email' || e.id === 'password')) form.current[e.id] = String(e.value ?? '')

@@ -33,7 +33,7 @@ const footerOf = (next?: Next) => (next ? [{ id: 'next', title: next.title, symb
 const webFooter = (next?: Next) => next && <button className="btn btn-primary btn-block" onClick={next.onNext}>{next.title}</button>
 
 const choiceSub = (c: ReturnType<typeof L.skillChoices>[number]) =>
-  c.reached ? tr('profile.goals.reached') : c.missing.length ? tr('profile.goals.missing', { list: c.missing.join(', ') }) : tr('profile.goals.ready', { pct: Math.round(c.score * 100) })
+  c.reached ? tr('profile.goals.reached') : c.missing.length ? tr('profile.goals.missing', { list: c.missing.join(', ') }) : tr(`profile.goals.tier.${c.tier}`)
 
 /** Wiederverwendbare Auswahlliste: nativ Häkchen-Zeilen, im Web Buttons */
 function Choices({ items, onToggle }: { items: { id: string; title: string; sub?: string; on: boolean }[]; onToggle: (id: string, on: boolean) => void }) {
@@ -88,11 +88,11 @@ export function GoalPicker({ t, onClose, parent, next }: { t: Training; onClose:
   const native = useNativeShell()
   const { profile, change } = useProfile(t)
   const { skills } = catalogData(t.ix.catalog)
-  const choices = L.skillChoices(t.ix, t.state, skills)
+  const choices = L.skillChoices(t.ix, t.state, skills, catalogData(t.ix.catalog).meta)
   const tiles = choices.map((c): Tile & { region: string } => {
     const skill = skills.find(x => x.id === c.skill)!
     return {
-      id: c.skill, title: c.name, subtitle: blurb(`profile.goals.blurb.${c.skill}`), detail: choiceSub(c), accent: !c.reached && !c.missing.length,
+      id: c.skill, title: c.name, subtitle: blurb(`profile.goals.blurb.${c.skill}`), detail: choiceSub(c), accent: !c.reached && c.tier === 'next',
       exercise: skillExercise(t.ix, skill.targets), on: profile.goals.includes(c.skill),
       region: t.ix.progressions.get(skill.targets[0])?.region ?? 'core',
     }

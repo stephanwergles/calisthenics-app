@@ -7,6 +7,7 @@ export const profile = {
   row: { goals: 'Ziele', equipment: 'Ausrüstung', days: 'Trainingstage & Dauer', assessment: 'Einstufung', language: 'Sprache' },
   feedbackRow: { title: 'Feedback senden', sub: 'Fehler, Ideen – direkt an das Lever-Team' },
   version: 'Lever v{v}',
+  footer: 'v{v}',
 
   /* Konto & Sync */
   consentPaused: 'Abgleich pausiert: Für die Speicherung auf dem Server fehlt deine Einwilligung in die Gesundheitsdaten.',
@@ -83,7 +84,7 @@ export const profile = {
     sub: 'Bis zu drei · {n} gewählt · sortiert nach „realistisch als Nächstes“',
     reached: 'erreicht',
     missing: 'fehlt noch: {list}',
-    ready: '{pct} % bereit',
+    tier: { next: 'Realistisch als Nächstes', work: 'Mit etwas Vorarbeit', long: 'Langfristiges Ziel' },
     none: 'noch keine gewählt',
     pickHint: 'Tippe an, was du lernen willst – bis zu drei. Lever baut deinen Plan darauf auf.',
     full: 'Drei Ziele gewählt – nimm erst eins raus.',

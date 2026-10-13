@@ -799,6 +799,22 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
             }
             return box
 
+        case "brand":
+            // Fuß: Wortmarke (Vektor-Asset aus art/brand, eingefärbt) und darunter Version/©, zentriert
+            let col = UIStackView(); col.axis = .vertical; col.alignment = .center; col.spacing = 8
+            if let img = UIImage(named: "Wordmark")?.withRenderingMode(.alwaysTemplate) {
+                let mark = UIImageView(image: img); mark.tintColor = UIColor(white: 1, alpha: 0.9); mark.contentMode = .scaleAspectFit
+                mark.translatesAutoresizingMaskIntoConstraints = false
+                mark.heightAnchor.constraint(equalToConstant: 16).isActive = true
+                mark.widthAnchor.constraint(equalTo: mark.heightAnchor, multiplier: img.size.width / max(1, img.size.height)).isActive = true
+                mark.isAccessibilityElement = true; mark.accessibilityLabel = "Lever"
+                col.addArrangedSubview(mark)
+            }
+            if let t = b.text { let l = label(t, .body(12), Lever.muted); l.textAlignment = .center; col.addArrangedSubview(l) }
+            let wrap = UIStackView(arrangedSubviews: [col]); wrap.axis = .vertical; wrap.alignment = .center
+            wrap.isLayoutMarginsRelativeArrangement = true; wrap.layoutMargins = UIEdgeInsets(top: 18, left: 0, bottom: 8, right: 0)
+            return wrap
+
         case "tiles":
             // Zwei Spalten Auswahl-Kacheln; gewählt = Volt-Rand + Haken. Antippen meldet toggle mit neuem Zustand.
             let grid = UIStackView(); grid.axis = .vertical; grid.spacing = 10

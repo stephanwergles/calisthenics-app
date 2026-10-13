@@ -23,7 +23,7 @@ const filterLabel = (f: Filter) => (f === 'all' ? tr('skills.all') : L.regionLab
 export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
   const tree = useMemo(() => L.skillTree(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions, getLocale()])
   const { skills } = catalogData(t.ix.catalog)
-  const cards = useMemo(() => L.skillOverview(t.ix, t.state, t.sessions, skills), [t.ix, t.state, t.sessions, skills, getLocale()])
+  const cards = useMemo(() => L.skillOverview(t.ix, t.state, t.sessions, skills, catalogData(t.ix.catalog).meta), [t.ix, t.state, t.sessions, skills, getLocale()])
   const [filter, setFilter] = useState<Filter>('all')
   const [open, setOpen] = useState<string | null>(null)
   const shown = cards.filter(c => filter === 'all' || c.region === filter)
@@ -290,7 +290,7 @@ function Goals({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
     const skill = SKILLS.find(s => s.id === id)
     return skill ? [{ skill, p: L.goalProgress(t.ix, t.state, t.sessions, skill) }] : []
   })
-  const next = L.skillChoices(t.ix, t.state, SKILLS).find(c => !c.reached && !profile.goals.includes(c.skill))
+  const next = L.skillChoices(t.ix, t.state, SKILLS, catalogData(t.ix.catalog).meta).find(c => !c.reached && !profile.goals.includes(c.skill))
   const nextSkill = next && SKILLS.find(s => s.id === next.skill)
   const full = profile.goals.length >= 3
   return (

@@ -10,6 +10,7 @@ export const profile: Shape<typeof de> = {
   row: { goals: 'Goals', equipment: 'Equipment', days: 'Training days & duration', assessment: 'Assessment', language: 'Language' },
   feedbackRow: { title: 'Send feedback', sub: 'Bugs, ideas – straight to the Lever team' },
   version: 'Lever v{v}',
+  footer: 'v{v}',
 
   consentPaused: 'Sync paused: your consent to processing health data is needed to store it on the server.',
   syncNow: 'Sync now',
@@ -82,7 +83,7 @@ export const profile: Shape<typeof de> = {
     sub: 'Up to three · {n} selected · sorted by “realistic next”',
     reached: 'reached',
     missing: 'still missing: {list}',
-    ready: '{pct} % ready',
+    tier: { next: 'Realistic next', work: 'Needs some groundwork', long: 'Long-term goal' },
     none: 'none selected yet',
     pickHint: 'Tap what you want to learn – up to three. Lever builds your plan around it.',
     full: 'Three goals selected – remove one first.',

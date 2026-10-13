@@ -1,6 +1,6 @@
 /* Prototyp v3: Einstufung, Skill-Vorschläge und Split-Vorschläge – reine Funktionen.
    Daten: src/seed/assessment.json, skills.json, splits.json. */
-import type { AssessmentData, Catalog, ProgressionId, Region, Skill, SkillId, SplitTemplate } from './model.ts'
+import type { AssessmentData, Catalog, ExerciseMeta, ProgressionId, Region, Skill, SkillId, SplitTemplate } from './model.ts'
 
 export type { AssessmentData }
 
@@ -17,24 +17,38 @@ export function placement(data: AssessmentData, catalog: Catalog, results: Recor
   return out
 }
 
-export interface SkillSuggestion { skill: SkillId; name: string; score: number; reached: boolean; missing: string[] }
+export interface SkillSuggestion { skill: SkillId; name: string; score: number; reached: boolean; missing: string[]
+  /** grobe Einordnung für die Anzeige: realistisch als Nächstes / mit Vorarbeit / langfristig */
+  tier: 'next' | 'work' | 'long' }
 
-/** Wie realistisch ist jeder Skill als Nächstes? Voraussetzungen zählen 70 %, Fortschritt in der
-    Ziel-Leiter 30 %. Erreichte Skills (letzte Stufe aller Ziel-Leitern) stehen am Ende. */
-export function suggestSkills(skills: Skill[], catalog: Catalog, current: Record<ProgressionId, number>): SkillSuggestion[] {
+/** Wie realistisch ist jeder Skill als Nächstes? Drei Teile:
+    – Voraussetzungen erfüllt (40 %)
+    – Abstand der Endstufe zum eigenen Niveau (35 %): Niveau = schwerste Stufe, die man schon trainiert
+      (Index > 0); ohne Angaben Einsteiger (2). Je Schwierigkeitspunkt über dem Niveau ein Drittel weniger.
+    – Fortschritt in der Ziel-Leiter (25 %)
+    Ohne den Abstand stünde jeder Skill ohne Voraussetzungen (Human Flag, Back Lever) bei 70 % „bereit“.
+    Erreichte Skills (letzte Stufe aller Ziel-Leitern) stehen am Ende. */
+export function suggestSkills(skills: Skill[], catalog: Catalog, current: Record<ProgressionId, number>, meta: Record<string, ExerciseMeta> = catalog.meta ?? {}): SkillSuggestion[] {
   const steps = (pid: ProgressionId) => catalog.progressions.find(p => p.id === pid)?.steps ?? []
   const name = (pid: ProgressionId, i: number) => {
     const ex = steps(pid)[Math.min(i, steps(pid).length - 1)]?.exercise
     return catalog.exercises.find(e => e.id === ex)?.name ?? pid
   }
-  return skills.map(s => {
+  const diff = (ex?: string) => (ex && meta[ex]?.difficulty) || 3
+  const trained = Object.entries(current).filter(([, i]) => i > 0).map(([pid, i]) => diff(steps(pid)[Math.min(i, steps(pid).length - 1)]?.exercise))
+  const level = Math.max(2, ...trained)
+  return skills.map((s): SkillSuggestion => {
     const pre = s.prerequisites.map(p => Math.min(1, ((current[p.progression] ?? 0) + 1) / (p.minStep + 1)))
     const preScore = pre.length ? pre.reduce((a, b) => a + b, 0) / pre.length : 1
     const target = s.targets.map(pid => (current[pid] ?? 0) / Math.max(1, steps(pid).length - 1))
     const targetScore = target.length ? target.reduce((a, b) => a + b, 0) / target.length : 0
+    const end = Math.max(...s.targets.map(pid => diff(steps(pid)[steps(pid).length - 1]?.exercise)))
+    const gapScore = Math.max(0, 1 - Math.max(0, end - level) / 3)
     const reached = s.targets.every(pid => (current[pid] ?? 0) >= steps(pid).length - 1)
     const missing = s.prerequisites.filter(p => (current[p.progression] ?? 0) < p.minStep).map(p => name(p.progression, p.minStep))
-    return { skill: s.id, name: s.name, score: Math.round((preScore * 0.7 + targetScore * 0.3) * 100) / 100, reached, missing }
+    const score = Math.round((preScore * 0.4 + gapScore * 0.35 + targetScore * 0.25) * 100) / 100
+    const tier = !missing.length && gapScore >= 0.66 ? 'next' : score >= 0.5 ? 'work' : 'long'
+    return { skill: s.id, name: s.name, score, reached, missing, tier }
   }).sort((a, b) => Number(a.reached) - Number(b.reached) || b.score - a.score)
 }
 

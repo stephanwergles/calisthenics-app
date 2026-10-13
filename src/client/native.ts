@@ -166,6 +166,8 @@ export type NBlock =
   | { type: 'list'; rows: { id?: string; title: string; subtitle?: string; trailing?: string; symbol?: string }[] }
   /** Auswahl-Kacheln in zwei Spalten (Ziele, Ausrüstung): Antippen → toggle mit neuem Zustand */
   | { type: 'tiles'; tiles: { id: string; title: string; subtitle?: string; detail?: string; accent?: boolean; clip?: string; symbol?: string; on: boolean }[] }
+  /** Fuß mit Wortmarke, darunter kleiner Text (Version, ©), zentriert */
+  | { type: 'brand'; text?: string }
   | { type: 'buttons'; buttons: NButton[] }
   | { type: 'compare'; title: string; before: number; now: number; max: number; delta: string }
   | { type: 'track'; nodes: { title: string; subtitle: string; state: 'done' | 'current' | 'locked'; label: string; clip?: string }[]

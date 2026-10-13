@@ -698,9 +698,9 @@ export const stepIndexes = (ix: Index, user: UserState): Record<ProgressionId, n
   Object.fromEntries([...ix.progressions.keys()].map(pid => [pid, currentStep(ix, user, pid).index]))
 
 /** Skills, deren Leitern der Katalog kennt – mit Bewertung „realistisch als Nächstes“ */
-export function skillChoices(ix: Index, user: UserState, skills: Skill[]): SkillSuggestion[] {
+export function skillChoices(ix: Index, user: UserState, skills: Skill[], meta?: Record<string, ExerciseMeta>): SkillSuggestion[] {
   const known = skills.filter(s => [...s.targets, ...s.prerequisites.map(p => p.progression)].every(pid => ix.progressions.has(pid)))
-  return suggestSkills(known, ix.catalog, stepIndexes(ix, user))
+  return suggestSkills(known, ix.catalog, stepIndexes(ix, user), meta ?? ix.catalog.meta)
 }
 /** Fortschritt zu einem Ziel: Stufen der Ziel-Leitern (plus Bereitschaft zur nächsten), 0–1 */
 export function goalProgress(ix: Index, user: UserState, sessions: Session[], skill: Skill) {
@@ -895,9 +895,9 @@ export interface SkillCard {
 }
 /** Alle Skills mit Fortschritt – Ziele zuerst, dann begonnene (nach Fortschritt), dann die
     realistischsten, erreichte am Ende */
-export function skillOverview(ix: Index, user: UserState, sessions: Session[], skills: Skill[]): SkillCard[] {
+export function skillOverview(ix: Index, user: UserState, sessions: Session[], skills: Skill[], meta?: Record<string, ExerciseMeta>): SkillCard[] {
   const goals = profileOf(ix, user).goals
-  const choice = new Map(skillChoices(ix, user, skills).map(c => [c.skill, c]))
+  const choice = new Map(skillChoices(ix, user, skills, meta).map(c => [c.skill, c]))
   const cards = skills.filter(s => choice.has(s.id)).map((skill): SkillCard => {
     const p = goalProgress(ix, user, sessions, skill)
     const c = choice.get(skill.id)!

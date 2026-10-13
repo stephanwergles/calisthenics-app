@@ -43,6 +43,16 @@ test('Skill-Vorschläge: erfüllte Voraussetzungen zuerst, erreichte Skills ans 
   assert.ok(done.find(x => x.skill === 'pistol')!.reached)
 })
 
+test('Skill-Vorschläge: schwere Skills ohne Voraussetzungen gelten nicht als „realistisch als Nächstes“', () => {
+  const meta = json('exercise-meta.json').exercises
+  // Fortgeschrittener: Klimmzüge und Dips mit Gewicht, L-Sit auf Parallettes
+  const s = suggestSkills(skills, catalog, { 'pull-up': 1, dip: 1, 'l-sit': 1 }, meta)
+  const tier = (id: string) => s.find(x => x.skill === id)?.tier
+  assert.notEqual(tier('human-flag'), 'next', 'Human Flag (Endstufe 5) ist für Niveau 3 kein nächster Schritt')
+  assert.notEqual(tier('back-lever'), 'next')
+  assert.ok(s.findIndex(x => x.skill === 'muscle-up') < s.findIndex(x => x.skill === 'human-flag'), 'Muscle-up vor Human Flag')
+})
+
 test('Split-Vorschläge passen zur Tageszahl', () => {
   assert.equal(suggestSplits(splits, 3, ['pull', 'push', 'core'])[0].id, 'ppl-3')
   assert.equal(suggestSplits(splits, 3, ['legs'])[0].id, 'full-3')
