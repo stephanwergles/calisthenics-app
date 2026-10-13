@@ -151,7 +151,8 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 - [x] 6 weitere Skills aus vorhandenen Progressionen: Handstand-Push-up, Toes to Bar, Klimmzüge/Dips mit Gewicht, Typewriter Pull-up, Nordic Curl
 - [x] Neue Skills mit eigenen Progressionen (`src/seed/catalog-extra.json`, 23 Übungen): Front Lever (5 Stufen), Back Lever (6, mit German Hang / Skin the Cat), Dragon Flag (3), Elbow Lever (Krähe → Elbow Lever → einarmig), Einarmiger Liegestütz (3), Shrimp Squat (3) – Technik-Texte, Kernpunkte, Metadaten; Coach-Prüfung ausstehend
 - [ ] 3D-Clips für die neuen Übungen
-- [ ] Weitere Skills: Human Flag (braucht Gerät „Stange senkrecht“), Straddle/Full Planche, Einarmiger Klimmzug, freier HSPU, V-Sit/Manna, Ring-Muscle-up, Press to Handstand
+- [x] Sieben weitere Skills (24 Übungen): Human Flag (neues Gerät „Senkrechte Stange“), Straddle Planche (→ Full Planche), Einarmiger Klimmzug, Freier Handstand-Push-up, V-Sit (→ Tuck Manna), Ring-Muscle-up, Press to Handstand – Coach-Prüfung ausstehend
+- [ ] Elite (später): Iron Cross, Maltese, Victorian, Hefesto, einarmiger Handstand
 - [ ] Fachliche Prüfung der Leitern und Freischalt-Schwellen durch einen Coach
 
 ### Phase 3.1b — Client auf Expo / React Native

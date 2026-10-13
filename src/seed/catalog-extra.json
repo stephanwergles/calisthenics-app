@@ -601,6 +601,635 @@
     "Gesäß",
     "Fußgelenk"
    ]
+  },
+  {
+   "id": "vertical-flag",
+   "name": "Vertical Flag",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Seitlich an der senkrechten Stange: obere Hand im Obergriff über dem Kopf, untere Hand im Untergriff auf Hüfthöhe, Arme gestreckt.",
+    "execution": "Mit der oberen Hand ziehen, mit der unteren drücken und den Körper senkrecht nach oben bringen – Beine gestreckt Richtung Decke. Halten.",
+    "faults": "Untere Hand zu nah an der oberen · Arme gebeugt · Hüfte knickt seitlich",
+    "scaling": "Leichter: Beine gehockt. Schwerer: Körper langsam zur Seite absenken."
+   },
+   "media": {
+    "videoQuery": "vertical flag progression"
+   },
+   "cues": [
+    "Oben ziehen, unten drücken",
+    "Arme gestreckt",
+    "Hände schulterbreit und mehr auseinander"
+   ],
+   "muscles": [
+    "Seitliche Rumpfmuskulatur",
+    "Latissimus",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "tuck-flag",
+   "name": "Human Flag gehockt",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Griff wie beim Vertical Flag, Knie zur Brust gezogen.",
+    "execution": "Aus dem Vertical Flag den Körper waagerecht zur Seite kippen, Knie eng an der Brust. Unterer Arm drückt, oberer zieht, Hüfte auf Höhe der Hände.",
+    "faults": "Hüfte sackt nach unten · unterer Arm beugt · Schultern verdrehen sich",
+    "scaling": "Leichter: Vertical Flag. Schwerer: gegrätscht."
+   },
+   "media": {
+    "videoQuery": "tuck human flag"
+   },
+   "cues": [
+    "Unterer Arm drückt wie beim Handstand",
+    "Hüfte hoch",
+    "Schultern in einer Linie"
+   ],
+   "muscles": [
+    "Seitliche Rumpfmuskulatur",
+    "Latissimus",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "straddle-flag",
+   "name": "Human Flag gegrätscht",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Griff wie zuvor, Beine gestreckt und weit gegrätscht.",
+    "execution": "Körper waagerecht zur Seite, Beine weit gegrätscht verkürzen den Hebel. Gesäß und seitlicher Rumpf fest, halten.",
+    "faults": "Beine sinken · Hüfte knickt · Arme beugen",
+    "scaling": "Leichter: gehockt oder ein Bein gestreckt. Schwerer: Beine schließen."
+   },
+   "media": {
+    "videoQuery": "straddle human flag"
+   },
+   "cues": [
+    "Beine weit, Knie gestreckt",
+    "Körper waagerecht",
+    "Unterer Arm gestreckt"
+   ],
+   "muscles": [
+    "Seitliche Rumpfmuskulatur",
+    "Latissimus",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "human-flag",
+   "name": "Human Flag",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Griff wie zuvor, Beine geschlossen und gestreckt.",
+    "execution": "Ganzer Körper waagerecht seitlich an der Stange, eine Linie von Kopf bis Fuß. Halten, kontrolliert absenken.",
+    "faults": "Hüfte knickt · Beine sinken · Schultern verdrehen",
+    "scaling": "Leichter: gegrätscht. Schwerer: längere Haltezeit, Flag-Raises."
+   },
+   "media": {
+    "videoQuery": "full human flag"
+   },
+   "cues": [
+    "Eine Linie von Kopf bis Fuß",
+    "Oben ziehen, unten drücken",
+    "Gesäß fest"
+   ],
+   "muscles": [
+    "Seitliche Rumpfmuskulatur",
+    "Latissimus",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "adv-tuck-planche",
+   "name": "Advanced Tuck Planche",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im Stütz auf Parallettes oder Boden, Hände schulterbreit, Finger leicht nach außen.",
+    "execution": "Schultern weit vor die Hände bringen, Rücken gerade, Knie gebeugt hinter dem Körper. Arme gestreckt, Schulterblätter auseinander. Halten.",
+    "faults": "Arme beugen · Rücken rundet · Schultern nicht weit genug vorn",
+    "scaling": "Leichter: Tuck Planche. Schwerer: ein Bein strecken oder Straddle."
+   },
+   "media": {
+    "videoQuery": "advanced tuck planche"
+   },
+   "cues": [
+    "Arme gestreckt, Ellenbogen fest",
+    "Schultern weit nach vorn",
+    "Rücken flach"
+   ],
+   "muscles": [
+    "Vordere Schulter",
+    "Brust",
+    "Rumpf",
+    "Handgelenke"
+   ]
+  },
+  {
+   "id": "straddle-planche",
+   "name": "Straddle Planche",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Wie zuvor, Beine gestreckt und weit gegrätscht.",
+    "execution": "Den ganzen Körper waagerecht über den Händen halten, Beine weit gegrätscht. Becken leicht nach hinten gekippt, Gesäß fest.",
+    "faults": "Hohlkreuz · Hüfte sackt ab · Arme beugen",
+    "scaling": "Leichter: Advanced Tuck. Schwerer: Beine schließen."
+   },
+   "media": {
+    "videoQuery": "straddle planche"
+   },
+   "cues": [
+    "Schultern vor die Hände",
+    "Beine weit, gestreckt",
+    "Becken nach hinten kippen"
+   ],
+   "muscles": [
+    "Vordere Schulter",
+    "Brust",
+    "Rumpf",
+    "Handgelenke"
+   ]
+  },
+  {
+   "id": "full-planche",
+   "name": "Full Planche",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Wie zuvor, Beine geschlossen.",
+    "execution": "Der ganze Körper waagerecht über den Händen, eine Linie von Kopf bis Fuß, nur die Hände berühren den Boden. Halten.",
+    "faults": "Hohlkreuz · Hüfte knickt · Ellenbogen beugen",
+    "scaling": "Leichter: Straddle Planche. Schwerer: längere Haltezeit, Planche Push-ups."
+   },
+   "media": {
+    "videoQuery": "full planche"
+   },
+   "cues": [
+    "Eine Linie",
+    "Ellenbogen gestreckt",
+    "Schultern weit vorn"
+   ],
+   "muscles": [
+    "Vordere Schulter",
+    "Brust",
+    "Rumpf",
+    "Handgelenke"
+   ]
+  },
+  {
+   "id": "one-arm-negative",
+   "name": "Einarmige Negative",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Mit beiden Händen oder mit Schwung hochziehen, oben eine Hand loslassen.",
+    "execution": "Mit einem Arm so langsam wie möglich (5 s oder mehr) bis in den gestreckten Hang ablassen. Schulter aktiv, Rumpf fest.",
+    "faults": "Unkontrolliert fallen · Schulter verliert die Spannung · Körper dreht stark",
+    "scaling": "Leichter: langsamere Negative mit zwei Armen, Archer-Klimmzüge. Schwerer: Pause in der Mitte."
+   },
+   "media": {
+    "videoQuery": "one arm pull up negative"
+   },
+   "cues": [
+    "5 Sekunden oder länger",
+    "Schulter aktiv lassen",
+    "Freie Hand an der Brust"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Bizeps",
+    "Unterarm"
+   ]
+  },
+  {
+   "id": "one-arm-pull-up-assisted",
+   "name": "Einarmiger Klimmzug (assistiert)",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Eine Hand an der Stange, die andere greift ein Handtuch oder Band tiefer am Gerät.",
+    "execution": "Mit dem Zugarm hochziehen, die Hilfshand unterstützt nur so viel wie nötig. Je tiefer die Hilfshand greift, desto schwerer.",
+    "faults": "Hilfshand zieht mit · Schwung · halbe Bewegung",
+    "scaling": "Leichter: Hilfshand höher. Schwerer: Hilfshand tiefer, nur ein Finger."
+   },
+   "media": {
+    "videoQuery": "assisted one arm pull up"
+   },
+   "cues": [
+    "Hilfshand stützt nur",
+    "Volle Bewegung",
+    "Rumpf fest"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Bizeps",
+    "Unterarm"
+   ]
+  },
+  {
+   "id": "one-arm-pull-up",
+   "name": "Einarmiger Klimmzug",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Im Hang an einer Hand, Arm gestreckt, freie Hand an der Brust oder hinter dem Rücken.",
+    "execution": "Mit einem Arm bis zum Kinn über die Stange ziehen, kontrolliert ablassen. Der Körper darf leicht drehen.",
+    "faults": "Schwung · Ablassen fallen lassen · Schulter hängt durch",
+    "scaling": "Leichter: assistiert. Schwerer: mit Gewicht, langsamer."
+   },
+   "media": {
+    "videoQuery": "one arm pull up"
+   },
+   "cues": [
+    "Schulter zuerst aktivieren",
+    "Ellenbogen zur Hüfte",
+    "Kontrolliert ablassen"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Bizeps",
+    "Unterarm"
+   ]
+  },
+  {
+   "id": "deficit-wall-hspu",
+   "name": "Wand-HSPU mit Tiefe",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Handstand an der Wand, Hände auf Parallettes oder erhöht, damit der Kopf tiefer gehen kann.",
+    "execution": "Langsam absenken, bis der Kopf unter Handhöhe ist, dann kraftvoll hochdrücken. Ellenbogen leicht nach vorn, Rumpf fest.",
+    "faults": "Hohlkreuz · Ellenbogen weit nach außen · halbe Tiefe",
+    "scaling": "Leichter: Wand-HSPU ohne Tiefe. Schwerer: mehr Tiefe, langsamer."
+   },
+   "media": {
+    "videoQuery": "deficit handstand push up"
+   },
+   "cues": [
+    "Volle Tiefe",
+    "Ellenbogen leicht nach vorn",
+    "Rumpf fest, kein Hohlkreuz"
+   ],
+   "muscles": [
+    "Schultern",
+    "Trizeps",
+    "oberer Rücken"
+   ]
+  },
+  {
+   "id": "freestanding-hspu-negative",
+   "name": "Freier HSPU Negativ",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Freier Handstand, Hände schulterbreit.",
+    "execution": "Im freien Handstand langsam (3–5 s) absenken, bis der Kopf den Boden fast berührt, dann abrollen oder mit den Füßen landen.",
+    "faults": "Balance über die Hüfte verlieren · zu schnell · Hohlkreuz",
+    "scaling": "Leichter: Wand-HSPU mit Tiefe. Schwerer: unten kurz halten."
+   },
+   "media": {
+    "videoQuery": "freestanding handstand push up negative"
+   },
+   "cues": [
+    "Langsam, 3–5 s",
+    "Balance über die Finger",
+    "Körper eine Linie"
+   ],
+   "muscles": [
+    "Schultern",
+    "Trizeps",
+    "Rumpf"
+   ]
+  },
+  {
+   "id": "freestanding-hspu",
+   "name": "Freier Handstand-Push-up",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Freier Handstand, Hände schulterbreit.",
+    "execution": "Kontrolliert absenken bis die Stirn fast den Boden berührt und frei wieder hochdrücken, ohne die Balance zu verlieren.",
+    "faults": "Balance verlieren · Hüfte knickt beim Drücken · halbe Tiefe",
+    "scaling": "Leichter: Negative. Schwerer: auf Parallettes mit Tiefe."
+   },
+   "media": {
+    "videoQuery": "freestanding handstand push up"
+   },
+   "cues": [
+    "Balance über die Finger",
+    "Volle Tiefe",
+    "Eine Linie beim Drücken"
+   ],
+   "muscles": [
+    "Schultern",
+    "Trizeps",
+    "Rumpf"
+   ]
+  },
+  {
+   "id": "v-sit-parallettes",
+   "name": "V-Sit (Parallettes)",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im Stütz auf Parallettes, Arme gestreckt, aus dem L-Sit.",
+    "execution": "Die Beine gestreckt über die Waagerechte heben, Oberkörper leicht nach hinten, Schultern nach unten gedrückt. Halten.",
+    "faults": "Schultern hochgezogen · Knie gebeugt · Rücken rund nach hinten gekippt",
+    "scaling": "Leichter: L-Sit. Schwerer: am Boden."
+   },
+   "media": {
+    "videoQuery": "v sit parallettes"
+   },
+   "cues": [
+    "Schultern weg von den Ohren",
+    "Beine hoch, Knie gestreckt",
+    "Hüftbeuger aktiv ziehen"
+   ],
+   "muscles": [
+    "Hüftbeuger",
+    "Bauch",
+    "Trizeps",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "v-sit-floor",
+   "name": "V-Sit (Boden)",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Am Boden sitzend, Hände neben der Hüfte, Finger nach vorn.",
+    "execution": "Hochdrücken und die gestreckten Beine weit über die Waagerechte heben. Arme gestreckt, Schultern tief. Halten.",
+    "faults": "Gesäß bleibt am Boden · Knie beugen · Schultern hochgezogen",
+    "scaling": "Leichter: auf Parallettes. Schwerer: Tuck Manna."
+   },
+   "media": {
+    "videoQuery": "v sit floor"
+   },
+   "cues": [
+    "Fest in den Boden drücken",
+    "Beine hoch",
+    "Schultern tief"
+   ],
+   "muscles": [
+    "Hüftbeuger",
+    "Bauch",
+    "Trizeps",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "tuck-manna",
+   "name": "Tuck Manna",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im Stütz, Hände hinter der Hüfte, Finger nach hinten.",
+    "execution": "Schultern nach vorn und unten, die Hüfte hinter die Hände schieben, Knie zur Brust. Halten. Erste Stufe zum Manna – sehr hohe Schulterbeweglichkeit nötig.",
+    "faults": "Schultern hochgezogen · Arme beugen · ohne Aufwärmen der Schultern",
+    "scaling": "Leichter: V-Sit am Boden. Schwerer: Beine strecken."
+   },
+   "media": {
+    "videoQuery": "tuck manna progression"
+   },
+   "cues": [
+    "Schultern tief und nach vorn",
+    "Hüfte hinter die Hände",
+    "Arme gestreckt"
+   ],
+   "muscles": [
+    "Hüftbeuger",
+    "Bauch",
+    "Schultern (Beweglichkeit)"
+   ]
+  },
+  {
+   "id": "false-grip-hang",
+   "name": "False Grip Hang",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "An den Ringen im falschen Griff: Handgelenk über dem Ring, Ring liegt in der Handfläche am Handballen.",
+    "execution": "Im falschen Griff gestreckt hängen, ohne dass der Griff in den normalen Hang rutscht. Schultern aktiv.",
+    "faults": "Griff rutscht nach unten · Arme gebeugt · Schultern hängen passiv",
+    "scaling": "Leichter: Füße am Boden, nur Teilgewicht. Schwerer: False-Grip-Klimmzüge."
+   },
+   "media": {
+    "videoQuery": "false grip hang rings"
+   },
+   "cues": [
+    "Handgelenk über den Ring",
+    "Ring im Handballen",
+    "Schultern aktiv"
+   ],
+   "muscles": [
+    "Unterarm",
+    "Handgelenk",
+    "Latissimus"
+   ]
+  },
+  {
+   "id": "false-grip-pull-up",
+   "name": "False-Grip-Klimmzüge (Ringe)",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im False-Grip-Hang an den Ringen.",
+    "execution": "Ringe bis zur unteren Brust ziehen, ohne den Griff zu verlieren. Ellenbogen nah am Körper, oben kurz halten.",
+    "faults": "Griff rutscht · nur bis zum Kinn · Ellenbogen weit",
+    "scaling": "Leichter: Füße am Boden (Ring-Rudern im False Grip). Schwerer: tiefer ziehen, explosiv."
+   },
+   "media": {
+    "videoQuery": "false grip pull up rings"
+   },
+   "cues": [
+    "Ringe zur Brust",
+    "Griff halten",
+    "Ellenbogen eng"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Bizeps",
+    "Unterarm"
+   ]
+  },
+  {
+   "id": "ring-transition",
+   "name": "Ring-Übergang (Füße am Boden)",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Ringe tief hängen (Brusthöhe im Sitzen), False Grip, Füße am Boden.",
+    "execution": "Aus dem Zug über die Ringe kippen, Ellenbogen nach hinten, bis in den Tiefstütz – die Beine helfen so wenig wie möglich. Hochdrücken.",
+    "faults": "Ringe weit vom Körper · Beine nehmen die Arbeit ab · Griff verloren",
+    "scaling": "Leichter: mehr Beinhilfe. Schwerer: Ringe höher, weniger Beine."
+   },
+   "media": {
+    "videoQuery": "ring muscle up transition drill"
+   },
+   "cues": [
+    "Ringe nah am Körper",
+    "Brust über die Ringe",
+    "Ellenbogen nach hinten"
+   ],
+   "muscles": [
+    "Brust",
+    "Trizeps",
+    "Latissimus"
+   ]
+  },
+  {
+   "id": "ring-muscle-up",
+   "name": "Ring-Muscle-up",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im False-Grip-Hang an den Ringen.",
+    "execution": "Explosiv bis zur unteren Brust ziehen, über die Ringe kippen (Ringe nah am Körper) und aus dem Tiefstütz hochdrücken. Kontrolliert zurück.",
+    "faults": "Griff verloren · Ringe weit vom Körper · Hühnerflügel (ein Arm zuerst)",
+    "scaling": "Leichter: Übergang mit Füßen am Boden, Band. Schwerer: strikt, langsam."
+   },
+   "media": {
+    "videoQuery": "ring muscle up tutorial"
+   },
+   "cues": [
+    "Ringe zur Brust ziehen",
+    "Ringe nah am Körper",
+    "Beide Arme gleichzeitig"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Brust",
+    "Trizeps"
+   ]
+  },
+  {
+   "id": "pike-compression",
+   "name": "Pike Compression",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im Langsitz, Beine gestreckt, Hände neben den Knien am Boden.",
+    "execution": "Die gestreckten Beine vom Boden heben und kurz halten, ohne nach hinten zu lehnen. Je weiter vorn die Hände, desto schwerer.",
+    "faults": "Nach hinten lehnen · Knie beugen · Schwung",
+    "scaling": "Leichter: ein Bein heben. Schwerer: Hände weiter vorn, länger halten."
+   },
+   "media": {
+    "videoQuery": "pike compression lift"
+   },
+   "cues": [
+    "Aufrecht sitzen",
+    "Knie gestreckt",
+    "Beine aktiv ziehen"
+   ],
+   "muscles": [
+    "Hüftbeuger",
+    "Bauch",
+    "Beinrückseite (Beweglichkeit)"
+   ]
+  },
+  {
+   "id": "elevated-pike-press",
+   "name": "Pike Press von der Box",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Hände am Boden, Füße auf einer Box, Hüfte über den Schultern (Pike).",
+    "execution": "Schultern vor die Hände schieben und die Füße von der Box lösen, bis die Hüfte über den Händen steht. Kontrolliert zurück.",
+    "faults": "Springen statt pressen · Arme beugen · Schultern bleiben hinten",
+    "scaling": "Leichter: höhere Box. Schwerer: niedrigere Box, Beine zum Handstand heben."
+   },
+   "media": {
+    "videoQuery": "elevated pike press handstand"
+   },
+   "cues": [
+    "Schultern nach vorn",
+    "Hüfte hoch",
+    "Kein Absprung"
+   ],
+   "muscles": [
+    "Schultern",
+    "Rumpf",
+    "Hüftbeuger"
+   ]
+  },
+  {
+   "id": "wall-straddle-press",
+   "name": "Straddle Press (Wand)",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Hände etwa eine Handbreite vor der Wand, Beine gegrätscht, Hüfte hoch.",
+    "execution": "Gegrätscht in den Handstand pressen, der Rücken darf die Wand berühren. Langsam wieder absenken.",
+    "faults": "Springen · Arme beugen · Hüfte kommt nicht über die Hände",
+    "scaling": "Leichter: Pike Press von der Box. Schwerer: ohne Wand."
+   },
+   "media": {
+    "videoQuery": "straddle press handstand wall"
+   },
+   "cues": [
+    "Schultern weit vor",
+    "Beine weit, gestreckt",
+    "Langsam hoch, langsam runter"
+   ],
+   "muscles": [
+    "Schultern",
+    "Rumpf",
+    "Hüftbeuger"
+   ]
+  },
+  {
+   "id": "straddle-press",
+   "name": "Straddle Press to Handstand",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im Stand gegrätscht, Hände vor den Füßen am Boden.",
+    "execution": "Ohne Sprung in den freien Handstand pressen: Schultern nach vorn, Hüfte über die Hände, Beine gegrätscht nach oben schließen. Kontrolliert zurück.",
+    "faults": "Absprung · Arme beugen · Balance über den Kopf verlieren",
+    "scaling": "Leichter: an der Wand. Schwerer: Pike Press mit geschlossenen Beinen."
+   },
+   "media": {
+    "videoQuery": "straddle press to handstand"
+   },
+   "cues": [
+    "Kein Absprung",
+    "Hüfte über die Hände",
+    "Beine erst oben schließen"
+   ],
+   "muscles": [
+    "Schultern",
+    "Rumpf",
+    "Hüftbeuger"
+   ]
   }
  ],
  "progressions": [
@@ -895,6 +1524,319 @@
       "unlockAt": null,
       "min": 3,
       "max": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "human-flag",
+   "name": "Human Flag",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "vertical-flag",
+     "target": {
+      "label": "3 × 10–20 s",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 20,
+      "min": 10,
+      "max": 20
+     }
+    },
+    {
+     "exercise": "tuck-flag",
+     "target": {
+      "label": "3 × 5–10 s",
+      "sets": 3,
+      "restSec": 150,
+      "unlockAt": 10,
+      "min": 5,
+      "max": 10
+     }
+    },
+    {
+     "exercise": "straddle-flag",
+     "target": {
+      "label": "3 × 4–8 s",
+      "sets": 3,
+      "restSec": 180,
+      "unlockAt": 8,
+      "min": 4,
+      "max": 8
+     }
+    },
+    {
+     "exercise": "human-flag",
+     "target": {
+      "label": "3 × 3–6 s",
+      "sets": 3,
+      "restSec": 180,
+      "unlockAt": null,
+      "min": 3,
+      "max": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "planche-advanced",
+   "name": "Planche · Fortgeschritten",
+   "region": "push",
+   "steps": [
+    {
+     "exercise": "adv-tuck-planche",
+     "target": {
+      "label": "4 × 6–10 s",
+      "sets": 4,
+      "restSec": 150,
+      "unlockAt": 10,
+      "min": 6,
+      "max": 10
+     }
+    },
+    {
+     "exercise": "straddle-planche",
+     "target": {
+      "label": "4 × 4–8 s",
+      "sets": 4,
+      "restSec": 180,
+      "unlockAt": 8,
+      "min": 4,
+      "max": 8
+     }
+    },
+    {
+     "exercise": "full-planche",
+     "target": {
+      "label": "4 × 3–5 s",
+      "sets": 4,
+      "restSec": 180,
+      "unlockAt": null,
+      "min": 3,
+      "max": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "one-arm-pull-up",
+   "name": "Einarmiger Klimmzug",
+   "region": "pull",
+   "steps": [
+    {
+     "exercise": "one-arm-negative",
+     "target": {
+      "label": "3 × 2–3 / Seite",
+      "sets": 3,
+      "restSec": 180,
+      "unlockAt": 3,
+      "min": 2,
+      "max": 3
+     }
+    },
+    {
+     "exercise": "one-arm-pull-up-assisted",
+     "target": {
+      "label": "3 × 2–4 / Seite",
+      "sets": 3,
+      "restSec": 180,
+      "unlockAt": 4,
+      "min": 2,
+      "max": 4
+     }
+    },
+    {
+     "exercise": "one-arm-pull-up",
+     "target": {
+      "label": "3 × 1–3 / Seite",
+      "sets": 3,
+      "restSec": 180,
+      "unlockAt": null,
+      "min": 1,
+      "max": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "freestanding-hspu",
+   "name": "Freier Handstand-Push-up",
+   "region": "push",
+   "steps": [
+    {
+     "exercise": "deficit-wall-hspu",
+     "target": {
+      "label": "3 × 3–5",
+      "sets": 3,
+      "restSec": 150,
+      "unlockAt": 5,
+      "min": 3,
+      "max": 5
+     }
+    },
+    {
+     "exercise": "freestanding-hspu-negative",
+     "target": {
+      "label": "3 × 2–4",
+      "sets": 3,
+      "restSec": 150,
+      "unlockAt": 4,
+      "min": 2,
+      "max": 4
+     }
+    },
+    {
+     "exercise": "freestanding-hspu",
+     "target": {
+      "label": "3 × 1–3",
+      "sets": 3,
+      "restSec": 180,
+      "unlockAt": null,
+      "min": 1,
+      "max": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "v-sit",
+   "name": "V-Sit",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "v-sit-parallettes",
+     "target": {
+      "label": "3 × 5–10 s",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 10,
+      "min": 5,
+      "max": 10
+     }
+    },
+    {
+     "exercise": "v-sit-floor",
+     "target": {
+      "label": "3 × 5–8 s",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 8,
+      "min": 5,
+      "max": 8
+     }
+    },
+    {
+     "exercise": "tuck-manna",
+     "target": {
+      "label": "3 × 3–6 s",
+      "sets": 3,
+      "restSec": 150,
+      "unlockAt": null,
+      "min": 3,
+      "max": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "ring-muscle-up",
+   "name": "Ring-Muscle-up",
+   "region": "pull",
+   "steps": [
+    {
+     "exercise": "false-grip-hang",
+     "target": {
+      "label": "3 × 10–20 s",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 20,
+      "min": 10,
+      "max": 20
+     }
+    },
+    {
+     "exercise": "false-grip-pull-up",
+     "target": {
+      "label": "4 × 3–6",
+      "sets": 4,
+      "restSec": 120,
+      "unlockAt": 6,
+      "min": 3,
+      "max": 6
+     }
+    },
+    {
+     "exercise": "ring-transition",
+     "target": {
+      "label": "3 × 4–6",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 6,
+      "min": 4,
+      "max": 6
+     }
+    },
+    {
+     "exercise": "ring-muscle-up",
+     "target": {
+      "label": "4 × 1–3",
+      "sets": 4,
+      "restSec": 180,
+      "unlockAt": null,
+      "min": 1,
+      "max": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "press-handstand",
+   "name": "Press to Handstand",
+   "region": "push",
+   "steps": [
+    {
+     "exercise": "pike-compression",
+     "target": {
+      "label": "3 × 8–12",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 12,
+      "min": 8,
+      "max": 12
+     }
+    },
+    {
+     "exercise": "elevated-pike-press",
+     "target": {
+      "label": "3 × 3–5",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 5,
+      "min": 3,
+      "max": 5
+     }
+    },
+    {
+     "exercise": "wall-straddle-press",
+     "target": {
+      "label": "3 × 2–4",
+      "sets": 3,
+      "restSec": 150,
+      "unlockAt": 4,
+      "min": 2,
+      "max": 4
+     }
+    },
+    {
+     "exercise": "straddle-press",
+     "target": {
+      "label": "3 × 1–3",
+      "sets": 3,
+      "restSec": 180,
+      "unlockAt": null,
+      "min": 1,
+      "max": 3
      }
     }
    ]

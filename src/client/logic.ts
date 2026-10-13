@@ -673,7 +673,7 @@ export function monthStats(sessions: Session[], activities: Activity[], month: s
 /* ── Profil, Ziele, Skill-Vorschläge ─────────────────────────────────────── */
 
 export const EQUIPMENT_LABEL: Record<Exclude<Equipment, 'floor' | 'wall'>, string> = {
-  bar: 'Stange', rings: 'Ringe', parallettes: 'Parallettes', 'dip-bars': 'Barren', band: 'Band', box: 'Box', weight: 'Zusatzgewicht',
+  bar: 'Stange', rings: 'Ringe', parallettes: 'Parallettes', 'dip-bars': 'Barren', band: 'Band', box: 'Box', weight: 'Zusatzgewicht', pole: 'Senkrechte Stange',
 }
 /** Profil, solange keins gespeichert ist: keine Ziele, alle Geräte, Tage aus dem Wochenplan */
 export function profileOf(ix: Index, user: UserState): Profile {

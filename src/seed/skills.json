@@ -245,6 +245,137 @@
     "split-squat"
    ],
    "prerequisites": []
+  },
+  {
+   "id": "human-flag",
+   "name": "Human Flag",
+   "targets": [
+    "human-flag"
+   ],
+   "support": [
+    "side-plank",
+    "pull-up"
+   ],
+   "prerequisites": [
+    {
+     "progression": "pull-up",
+     "minStep": 0
+    },
+    {
+     "progression": "handstand",
+     "minStep": 0
+    }
+   ]
+  },
+  {
+   "id": "straddle-planche",
+   "name": "Straddle Planche",
+   "targets": [
+    "planche-advanced"
+   ],
+   "support": [
+    "planche",
+    "horizontal-push"
+   ],
+   "prerequisites": [
+    {
+     "progression": "planche",
+     "minStep": 2
+    }
+   ]
+  },
+  {
+   "id": "one-arm-pull-up",
+   "name": "Einarmiger Klimmzug",
+   "targets": [
+    "one-arm-pull-up"
+   ],
+   "support": [
+    "one-arm-pull",
+    "pull-up"
+   ],
+   "prerequisites": [
+    {
+     "progression": "one-arm-pull",
+     "minStep": 2
+    },
+    {
+     "progression": "pull-up",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "freestanding-hspu",
+   "name": "Freier Handstand-Push-up",
+   "targets": [
+    "freestanding-hspu"
+   ],
+   "support": [
+    "handstand",
+    "vertical-push"
+   ],
+   "prerequisites": [
+    {
+     "progression": "handstand",
+     "minStep": 2
+    },
+    {
+     "progression": "vertical-push",
+     "minStep": 2
+    }
+   ]
+  },
+  {
+   "id": "v-sit",
+   "name": "V-Sit",
+   "targets": [
+    "v-sit"
+   ],
+   "support": [
+    "l-sit",
+    "leg-raise"
+   ],
+   "prerequisites": [
+    {
+     "progression": "l-sit",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "ring-muscle-up",
+   "name": "Ring-Muscle-up",
+   "targets": [
+    "ring-muscle-up"
+   ],
+   "support": [
+    "dip",
+    "muscle-up-pull"
+   ],
+   "prerequisites": [
+    {
+     "progression": "muscle-up-pull",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "press-handstand",
+   "name": "Press to Handstand",
+   "targets": [
+    "press-handstand"
+   ],
+   "support": [
+    "handstand",
+    "l-sit"
+   ],
+   "prerequisites": [
+    {
+     "progression": "handstand",
+     "minStep": 2
+    }
+   ]
   }
  ]
 }

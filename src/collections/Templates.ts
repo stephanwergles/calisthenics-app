@@ -20,7 +20,7 @@ export const Templates: CollectionConfig = {
     { name: 'description', type: 'textarea', required: true, label: 'Beschreibung' },
     {
       name: 'equipment', type: 'select', hasMany: true, label: 'Ausrüstung',
-      options: ['bar', 'rings', 'parallettes', 'dip-bars', 'band', 'box', 'weight'].map(v => ({ label: v, value: v })),
+      options: ['bar', 'rings', 'parallettes', 'dip-bars', 'band', 'box', 'weight', 'pole'].map(v => ({ label: v, value: v })),
     },
     { name: 'workouts', type: 'json', required: true, label: 'Workouts', admin: { description: 'Im App-Format (wie im Plan): id, name, focus, slots [{ block, progression, sets }], warmup, cooldown' } },
     { name: 'weekplan', type: 'json', label: 'Wochentage', admin: { description: 'Nur bei Plänen: { "mon": "<workout-id>", … }' } },

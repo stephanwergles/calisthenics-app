@@ -1021,6 +1021,371 @@
     "knee": 2
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "vertical-flag": {
+   "equipment": [
+    [
+     "pole"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 3,
+   "stress": {
+    "shoulder": 2,
+    "wrist": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "tuck-flag": {
+   "equipment": [
+    [
+     "pole"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 2,
+    "wrist": 1,
+    "elbow": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "straddle-flag": {
+   "equipment": [
+    [
+     "pole"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 5,
+   "stress": {
+    "shoulder": 2,
+    "wrist": 1,
+    "elbow": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "human-flag": {
+   "equipment": [
+    [
+     "pole"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 5,
+   "stress": {
+    "shoulder": 2,
+    "wrist": 1,
+    "elbow": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "adv-tuck-planche": {
+   "equipment": [
+    [
+     "parallettes"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 2,
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "straddle-planche": {
+   "equipment": [
+    [
+     "parallettes"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 5,
+   "stress": {
+    "wrist": 2,
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "full-planche": {
+   "equipment": [
+    [
+     "parallettes"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 5,
+   "stress": {
+    "wrist": 2,
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "one-arm-negative": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 4,
+   "stress": {
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "one-arm-pull-up-assisted": {
+   "equipment": [
+    [
+     "bar",
+     "band"
+    ],
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 5,
+   "stress": {
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "one-arm-pull-up": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 5,
+   "stress": {
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "deficit-wall-hspu": {
+   "equipment": [
+    [
+     "parallettes",
+     "wall"
+    ],
+    [
+     "box",
+     "wall"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 2,
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "freestanding-hspu-negative": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 5,
+   "stress": {
+    "wrist": 2,
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "freestanding-hspu": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 5,
+   "stress": {
+    "wrist": 2,
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "v-sit-parallettes": {
+   "equipment": [
+    [
+     "parallettes"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "v-sit-floor": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 2,
+    "shoulder": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "tuck-manna": {
+   "equipment": [
+    [
+     "floor"
+    ],
+    [
+     "parallettes"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 5,
+   "stress": {
+    "wrist": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "false-grip-hang": {
+   "equipment": [
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 2,
+   "stress": {
+    "wrist": 2,
+    "elbow": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "false-grip-pull-up": {
+   "equipment": [
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 2,
+    "elbow": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "ring-transition": {
+   "equipment": [
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 2,
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "ring-muscle-up": {
+   "equipment": [
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 5,
+   "stress": {
+    "wrist": 2,
+    "elbow": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "pike-compression": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 2,
+   "stress": {},
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "elevated-pike-press": {
+   "equipment": [
+    [
+     "box"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "wall-straddle-press": {
+   "equipment": [
+    [
+     "wall"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "straddle-press": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 5,
+   "stress": {
+    "wrist": 2,
+    "shoulder": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
   }
  }
 }
