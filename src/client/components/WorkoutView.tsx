@@ -79,7 +79,7 @@ export function PlanSheet({ t, slots, focus, openFocus, openActivity, onClose, o
         type: 'row', id: `ex:${s.pid}`, title: s.step.exercise.name,
         eyebrow: s.pid === focus && s.state === 'open' ? 'Als Nächstes' : s.added ? 'Nur heute' : undefined,
         subtitle: [s.state === 'open' && s.last ? `Zuletzt ${s.last.sets.map(x => x.value).join(' · ')}` : null, s.ready ? 'bereit für die nächste Stufe' : null].filter(Boolean).join(' · ') || undefined,
-        trailing: s.state === 'done' ? s.sets.map(x => x.value).join(' · ') : s.state === 'skipped' ? 'übersprungen' : s.state === 'paused' ? 'pausiert'
+        trailing: s.state === 'done' ? s.sets.map(x => x.value).join(' · ') : s.state === 'skipped' ? 'übersprungen' : s.state === 'paused' ? (s.blockedBy ?? 'pausiert')
           : s.sets.length ? `${s.sets.length}/${s.planned}` : s.step.target.label,
         state: s.pid === focus && s.state === 'open' ? 'next' : s.state,
         clip: hasClip(s.step.exercise.id) ? s.step.exercise.id : undefined,
@@ -163,7 +163,7 @@ export function PlanSheet({ t, slots, focus, openFocus, openActivity, onClose, o
 function Row({ s, next, onClick }: { s: L.SlotView; next: boolean; onClick: () => void }) {
   const mark = { open: null, done: <Icon name="check" size={14} />, skipped: <Icon name="minus" size={14} />, paused: <Icon name="pause" size={14} /> }[s.state]
   const right = s.state === 'done' ? s.sets.map(x => x.value).join(' · ')
-    : s.state === 'skipped' ? 'übersprungen' : s.state === 'paused' ? 'pausiert'
+    : s.state === 'skipped' ? 'übersprungen' : s.state === 'paused' ? (s.blockedBy ?? 'pausiert')
     : s.sets.length ? `${s.sets.length}/${s.planned}` : s.step.target.label
   return (
     <li>

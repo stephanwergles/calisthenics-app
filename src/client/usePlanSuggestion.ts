@@ -3,15 +3,14 @@
    sich ohne Bestätigung. „Später“ blendet genau diesen Vorschlag aus (pro Gerät); ändern sich
    Ziele, Tage, Ausrüstung oder Stufen, entsteht ein neuer. Rückgängig = vorherige Fassung. */
 import { useMemo, useState } from 'react'
-import type { ExerciseMeta, Plan, SplitTemplate } from '@/domain/model'
+import type { Plan, SplitTemplate } from '@/domain/model'
 import { generatePlan } from '@/domain/generator'
-import metaJson from '@/seed/exercise-meta.json'
+import { META } from './meta'
 import splitsJson from '@/seed/splits.json'
 import * as L from './logic'
 import type { Training } from './useTraining'
 import { SKILLS } from './components/ProfileParts'
 
-const META = (metaJson as unknown as { exercises: Record<string, ExerciseMeta> }).exercises
 const SPLITS = (splitsJson as unknown as { splits: SplitTemplate[] }).splits
 const DISMISSED = 'lever-suggestion-dismissed'
 const PREVIOUS = 'lever-plan-previous'

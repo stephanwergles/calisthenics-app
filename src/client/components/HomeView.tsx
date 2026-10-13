@@ -17,7 +17,12 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
   const w = t.ix.workouts.get(t.workout)!
   const [picking, setPicking] = useState(false)
   const week = useMemo(() => L.weekStrip(t.ix, t.sessions, t.activities, t.today), [t.ix, t.sessions, t.activities, t.today])
-  const streak = useMemo(() => L.streakWeeks(t.sessions, t.today), [t.sessions, t.today])
+  const streak = useMemo(() => L.streakWeeks(t.sessions, t.today, t.state.phases), [t.sessions, t.today, t.state.phases])
+  const resting = L.restingPhase(t.state, t.today)
+  const blocked = slots.filter(s => s.blockedBy)
+  const notice = resting ? `${L.fmtPhase(resting)} – heute ist nichts fällig, deine Serie bleibt.`
+    : blocked.length ? `${blocked.length} ${blocked.length === 1 ? 'Übung ruht' : 'Übungen ruhen'} heute (${[...new Set(blocked.map(s => s.blockedBy))].join(', ')}).`
+    : L.reentry(t.state, t.today) ? 'Wiedereinstieg nach der Pause: diese Woche je Übung ein Satz weniger.' : null
   const minutes = useMemo(() => L.estimateMinutes(t.sessions, t.workout), [t.sessions, t.workout])
   const skills = useMemo(() => L.nextSkills(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
   // Ziel der Leiter (letzte Stufe) – zeigt, wohin es geht, statt nur die nächste Stufe
@@ -57,6 +62,8 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
           </li>
         ))}
       </ol>
+
+      {notice && <p className="h-notice" role="status">{notice}</p>}
 
       <div className="h-hero">
         {hero && <ExerciseStill exercise={hero} className="h-still" />}
