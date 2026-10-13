@@ -216,6 +216,18 @@ export interface User {
       | null;
     paused?: (string | Progression)[] | null;
     /**
+     * Pause, Urlaub, Verletzung, Equipment – geprüft beim Sync (isPhase)
+     */
+    phases?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    /**
      * Ziele, Ausrüstung, Trainingstage, Dauer – geprüft beim Sync (isProfile)
      */
     profile?:
@@ -691,6 +703,7 @@ export interface UsersSelect<T extends boolean = true> {
     | {
         current?: T;
         paused?: T;
+        phases?: T;
         profile?: T;
         clientUpdatedAt?: T;
       };

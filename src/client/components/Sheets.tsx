@@ -12,8 +12,10 @@ import type { NBlock } from '../native'
 
 /** Bottom-Sheet: Griff und Kopf lassen sich nach unten wegziehen. `large` = fast volle Höhe mit
     scrollendem Inhalt und fester Fußzeile (z. B. Start-Button). */
-export function Sheet({ title, sub, onClose, children, large, footer }: {
+export function Sheet({ title, sub, onClose, children, large, footer, back }: {
   title: string; sub?: string; onClose: () => void; children: ReactNode; large?: boolean; footer?: ReactNode
+  /** Push-Seite: Zurück-Pfeil mit dem Titel der Seite davor statt Schließen */
+  back?: string
 }) {
   useEffect(() => {
     const esc = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -27,12 +29,13 @@ export function Sheet({ title, sub, onClose, children, large, footer }: {
       <div className={`sheet${large ? ' sheet-large' : ''}`} style={drag.style} role="dialog" aria-modal="true" aria-label={title}>
         <div className="sheet-drag" {...drag.bind}>
           <span className="grabber" aria-hidden="true" />
+          {back && <button className="btn btn-ghost btn-sm sheet-back" onClick={onClose}><Icon name="left" size={18} /> {back}</button>}
           <div className="sheet-head">
             <div>
               <h3>{title}</h3>
               {sub && <p className="sheet-sub">{sub}</p>}
             </div>
-            <button className="btn btn-secondary btn-icon sheet-close" aria-label="Schließen" onClick={onClose}><Icon name="close" size={20} /></button>
+            {!back && <button className="btn btn-secondary btn-icon sheet-close" aria-label="Schließen" onClick={onClose}><Icon name="close" size={20} /></button>}
           </div>
         </div>
         {large ? <div className="sheet-body">{children}</div> : children}

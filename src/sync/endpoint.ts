@@ -89,7 +89,7 @@ export const syncHandler: PayloadHandler = async req => {
   if (body.state) {
     if (!C.isState(body.state)) rejected.push('Trainingsstand: ungültig')
     else if ((body.state.updatedAt ?? 0) > (state.updatedAt ?? 0)) {
-      const next = { current: body.state.current, paused: body.state.paused, profile: body.state.profile ?? null, clientUpdatedAt: body.state.updatedAt ?? Date.now() }
+      const next = { current: body.state.current, paused: body.state.paused, profile: body.state.profile ?? null, phases: body.state.phases ?? null, clientUpdatedAt: body.state.updatedAt ?? Date.now() }
       await payload.update({ ...asUser, collection: 'users', id: user, data: { state: next } as never, depth: 0 })
       state = C.docToState(next)
     }

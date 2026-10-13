@@ -2,8 +2,9 @@
    Die Oberfläche ruft diese Funktionen auf; getestet wird direkt mit node --test. */
 import type {
   Activity, Catalog, Equipment, Exercise, ExerciseId, Plan, Profile, Progression, ProgressionId, Region, Session, SetLog,
-  Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId, GeneratedPlan, GeneratorInput, SplitTemplate,
+  Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId, GeneratedPlan, GeneratorInput, SplitTemplate, Phase, PhaseKind, Tendon, ExerciseMeta,
 } from '../domain/model.ts'
+import { usable } from '../domain/generator.ts'
 import { suggestSkills, suggestSplits, type SkillSuggestion } from '../domain/assessment.ts'
 import { NOTE_MAX, REGIONS } from '../domain/model.ts'
 
@@ -307,16 +308,23 @@ export interface SlotView {
   ready: boolean
   /** nur heute hinzugefügt (Tagesanpassung) */
   added?: boolean
+  /** ruht wegen einer Phase (Verletzung, fehlendes Gerät) */
+  blockedBy?: string
 }
 
 /** Alles, was die Ansicht pro Slot braucht – in Trainingsreihenfolge */
-export function workoutSlots(ix: Index, workout: WorkoutId, user: UserState, today: Session | undefined, sessions: Session[], date: string): SlotView[] {
+export function workoutSlots(ix: Index, workout: WorkoutId, user: UserState, today: Session | undefined, sessions: Session[], date: string,
+  opts: { meta?: Record<ExerciseId, ExerciseMeta> } = {}): SlotView[] {
+  const phases = activePhases(user, date)
+  const lighter = reentry(user, date)
   return daySlots(ix, workout, today).map(sl => {
     const step = currentStep(ix, user, sl.progression)
-    const paused = user.paused.includes(sl.progression)
-    const planned = plannedSets(today, sl.progression, step.target, sl.sets)
+    const blockedBy = opts.meta ? phaseBlock(phases, opts.meta[step.exercise.id]) ?? undefined : undefined
+    const paused = user.paused.includes(sl.progression) || !!blockedBy
+    const base = plannedSets(undefined, sl.progression, step.target, sl.sets)
+    const planned = today?.setPlan?.[sl.progression] ?? (lighter ? Math.max(2, base - 1) : base)
     return {
-      pid: sl.progression, block: sl.block, step, planned, added: sl.added,
+      pid: sl.progression, block: sl.block, step, planned, added: sl.added, blockedBy,
       sets: setsOf(today, step.exercise.id),
       state: slotState(today, step.exercise.id, planned, paused),
       last: lastPerformance(sessions, step.exercise.id, date),
@@ -484,11 +492,13 @@ export function weekStrip(ix: Index, sessions: Session[], activities: Activity[]
 }
 
 /** Wochen in Serie mit mindestens einer Einheit; die laufende Woche zählt mit, bricht die Serie aber nicht */
-export function streakWeeks(sessions: Session[], today: string): number {
+export function streakWeeks(sessions: Session[], today: string, phases: Phase[] = []): number {
   const weeks = new Set(sessions.filter(isTrained).map(s => weekStart(s.date)))
+  // Wochen in einer Pause oder im Urlaub unterbrechen die Serie nicht (zählen aber nicht mit)
+  const resting = (w: string) => phases.some(p => (p.kind === 'pause' || p.kind === 'vacation') && p.from <= addDays(w, 6) && (!p.to || p.to >= w))
   let w = weekStart(today), n = 0
   if (!weeks.has(w)) w = addDays(w, -7)
-  while (weeks.has(w)) { n++; w = addDays(w, -7) }
+  for (let guard = 0; guard < 520 && (weeks.has(w) || resting(w)); guard++) { if (weeks.has(w)) n++; w = addDays(w, -7) }
   return n
 }
 
@@ -734,3 +744,47 @@ export function planDiff(ix: Index, user: UserState, next: Plan): DayDiff[] {
     return [{ day, before: a?.name, after: b?.name, changes }]
   })
 }
+
+/* ── Phasen: Pause/krank, Urlaub, Verletzung, Equipment ──────────────────── */
+
+export const PHASE_LABEL: Record<PhaseKind, string> = { pause: 'Pause / krank', vacation: 'Urlaub', injury: 'Verletzung', equipment: 'Equipment fehlt' }
+export const TENDON_LABEL: Record<Tendon, string> = { shoulder: 'Schulter', elbow: 'Ellenbogen', wrist: 'Handgelenk', knee: 'Knie' }
+/** ab dieser Sehnenbelastung (0–3) ruht eine Übung bei Verletzung – jede Belastung des Gelenks */
+const INJURY_STRESS = 1
+
+export const activePhases = (user: UserState, date: string) => (user.phases ?? []).filter(p => p.from <= date && (!p.to || p.to >= date))
+/** Pause oder Urlaub heute? – dann ist nichts fällig */
+export const restingPhase = (user: UserState, date: string) => activePhases(user, date).find(p => p.kind === 'pause' || p.kind === 'vacation')
+
+/** Warum eine Übung heute ruht (Verletzung, fehlendes Gerät) – sonst null */
+export function phaseBlock(phases: Phase[], meta: ExerciseMeta | undefined): string | null {
+  if (!meta) return null
+  for (const p of phases) {
+    if (p.kind === 'injury') {
+      const hit = (p.tendons ?? []).filter(t => (meta.stress[t] ?? 0) >= INJURY_STRESS)
+      if (hit.length) return `Verletzung: ${hit.map(t => TENDON_LABEL[t]).join(', ')}`
+    }
+    if (p.kind === 'equipment' && !usable(meta, p.equipment ?? [])) return 'Gerät fehlt'
+  }
+  return null
+}
+
+/** Wiedereinstieg: in der Woche nach einer Pause je Übung ein Satz weniger (mindestens zwei) */
+export function reentry(user: UserState, date: string): boolean {
+  return (user.phases ?? []).some(p => (p.kind === 'pause' || p.kind === 'vacation') && p.to && p.to < date && date <= addDays(p.to, 7))
+}
+
+/** neue Phase ab `from`; days = Länge in Tagen, null = bis auf Weiteres */
+export function newPhase(kind: PhaseKind, from: string, days: number | null, extra: Pick<Phase, 'tendons' | 'equipment'> = {}): Phase {
+  return { id: `${from}-${kind}`, kind, from, ...(days ? { to: addDays(from, days - 1) } : {}), ...extra }
+}
+/** Phase einfügen (gleiche id ersetzt) */
+export const withPhase = (user: UserState, p: Phase): UserState =>
+  ({ ...user, phases: [...(user.phases ?? []).filter(x => x.id !== p.id), p] })
+/** Phase beenden: endet gestern; hat sie heute erst begonnen, fällt sie weg */
+export function withPhaseEnded(user: UserState, id: string, today: string): UserState {
+  const phases = (user.phases ?? []).flatMap(p => p.id !== id ? [p] : p.from >= today ? [] : [{ ...p, to: addDays(today, -1) }])
+  return { ...user, phases }
+}
+export const fmtPhase = (p: Phase) => `${PHASE_LABEL[p.kind]}${p.kind === 'injury' && p.tendons?.length ? ` · ${p.tendons.map(t => TENDON_LABEL[t]).join(', ')}` : ''}`
+  + (p.to ? ` · bis ${fmtShortDate(p.to)}` : ' · bis auf Weiteres')

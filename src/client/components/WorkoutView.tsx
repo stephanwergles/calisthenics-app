@@ -109,11 +109,11 @@ export function PlanSheet({ t, slots, focus, openFocus, openActivity, onClose, o
   })
   const layers = <>
     {over === 'add' && (
-      <LadderPicker t={t} exclude={slots.map(s => s.pid)} sub="Nur für heute – dein Plan bleibt, wie er ist"
+      <LadderPicker t={t} exclude={slots.map(s => s.pid)} sub="Nur für heute – dein Plan bleibt, wie er ist" parent={{ id: 'plan', title: w.focus }}
         onPick={pid => { t.updateToday(x => L.withAdded(x, pid)); setOver(null) }} onClose={() => setOver(null)} />
     )}
     {over === 'save' && (
-      <NameSheet title="Als neues Workout speichern" sub="Mit der heutigen Übungsliste und Satzzahl – Wochentage danach wählen"
+      <NameSheet parent={{ id: 'plan', title: w.focus }} title="Als neues Workout speichern" sub="Mit der heutigen Übungsliste und Satzzahl – Wochentage danach wählen"
         initial={`${w.name} angepasst`} ok="Speichern" onSave={saveAs} onClose={() => setOver(null)} />
     )}
   </>

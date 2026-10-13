@@ -52,6 +52,7 @@ export const Users: CollectionConfig = {
           admin: { description: 'Progressions-ID → Übungs-ID (nicht Stufen-Index)' },
         },
         { name: 'paused', type: 'relationship', relationTo: 'progressions', hasMany: true, label: 'Pausiert' },
+        { name: 'phases', type: 'json', label: 'Phasen', admin: { description: 'Pause, Urlaub, Verletzung, Equipment – geprüft beim Sync (isPhase)' } },
         { name: 'profile', type: 'json', label: 'Profil', admin: { description: 'Ziele, Ausrüstung, Trainingstage, Dauer – geprüft beim Sync (isProfile)' } },
         { name: 'clientUpdatedAt', type: 'number', admin: { readOnly: true } },
       ],

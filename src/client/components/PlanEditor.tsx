@@ -18,14 +18,16 @@ const daysOf = (t: Training, id: WorkoutId) => L.plannedDays(t.ix, id).map(d => 
 
 /* ── Leiter auswählen ─────────────────────────────────────────────────────── */
 
-export function LadderPicker({ t, exclude, sub, onPick, onClose }: {
-  t: Training; exclude: ProgressionId[]; sub?: string; onPick: (pid: ProgressionId) => void; onClose: () => void
+type Parent = { id: string; title: string }
+
+export function LadderPicker({ t, exclude, sub, onPick, onClose, parent }: {
+  t: Training; exclude: ProgressionId[]; sub?: string; onPick: (pid: ProgressionId) => void; onClose: () => void; parent?: Parent
 }) {
   const native = useNativeShell()
   const groups = L.ladderChoices(t.ix, t.state, exclude)
   const subtitle = sub ?? 'Die Stufe folgt deinem Stand in der Leiter'
   useNativeSheet(native ? {
-    id: 'ladders', title: 'Übung hinzufügen', subtitle, detents: ['large'],
+    id: 'ladders', parent: parent?.id, title: 'Übung hinzufügen', subtitle, detents: ['large'],
     blocks: groups.flatMap(g => [
       { type: 'section', title: g.label } as NBlock,
       ...g.items.map((x): NBlock => ({ type: 'row', id: `add:${x.pid}`, title: x.name, subtitle: x.sub, clip: hasClip(x.exercise.id) ? x.exercise.id : undefined })),
@@ -36,7 +38,7 @@ export function LadderPicker({ t, exclude, sub, onPick, onClose }: {
   })
   if (native) return null
   return (
-    <Sheet large title="Übung hinzufügen" sub={subtitle} onClose={onClose}>
+    <Sheet large title="Übung hinzufügen" sub={subtitle} back={parent?.title} onClose={onClose}>
       {groups.map(g => (
         <section key={g.id} className="pe-group">
           <h4 className="pe-section">{g.label}</h4>
@@ -60,15 +62,15 @@ export function LadderPicker({ t, exclude, sub, onPick, onClose }: {
 
 /* ── Name eingeben ────────────────────────────────────────────────────────── */
 
-export function NameSheet({ title, sub, initial = '', ok, onSave, onClose }: {
-  title: string; sub?: string; initial?: string; ok: string; onSave: (name: string) => void; onClose: () => void
+export function NameSheet({ title, sub, initial = '', ok, onSave, onClose, parent }: {
+  title: string; sub?: string; initial?: string; ok: string; onSave: (name: string) => void; onClose: () => void; parent?: Parent
 }) {
   const native = useNativeShell()
   const [name, setName] = useState(initial)
   const text = useRef(initial)
   const save = (v: string) => { const n = v.replace(/\s+/g, ' ').trim(); if (n) onSave(n.slice(0, 80)) }
   useNativeSheet(native ? {
-    id: 'name', title, subtitle: sub, detents: ['medium'],
+    id: 'name', parent: parent?.id, title, subtitle: sub, detents: ['medium'],
     blocks: [{ type: 'field', id: 'name', label: 'Name', value: initial, placeholder: 'z. B. Oberkörper kurz' }],
     footer: [{ id: 'save', title: ok, symbol: 'checkmark', style: 'prominent' }],
   } : null, e => {
@@ -78,7 +80,7 @@ export function NameSheet({ title, sub, initial = '', ok, onSave, onClose }: {
   })
   if (native) return null
   return (
-    <Sheet title={title} sub={sub} onClose={onClose}>
+    <Sheet title={title} sub={sub} back={parent?.title} onClose={onClose}>
       <form className="pe-name" onSubmit={e => { e.preventDefault(); save(name) }}>
         <label className="field">Name
           <input autoFocus maxLength={80} value={name} placeholder="z. B. Oberkörper kurz" onChange={e => setName(e.target.value)} />
@@ -118,14 +120,14 @@ export function WorkoutsHost({ t, initial, startNew, list = true, onClose }: {
           }} />
       )}
       {edited && over?.kind === 'slot' && edited.slots.some(s => s.progression === over.pid) && (
-        <SlotSheet t={t} w={edited} pid={over.pid} onChange={change} onClose={() => setOver(null)} />
+        <SlotSheet t={t} w={edited} pid={over.pid} onChange={change} onClose={() => setOver(null)} parent={{ id: 'workout-edit', title: edited.name }} />
       )}
       {edited && over?.kind === 'add' && (
-        <LadderPicker t={t} exclude={edited.slots.map(s => s.progression)} sub={`Zu „${edited.name}“ hinzufügen`}
+        <LadderPicker t={t} exclude={edited.slots.map(s => s.progression)} sub={`Zu „${edited.name}“ hinzufügen`} parent={{ id: 'workout-edit', title: edited.name }}
           onPick={pid => { change(L.withSlot(t.ix, edited, pid)); setOver(null) }} onClose={() => setOver(null)} />
       )}
       {edited && over?.kind === 'rename' && (
-        <NameSheet title="Umbenennen" initial={edited.name} ok="Speichern" onClose={() => setOver(null)}
+        <NameSheet title="Umbenennen" initial={edited.name} ok="Speichern" onClose={() => setOver(null)} parent={{ id: 'workout-edit', title: edited.name }}
           onSave={name => { change({ ...edited, name }); setOver(null) }} />
       )}
       {over?.kind === 'new' && (
@@ -256,7 +258,7 @@ function WorkoutEditor({ t, w, onSlot, onAdd, onRename, onDelete, onClose }: {
   )
 }
 
-function SlotSheet({ t, w, pid, onChange, onClose }: { t: Training; w: Workout; pid: ProgressionId; onChange: (w: Workout) => void; onClose: () => void }) {
+function SlotSheet({ t, w, pid, onChange, onClose, parent }: { t: Training; w: Workout; pid: ProgressionId; onChange: (w: Workout) => void; onClose: () => void; parent?: Parent }) {
   const native = useNativeShell()
   const i = w.slots.findIndex(s => s.progression === pid)
   const step = L.currentStep(t.ix, t.state, pid)
@@ -266,7 +268,7 @@ function SlotSheet({ t, w, pid, onChange, onClose }: { t: Training; w: Workout; 
   const remove = () => { onChange(L.withoutSlot(t.ix, w, pid)); onClose() }
   const sub = `Stufe ${step.index + 1}/${step.total} · Ziel ${step.target.label}`
   useNativeSheet(native ? {
-    id: 'slot-edit', title: step.exercise.name, subtitle: sub, detents: ['medium'],
+    id: 'slot-edit', parent: parent?.id, title: step.exercise.name, subtitle: sub, detents: ['medium'],
     blocks: [
       { type: 'stepper', id: 'sets', label: 'Sätze', value: String(sets) },
       { type: 'buttons', buttons: [
@@ -285,7 +287,7 @@ function SlotSheet({ t, w, pid, onChange, onClose }: { t: Training; w: Workout; 
   })
   if (native) return null
   return (
-    <Sheet title={step.exercise.name} sub={sub} onClose={onClose}>
+    <Sheet title={step.exercise.name} sub={sub} back={parent?.title} onClose={onClose}>
       <div className="stepper">
         <span className="stepper-label">Sätze</span>
         <div className="stepper-row">

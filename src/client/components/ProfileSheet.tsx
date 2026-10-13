@@ -30,9 +30,9 @@ export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void 
     { id: 'days' as const, title: 'Trainingstage & Dauer', sub: sum.days },
   ]
   const parts = <>
-    {part === 'goals' && <GoalPicker t={t} onClose={() => setPart(null)} />}
-    {part === 'equipment' && <EquipmentSheet t={t} onClose={() => setPart(null)} />}
-    {part === 'days' && <DaysSheet t={t} onClose={() => setPart(null)} />}
+    {part === 'goals' && <GoalPicker t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
+    {part === 'equipment' && <EquipmentSheet t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
+    {part === 'days' && <DaysSheet t={t} parent={{ id: 'profile', title: 'Profil' }} onClose={() => setPart(null)} />}
   </>
 
   const signIn = async () => {

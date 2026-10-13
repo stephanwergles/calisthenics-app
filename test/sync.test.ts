@@ -165,3 +165,13 @@ test('Profil im Trainingsstand übersteht den Sync und wird geprüft', () => {
   assert.equal(C.isState({ current: {}, paused: [], profile: { ...profile, minutes: 5 } }), false)
   assert.equal(C.isState({ current: {}, paused: [], profile: { ...profile, days: ['funday'] } }), false)
 })
+
+test('Phasen im Trainingsstand: Sync und Prüfung', () => {
+  const phases = [{ id: '2026-10-14-injury', kind: 'injury', from: '2026-10-14', tendons: ['shoulder'] }, { id: '2026-10-01-pause', kind: 'pause', from: '2026-10-01', to: '2026-10-07' }]
+  assert.deepEqual(C.docToState({ current: {}, paused: [], phases }).phases, phases)
+  assert.equal('phases' in C.docToState({ current: {}, paused: [], phases: [] }), false)
+  assert.equal(C.isState({ current: {}, paused: [], phases }), true)
+  assert.equal(C.isState({ current: {}, paused: [], phases: [{ ...phases[1], to: '2026-09-01' }] }), false, 'Ende vor Beginn')
+  assert.equal(C.isState({ current: {}, paused: [], phases: [{ ...phases[0], tendons: ['nose'] }] }), false)
+  assert.equal(C.isState({ current: {}, paused: [], phases: [{ ...phases[0], kind: 'party' }] }), false)
+})

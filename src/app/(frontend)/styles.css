@@ -1030,3 +1030,4 @@ button.clip { display: block; border: none; padding: 0; background: none; color:
 .sg-raus .sg-badge { background: rgba(255,107,94,.18); color: var(--danger); }
 .sg-kept { margin: 0 4px 8px; font-size: 12px; color: var(--muted); }
 .sg-foot { display: flex; flex-direction: column; gap: 8px; }
+.sheet-back { margin: 0 0 2px -10px; padding-left: 4px; }

@@ -4,7 +4,7 @@
    Payload liefert leere Felder als null, Relationen je nach depth als ID oder
    Objekt und Array-Zeilen mit eigener `id`. Das App-Modell kennt nichts davon. */
 import { NOTE_MAX } from '../domain/model.ts'
-import type { Activity, Catalog, Exercise, Plan, Profile, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
+import type { Activity, Catalog, Exercise, Phase, Plan, Profile, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
 
 type Doc = Record<string, any>
 const idOf = (v: any): string => (v && typeof v === 'object' ? v.id : v)
@@ -82,6 +82,7 @@ export function docToState(state: Doc | null | undefined): UserState {
     current: (state?.current ?? {}) as Record<string, string>,
     paused: (state?.paused ?? []).map(idOf),
     profile: opt(state?.profile) as UserState['profile'],
+    phases: (state?.phases as UserState['phases'])?.length ? state!.phases : undefined,
     updatedAt: opt<number>(state?.clientUpdatedAt),
   })
 }
@@ -128,6 +129,15 @@ export function isState(s: any): s is UserState {
   return !!s && typeof s.current === 'object' && Object.entries(s.current).every(([k, v]) => isId(k) && isId(v))
     && Array.isArray(s.paused) && s.paused.every(isId)
     && (s.profile === undefined || isProfile(s.profile))
+    && (s.phases === undefined || (Array.isArray(s.phases) && s.phases.length <= 50 && s.phases.every(isPhase)))
+}
+const TENDONS = ['wrist', 'elbow', 'shoulder', 'knee']
+export function isPhase(p: any): p is Phase {
+  return !!p && isId(p.id) && ['pause', 'vacation', 'injury', 'equipment'].includes(p.kind) && isDate(p.from)
+    && (p.to === undefined || (isDate(p.to) && p.to >= p.from))
+    && (p.tendons === undefined || (Array.isArray(p.tendons) && p.tendons.every((t: any) => TENDONS.includes(t))))
+    && (p.equipment === undefined || (Array.isArray(p.equipment) && p.equipment.every((e: any) => EQUIPMENT.includes(e))))
+    && isNote(p.note)
 }
 const EQUIPMENT = ['bar', 'rings', 'parallettes', 'dip-bars', 'band', 'box', 'weight', 'floor', 'wall']
 export function isProfile(p: any): p is Profile {

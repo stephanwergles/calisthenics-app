@@ -164,11 +164,24 @@ export interface Profile {
   minutes: number;              // Budget je Einheit inkl. Warm-up
 }
 
+/** Phase: Zeitraum, in dem der Plan anders gilt. `to` fehlt = bis auf Weiteres (bis „Beenden“). */
+export type PhaseKind = "pause" | "vacation" | "injury" | "equipment";
+export interface Phase {
+  id: string;                   // z. B. "2026-10-14-injury"
+  kind: PhaseKind;
+  from: string;                 // YYYY-MM-DD
+  to?: string;                  // letzter Tag (inklusive)
+  tendons?: Tendon[];           // Verletzung: betroffene Sehnen/Gelenke
+  equipment?: Equipment[];      // Equipment-Phase: was in dieser Zeit da ist
+  note?: string;
+}
+
 export interface UserState {
   /** aktuelle Stufe je Progression – als Übungs-ID, nicht als Index */
   current: Record<ProgressionId, ExerciseId>;
   paused: ProgressionId[];
   profile?: Profile;
+  phases?: Phase[];
   /** letzte Änderung in ms – Grundlage für den Sync */
   updatedAt?: number;
 }

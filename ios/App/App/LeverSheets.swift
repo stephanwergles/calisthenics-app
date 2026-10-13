@@ -131,6 +131,8 @@ struct NBlock: Decodable {
 struct NTrackNode: Decodable { let title: String; let subtitle: String; let state: String; let label: String; let clip: String? }
 struct NSheetSpec: Decodable {
     let id: String; let title: String; let subtitle: String?
+    /// Push-Seite: wird im Sheet `parent` hineingeschoben (Zurück-Button, Wisch-Geste) statt neu präsentiert
+    let parent: String?
     /// "auto" (Inhaltshöhe), "medium", "large"
     let detents: [String]?
     let blocks: [NBlock]
@@ -154,22 +156,41 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
     private let foot = UIStackView()
     private var fields: [String: UITextView] = [:]
     var closedByApp = false
+    /// Push-Seite innerhalb eines Sheets (eigene Navigationsleiste mit Zurück)
+    let isPage: Bool
+    /// Sheet, in dem die Seite liegt (gehört dem Navigation-Controller, nicht dieser Seite)
+    weak var hostSheet: UISheetPresentationController?
 
-    init(spec: NSheetSpec, emit: @escaping (String, String?, Any?) -> Void) {
-        self.spec = spec; self.emit = emit
+    init(spec: NSheetSpec, isPage: Bool = false, emit: @escaping (String, String?, Any?) -> Void) {
+        self.spec = spec; self.emit = emit; self.isPage = isPage
         super.init(nibName: nil, bundle: nil)
         overrideUserInterfaceStyle = .dark
-        if let sheet = sheetPresentationController {
-            sheet.delegate = self
-            sheet.prefersGrabberVisible = true
-            sheet.prefersScrollingExpandsWhenScrolledToEdge = true
-            applyDetents()
-        }
+        navigationItem.backButtonTitle = spec.title
     }
     required init?(coder: NSCoder) { fatalError() }
 
+    /// Wurzelseite: Sheet des Navigation-Controllers einrichten
+    func attach(to sheet: UISheetPresentationController) {
+        hostSheet = sheet
+        sheet.delegate = self
+        sheet.prefersGrabberVisible = true
+        sheet.prefersScrollingExpandsWhenScrolledToEdge = true
+        applyDetents()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(!isPage, animated: animated)
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        // Zurück-Button oder Wisch-Geste: Seite ist weg
+        if isPage && isMovingFromParent && !closedByApp { closedByApp = true; emit("dismiss", nil, nil) }
+    }
+
     private func applyDetents() {
-        guard let sheet = sheetPresentationController else { return }
+        guard let sheet = hostSheet else { return }
         let wanted = spec.detents ?? ["medium", "large"]
         sheet.detents = wanted.map { d -> UISheetPresentationController.Detent in
             switch d {
@@ -200,7 +221,9 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if #unavailable(iOS 26.0) { view.backgroundColor = UIColor(white: 0.1, alpha: 1) }
+        // Push-Seiten deckend, sonst schimmert beim Hineinschieben die Seite darunter durch
+        if isPage { view.backgroundColor = UIColor(white: 0.11, alpha: 1) }
+        else if #unavailable(iOS 26.0) { view.backgroundColor = UIColor(white: 0.1, alpha: 1) }
         scroll.translatesAutoresizingMaskIntoConstraints = false
         scroll.alwaysBounceVertical = true
         scroll.keyboardDismissMode = .interactive
@@ -232,7 +255,7 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
         render()
         scroll.layoutIfNeeded()
         scroll.contentOffset.y = min(y, max(0, scroll.contentSize.height - scroll.bounds.height + scroll.adjustedContentInset.bottom))
-        if #available(iOS 16.0, *) { sheetPresentationController?.animateChanges { sheetPresentationController?.invalidateDetents() } }
+        if #available(iOS 16.0, *) { hostSheet?.animateChanges { hostSheet?.invalidateDetents() } }
     }
 
     // MARK: Aufbau
@@ -622,7 +645,7 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
     }
 
     func textViewDidBeginEditing(_ textView: UITextView) {
-        if let sheet = sheetPresentationController, (spec.detents ?? []).contains("large") {
+        if let sheet = navigationController?.sheetPresentationController ?? hostSheet, isPage || (spec.detents ?? []).contains("large") {
             sheet.animateChanges { sheet.selectedDetentIdentifier = .large }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
@@ -634,7 +657,7 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
     func textViewDidChange(_ textView: UITextView) {
         (textView.superview as? FieldBox)?.refreshPlaceholder()
         emit("text", textView.accessibilityIdentifier, textView.text ?? "")
-        if #available(iOS 16.0, *) { sheetPresentationController?.invalidateDetents() }
+        if #available(iOS 16.0, *) { hostSheet?.invalidateDetents() }
     }
 }
 
@@ -1104,7 +1127,8 @@ extension LeverTabBarPlugin {
         guard let spec = decode(NSheetSpec.self, call.getObject("spec")) else { call.reject("Sheet unlesbar"); return }
         DispatchQueue.main.async {
             if let open = Self.sheets[spec.id], open.presentingViewController != nil { open.update(spec); call.resolve(); return }
-            let vc = LeverNativeSheet(spec: spec) { [weak self] type, id, value in
+            let parentNav = spec.parent.flatMap { Self.sheets[$0]?.navigationController }
+            let vc = LeverNativeSheet(spec: spec, isPage: parentNav != nil) { [weak self] type, id, value in
                 if type == "dismiss" { Self.sheets[spec.id] = nil }
                 var data: [String: Any] = ["sheet": spec.id, "type": type]
                 if let id { data["id"] = id }
@@ -1112,8 +1136,23 @@ extension LeverTabBarPlugin {
                 self?.notifyListeners("sheet", data: data)
             }
             Self.sheets[spec.id] = vc
+            if let nav = parentNav {
+                vc.hostSheet = nav.sheetPresentationController
+                nav.pushViewController(vc, animated: true)
+                if spec.detents == ["large"] { nav.sheetPresentationController?.animateChanges { nav.sheetPresentationController?.selectedDetentIdentifier = .large } }
+                call.resolve(); return
+            }
             guard let top = self.topController() else { call.reject("Kein Controller"); return }
-            top.present(vc, animated: true)
+            // jedes Sheet in einem Navigation-Controller – Unterseiten werden hineingeschoben
+            let nav = UINavigationController(rootViewController: vc)
+            nav.overrideUserInterfaceStyle = .dark
+            nav.view.backgroundColor = .clear
+            let bar = UINavigationBarAppearance(); bar.configureWithTransparentBackground()
+            nav.navigationBar.standardAppearance = bar; nav.navigationBar.scrollEdgeAppearance = bar
+            nav.navigationBar.tintColor = .white
+            nav.setNavigationBarHidden(true, animated: false)
+            if let sheet = nav.sheetPresentationController { vc.attach(to: sheet) }
+            top.present(nav, animated: true)
             call.resolve()
         }
     }
@@ -1123,8 +1162,14 @@ extension LeverTabBarPlugin {
         DispatchQueue.main.async {
             if let vc = Self.sheets.removeValue(forKey: id) {
                 vc.closedByApp = true
-                // was darüber liegt (z. B. eine Rückfrage), schließt mit
-                vc.presentingViewController?.dismiss(animated: true)
+                if vc.isPage, let nav = vc.navigationController {
+                    // Push-Seite: zurück auf die Seite davor, das Sheet bleibt
+                    if nav.topViewController === vc { nav.popViewController(animated: true) }
+                    else { nav.viewControllers.removeAll { $0 === vc } }
+                } else {
+                    // was darüber liegt (z. B. eine Rückfrage), schließt mit
+                    vc.presentingViewController?.dismiss(animated: true)
+                }
             }
             call.resolve()
         }
