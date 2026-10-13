@@ -278,6 +278,10 @@ export interface Progression {
    * Stabile ID (Slug, z. B. „chest-to-bar-pull-up“). Einmal vergeben, nie ändern.
    */
   id: string;
+  /**
+   * Der Weg, nicht die letzte Übung – z. B. „Muscle-up · Zugkraft“
+   */
+  name?: string | null;
   region?: ('pull' | 'push' | 'core' | 'legs') | null;
   /**
    * Test aus „Einstufung“ (Global) und Mindestwerte: 1. Wert → Stufe 2, 2. Wert → Stufe 3 …
@@ -790,6 +794,7 @@ export interface ExercisesSelect<T extends boolean = true> {
  */
 export interface ProgressionsSelect<T extends boolean = true> {
   id?: T;
+  name?: T;
   region?: T;
   assessment?:
     | T

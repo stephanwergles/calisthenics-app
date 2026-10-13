@@ -57,6 +57,8 @@ export const REGIONS: { id: Region; label: string; detail: string }[] = [
 
 export interface Progression {
   id: ProgressionId;
+  /** Anzeigename (der Weg, z. B. „Muscle-up · Zugkraft“); fehlt = Name der letzten Stufe */
+  name?: string;
   region?: Region;
   steps: { exercise: ExerciseId; target: Target }[];
 }

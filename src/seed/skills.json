@@ -80,6 +80,88 @@
      "minStep": 1
     }
    ]
+  },
+  {
+   "id": "handstand-push-up",
+   "name": "Handstand-Push-up",
+   "targets": [
+    "vertical-push"
+   ],
+   "support": [
+    "triceps"
+   ],
+   "prerequisites": [
+    {
+     "progression": "handstand",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "toes-to-bar",
+   "name": "Toes to Bar",
+   "targets": [
+    "leg-raise"
+   ],
+   "support": [
+    "hang"
+   ],
+   "prerequisites": [
+    {
+     "progression": "hollow",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "weighted-pull-up",
+   "name": "Klimmzüge mit Gewicht",
+   "targets": [
+    "pull-up"
+   ],
+   "support": [
+    "row",
+    "scapula"
+   ],
+   "prerequisites": []
+  },
+  {
+   "id": "weighted-dip",
+   "name": "Dips mit Gewicht",
+   "targets": [
+    "dip"
+   ],
+   "support": [
+    "triceps"
+   ],
+   "prerequisites": []
+  },
+  {
+   "id": "typewriter",
+   "name": "Typewriter Pull-up",
+   "targets": [
+    "one-arm-pull"
+   ],
+   "support": [
+    "pull-up"
+   ],
+   "prerequisites": [
+    {
+     "progression": "pull-up",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "nordic-curl",
+   "name": "Nordic Curl",
+   "targets": [
+    "nordic"
+   ],
+   "support": [
+    "split-squat"
+   ],
+   "prerequisites": []
   }
  ]
 }

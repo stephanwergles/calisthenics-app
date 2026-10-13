@@ -156,7 +156,7 @@ export function isProfile(p: any): p is Profile {
 export function catalogToDocs(c: Catalog) {
   return {
     exercises: c.exercises.map(({ id, ...rest }) => ({ id, data: rest })),
-    progressions: c.progressions.map(p => ({ id: p.id, data: { steps: p.steps, region: p.region ?? null } })),
+    progressions: c.progressions.map(p => ({ id: p.id, data: { steps: p.steps, region: p.region ?? null, name: p.name ?? null } })),
     workouts: c.workouts.map(w => ({
       id: w.id,
       data: {
@@ -194,7 +194,7 @@ export function buildCatalog(exs: Doc[], progs: Doc[], works: Doc[], week: Doc |
       ...(e.muscles?.length ? { muscles: e.muscles as string[] } : {}),
     })),
     progressions: progs.map((p): Progression => ({
-      id: p.id, ...(p.region ? { region: p.region } : {}), steps: (p.steps ?? []).map((s: Doc) => ({ exercise: idOf(s.exercise), target: target(s.target ?? {}) })),
+      id: p.id, ...(p.name ? { name: p.name } : {}), ...(p.region ? { region: p.region } : {}), steps: (p.steps ?? []).map((s: Doc) => ({ exercise: idOf(s.exercise), target: target(s.target ?? {}) })),
     })),
     workouts: works.map((w): Workout => ({
       id: w.id, name: w.name, focus: w.focus ?? '',

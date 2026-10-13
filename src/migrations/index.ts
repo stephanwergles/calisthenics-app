@@ -12,6 +12,7 @@ import * as migration_20261013_211919_user_profile from './20261013_211919_user_
 import * as migration_20261013_212741_user_phases from './20261013_212741_user_phases';
 import * as migration_20261013_222148_feedback from './20261013_222148_feedback';
 import * as migration_20261013_222448_catalog_v3 from './20261013_222448_catalog_v3';
+import * as migration_20261013_223934_progression_name from './20261013_223934_progression_name';
 
 export const migrations = [
   {
@@ -82,6 +83,11 @@ export const migrations = [
   {
     up: migration_20261013_222448_catalog_v3.up,
     down: migration_20261013_222448_catalog_v3.down,
-    name: '20261013_222448_catalog_v3'
+    name: '20261013_222448_catalog_v3',
+  },
+  {
+    up: migration_20261013_223934_progression_name.up,
+    down: migration_20261013_223934_progression_name.down,
+    name: '20261013_223934_progression_name'
   },
 ];

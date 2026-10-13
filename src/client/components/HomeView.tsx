@@ -28,7 +28,7 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
   const minutes = useMemo(() => L.estimateMinutes(t.sessions, t.workout), [t.sessions, t.workout])
   const skills = useMemo(() => L.nextSkills(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
   // Ziel der Leiter (letzte Stufe) – zeigt, wohin es geht, statt nur die nächste Stufe
-  const goalOf = (pid: string) => { const st = t.ix.progressions.get(pid)?.steps; return st ? t.ix.exercises.get(st[st.length - 1].exercise)?.name ?? '' : '' }
+  const goalOf = (pid: string) => L.progressionName(t.ix, pid)
 
   const active = slots.filter(s => s.state !== 'paused' && s.state !== 'skipped')
   const sets = active.reduce((n, s) => n + s.planned, 0)

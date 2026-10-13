@@ -89,6 +89,17 @@ const REGION_OF: Record<string, Region> = {
   "pistol": "legs", "split-squat": "legs", "nordic": "legs", "calf": "legs",
 };
 
+/* Anzeigename je Progression – der Weg, nicht die letzte Übung (sonst heißen Skill und Progression gleich) */
+const NAME_OF: Record<string, string> = {
+  "muscle-up-pull": "Muscle-up · Zugkraft", "muscle-up-transition": "Muscle-up · Übergang", "bar-dip": "Muscle-up · Stütz",
+  "pull-up": "Klimmzüge", "row": "Rudern → Front Lever", "one-arm-pull": "Einarmiger Klimmzug", "scapula": "Schulterblätter",
+  "biceps": "Bizeps", "hang": "Hängen",
+  "planche": "Planche", "dip": "Dips", "vertical-push": "Handstand-Push-up", "horizontal-push": "Liegestütze",
+  "fly": "Flys", "triceps": "Trizeps", "handstand": "Handstand",
+  "l-sit": "L-Sit", "leg-raise": "Beinheben", "hollow": "Hollow Body", "side-plank": "Seitstütz",
+  "pistol": "Pistol Squat", "split-squat": "Split Squat", "nordic": "Nordic Curl", "calf": "Waden",
+};
+
 const PROGRESSION_IDS: Record<string, string> = {
   "0-0": "muscle-up-pull", "0-1": "bar-dip", "0-2": "muscle-up-transition", "0-3": "pull-up",
   "0-4": "row", "0-5": "one-arm-pull", "0-6": "scapula", "0-7": "biceps",
@@ -130,7 +141,8 @@ const workouts: Workout[] = PLAN.map((day: any, di: number) => {
     if (!pid) throw new Error(`Keine Progressions-ID für Slot ${di}-${si}`);
     slots[`${di}-${si}`] = pid;
     if (!REGION_OF[pid]) throw new Error(`Keine Region für Progression ${pid}`);
-    progressions.push({ id: pid, region: REGION_OF[pid], steps: s.levels.map((l: any, lvl: number) => {
+    if (!NAME_OF[pid]) throw new Error(`Kein Name für Progression ${pid}`);
+    progressions.push({ id: pid, name: NAME_OF[pid], region: REGION_OF[pid], steps: s.levels.map((l: any, lvl: number) => {
       const id = EXERCISE_IDS[l.name];
       if (!id) throw new Error(`Keine Übungs-ID für „${l.name}“`);
       positions[lvl ? `${di}-${si}@${lvl}` : `${di}-${si}`] = id;

@@ -38,6 +38,13 @@ export function effectiveCatalog(catalog: Catalog, plan: Plan | null | undefined
   return { ...catalog, workouts: plan.workouts.map(w => ({ ...w, slots: w.slots.filter(s => known.has(s.progression)) })), weekplan: plan.weekplan }
 }
 
+/** Anzeigename einer Progression: eigener Name, sonst die letzte Stufe */
+export function progressionName(ix: Index, pid: ProgressionId): string {
+  const p = ix.progressions.get(pid)
+  if (!p) return pid
+  return p.name ?? ix.exercises.get(p.steps[p.steps.length - 1]?.exercise)?.name ?? pid
+}
+
 /** Plan aus dem Katalog als Ausgangspunkt für eigene Änderungen (gleiche Workouts, gleicher Wochenplan) */
 export const planFromCatalog = (catalog: Catalog): Plan => ({
   id: 'main', version: 1, name: 'Mein Plan', source: 'catalog',
@@ -829,7 +836,7 @@ export function placementChanges(ix: Index, user: UserState, placed: Record<Prog
     const step = currentStep(ix, user, pid)
     if (to <= step.index) return []
     const name = (i: number) => ix.exercises.get(p.steps[i].exercise)?.name ?? ''
-    return [{ pid, ladder: name(p.steps.length - 1), from: step.index, to, total: p.steps.length, fromName: step.exercise.name, toName: name(to) }]
+    return [{ pid, ladder: progressionName(ix, pid), from: step.index, to, total: p.steps.length, fromName: step.exercise.name, toName: name(to) }]
   })
 }
 /** Einstufung übernehmen: aktuelle Stufe je Leiter setzen */

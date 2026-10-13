@@ -16,10 +16,18 @@ import { catalogData } from '../data'
 export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
   const tree = useMemo(() => L.skillTree(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
   const unlocked = tree.reduce((n, p) => n + p.step.index, 0)
-  // nach Körperregion – Workouts sind Planung, der Skill-Tree zeigt den Körper
-  const groups = [...REGIONS, { id: undefined, label: 'Weitere', detail: '' }]
-    .map(r => ({ ...r, paths: tree.filter(p => p.region === r.id) }))
-    .filter(g => g.paths.length)
+  // nach Skill: deine Ziele zuerst, dann die übrigen Skills; was zu keinem Skill gehört, nach Körperregion
+  const { skills } = catalogData(t.ix.catalog)
+  const goals = L.profileOf(t.ix, t.state).goals
+  const seen = new Set<string>()
+  const bySkill = [...skills].sort((a, b) => Number(goals.includes(b.id)) - Number(goals.includes(a.id)))
+    .map(sk => ({
+      key: sk.id, label: sk.name, detail: goals.includes(sk.id) ? 'Dein Ziel' : 'Skill',
+      paths: [...sk.targets, ...sk.support].flatMap(pid => { const p = tree.find(x => x.pid === pid); return p && !seen.has(pid) && seen.add(pid) ? [p] : [] }),
+    })).filter(g => g.paths.length)
+  const groups = [...bySkill, ...[...REGIONS, { id: undefined, label: 'Weitere', detail: '' }]
+    .map(r => ({ key: r.label, label: `${r.label}`, detail: 'Grundlagen', paths: tree.filter(p => p.region === r.id && !seen.has(p.pid)) }))
+    .filter(g => g.paths.length)]
 
   return (
     <section className="skills">
@@ -28,9 +36,9 @@ export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) =
       <Goals t={t} onOpen={onOpen} />
       <h3 className="pl-head display">Alle Progressionen</h3>
       {groups.map(g => (
-        <div key={g.label} className="sk-group">
+        <div key={g.key} className="sk-group">
           <h3 className="pg-day"><span className="display">{g.label}</span><span>{g.detail}</span></h3>
-          {g.paths.map(p => <Row key={p.pid} p={p} onOpen={() => onOpen(p.pid)} />)}
+          {g.paths.map(p => <Row key={p.pid} p={p} name={L.progressionName(t.ix, p.pid)} onOpen={() => onOpen(p.pid)} />)}
         </div>
       ))}
     </section>
@@ -45,7 +53,7 @@ export function SkillSheet({ t, pid, onClose }: { t: Training; pid: string; onCl
   const region = p ? REGIONS.find(r => r.id === p.region)?.label ?? p.workout.name : ''
   const sub = p ? `${region} · ${L.BLOCK_LABEL[p.block]} · Stufe ${p.step.index + 1}/${p.step.total}${p.paused ? ' · pausiert' : ''}` : ''
   // Kopf nennt das Ziel der Leiter (letzte Stufe), nicht die aktuelle Übung – so sieht man, wohin es geht
-  const goal = p ? p.nodes[p.nodes.length - 1].exercise.name : ''
+  const goal = p ? L.progressionName(t.ix, p.pid) : ''
   // Stufe wechseln: wie im Technik-Sheet auch von Hand – vor dem Kriterium mit Rückfrage
   const act = (id: string) => { if (p) void switchStep(t, p, id) }
   useNativeSheet(native && p ? { id: 'skill', title: goal, subtitle: sub, detents: ['auto', 'large'], blocks: ladderBlocks(p, t.sessions) } : null, e => {
@@ -60,13 +68,13 @@ export function SkillSheet({ t, pid, onClose }: { t: Training; pid: string; onCl
   )
 }
 
-function Row({ p, onOpen }: { p: L.SkillPath; onOpen: () => void }) {
+function Row({ p, name, onOpen }: { p: L.SkillPath; name: string; onOpen: () => void }) {
   return (
     <button className={`sk-row${p.paused ? ' paused' : ''}`} onClick={onOpen}>
       {hasClip(p.step.exercise.id) && <span className="sk-thumb" aria-hidden="true"><ExerciseStill exercise={p.step.exercise} /></span>}
       <span className="sk-row-main">
-        {/* Titel = Ziel der Leiter, darunter wo man gerade steht (wie im Leiter-Sheet) */}
-        <b className="display">{p.nodes[p.nodes.length - 1].exercise.name}</b>
+        {/* Titel = Name der Progression, darunter wo man gerade steht */}
+        <b className="display">{name}</b>
         <small>{p.nodes.length === 1 ? 'eine Stufe'
           : !p.step.next ? 'Ziel erreicht'
           : `${p.step.exercise.name} · Stufe ${p.step.index + 1}/${p.step.total}`}{p.paused ? ' · pausiert' : ''}</small>

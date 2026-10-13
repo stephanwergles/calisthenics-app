@@ -31,14 +31,16 @@ test('Einstufung: heutiges Level ergibt plausible Startstufen', () => {
 
 test('Skill-Vorschläge: erfüllte Voraussetzungen zuerst, erreichte Skills ans Ende', () => {
   const s = suggestSkills(skills, catalog, { 'pull-up': 1, dip: 1, hollow: 0 })
-  assert.equal(s[0].skill === 'muscle-up' || s[0].skill === 'pistol', true)
+  assert.equal(s[0].missing.length, 0, 'ganz oben: alle Voraussetzungen erfüllt')
+  assert.equal(s[0].reached, false)
   const mu = s.find(x => x.skill === 'muscle-up')!
   assert.deepEqual(mu.missing, [])
   const hs = s.find(x => x.skill === 'handstand')!
   assert.ok(hs.missing.length === 1, 'Hollow Rocks fehlen')
   const done = suggestSkills(skills, catalog, { pistol: 2, 'pull-up': 1, dip: 1 })
-  assert.equal(done.at(-1)!.skill, 'pistol')
-  assert.equal(done.at(-1)!.reached, true)
+  const firstReached = done.findIndex(x => x.reached)
+  assert.ok(firstReached > 0 && done.slice(firstReached).every(x => x.reached), 'erreichte Skills am Ende')
+  assert.ok(done.find(x => x.skill === 'pistol')!.reached)
 })
 
 test('Split-Vorschläge passen zur Tageszahl', () => {

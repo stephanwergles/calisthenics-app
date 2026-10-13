@@ -1262,6 +1262,7 @@
   "progressions": [
     {
       "id": "muscle-up-pull",
+      "name": "Muscle-up · Zugkraft",
       "region": "pull",
       "steps": [
         {
@@ -1301,6 +1302,7 @@
     },
     {
       "id": "bar-dip",
+      "name": "Muscle-up · Stütz",
       "region": "push",
       "steps": [
         {
@@ -1329,6 +1331,7 @@
     },
     {
       "id": "muscle-up-transition",
+      "name": "Muscle-up · Übergang",
       "region": "pull",
       "steps": [
         {
@@ -1357,6 +1360,7 @@
     },
     {
       "id": "pull-up",
+      "name": "Klimmzüge",
       "region": "pull",
       "steps": [
         {
@@ -1385,6 +1389,7 @@
     },
     {
       "id": "row",
+      "name": "Rudern → Front Lever",
       "region": "pull",
       "steps": [
         {
@@ -1413,6 +1418,7 @@
     },
     {
       "id": "one-arm-pull",
+      "name": "Einarmiger Klimmzug",
       "region": "pull",
       "steps": [
         {
@@ -1452,6 +1458,7 @@
     },
     {
       "id": "scapula",
+      "name": "Schulterblätter",
       "region": "pull",
       "steps": [
         {
@@ -1469,6 +1476,7 @@
     },
     {
       "id": "biceps",
+      "name": "Bizeps",
       "region": "pull",
       "steps": [
         {
@@ -1486,6 +1494,7 @@
     },
     {
       "id": "l-sit",
+      "name": "L-Sit",
       "region": "core",
       "steps": [
         {
@@ -1523,6 +1532,7 @@
     },
     {
       "id": "planche",
+      "name": "Planche",
       "region": "push",
       "steps": [
         {
@@ -1562,6 +1572,7 @@
     },
     {
       "id": "dip",
+      "name": "Dips",
       "region": "push",
       "steps": [
         {
@@ -1590,6 +1601,7 @@
     },
     {
       "id": "vertical-push",
+      "name": "Handstand-Push-up",
       "region": "push",
       "steps": [
         {
@@ -1629,6 +1641,7 @@
     },
     {
       "id": "horizontal-push",
+      "name": "Liegestütze",
       "region": "push",
       "steps": [
         {
@@ -1657,6 +1670,7 @@
     },
     {
       "id": "fly",
+      "name": "Flys",
       "region": "push",
       "steps": [
         {
@@ -1674,6 +1688,7 @@
     },
     {
       "id": "triceps",
+      "name": "Trizeps",
       "region": "push",
       "steps": [
         {
@@ -1691,6 +1706,7 @@
     },
     {
       "id": "handstand",
+      "name": "Handstand",
       "region": "push",
       "steps": [
         {
@@ -1728,6 +1744,7 @@
     },
     {
       "id": "pistol",
+      "name": "Pistol Squat",
       "region": "legs",
       "steps": [
         {
@@ -1767,6 +1784,7 @@
     },
     {
       "id": "split-squat",
+      "name": "Split Squat",
       "region": "legs",
       "steps": [
         {
@@ -1784,6 +1802,7 @@
     },
     {
       "id": "nordic",
+      "name": "Nordic Curl",
       "region": "legs",
       "steps": [
         {
@@ -1812,6 +1831,7 @@
     },
     {
       "id": "calf",
+      "name": "Waden",
       "region": "legs",
       "steps": [
         {
@@ -1829,6 +1849,7 @@
     },
     {
       "id": "leg-raise",
+      "name": "Beinheben",
       "region": "core",
       "steps": [
         {
@@ -1857,6 +1878,7 @@
     },
     {
       "id": "hollow",
+      "name": "Hollow Body",
       "region": "core",
       "steps": [
         {
@@ -1885,6 +1907,7 @@
     },
     {
       "id": "side-plank",
+      "name": "Seitstütz",
       "region": "core",
       "steps": [
         {
@@ -1902,6 +1925,7 @@
     },
     {
       "id": "hang",
+      "name": "Hängen",
       "region": "pull",
       "steps": [
         {

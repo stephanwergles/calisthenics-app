@@ -147,7 +147,9 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 - [x] `splits`: Split-Vorlagen (2–6 Tage) mit Thema je Tag als Collection
 - [x] Einstufungs-Regel je Leiter (Gruppe `assessment` an der Progression) + Tests als Global „Einstufung“
 - [ ] Lücken in den Grundmustern schließen, damit jeder Plan ausgeglichen werden kann (je Muster mindestens eine Leiter pro gängiger Equipment-Kombination)
-- [ ] Erste neue Skill-Leitern: Front Lever · Back Lever · Planche · Handstand-Push-up (weitere in 3.4)
+- [x] Progressionen mit eigenem Namen (der Weg, z. B. „Muscle-up · Zugkraft“), Skills-Tab nach Skill gruppiert (Ziele zuerst, Rest als Grundlagen)
+- [x] 6 weitere Skills aus vorhandenen Progressionen: Handstand-Push-up, Toes to Bar, Klimmzüge/Dips mit Gewicht, Typewriter Pull-up, Nordic Curl
+- [ ] Neue Skill-Progressionen: Front Lever · Back Lever · Human Flag · Einarmiger Liegestütz (Inhalte, 3D-Clips, Coach-Prüfung; weitere in 3.4)
 - [ ] Fachliche Prüfung der Leitern und Freischalt-Schwellen durch einen Coach
 
 ### Phase 3.1b — Client auf Expo / React Native

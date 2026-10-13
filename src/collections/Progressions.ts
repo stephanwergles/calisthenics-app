@@ -5,10 +5,11 @@ import { slugId } from './fields'
 export const Progressions: CollectionConfig = {
   slug: 'progressions',
   labels: { singular: 'Progression', plural: 'Progressionen' },
-  admin: { useAsTitle: 'id', defaultColumns: ['id', 'steps'], group: 'Katalog' },
+  admin: { useAsTitle: 'name', defaultColumns: ['name', 'id', 'region'], group: 'Katalog' },
   access: { read: loggedIn, create: isAdmin, update: isAdmin, delete: isAdmin },
   fields: [
     slugId,
+    { name: 'name', type: 'text', label: 'Name', admin: { description: 'Der Weg, nicht die letzte Übung – z. B. „Muscle-up · Zugkraft“' } },
     {
       name: 'region', type: 'select', label: 'Körperregion',
       options: [
