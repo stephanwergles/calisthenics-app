@@ -57,7 +57,7 @@ def render(path, size=None):
 
 # App-Icon
 clear(); x, y, side = mark.icon_frame(); setup(1024, x, y, side)
-for p in mark.polys(): polygon(p, VOLT)
+for pts, radii in zip(mark.polys(), mark.RADII): polygon(mark.outline(pts, radii), VOLT)
 render(os.path.join(OUT, "icon-1024.png"))
 render(os.path.join(OUT, "icon-512.png"), 512)
 render(os.path.join(OUT, "icon-180.png"), 180)
@@ -67,6 +67,6 @@ render(os.path.join(OUT, "icon-180.png"), 180)
 x0, y0, x1, y1 = mark.bbox()
 side = mark.H / mark.SPLASH_FRAC
 clear(); setup(2732, (x0 + x1) / 2 - side / 2, mark.H / 2 - side / 2, side)
-for p in mark.polys(mark.LEVELS["tuck"] * mark.M): polygon(p, VOLT)
+for pts, radii in zip(mark.polys(mark.LEVELS["tuck"] * mark.M), mark.RADII): polygon(mark.outline(pts, radii), VOLT)
 render(os.path.join(OUT, "splash-2732.png"))
 print("FERTIG", OUT)

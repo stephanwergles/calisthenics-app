@@ -539,11 +539,10 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .app::-webkit-scrollbar, .f-scroll::-webkit-scrollbar, .sm-scroll::-webkit-scrollbar, .sheet::-webkit-scrollbar, .rest-screen::-webkit-scrollbar { display: none; }
 
 /* Wortmarke: Barlow Condensed Black kursiv – wie im App-Icon */
-.wordmark { font-family: var(--font-display); font-weight: 900; font-style: italic; letter-spacing: .01em; line-height: .85; }
-.home > .wordmark { font-size: 26px; margin-bottom: -6px; }
-/* Lockup: Zeichen : Versalhöhe = 1,3 : 1, Abstand = 1 Modul (¼ Zeichenhöhe) – wie art/brand/lockup-*.svg */
-.lockup { display: flex; align-items: baseline; color: var(--accent); }
-.lockup .mark { height: .9em; width: auto; margin-right: .225em; flex: none; }
+/* Wortmarke (Zeichen als L, art/brand/wordmark-*.svg): Höhe = Versalhöhe */
+.brand-word { display: block; width: auto; height: 19px; color: var(--accent); flex: none; }
+.home > .brand-word { align-self: flex-start; margin: 4px 0 2px; }
+.version .brand-word { display: inline-block; height: 11px; color: var(--text); margin-right: 5px; vertical-align: -1px; }
 
 /* ── Startanimation (Splash.tsx) ── nur in der iOS-App (data-native, gesetzt von scripts/native-web.ts)
    und als Home-Bildschirm-App; Lage und Größe exakt wie das native Startbild */
@@ -557,7 +556,6 @@ html[data-native] .splash { display: flex; }
 .splash.out { opacity: 0; pointer-events: none; }
 @keyframes splash-step { to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .splash .lv { animation: none; opacity: 1; } }
-.version .wordmark { font-size: 16px; color: var(--text); margin-right: 4px; }
 
 /* ══ Glas (iOS-„Liquid Glass“ nachempfunden) ═══════════════════════════════
    Echte Unschärfe nur auf schwebenden Elementen (Dock, Sheets) – dort scheint Inhalt

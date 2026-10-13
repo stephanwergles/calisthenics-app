@@ -4,7 +4,7 @@
    Sichtbar nur in der iOS-App und als Home-Bildschirm-App (CSS); im Browser-Tab bleibt sie aus.
    Steht schon im vorgerenderten HTML, damit zwischen Startbild und App kein leerer Frame liegt. */
 import { useEffect, useState } from 'react'
-import { LEVELS, STEM, VIEWBOX, foot } from './LeverMark'
+import { MARK_FEET, MARK_STEM, MARK_VIEWBOX } from '../brandPaths'
 
 const STEPS_MS = 560   // bis Full steht (CSS: .splash .lv)
 const OUT_MS = 280     // Ausblenden
@@ -28,9 +28,9 @@ export function Splash({ ready, onDone }: { ready: boolean; onDone: () => void }
   if (phase === 'gone') return null
   return (
     <div className={`splash${phase === 'out' ? ' out' : ''}`} aria-hidden="true">
-      <svg viewBox={VIEWBOX} fill="currentColor">
-        <polygon points={STEM} />
-        {LEVELS.map((len, i) => <polygon key={len} className={i ? `lv lv${i}` : undefined} points={foot(len)} />)}
+      <svg viewBox={MARK_VIEWBOX} fill="currentColor">
+        <path d={MARK_STEM} />
+        {MARK_FEET.map((d, i) => <path key={i} className={i ? `lv lv${i}` : undefined} d={d} />)}
       </svg>
     </div>
   )

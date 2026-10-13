@@ -4,6 +4,7 @@ import type { Training } from '../useTraining'
 import { APP_VERSION } from '../version'
 import { Icon } from './Icon'
 import { ask } from '../native'
+import { Wordmark } from './LeverMark'
 
 const fmtSync = (iso: string | null) => {
   if (!iso) return 'noch nie'
@@ -123,7 +124,7 @@ export function DataView({ t }: { t: Training }) {
         <button className="btn btn-secondary btn-block" onClick={download}>Export (JSON)</button>
         <a className="btn btn-ghost btn-block" href="/admin">Katalog verwalten <Icon name="right" size={18} /></a>
       </div>
-      <p className="version"><span className="wordmark">LEVER</span> v{APP_VERSION}</p>
+      <p className="version"><Wordmark className="brand-word" /> v{APP_VERSION}</p>
     </section>
   )
 }
