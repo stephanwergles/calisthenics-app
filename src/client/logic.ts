@@ -37,7 +37,9 @@ export function indexCatalog(catalog: Catalog): Index {
   }
 }
 
-export interface Step { index: number; total: number; exercise: Exercise; target: Target; next?: Exercise; prev?: Exercise }
+export interface Step { index: number; total: number; exercise: Exercise; target: Target; next?: Exercise; prev?: Exercise
+  /** Ziel der nächsten Stufe – Sätze mit Zusatzgewicht zählen ab deren Mindestwert als geschafft */
+  nextTarget?: Target }
 /** Aktuelle Stufe einer Progression. Ohne Eintrag (oder wenn die Übung nicht mehr
     in der Progression steht) gilt die erste Stufe. */
 export function currentStep(ix: Index, state: UserState, pid: ProgressionId): Step {
@@ -45,7 +47,7 @@ export function currentStep(ix: Index, state: UserState, pid: ProgressionId): St
   const found = p.steps.findIndex(s => s.exercise === state.current[pid])
   const index = found < 0 ? 0 : found
   const ex = (i: number) => (p.steps[i] ? ix.exercises.get(p.steps[i].exercise) : undefined)
-  return { index, total: p.steps.length, exercise: ex(index)!, target: p.steps[index].target, next: ex(index + 1), prev: ex(index - 1) }
+  return { index, total: p.steps.length, exercise: ex(index)!, target: p.steps[index].target, next: ex(index + 1), prev: ex(index - 1), nextTarget: p.steps[index + 1]?.target }
 }
 
 /** Wochentage, an denen ein Workout laut Plan dran ist (Montag zuerst) */
@@ -81,13 +83,20 @@ export function lastPerformance(sessions: Session[], exercise: ExerciseId, befor
   return s ? { date: s.date, sets: setsOf(s, exercise) } : null
 }
 
+/** Satz erfüllt die Freischalt-Schwelle: Wert ≥ unlockAt – oder mit Zusatzgewicht mindestens der
+    Mindestwert der nächsten Stufe (8 Dips mit +10 kg sind härter als 12 ohne; vorher schaltete das nie frei) */
+export function meetsUnlock(x: SetLog, target: Target, next?: Target): boolean {
+  if (target.unlockAt == null) return false
+  return x.value >= target.unlockAt || (!!x.weightKg && next?.min != null && x.value >= next.min)
+}
+
 /** Freischaltung: die letzten zwei vollständigen Einheiten dieser Übung mit jedem
-    Satz ≥ unlockAt. Vollständig = mindestens so viele Sätze wie vorgegeben. */
-export function readyToProgress(sessions: Session[], exercise: ExerciseId, target: Target): boolean {
+    Satz erfüllt (meetsUnlock). Vollständig = mindestens so viele Sätze wie vorgegeben. */
+export function readyToProgress(sessions: Session[], exercise: ExerciseId, target: Target, next?: Target): boolean {
   if (target.unlockAt == null) return false
   const complete = [...sessions].sort((a, b) => (a.date < b.date ? -1 : 1))
     .map(s => setsOf(s, exercise)).filter(sets => sets.length >= target.sets)
-  return complete.length >= 2 && complete.slice(-2).every(sets => sets.every(x => x.value >= target.unlockAt!))
+  return complete.length >= 2 && complete.slice(-2).every(sets => sets.every(x => meetsUnlock(x, target, next)))
 }
 
 /* ── Heutige Einheit ─────────────────────────────────────────────────────── */
@@ -192,7 +201,7 @@ export function workoutSlots(ix: Index, workout: WorkoutId, user: UserState, tod
       sets: setsOf(today, step.exercise.id),
       state: slotState(today, step.exercise.id, planned, paused),
       last: lastPerformance(sessions, step.exercise.id, date),
-      ready: !paused && !!step.next && readyToProgress(sessions, step.exercise.id, step.target),
+      ready: !paused && !!step.next && readyToProgress(sessions, step.exercise.id, step.target, step.nextTarget),
     }
   })
 }
@@ -307,7 +316,7 @@ export function progressSummary(ix: Index, user: UserState, sessions: Session[],
     best: current.length ? Math.max(...current.map(h => h.best)) : null,
     weightKg: Math.max(0, ...current.map(h => h.weightKg)),
     paused,
-    ready: !paused && !!step.next && readyToProgress(sessions, step.exercise.id, step.target),
+    ready: !paused && !!step.next && readyToProgress(sessions, step.exercise.id, step.target, step.nextTarget),
   }
 }
 
@@ -373,11 +382,11 @@ export function estimateMinutes(sessions: Session[], workout: WorkoutId): number
 
 /** Wie nah die nächste Stufe ist (0–1): Anteil der Freischalt-Schwelle über die letzten zwei vollständigen
     Einheiten, fehlende Einheiten zählen als 0. null = Stufe schaltet nie automatisch frei. */
-export function unlockReadiness(sessions: Session[], exercise: ExerciseId, target: Target): number | null {
+export function unlockReadiness(sessions: Session[], exercise: ExerciseId, target: Target, next?: Target): number | null {
   if (target.unlockAt == null) return null
   const complete = [...sessions].sort((a, b) => (a.date < b.date ? -1 : 1))
     .map(s => setsOf(s, exercise)).filter(sets => sets.length >= target.sets).slice(-2)
-  const share = (sets: SetLog[]) => sets.slice(0, target.sets).reduce((n, x) => n + Math.min(1, x.value / target.unlockAt!), 0) / target.sets
+  const share = (sets: SetLog[]) => sets.slice(0, target.sets).reduce((n, x) => n + (meetsUnlock(x, target, next) ? 1 : Math.min(1, x.value / target.unlockAt!)), 0) / target.sets
   return (complete.reduce((n, sets) => n + share(sets), 0)) / 2
 }
 
@@ -388,7 +397,7 @@ export function nextSkills(ix: Index, user: UserState, sessions: Session[], n = 
     .filter(sl => !user.paused.includes(sl.progression))
     .map(sl => {
       const step = currentStep(ix, user, sl.progression)
-      return { pid: sl.progression, skill: sl.block === 'skill', step, readiness: step.next ? unlockReadiness(sessions, step.exercise.id, step.target) : null }
+      return { pid: sl.progression, skill: sl.block === 'skill', step, readiness: step.next ? unlockReadiness(sessions, step.exercise.id, step.target, step.nextTarget) : null }
     })
     .filter((p): p is typeof p & { readiness: number } => p.readiness !== null)
     .sort((a, b) => Number(b.skill) - Number(a.skill) || b.readiness - a.readiness).slice(0, n)
@@ -432,23 +441,23 @@ export function sessionSummary(ix: Index, sessions: Session[], s: Session): Sess
 
 /** Stand zur Freischaltung: wie viele der nötigen 2 Einheiten am Stück geschafft sind
     und wie viele Sätze in der letzten vollständigen Einheit noch unter der Schwelle lagen */
-export function unlockProgress(sessions: Session[], exercise: ExerciseId, target: Target) {
+export function unlockProgress(sessions: Session[], exercise: ExerciseId, target: Target, next?: Target) {
   if (target.unlockAt == null) return null
   const complete = [...sessions].sort((a, b) => (a.date < b.date ? -1 : 1))
     .map(s => setsOf(s, exercise)).filter(sets => sets.length >= target.sets)
-  const ok = (sets: SetLog[]) => sets.slice(0, target.sets).every(x => x.value >= target.unlockAt!)
+  const ok = (sets: SetLog[]) => sets.slice(0, target.sets).every(x => meetsUnlock(x, target, next))
   const last = complete.at(-1), prev = complete.at(-2)
   const done = last && ok(last) ? (prev && ok(prev) ? 2 : 1) : 0
-  const missing = last ? last.slice(0, target.sets).filter(x => x.value < target.unlockAt!).length : target.sets
+  const missing = last ? last.slice(0, target.sets).filter(x => !meetsUnlock(x, target, next)).length : target.sets
   return { done, needed: 2, missing, sessions: complete.length }
 }
 
 /** Für die aktuelle Stufe: beste Einheit (größte Summe) und in Worten, was zum Freischalten fehlt */
-export function stepStanding(sessions: Session[], exercise: Exercise, target: Target): { best: string | null; missing: string | null } {
+export function stepStanding(sessions: Session[], exercise: Exercise, target: Target, next?: Target): { best: string | null; missing: string | null } {
   const unit = exercise.unit === 'seconds' ? ' s' : ' Wdh.'
   const all = sessions.map(s => setsOf(s, exercise.id)).filter(x => x.length)
   const best = all.length ? all.reduce((a, b) => (sum(b) > sum(a) ? b : a)) : null
-  const p = unlockProgress(sessions, exercise.id, target)
+  const p = unlockProgress(sessions, exercise.id, target, next)
   let missing: string | null = null
   if (p && target.unlockAt != null && p.done < 2) {
     missing = p.sessions === 0 ? 'noch keine vollständige Einheit auf dieser Stufe'
@@ -476,8 +485,8 @@ export function skillTree(ix: Index, user: UserState, sessions: Session[]): Skil
         exercise: ix.exercises.get(st.exercise)!, target: st.target, sessions: count(st.exercise),
         state: i < step.index ? 'done' as const : i === step.index ? 'current' as const : 'locked' as const,
       })),
-      progress: step.next ? unlockProgress(sessions, step.exercise.id, step.target) : null,
-      readiness: step.next ? unlockReadiness(sessions, step.exercise.id, step.target) : null,
+      progress: step.next ? unlockProgress(sessions, step.exercise.id, step.target, step.nextTarget) : null,
+      readiness: step.next ? unlockReadiness(sessions, step.exercise.id, step.target, step.nextTarget) : null,
     }
   }))
 }

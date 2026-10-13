@@ -281,3 +281,17 @@ test('Stand der aktuellen Stufe: beste Einheit und was fehlt', () => {
   assert.equal(L.stepStanding([a, b, c], ex, target).missing, 'fehlt noch: 1 weitere Einheit, alle Sätze geschafft')
   assert.equal(L.stepStanding([a, c, sess('2026-10-10', [6, 5, 5, 5, 5])], ex, target).missing, null)
 })
+
+test('Freischalten: Sätze mit Zusatzgewicht zählen ab dem Mindestwert der nächsten Stufe', () => {
+  const target = { label: '4 × 8–12', sets: 4, min: 8, max: 12, restSec: 120, unlockAt: 12 }
+  const next = { label: '4 × 6–10', sets: 4, min: 6, max: 10, restSec: 150, unlockAt: 10 }
+  const sess = (date: string, value: number, weightKg?: number): Session => ({ ...L.emptySession(date, 'push'),
+    sets: [1, 2, 3, 4].map(set => ({ exercise: 'dip', progression: 'dip', set, value, ...(weightKg ? { weightKg } : {}) })) })
+  const weighted = [sess('2026-10-01', 8, 10), sess('2026-10-05', 7, 10)]
+  assert.equal(L.readyToProgress(weighted, 'dip', target), false, 'ohne nächste Stufe zählt nur unlockAt')
+  assert.equal(L.readyToProgress(weighted, 'dip', target, next), true, '8 und 7 mit +10 kg ≥ 6 → frei')
+  assert.equal(L.readyToProgress([sess('2026-10-01', 5, 10), sess('2026-10-05', 8, 10)], 'dip', target, next), false, '5 mit Gewicht reicht nicht')
+  assert.equal(L.readyToProgress([sess('2026-10-01', 8), sess('2026-10-05', 8)], 'dip', target, next), false, 'ohne Gewicht weiter 12 nötig')
+  assert.equal(L.unlockProgress(weighted, 'dip', target, next)!.done, 2)
+  assert.equal(L.unlockReadiness(weighted, 'dip', target, next), 1)
+})

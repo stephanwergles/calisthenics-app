@@ -97,7 +97,7 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
           <div className="h-skill-grid">
             {skills.map(s => {
               const pct = Math.round(s.readiness * 100)
-              const prog = L.unlockProgress(t.sessions, s.step.exercise.id, s.step.target)
+              const prog = L.unlockProgress(t.sessions, s.step.exercise.id, s.step.target, s.step.nextTarget)
               const ready = !!prog && prog.done >= prog.needed
               return (
                 <div key={s.pid} className={`h-skill${ready ? ' ready' : ''}`}>

@@ -95,7 +95,7 @@ function Ladder({ t, p, onAct }: { t: Training; p: L.SkillPath; onAct: (id: stri
   const prog = p.progress, at = p.step.target.unlockAt
   const unit = p.step.exercise.unit === 'seconds' ? ' s' : ''
   const ready = !p.paused && prog?.done === 2 && !!p.step.next
-  const standing = L.stepStanding(t.sessions, p.step.exercise, p.step.target)
+  const standing = L.stepStanding(t.sessions, p.step.exercise, p.step.target, p.step.nextTarget)
   return (
     <div className="sk-ladder">
       <ol className="sk-nodes">
@@ -153,7 +153,7 @@ function ladderBlocks(p: L.SkillPath, sessions: Session[]): NBlock[] {
   const prog = p.progress, at = p.step.target.unlockAt
   const unit = p.step.exercise.unit === 'seconds' ? ' s' : ''
   const ready = !p.paused && prog?.done === 2 && !!p.step.next
-  const standing = L.stepStanding(sessions, p.step.exercise, p.step.target)
+  const standing = L.stepStanding(sessions, p.step.exercise, p.step.target, p.step.nextTarget)
   const einh = (n: number) => `${n} ${n === 1 ? 'Einheit' : 'Einheiten'}`
   const nodes = p.nodes.map((n, i) => ({
     title: n.exercise.name, label: String(i + 1), state: n.state,
