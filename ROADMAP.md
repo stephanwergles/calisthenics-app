@@ -87,14 +87,29 @@ Historie hängt weiter **pro Übungs-ID**, nie am Plan — deshalb darf ein Plan
 
 ### Datenmodell (Zielbild)
 
-- `exercises` + **Metadaten**: `equipment[]` (Stange, Ringe, Parallettes, Band, Boden, Wand), `pattern` (vertikal/horizontal ziehen/drücken, Kniebeuge, Hüftstreckung, Rumpf …), `difficulty`, `stress` (Handgelenk, Ellenbogen, Schulter, Knie). Texte lokalisiert (de/en).
-- `progressions`: Stufen-Vorgabe (`target`) wird **Standardwert**, den der Nutzerplan überschreiben darf.
-- **`skills` (neu):** Ziel-Skill → Ziel-Leiter(n) + **Voraussetzungen** über Leitern hinweg (z. B. Muscle-up: Klimmzug-, Dip- und Chest-to-Bar-Stufe). Ergibt den Skill-Tree als Graph und ist die Eingabe des Generators.
-- **`plans` (neu, Nutzerdaten):** `user`, Generator-Eingaben (Ziel-Skills, Equipment, Wochentage, Einheitendauer), Workouts mit stabilen Keys und Slots `{ block, progression, pinned?, overrides? { sets, min, max, restSec, unlockAt } }`, Warm-up/Cool-down.
-- `workouts` (global) entfällt nach der Migration; die drei bisherigen Workouts werden mein Plan und eine Test-Fixture.
-- **Sessions:** `workout` zeigt heute per Relationship auf den globalen Katalog — Umstellung auf **Plan-Workout-Key + Namens-Snapshot**, sonst lassen sich erzeugte Workouts nicht loggen.
-- **Profil** (Users `state` erweitert): Einstufungs-Ergebnisse, Sprache, Einwilligungen (Datum + Version), Rolle.
+**Ablauf aus Nutzersicht:** Einstufung („was kann ich schon“) → Vorschlag der realistischsten nächsten Skills, Auswahl 1–3 → Trainingstage und Split-Vorlage (vorgeschlagen, frei wählbar) → erzeugter Plan → Fortschritt verschiebt Stufen automatisch; Planänderungen (Skill erreicht, Ziele/Tage geändert) nur **nach Bestätigung** als neue Planversion → Phasen für Pause, Urlaub, Equipment, Verletzung → jederzeit eigene Workouts und Anpassungen einzelner Einheiten.
+
+| Entität | Gehört | Inhalt |
+|---|---|---|
+| **Übung** (`exercises`) | Katalog | Technik, Einheit, Clip + **Metadaten**: `equipment` (Alternativen), `pattern`, `difficulty`, `stress` je Sehne. Texte de/en |
+| **Leiter** (`progressions`) | Katalog | Stufen mit Ziel (`target` = Standardwert, im Plan überschreibbar) + **Einstufungs-Regel** (Testwert → Startstufe) |
+| **Skill** (`skills`, neu) | Katalog | Ziel-Leiter(n), immer mitlaufende Support-Leitern, Voraussetzungen (Leiter + Mindeststufe) → Skill-Tree als Graph, „realistisch als Nächstes“ |
+| **Split-Vorlage** (`splits`, neu) | Katalog | Tage + Thema je Tag (z. B. Pull/Push/Lower, Ganzkörper ×3, Upper/Lower ×2, PPL ×2); der Generator füllt Themen-Tage |
+| **Profil** | Person | Ziel-Skills, Trainingstage, Einheitendauer, Equipment, Einstufungs-Ergebnisse, Sprache, Einwilligungen, Rolle |
+| **Stand** | Person | Stufe je Leiter, pausierte Leitern (gibt es) |
+| **Plan** (`plans`, neu) | Person | **versioniert**; Vorlage, Workouts mit stabilen Keys, Slots `{ block, progression \| exercise, pinned?, overrides? { sets, min, max, restSec, unlockAt }, reason }`, Warm-up/Cool-down; Herkunft je Workout: erzeugt oder **eigen** |
+| **Phase** (`phases`, neu) | Person | Zeitraum oder „bis auf Weiteres“: Pause/Krank (nichts fällig, Serie bleibt, danach reduziertes Volumen), Urlaub, Equipment temporär (Generator tauscht Stufen/Leitern), Verletzung (Körperstelle/Sehne → betroffene Übungen ersetzen) |
+| **Einheit** (`sessions`) | Person | Protokoll je Übung (gibt es); plus **Tagesanpassung**: hinzugefügte/entfernte Übungen nur für diese Einheit |
+
+- **Slots zeigen auf Leitern** (Stufe folgt dem Stand, Freischaltung ändert das Workout ohne Planänderung). Eigene Workouts dürfen auch auf eine **feste Übung** zeigen (ohne Progression).
+- **Eigene Workouts:** Name, Übungen/Leitern mit Sätzen, Wdh.-Bereich, Pause; frei im Plan einsetzbar. Aus einer angepassten Einheit „als neues Workout speichern“.
+- **Bestätigungspflicht:** Der Generator erzeugt nur Vorschläge (Diff „vorher → nachher“ mit Begründung); erst die Bestätigung schreibt eine neue Planversion. Ausnahme ohne Rückfrage: die Stufe innerhalb einer Leiter.
+- Historie hängt weiter **pro Übungs-ID**, nie am Plan – Planversionen, eigene Workouts und Tagesanpassungen verlieren keine Daten.
+- `workouts` (global) und `weekplan` entfallen nach der Migration; die drei bisherigen Workouts werden mein Plan und eine Test-Fixture.
+- **Sessions:** `workout` zeigt heute per Relationship auf den globalen Katalog – Umstellung auf **Plan-Workout-Key + Namens-Snapshot**.
+- **KI** (Sprachmodell) nur als Übersetzer und Berater, der Plan bleibt regelbasiert: Freitext → Phase („Schulter links zwickt bei Dips“ → Verletzung Schulter, Dips ersetzen), Begründungen für Skill-Vorschläge, Wochenrückblick aus Notizen. Immer als Vorschlag mit Bestätigung.
 - Jedes neue Nutzerfeld durch `src/sync/convert.ts` + Roundtrip-Test (siehe CLAUDE.md).
+- **Prototyp:** `src/domain/generator.ts` mit `src/seed/exercise-meta.json` und `skills.json` (ohne UI/Payload, `node scripts/generate-plan.ts`) – erkennt Tagesthemen heute selbst; nächster Schritt: Split-Vorlagen als Eingabe.
 
 ### Phase 3.0 — Mehrbenutzer-Fundament
 
@@ -112,8 +127,10 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 
 ### Phase 3.1 — Katalog als Generator-Grundlage
 
-- [ ] `skills`-Collection + Voraussetzungs-Graph; Skill-Tree-Tab zeigt den Graph
-- [ ] Metadaten (`equipment`, `pattern`, `difficulty`, `stress`) für alle bestehenden 47 Übungen
+- [ ] `skills`-Collection + Voraussetzungs-Graph; Skill-Tree-Tab zeigt den Graph (Prototyp-Daten: `src/seed/skills.json`)
+- [ ] Metadaten (`equipment`, `pattern`, `difficulty`, `stress`) für alle bestehenden 47 Übungen (Prototyp-Daten: `src/seed/exercise-meta.json`, unsichere Werte markiert)
+- [ ] `splits`: Split-Vorlagen (2–6 Tage) mit Thema je Tag
+- [ ] Einstufungs-Regel je Leiter (Testwert → Startstufe)
 - [ ] Lücken in den Grundmustern schließen, damit jeder Plan ausgeglichen werden kann (je Muster mindestens eine Leiter pro gängiger Equipment-Kombination)
 - [ ] Erste neue Skill-Leitern: Front Lever · Back Lever · Planche · Handstand-Push-up (weitere in 3.4)
 - [ ] Fachliche Prüfung der Leitern und Freischalt-Schwellen durch einen Coach
@@ -121,7 +138,7 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 ### Phase 3.2 — Training aus Skills (Herzstück) → geschlossene Beta
 
 - [ ] **Kurztest:** Max-Tests (Klimmzüge, Dips, Liegestütze, Hollow Hold, L-Sit, Pistol-Tiefe) → Startstufe jeder Leiter; wiederholbar; bei vorhandener Historie aus den Logs abgeleitet
-- [ ] **Eingaben:** Ziel-Skills (1–3), Equipment, Trainingstage (Wochentage), Einheitendauer
+- [ ] **Eingaben:** Ziel-Skills (1–3, vorgeschlagen nach Nähe der Voraussetzungen), Equipment, Trainingstage (Wochentage), Split-Vorlage (vorgeschlagen, frei wählbar), Einheitendauer
 - [ ] **Generator** als reine, deterministische Funktion (Domain-Schicht, Client und Server):
   1. Skills → Leitern: Ziel-Leiter + noch nicht erfüllte Voraussetzungs-Leitern
   2. Grundmuster auffüllen (Zug vertikal/horizontal, Druck vertikal/horizontal, Beine, Rumpf), gefiltert nach Equipment
@@ -130,7 +147,10 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 - [ ] **Leitplanken** als dieselben Regeln in `logic.ts`: Der Generator hält sie ein, bei manuellen Änderungen erscheinen sie als Hinweise
 - [ ] Tests: Eigenschaften für beliebige Eingaben (Balance, keine Sehnen-Kollision an Folgetagen, Dauer-Budget, nur verfügbares Equipment) + Abnahmetest mit meinen Eingaben
 - [ ] **Anpassen:** Übung tauschen (andere Stufe oder gleiches `pattern`), Slot festpinnen, Volumen überschreiben, Slot entfernen; neu erzeugen behält gepinnte Slots und Überschreibungen
-- [ ] Ziel erreicht → Vorschlag für den nächsten Skill; Ziele ändern → Plan neu erzeugen
+- [ ] Ziel erreicht → Vorschlag für den nächsten Skill; Ziele/Tage/Vorlage ändern → **Vorschlag als Diff, erst nach Bestätigung neue Planversion**
+- [ ] **Phasen:** Pause/Krank (Serie bleibt, Wiedereinstieg mit reduziertem Volumen), Urlaub, Equipment temporär, Verletzung (Sehne/Körperstelle → Übungen ersetzen) – mit Zeitraum oder bis auf Weiteres
+- [ ] **Eigene Workouts:** Name, Übungen oder Leitern mit Sätzen/Wdh./Pause, im Plan einsetzbar
+- [ ] **Tagesanpassung:** Übungen für eine Einheit hinzufügen/entfernen, danach „als neues Workout speichern“
 - [ ] Onboarding: Sprache → Kurztest → Ziele → Equipment/Tage → erzeugter Plan mit Begründung pro Slot („wegen Muscle-up“, „Ausgleich Druck“)
 - [ ] Apple Health: Workouts speichern
 - [ ] **TestFlight, geschlossene Beta** mit 5–10 Fortgeschrittenen, Feedback-Kanal in der App
@@ -152,7 +172,8 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 - [ ] Adaptiv: Volumen-Anpassung nach letzter Leistung, Deload-Erkennung (Stagnation über 2+ Einheiten), Rotation im Zubehör-Block
 - [ ] Readiness-Check vor der Einheit (Schlaf/Energie/Gelenke, 3 Taps) → Tagesanpassung
 - [ ] Statistiken: Volumen-Trends, Zeit unter Spannung, Kraft-zu-Gewicht
-- [ ] Erst Regeln, kein ML
+- [ ] KI-Unterstützung (Sprachmodell, immer als Vorschlag mit Bestätigung): Freitext → Phase/Verletzung, Erklärung der Skill-Vorschläge, Wochenrückblick aus Notizen
+- [ ] Plan selbst bleibt regelbasiert – kein ML für die Planung
 
 ### Später / bewusst nicht jetzt
 
