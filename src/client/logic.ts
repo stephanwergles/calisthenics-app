@@ -1,9 +1,10 @@
 /* Trainingslogik der v2-App – rein funktional, ohne React, DOM oder Speicher.
    Die Oberfläche ruft diese Funktionen auf; getestet wird direkt mit node --test. */
 import type {
-  Activity, Catalog, Exercise, ExerciseId, Plan, Progression, ProgressionId, Region, Session, SetLog,
-  Target, UserState, Weekday, Workout, WorkoutId,
+  Activity, Catalog, Equipment, Exercise, ExerciseId, Plan, Profile, Progression, ProgressionId, Region, Session, SetLog,
+  Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId,
 } from '../domain/model.ts'
+import { suggestSkills, type SkillSuggestion } from '../domain/assessment.ts'
 import { NOTE_MAX, REGIONS } from '../domain/model.ts'
 
 export { NOTE_MAX }
@@ -618,4 +619,42 @@ export function monthStats(sessions: Session[], activities: Activity[], month: s
     sets: s.reduce((n, x) => n + x.sets.length, 0),
     cardio: activities.filter(a => a.date.startsWith(month)).length,
   }
+}
+
+/* ── Profil, Ziele, Skill-Vorschläge ─────────────────────────────────────── */
+
+export const EQUIPMENT_LABEL: Record<Exclude<Equipment, 'floor' | 'wall'>, string> = {
+  bar: 'Stange', rings: 'Ringe', parallettes: 'Parallettes', 'dip-bars': 'Barren', band: 'Band', box: 'Box', weight: 'Zusatzgewicht',
+}
+/** Profil, solange keins gespeichert ist: keine Ziele, alle Geräte, Tage aus dem Wochenplan */
+export function profileOf(ix: Index, user: UserState): Profile {
+  return user.profile ?? {
+    goals: [], equipment: Object.keys(EQUIPMENT_LABEL) as Equipment[],
+    days: WEEK_ORDER.filter(d => ix.catalog.weekplan[d]), minutes: 75,
+  }
+}
+/** aktuelle Stufe als Index je Leiter (Eingabe für Vorschläge und Generator) */
+export const stepIndexes = (ix: Index, user: UserState): Record<ProgressionId, number> =>
+  Object.fromEntries([...ix.progressions.keys()].map(pid => [pid, currentStep(ix, user, pid).index]))
+
+/** Skills, deren Leitern der Katalog kennt – mit Bewertung „realistisch als Nächstes“ */
+export function skillChoices(ix: Index, user: UserState, skills: Skill[]): SkillSuggestion[] {
+  const known = skills.filter(s => [...s.targets, ...s.prerequisites.map(p => p.progression)].every(pid => ix.progressions.has(pid)))
+  return suggestSkills(known, ix.catalog, stepIndexes(ix, user))
+}
+/** Fortschritt zu einem Ziel: Stufen der Ziel-Leitern (plus Bereitschaft zur nächsten), 0–1 */
+export function goalProgress(ix: Index, user: UserState, sessions: Session[], skill: Skill) {
+  const parts = skill.targets.filter(pid => ix.progressions.has(pid)).map(pid => {
+    const step = currentStep(ix, user, pid)
+    const ready = step.next ? unlockReadiness(sessions, step.exercise.id, step.target, step.nextTarget) ?? 0 : 0
+    return { pid, step, share: step.total > 1 ? Math.min(1, (step.index + ready) / (step.total - 1)) : 1 }
+  })
+  const share = parts.length ? parts.reduce((n, p) => n + p.share, 0) / parts.length : 0
+  const lead = parts.reduce((a, b) => (b.share < a.share ? b : a), parts[0])
+  return { share, pid: lead?.pid, current: lead?.step.exercise.name ?? '', stage: lead ? `Stufe ${lead.step.index + 1}/${lead.step.total}` : '' }
+}
+/** Ziel an/aus (höchstens drei) */
+export function withGoal(p: Profile, skill: SkillId, on: boolean): Profile {
+  const goals = on ? [...new Set([...p.goals, skill])].slice(-3) : p.goals.filter(g => g !== skill)
+  return { ...p, goals }
 }

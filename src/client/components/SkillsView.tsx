@@ -1,7 +1,7 @@
 'use client'
 /* Skill-Tree: jede Progression als kompakte Zeile mit Stufen-Balken, nach Körperregion gruppiert.
    Antippen öffnet die Leiter als Sheet. */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import * as L from '../logic'
 import { REGIONS, type Session } from '@/domain/model'
 import type { Training } from '../useTraining'
@@ -10,6 +10,7 @@ import { Sheet } from './Sheets'
 import { ExerciseStill, hasClip } from './ExerciseMedia'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { ask, type NBlock } from '../native'
+import { GoalPicker, SKILLS, useProfile } from './ProfileParts'
 
 export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
   const tree = useMemo(() => L.skillTree(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
@@ -23,6 +24,8 @@ export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) =
     <section className="skills">
       <span className="h-date">{tree.length} Progressionen · {unlocked} {unlocked === 1 ? 'Stufe' : 'Stufen'} freigeschaltet</span>
       <h2 className="page-title display">Skills</h2>
+      <Goals t={t} onOpen={onOpen} />
+      <h3 className="pl-head display">Alle Leitern</h3>
       {groups.map(g => (
         <div key={g.label} className="sk-group">
           <h3 className="pg-day"><span className="display">{g.label}</span><span>{g.detail}</span></h3>
@@ -174,4 +177,48 @@ function ladderBlocks(p: L.SkillPath, sessions: Session[]): NBlock[] {
     force: next && !ready ? (at == null ? `Zu ${next.name} wechseln` : 'Trotzdem wechseln →') : undefined,
     back: p.step.prev ? `Zurück zu ${p.step.prev.name}` : undefined,
   }]
+}
+
+/** Ziele (bis zu drei Skills) mit Fortschritt, darunter der realistischste nächste Skill */
+function Goals({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
+  const { profile, change } = useProfile(t)
+  const [picking, setPicking] = useState(false)
+  const goals = profile.goals.flatMap(id => {
+    const skill = SKILLS.find(s => s.id === id)
+    return skill ? [{ skill, p: L.goalProgress(t.ix, t.state, t.sessions, skill) }] : []
+  })
+  const next = L.skillChoices(t.ix, t.state, SKILLS).find(c => !c.reached && !profile.goals.includes(c.skill))
+  const nextSkill = next && SKILLS.find(s => s.id === next.skill)
+  const full = profile.goals.length >= 3
+  return (
+    <>
+      <div className="pl-head-row">
+        <h3 className="pl-head display">Deine Ziele</h3>
+        <button className="btn btn-ghost btn-sm" onClick={() => setPicking(true)}><Icon name={goals.length ? 'edit' : 'plus'} size={16} /> {goals.length ? 'Ändern' : 'Wählen'}</button>
+      </div>
+      {goals.length ? (
+        <div className="pl-grid">
+          {goals.map(({ skill, p }) => (
+            <button key={skill.id} className="pl-card goal" onClick={() => p.pid && onOpen(p.pid)}>
+              <b className="display">{skill.name}</b>
+              <span className="goal-bar" aria-hidden="true"><i style={{ width: `${Math.round(p.share * 100)}%` }} /></span>
+              <small>{p.stage} · {p.current}</small>
+              <em>{Math.round(p.share * 100)} %</em>
+            </button>
+          ))}
+        </div>
+      ) : <p className="hint pl-note">Wähle bis zu drei Skills als Ziel – Lever richtet Vorschläge für deinen Plan danach aus.</p>}
+      {next && nextSkill && (
+        <div className="card sk-next">
+          <span className="h-date">Realistisch als Nächstes</span>
+          <b className="display">{next.name}</b>
+          <p>{next.missing.length ? `Dafür fehlt noch: ${next.missing.join(', ')}.` : `Die Voraussetzungen erfüllst du – ${Math.round(next.score * 100)} % bereit.`}</p>
+          <button className="btn btn-primary btn-block" disabled={full} onClick={() => change(pr => L.withGoal(pr, next.skill, true))}>
+            {full ? 'Schon drei Ziele gewählt' : 'Als Ziel wählen'}
+          </button>
+        </div>
+      )}
+      {picking && <GoalPicker t={t} onClose={() => setPicking(false)} />}
+    </>
+  )
 }

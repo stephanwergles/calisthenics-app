@@ -8,6 +8,7 @@ import * as migration_20261013_193014_add_user_roles from './20261013_193014_add
 import * as migration_20261013_202958_user_consent from './20261013_202958_user_consent';
 import * as migration_20261013_203657_user_plans from './20261013_203657_user_plans';
 import * as migration_20261013_205009_session_adjust from './20261013_205009_session_adjust';
+import * as migration_20261013_211919_user_profile from './20261013_211919_user_profile';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20261013_205009_session_adjust.up,
     down: migration_20261013_205009_session_adjust.down,
-    name: '20261013_205009_session_adjust'
+    name: '20261013_205009_session_adjust',
+  },
+  {
+    up: migration_20261013_211919_user_profile.up,
+    down: migration_20261013_211919_user_profile.down,
+    name: '20261013_211919_user_profile'
   },
 ];

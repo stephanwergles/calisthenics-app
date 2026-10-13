@@ -4,7 +4,7 @@
    Payload liefert leere Felder als null, Relationen je nach depth als ID oder
    Objekt und Array-Zeilen mit eigener `id`. Das App-Modell kennt nichts davon. */
 import { NOTE_MAX } from '../domain/model.ts'
-import type { Activity, Catalog, Exercise, Plan, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
+import type { Activity, Catalog, Exercise, Plan, Profile, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
 
 type Doc = Record<string, any>
 const idOf = (v: any): string => (v && typeof v === 'object' ? v.id : v)
@@ -81,6 +81,7 @@ export function docToState(state: Doc | null | undefined): UserState {
   return tidy({
     current: (state?.current ?? {}) as Record<string, string>,
     paused: (state?.paused ?? []).map(idOf),
+    profile: opt(state?.profile) as UserState['profile'],
     updatedAt: opt<number>(state?.clientUpdatedAt),
   })
 }
@@ -125,6 +126,14 @@ export function isActivity(a: any): a is Activity {
 export function isState(s: any): s is UserState {
   return !!s && typeof s.current === 'object' && Object.entries(s.current).every(([k, v]) => isId(k) && isId(v))
     && Array.isArray(s.paused) && s.paused.every(isId)
+    && (s.profile === undefined || isProfile(s.profile))
+}
+const EQUIPMENT = ['bar', 'rings', 'parallettes', 'dip-bars', 'band', 'box', 'weight', 'floor', 'wall']
+export function isProfile(p: any): p is Profile {
+  return !!p && Array.isArray(p.goals) && p.goals.length <= 3 && p.goals.every(isId)
+    && Array.isArray(p.equipment) && p.equipment.every((e: any) => EQUIPMENT.includes(e))
+    && Array.isArray(p.days) && p.days.length <= 7 && p.days.every((d: any) => WEEKDAYS.includes(d))
+    && Number.isInteger(p.minutes) && p.minutes >= 15 && p.minutes <= 180
 }
 
 /* ── Katalog ─────────────────────────────────────────────────────────────── */

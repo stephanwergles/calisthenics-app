@@ -9,6 +9,10 @@ import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { HEALTH_CONSENT, PRIVACY_URL } from '../consent'
 import { DataView, syncStatus } from './DataView'
 import { Sheet } from './Sheets'
+import { DaysSheet, EquipmentSheet, GoalPicker, profileSummary } from './ProfileParts'
+import { Icon } from './Icon'
+
+type Part = 'goals' | 'equipment' | 'days' | null
 
 export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void }) {
   const native = useNativeShell()
@@ -18,6 +22,18 @@ export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void 
   const [agree, setAgree] = useState(false)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  const [part, setPart] = useState<Part>(null)
+  const sum = profileSummary(t)
+  const training = [
+    { id: 'goals' as const, title: 'Ziele', sub: sum.goals },
+    { id: 'equipment' as const, title: 'Ausrüstung', sub: sum.equipment },
+    { id: 'days' as const, title: 'Trainingstage & Dauer', sub: sum.days },
+  ]
+  const parts = <>
+    {part === 'goals' && <GoalPicker t={t} onClose={() => setPart(null)} />}
+    {part === 'equipment' && <EquipmentSheet t={t} onClose={() => setPart(null)} />}
+    {part === 'days' && <DaysSheet t={t} onClose={() => setPart(null)} />}
+  </>
 
   const signIn = async () => {
     setBusy(true); setErr(null)
@@ -35,6 +51,8 @@ export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void 
     id: 'profile', title: 'Profil', subtitle: sub, detents: ['large'],
     blocks: [
       { type: 'stats', items: [{ value: String(t.sessions.length), label: 'Einheiten' }, { value: String(sets), label: 'Sätze' }, { value: String(t.activities.length), label: 'Cardio' }] },
+      { type: 'section', title: 'Training' },
+      ...training.map((x): NBlock => ({ type: 'row', id: `p:${x.id}`, title: x.title, subtitle: x.sub, symbol: 'none' })),
       { type: 'section', title: 'Konto & Sync' },
       ...(s.account ? [
         ...(s.consentMissing ? [
@@ -67,12 +85,29 @@ export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void 
     else if (e.type === 'tap' && e.id === 'consent') void t.acceptHealthConsent().catch(x => setErr((x as Error).message))
     else if (e.type === 'tap' && e.id === 'privacy') window.open(PRIVACY_URL, '_blank')
     else if (e.type === 'tap' && e.id === 'delete') void deleteAccount()
+    else if (e.type === 'tap' && e.id?.startsWith('p:')) setPart(e.id.slice(2) as Part)
     else if (e.type === 'dismiss') onClose()
   })
-  if (native) return null
+  if (native) return parts
   return (
-    <Sheet large title="Profil" sub={sub} onClose={onClose}>
-      <DataView t={t} embedded />
-    </Sheet>
+    <>
+      <Sheet large title="Profil" sub={sub} onClose={onClose}>
+        <div className="card pf-training">
+          <h2>Training</h2>
+          <ul>
+            {training.map(x => (
+              <li key={x.id}>
+                <button className="pf-row" onClick={() => setPart(x.id)}>
+                  <span><b>{x.title}</b><small>{x.sub}</small></span>
+                  <Icon name="right" size={16} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <DataView t={t} embedded />
+      </Sheet>
+      {parts}
+    </>
   )
 }

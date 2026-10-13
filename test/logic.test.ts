@@ -378,3 +378,21 @@ test('Eigener Plan bearbeiten: Workout, Slots, Wochentage, Löschen', () => {
   assert.equal(groups.flatMap(g => g.items).some(x => x.pid === 'pull-up'), false)
   assert.deepEqual(groups.map(g => g.label).slice(0, 2), ['Ziehen', 'Drücken'])
 })
+
+test('Profil und Ziele: Standardwerte, höchstens drei Ziele, Vorschläge, Fortschritt', () => {
+  const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
+  const p = L.profileOf(ix, state)
+  assert.deepEqual(p.goals, [])
+  assert.deepEqual(p.days, ['mon', 'wed', 'sun'], 'Tage aus dem Wochenplan')
+  assert.equal(L.profileOf(ix, { ...state, profile: { ...p, minutes: 60 } }).minutes, 60, 'gespeichertes Profil gilt')
+  let q = L.withGoal(p, 'muscle-up', true)
+  q = L.withGoal(L.withGoal(L.withGoal(q, 'l-sit', true), 'handstand', true), 'pistol', true)
+  assert.deepEqual(q.goals, ['l-sit', 'handstand', 'pistol'], 'höchstens drei, das älteste fällt raus')
+  assert.deepEqual(L.withGoal(q, 'l-sit', false).goals, ['handstand', 'pistol'])
+  const choices = L.skillChoices(ix, state, skills)
+  assert.ok(choices.length >= 4)
+  assert.ok(choices.every((c, i) => i === 0 || choices[i - 1].reached <= c.reached), 'erreichte am Ende')
+  const mu = L.goalProgress(ix, state, [], skills.find((s: { id: string }) => s.id === 'muscle-up'))
+  assert.ok(mu.share > 0 && mu.share < 1, 'Muscle-up: Stufe 2 von 3 in der Zug-Leiter')
+  assert.ok(mu.pid)
+})

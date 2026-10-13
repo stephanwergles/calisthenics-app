@@ -156,10 +156,19 @@ export interface Activity {
   updatedAt?: number;
 }
 
+/** Profil: Eingaben für Skill- und Planvorschläge. Fehlt es, gibt es noch keine Ziele. */
+export interface Profile {
+  goals: SkillId[];             // 0–3 Ziel-Skills
+  equipment: Equipment[];       // vorhandene Geräte (floor/wall gelten immer)
+  days: Weekday[];              // gewünschte Trainingstage
+  minutes: number;              // Budget je Einheit inkl. Warm-up
+}
+
 export interface UserState {
   /** aktuelle Stufe je Progression – als Übungs-ID, nicht als Index */
   current: Record<ProgressionId, ExerciseId>;
   paused: ProgressionId[];
+  profile?: Profile;
   /** letzte Änderung in ms – Grundlage für den Sync */
   updatedAt?: number;
 }

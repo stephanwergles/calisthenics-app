@@ -153,3 +153,15 @@ test('Tagesanpassung und eigene Workout-Felder überleben den Sync', () => {
   assert.equal(C.isSession({ ...adj, added: ['<x>'] }), false)
   assert.equal(C.isSession({ ...adj, removed: 'pistol' }), false)
 })
+
+test('Profil im Trainingsstand übersteht den Sync und wird geprüft', () => {
+  const profile = { goals: ['muscle-up', 'l-sit'], equipment: ['bar', 'rings'], days: ['mon', 'wed', 'sun'], minutes: 90 } as const
+  const st = C.docToState({ current: { 'pull-up': 'pull-up' }, paused: [], profile, clientUpdatedAt: 5 })
+  assert.deepEqual(st.profile, profile)
+  assert.equal('profile' in C.docToState({ current: {}, paused: [], profile: null }), false)
+  assert.equal(C.isState({ current: {}, paused: [], profile }), true)
+  assert.equal(C.isState({ current: {}, paused: [], profile: { ...profile, goals: ['a', 'b', 'c', 'd'] } }), false, 'höchstens drei Ziele')
+  assert.equal(C.isState({ current: {}, paused: [], profile: { ...profile, equipment: ['jetpack'] } }), false)
+  assert.equal(C.isState({ current: {}, paused: [], profile: { ...profile, minutes: 5 } }), false)
+  assert.equal(C.isState({ current: {}, paused: [], profile: { ...profile, days: ['funday'] } }), false)
+})
