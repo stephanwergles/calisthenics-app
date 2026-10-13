@@ -310,6 +310,8 @@ export interface SlotView {
   added?: boolean
   /** ruht wegen einer Phase (Verletzung, fehlendes Gerät) */
   blockedBy?: string
+  /** Ersatz für die ruhende Übung dieses Namens */
+  substituteFor?: string
 }
 
 /** Alles, was die Ansicht pro Slot braucht – in Trainingsreihenfolge */
@@ -317,20 +319,45 @@ export function workoutSlots(ix: Index, workout: WorkoutId, user: UserState, tod
   opts: { meta?: Record<ExerciseId, ExerciseMeta> } = {}): SlotView[] {
   const phases = activePhases(user, date)
   const lighter = reentry(user, date)
-  return daySlots(ix, workout, today).map(sl => {
+  const view = (sl: DaySlot, substituteFor?: string): SlotView => {
     const step = currentStep(ix, user, sl.progression)
     const blockedBy = opts.meta ? phaseBlock(phases, opts.meta[step.exercise.id]) ?? undefined : undefined
     const paused = user.paused.includes(sl.progression) || !!blockedBy
     const base = plannedSets(undefined, sl.progression, step.target, sl.sets)
     const planned = today?.setPlan?.[sl.progression] ?? (lighter ? Math.max(2, base - 1) : base)
     return {
-      pid: sl.progression, block: sl.block, step, planned, added: sl.added, blockedBy,
+      pid: sl.progression, block: sl.block, step, planned, added: sl.added, blockedBy, substituteFor,
       sets: setsOf(today, step.exercise.id),
       state: slotState(today, step.exercise.id, planned, paused),
       last: lastPerformance(sessions, step.exercise.id, date),
       ready: !paused && !!step.next && readyToProgress(sessions, step.exercise.id, step.target, step.nextTarget),
     }
+  }
+  const slots = daySlots(ix, workout, today)
+  const taken = new Set(slots.map(sl => sl.progression))
+  // ruhende Übung (Phase) → Ersatz mit gleichem Muster direkt dahinter
+  return slots.flatMap(sl => {
+    const v = view(sl)
+    if (!v.blockedBy || !opts.meta) return [v]
+    const sub = substituteFor(ix, user, phases, opts.meta, sl.progression, taken)
+    if (!sub) return [v]
+    taken.add(sub)
+    return [v, view({ block: sl.block, progression: sub }, v.step.exercise.name)]
   })
+}
+
+/** Ersatz für eine ruhende Übung: Leiter mit gleichem Bewegungsmuster, die heute nicht ruht und
+    nicht schon dran ist – gleiche Körperregion und ähnliche Schwierigkeit zuerst */
+export function substituteFor(ix: Index, user: UserState, phases: Phase[], meta: Record<ExerciseId, ExerciseMeta>,
+  pid: ProgressionId, exclude: Set<ProgressionId>): ProgressionId | null {
+  const m = meta[currentStep(ix, user, pid).exercise.id]
+  if (!m) return null
+  const region = ix.progressions.get(pid)?.region
+  return [...ix.progressions.values()]
+    .filter(p => p.id !== pid && !exclude.has(p.id) && !user.paused.includes(p.id))
+    .map(p => ({ p, m: meta[currentStep(ix, user, p.id).exercise.id] }))
+    .filter(x => x.m && x.m.pattern === m.pattern && (x.p.region === region || m.pattern !== 'isolation') && !phaseBlock(phases, x.m))
+    .sort((a, b) => Number(b.p.region === region) - Number(a.p.region === region) || Math.abs(a.m.difficulty - m.difficulty) - Math.abs(b.m.difficulty - m.difficulty))[0]?.p.id ?? null
 }
 
 /* ── Verlauf: Kalender ───────────────────────────────────────────────────── */
@@ -679,7 +706,9 @@ export function generatorInput(ix: Index, user: UserState, skills: Skill[], spli
     .map(pid => ix.progressions.get(pid)?.region).filter((r): r is Region => !!r))]
   return {
     skills: p.goals, equipment: [...new Set([...p.equipment, 'floor', 'wall'])] as Equipment[], days: p.days, minutes: p.minutes,
-    current: stepIndexes(ix, user), split: suggestSplits(splits, p.days.length, regions)[0]?.id,
+    current: stepIndexes(ix, user),
+    // gewählte Vorlage, solange sie zur Zahl der Tage passt – sonst die naheliegendste
+    split: splits.find(t => t.id === p.split && t.themes.length === p.days.length)?.id ?? suggestSplits(splits, p.days.length, regions)[0]?.id,
   }
 }
 

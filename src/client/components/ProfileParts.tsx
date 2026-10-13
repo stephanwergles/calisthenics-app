@@ -4,7 +4,8 @@
    für Vorschläge, die erst nach Bestätigung gelten. */
 import type { Equipment, Profile, Weekday } from '@/domain/model'
 import skillsJson from '@/seed/skills.json'
-import type { Skill } from '@/domain/model'
+import splitsJson from '@/seed/splits.json'
+import type { Skill, SplitTemplate } from '@/domain/model'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
 import type { NBlock } from '../native'
@@ -14,6 +15,7 @@ import { Sheet } from './Sheets'
 import { DAY_NAME } from './PlanEditor'
 
 export const SKILLS = (skillsJson as unknown as { skills: Skill[] }).skills
+export const SPLITS = (splitsJson as unknown as { splits: SplitTemplate[] }).splits
 
 /** Profil lesen und ändern (legt es beim ersten Ändern mit Standardwerten an) */
 export function useProfile(t: Training) {
@@ -82,13 +84,24 @@ export function DaysSheet({ t, onClose, parent }: { t: Training; onClose: () => 
   const sub = 'Grundlage für Planvorschläge – dein Wochenplan ändert sich erst, wenn du einen Vorschlag bestätigst.'
   const toggle = (id: string, on: boolean) => change(p => ({ ...p, days: L.WEEK_ORDER.filter(d => (d === id ? on : p.days.includes(d))) as Weekday[] }))
   const setMin = (m: number) => change(p => ({ ...p, minutes: Math.min(180, Math.max(30, m)) }))
+  // Aufteilung: Vorlagen mit so vielen Themen wie Tagen, oder automatisch
+  const fitting = SPLITS.filter(x => x.themes.length === profile.days.length)
+  const chosen = fitting.some(x => x.id === profile.split) ? profile.split : undefined
+  const splits = [{ id: 'auto', title: 'Automatisch', sub: 'passend zu deinen Zielen' },
+    ...fitting.map(x => ({ id: x.id, title: x.name, sub: x.themes.map(th => th.name).join(' · ') }))]
+  const pickSplit = (id: string) => change(p => { const { split: _, ...rest } = p; return id === 'auto' ? rest : { ...rest, split: id } })
   useNativeSheet(native ? {
     id: 'days', parent: parent?.id, title: 'Trainingstage & Dauer', subtitle: sub, detents: ['large'],
     blocks: [
       { type: 'stepper', id: 'min', label: 'Minuten je Einheit', value: String(profile.minutes) },
       ...items.map((x): NBlock => ({ type: 'check', style: 'select', id: x.id, title: x.title, on: x.on })),
+      ...(fitting.length ? [
+        { type: 'section', title: 'Aufteilung' } as NBlock,
+        ...splits.map((x): NBlock => ({ type: 'check', style: 'select', id: `split:${x.id}`, title: x.title, subtitle: x.sub, on: (chosen ?? 'auto') === x.id })),
+      ] : []),
     ],
   } : null, e => {
+    if (e.type === 'toggle' && e.id?.startsWith('split:')) { pickSplit(e.id.slice(6)); return }
     if (e.type === 'tap' && e.id === 'min:minus') setMin(profile.minutes - 5)
     else if (e.type === 'tap' && e.id === 'min:plus') setMin(profile.minutes + 5)
     else if (e.type === 'toggle' && e.id) toggle(e.id, !!e.value)
@@ -106,6 +119,10 @@ export function DaysSheet({ t, onClose, parent }: { t: Training; onClose: () => 
         </div>
       </div>
       <Choices items={items} onToggle={toggle} />
+      {fitting.length > 0 && <>
+        <h4 className="pe-section">Aufteilung</h4>
+        <Choices items={splits.map(x => ({ ...x, on: (chosen ?? 'auto') === x.id }))} onToggle={id => pickSplit(id)} />
+      </>}
     </Sheet>
   )
 }
@@ -117,6 +134,7 @@ export function profileSummary(t: Training) {
   return {
     goals: names.length ? names.join(' · ') : 'noch keine gewählt',
     equipment: p.equipment.map(e => L.EQUIPMENT_LABEL[e as keyof typeof L.EQUIPMENT_LABEL]).filter(Boolean).join(', ') || 'nur Boden und Wand',
-    days: `${L.WEEK_ORDER.filter(d => p.days.includes(d)).map(d => L.WEEKDAY_SHORT[d]).join(' · ') || 'keine Tage'} · ca. ${p.minutes} min`,
+    days: `${L.WEEK_ORDER.filter(d => p.days.includes(d)).map(d => L.WEEKDAY_SHORT[d]).join(' · ') || 'keine Tage'} · ca. ${p.minutes} min`
+      + (SPLITS.find(x => x.id === p.split && x.themes.length === p.days.length) ? ` · ${SPLITS.find(x => x.id === p.split)!.name}` : ''),
   }
 }

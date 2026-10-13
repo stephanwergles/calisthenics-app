@@ -145,6 +145,7 @@ export function isProfile(p: any): p is Profile {
     && Array.isArray(p.equipment) && p.equipment.every((e: any) => EQUIPMENT.includes(e))
     && Array.isArray(p.days) && p.days.length <= 7 && p.days.every((d: any) => WEEKDAYS.includes(d))
     && Number.isInteger(p.minutes) && p.minutes >= 15 && p.minutes <= 180
+    && (p.split === undefined || isId(p.split))
 }
 
 /* ── Katalog ─────────────────────────────────────────────────────────────── */

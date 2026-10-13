@@ -454,3 +454,27 @@ test('Phasen: Verletzung/Equipment lassen Übungen ruhen, Pause hält die Serie,
   const light = L.workoutSlots(ix, 'pull', pause, undefined, [], '2026-10-20')
   assert.ok(light.every((s, i) => s.planned === Math.max(2, normal[i].planned - 1)))
 })
+
+test('Phasen: Ersatzübung mit gleichem Muster; Split aus dem Profil', () => {
+  const json = (f: string) => JSON.parse(readFileSync(new URL(`../src/seed/${f}`, import.meta.url), 'utf8'))
+  const meta = json('exercise-meta.json').exercises
+  const user = L.withPhase(state, L.newPhase('injury', '2026-10-14', null, { tendons: ['wrist'] }))
+  const slots = L.workoutSlots(ix, 'push', user, undefined, [], '2026-10-15', { meta })
+  const blocked = slots.filter(s => s.blockedBy)
+  const subs = slots.filter(s => s.substituteFor)
+  assert.ok(blocked.length > 0)
+  for (const sub of subs) {
+    const i = slots.indexOf(sub)
+    assert.equal(slots[i - 1].step.exercise.name, sub.substituteFor, 'Ersatz direkt hinter der ruhenden Übung')
+    assert.equal(sub.blockedBy, undefined, 'Ersatz belastet das Gelenk nicht')
+    assert.equal(meta[sub.step.exercise.id].pattern, meta[slots[i - 1].step.exercise.id].pattern)
+  }
+  assert.equal(new Set(slots.map(s => s.pid)).size, slots.length, 'keine Leiter doppelt')
+  // Split: gewählte Vorlage gilt, solange sie zur Zahl der Tage passt
+  const skills = json('skills.json').skills, splits = json('splits.json').splits
+  const prof = { goals: ['muscle-up', 'l-sit'], equipment: ['bar'], days: ['sun', 'mon', 'wed'], minutes: 90 }
+  const withSplit = (split?: string) => L.generatorInput(ix, { ...state, profile: { ...prof, split } } as typeof state, skills, splits)!.split
+  assert.equal(withSplit(), 'full-3')
+  assert.equal(withSplit('ppl-3'), 'ppl-3')
+  assert.equal(withSplit('ul-4'), 'full-3', 'passt nicht zu drei Tagen → automatisch')
+})

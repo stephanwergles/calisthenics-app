@@ -162,6 +162,7 @@ export interface Profile {
   equipment: Equipment[];       // vorhandene Geräte (floor/wall gelten immer)
   days: Weekday[];              // gewünschte Trainingstage
   minutes: number;              // Budget je Einheit inkl. Warm-up
+  split?: string;               // Split-Vorlage; fehlt = automatisch (suggestSplits)
 }
 
 /** Phase: Zeitraum, in dem der Plan anders gilt. `to` fehlt = bis auf Weiteres (bis „Beenden“). */

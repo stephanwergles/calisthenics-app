@@ -20,8 +20,10 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
   const streak = useMemo(() => L.streakWeeks(t.sessions, t.today, t.state.phases), [t.sessions, t.today, t.state.phases])
   const resting = L.restingPhase(t.state, t.today)
   const blocked = slots.filter(s => s.blockedBy)
+  const subs = slots.filter(s => s.substituteFor).length
   const notice = resting ? `${L.fmtPhase(resting)} – heute ist nichts fällig, deine Serie bleibt.`
-    : blocked.length ? `${blocked.length} ${blocked.length === 1 ? 'Übung ruht' : 'Übungen ruhen'} heute (${[...new Set(blocked.map(s => s.blockedBy))].join(', ')}).`
+    : blocked.length ? `${blocked.length} ${blocked.length === 1 ? 'Übung ruht' : 'Übungen ruhen'} heute (${[...new Set(blocked.map(s => s.blockedBy))].join(', ')})`
+      + (subs ? ` – ${subs === blocked.length ? 'Ersatz ist eingeplant' : `${subs}× Ersatz eingeplant`}.` : '.')
     : L.reentry(t.state, t.today) ? 'Wiedereinstieg nach der Pause: diese Woche je Übung ein Satz weniger.' : null
   const minutes = useMemo(() => L.estimateMinutes(t.sessions, t.workout), [t.sessions, t.workout])
   const skills = useMemo(() => L.nextSkills(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])

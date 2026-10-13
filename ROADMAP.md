@@ -117,8 +117,9 @@ Vier Tabs **Heute · Plan · Skills · Log**, Profil über den Avatar rechts obe
 - [x] Tabs umgestellt, Profil-Sheet (Konto, Sync, Einwilligung, Konto löschen; Import/Export im Web), Plan-Tab mit Woche (Tag antippen → Workout bzw. belegen) und „Meine Workouts“
 - [x] Plan-Tab: Planvorschläge – Generator aus Profil + Stand (`usePlanSuggestion`), Diff je Wochentag, „Übernehmen“ = neue Planversion, „Später“, Rückgängig; Punkt am Plan-Tab. Generator füllt Tage bis ~75 % des Zeitbudgets auf (ohne Ziel-Leitern nicht gewählter Skills)
 - [x] Plan-Tab: Phasen (Pause/krank, Urlaub, Verletzung, Equipment) – `state.phases`; Verletzung/fehlendes Gerät lassen betroffene Übungen ruhen, Pause/Urlaub halten die Serie, danach eine Woche Wiedereinstieg (ein Satz weniger); Hinweis auf Heute
-- [ ] Phasen: Ersatzübungen statt nur Ruhen (Generator tauscht Stufe/Leiter mit gleichem Muster); KI: Freitext → Phase
-- [ ] Split-Vorlage im Profil wählbar (bisher automatisch per `suggestSplits`)
+- [x] Phasen: Ersatzübung mit gleichem Bewegungsmuster, die das Gelenk schont bzw. ohne fehlendes Gerät geht (`substituteFor`) – gibt es keine, ruht die Übung
+- [ ] KI: Freitext → Phase („Schulter links zwickt bei Dips“)
+- [x] Split-Vorlage im Profil wählbar (Trainingstage & Dauer → Aufteilung; sonst automatisch per `suggestSplits`)
 - [x] Skills-Tab: „Deine Ziele“ (bis zu drei, Fortschritt der Ziel-Leitern) und „Realistisch als Nächstes“ (`suggestSkills`); Profil: Ziele, Ausrüstung, Trainingstage & Dauer (`state.profile`, synchronisiert)
 - [ ] Profil: Einstufung wiederholen (Kurztest)
 - [ ] Profil nativ: Import/Export (Teilen-Sheet statt Download)

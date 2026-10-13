@@ -77,7 +77,7 @@ export function PlanSheet({ t, slots, focus, openFocus, openActivity, onClose, o
         ...(adjusted ? [{ type: 'button', id: 'saveas', title: 'Als neues Workout speichern', symbol: 'square.and.arrow.down' } as NBlock] : []),
       ] : slots.map((s): NBlock => ({
         type: 'row', id: `ex:${s.pid}`, title: s.step.exercise.name,
-        eyebrow: s.pid === focus && s.state === 'open' ? 'Als Nächstes' : s.added ? 'Nur heute' : undefined,
+        eyebrow: s.pid === focus && s.state === 'open' ? 'Als Nächstes' : s.substituteFor ? `Ersatz für ${s.substituteFor}` : s.added ? 'Nur heute' : undefined,
         subtitle: [s.state === 'open' && s.last ? `Zuletzt ${s.last.sets.map(x => x.value).join(' · ')}` : null, s.ready ? 'bereit für die nächste Stufe' : null].filter(Boolean).join(' · ') || undefined,
         trailing: s.state === 'done' ? s.sets.map(x => x.value).join(' · ') : s.state === 'skipped' ? 'übersprungen' : s.state === 'paused' ? (s.blockedBy ?? 'pausiert')
           : s.sets.length ? `${s.sets.length}/${s.planned}` : s.step.target.label,
@@ -172,7 +172,7 @@ function Row({ s, next, onClick }: { s: L.SlotView; next: boolean; onClick: () =
           ? <span className="row-thumb" aria-hidden="true"><ExerciseStill exercise={s.step.exercise} />{mark && <span className="mark">{mark}</span>}</span>
           : <span className="mark" aria-hidden="true">{mark}</span>}
         <span className="row-main">
-          {next ? <small className="next-label">Als Nächstes</small> : s.added && <small className="next-label">Nur heute</small>}
+          {next ? <small className="next-label">Als Nächstes</small> : s.substituteFor ? <small className="next-label">Ersatz für {s.substituteFor}</small> : s.added && <small className="next-label">Nur heute</small>}
           <b>{s.step.exercise.name}</b>
           {s.state === 'open' && s.last && <small>Zuletzt {s.last.sets.map(x => x.value).join(' · ')}</small>}
           {s.ready && <small className="ready">bereit für die nächste Stufe</small>}
