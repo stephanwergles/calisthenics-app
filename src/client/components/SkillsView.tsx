@@ -95,6 +95,7 @@ function Ladder({ t, p, onAct }: { t: Training; p: L.SkillPath; onAct: (id: stri
   const prog = p.progress, at = p.step.target.unlockAt
   const unit = p.step.exercise.unit === 'seconds' ? ' s' : ''
   const ready = !p.paused && prog?.done === 2 && !!p.step.next
+  const standing = L.stepStanding(t.sessions, p.step.exercise, p.step.target)
   return (
     <div className="sk-ladder">
       <ol className="sk-nodes">
@@ -108,7 +109,7 @@ function Ladder({ t, p, onAct }: { t: Training; p: L.SkillPath; onAct: (id: stri
               <b className="display">{n.exercise.name}</b>
               <small>
                 {n.state === 'done' ? `geschafft · ${n.sessions} ${n.sessions === 1 ? 'Einheit' : 'Einheiten'}`
-                  : n.state === 'current' ? `aktuell · Ziel ${n.target.label}${n.sessions ? ` · ${n.sessions} ${n.sessions === 1 ? 'Einheit' : 'Einheiten'}` : ''}`
+                  : n.state === 'current' ? `Aktuell · ${n.target.label}${standing.best ? ` · beste Einheit ${standing.best}` : ''}`
                   : i === p.nodes.length - 1 ? 'letzte Stufe dieser Leiter' : 'noch gesperrt'}
               </small>
               {n.state === 'current' && p.step.next && (
@@ -124,8 +125,7 @@ function Ladder({ t, p, onAct }: { t: Training; p: L.SkillPath; onAct: (id: stri
                       <span className="sk-segs" aria-label={`${prog?.done ?? 0} von 2 Einheiten geschafft`}>
                         <i className={(prog?.done ?? 0) >= 1 ? 'on' : ''} /><i className={(prog?.done ?? 0) >= 2 ? 'on' : ''} />
                       </span>
-                      <small>{prog?.done ?? 0} von 2{prog && prog.done < 2 && prog.sessions > 0 && prog.missing > 0
-                        ? ` · zuletzt ${prog.missing} ${prog.missing === 1 ? 'Satz' : 'Sätze'} unter ${at}${unit}` : ''}</small>
+                      <small>{prog?.done ?? 0} von 2{standing.missing ? ` · ${standing.missing}` : ' · bereit'}</small>
                       {ready ? (
                         <button className="btn btn-primary btn-block" onClick={() => onAct('unlock')}>
                           <Icon name="up" /> {p.step.next.name} freischalten
@@ -153,14 +153,13 @@ function ladderBlocks(p: L.SkillPath, sessions: Session[]): NBlock[] {
   const prog = p.progress, at = p.step.target.unlockAt
   const unit = p.step.exercise.unit === 'seconds' ? ' s' : ''
   const ready = !p.paused && prog?.done === 2 && !!p.step.next
-  const ex = p.step.exercise
-  const lastSets = [...sessions].sort((a, b) => (a.date < b.date ? 1 : -1)).map(x => L.setsOf(x, ex.id)).find(x => x.length)
+  const standing = L.stepStanding(sessions, p.step.exercise, p.step.target)
   const einh = (n: number) => `${n} ${n === 1 ? 'Einheit' : 'Einheiten'}`
   const nodes = p.nodes.map((n, i) => ({
     title: n.exercise.name, label: String(i + 1), state: n.state,
     clip: hasClip(n.exercise.id) ? n.exercise.id : undefined,
     subtitle: n.state === 'done' ? `geschafft · ${einh(n.sessions)}`
-      : n.state === 'current' ? `Aktuell · Ziel ${n.target.label}${lastSets ? ` · zuletzt ${lastSets.map(x => x.value).join('·')}` : ''}`
+      : n.state === 'current' ? `Aktuell · ${n.target.label}${standing.best ? ` · beste Einheit ${standing.best}` : ''}`
       : i === p.nodes.length - 1 ? 'Das Ziel dieser Leiter' : 'noch gesperrt',
   }))
   const next = p.step.next
@@ -170,7 +169,7 @@ function ladderBlocks(p: L.SkillPath, sessions: Session[]): NBlock[] {
       : at == null ? 'Kein festes Kriterium – wechsle, wenn es sich sauber anfühlt.'
       : `Freischalten: 2 Einheiten in Folge, alle Sätze ≥ ${at}${unit}`,
     done: next && at != null ? prog?.done ?? 0 : undefined, total: next && at != null ? 2 : undefined,
-    hint: next && at != null ? `${prog?.done ?? 0} von 2${prog && prog.done < 2 && prog.sessions > 0 && prog.missing > 0 ? ` · zuletzt ${prog.missing} ${prog.missing === 1 ? 'Satz' : 'Sätze'} unter ${at}${unit}` : ''}` : undefined,
+    hint: next && at != null ? `${prog?.done ?? 0} von 2${standing.missing ? ` · ${standing.missing}` : ' · bereit'}` : undefined,
     unlock: ready ? `${next!.name} freischalten` : undefined,
     force: next && !ready ? (at == null ? `Zu ${next.name} wechseln` : 'Trotzdem wechseln →') : undefined,
     back: p.step.prev ? `Zurück zu ${p.step.prev.name}` : undefined,

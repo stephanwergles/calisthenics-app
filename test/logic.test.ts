@@ -268,3 +268,16 @@ test('Einheit löschen: leere Markierung, Neubeginn startet leer', () => {
   assert.equal(L.live(d), undefined)
   assert.equal(L.live(s), s)
 })
+
+test('Stand der aktuellen Stufe: beste Einheit und was fehlt', () => {
+  const ex = { id: 'c2b', name: 'Chest-to-Bar', unit: 'reps' } as never
+  const target = { sets: 5, unlockAt: 5, label: '5 × 3–5' } as never
+  const sess = (date: string, values: number[]): Session => ({ ...L.emptySession(date, 'pull'),
+    sets: values.map((value, i) => ({ exercise: 'c2b', progression: 'mu', set: i + 1, value })) })
+  assert.deepEqual(L.stepStanding([], ex, target), { best: null, missing: 'noch keine vollständige Einheit auf dieser Stufe' })
+  const a = sess('2026-10-01', [3, 3, 3, 3, 4]), b = sess('2026-10-05', [5, 5, 5, 5, 4])
+  assert.deepEqual(L.stepStanding([a, b], ex, target), { best: '5·5·5·5·4', missing: 'fehlt noch: 1 Satz mit 5 Wdh.' })
+  const c = sess('2026-10-08', [5, 5, 5, 5, 5])
+  assert.equal(L.stepStanding([a, b, c], ex, target).missing, 'fehlt noch: 1 weitere Einheit, alle Sätze geschafft')
+  assert.equal(L.stepStanding([a, c, sess('2026-10-10', [6, 5, 5, 5, 5])], ex, target).missing, null)
+})

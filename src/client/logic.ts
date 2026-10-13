@@ -443,6 +443,22 @@ export function unlockProgress(sessions: Session[], exercise: ExerciseId, target
   return { done, needed: 2, missing, sessions: complete.length }
 }
 
+/** Für die aktuelle Stufe: beste Einheit (größte Summe) und in Worten, was zum Freischalten fehlt */
+export function stepStanding(sessions: Session[], exercise: Exercise, target: Target): { best: string | null; missing: string | null } {
+  const unit = exercise.unit === 'seconds' ? ' s' : ' Wdh.'
+  const all = sessions.map(s => setsOf(s, exercise.id)).filter(x => x.length)
+  const best = all.length ? all.reduce((a, b) => (sum(b) > sum(a) ? b : a)) : null
+  const p = unlockProgress(sessions, exercise.id, target)
+  let missing: string | null = null
+  if (p && target.unlockAt != null && p.done < 2) {
+    missing = p.sessions === 0 ? 'noch keine vollständige Einheit auf dieser Stufe'
+      : p.missing > 0 ? `fehlt noch: ${p.missing} ${p.missing === 1 ? 'Satz' : 'Sätze'} mit ${target.unlockAt}${unit}`
+      : 'fehlt noch: 1 weitere Einheit, alle Sätze geschafft'
+  }
+  return { best: best ? best.map(x => `${x.value}${x.weightKg ? `+${String(x.weightKg).replace('.', ',')}` : ''}`).join('·') : null, missing }
+}
+const sum = (sets: SetLog[]) => sets.reduce((n, x) => n + x.value, 0)
+
 export interface SkillNode { exercise: Exercise; target: Target; state: 'done' | 'current' | 'locked'; sessions: number }
 export interface SkillPath { pid: ProgressionId; workout: Workout; region?: Region; block: string; step: Step; nodes: SkillNode[]; paused: boolean
   progress: ReturnType<typeof unlockProgress>; readiness: number | null }
