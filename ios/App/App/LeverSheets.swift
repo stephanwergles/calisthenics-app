@@ -490,7 +490,7 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
                 // 3D-Standbild der Stufe, Punkt (Nummer/Häkchen/Schloss) als Abzeichen darauf
                 let holder = UIView(); holder.translatesAutoresizingMaskIntoConstraints = false
                 let thumb = UIImageView(); thumb.contentMode = .scaleAspectFill; thumb.clipsToBounds = true
-                thumb.layer.cornerRadius = 14; thumb.layer.cornerCurve = .continuous
+                thumb.layer.cornerRadius = 12; thumb.layer.cornerCurve = .continuous
                 thumb.backgroundColor = UIColor(white: 1, alpha: 0.04)
                 thumb.alpha = state == "locked" ? 0.35 : 1
                 thumb.translatesAutoresizingMaskIntoConstraints = false
@@ -500,7 +500,7 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
                 dot.font = .display(14, .heavy); dot.layer.borderWidth = 2; dot.layer.borderColor = UIColor(white: 0.12, alpha: 1).cgColor
                 holder.addSubview(dot)
                 NSLayoutConstraint.activate([
-                    holder.widthAnchor.constraint(equalToConstant: 72), holder.heightAnchor.constraint(equalToConstant: 72),
+                    holder.widthAnchor.constraint(equalToConstant: 60), holder.heightAnchor.constraint(equalToConstant: 60),
                     thumb.topAnchor.constraint(equalTo: holder.topAnchor), thumb.bottomAnchor.constraint(equalTo: holder.bottomAnchor),
                     thumb.leadingAnchor.constraint(equalTo: holder.leadingAnchor), thumb.trailingAnchor.constraint(equalTo: holder.trailingAnchor),
                     dot.widthAnchor.constraint(equalToConstant: 26), dot.heightAnchor.constraint(equalToConstant: 26),
@@ -511,9 +511,8 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
             }
             let h = UIStackView(arrangedSubviews: [lead, v]); h.spacing = 14; h.alignment = .center
             // jede Stufe im gleichen Rahmen-Abstand – Bilder stehen auf einer Linie, nur die aktive ist eingefärbt
-            let box = card(h, tint: state == "current" ? Lever.volt.withAlphaComponent(0.1) : .clear, padding: 12)
-            if state != "current" { box.layer.borderColor = UIColor.clear.cgColor }
-            return box
+            // jede Stufe als Karte: dezent, die aktive in Volt – Bilder bündig
+            return card(h, tint: state == "current" ? Lever.volt.withAlphaComponent(0.1) : nil, padding: 10)
 
         case "compare":
             // Balken: letztes Mal (grau) und heute (Volt) relativ zum größten Wert, rechts das Delta
