@@ -149,7 +149,9 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 - [ ] Lücken in den Grundmustern schließen, damit jeder Plan ausgeglichen werden kann (je Muster mindestens eine Leiter pro gängiger Equipment-Kombination)
 - [x] Progressionen mit eigenem Namen (der Weg, z. B. „Muscle-up · Zugkraft“), Skills-Tab nach Skill gruppiert (Ziele zuerst, Rest als Grundlagen)
 - [x] 6 weitere Skills aus vorhandenen Progressionen: Handstand-Push-up, Toes to Bar, Klimmzüge/Dips mit Gewicht, Typewriter Pull-up, Nordic Curl
-- [ ] Neue Skill-Progressionen: Front Lever · Back Lever · Human Flag · Einarmiger Liegestütz (Inhalte, 3D-Clips, Coach-Prüfung; weitere in 3.4)
+- [x] Neue Skills mit eigenen Progressionen (`src/seed/catalog-extra.json`, 23 Übungen): Front Lever (5 Stufen), Back Lever (6, mit German Hang / Skin the Cat), Dragon Flag (3), Elbow Lever (Krähe → Elbow Lever → einarmig), Einarmiger Liegestütz (3), Shrimp Squat (3) – Technik-Texte, Kernpunkte, Metadaten; Coach-Prüfung ausstehend
+- [ ] 3D-Clips für die neuen Übungen
+- [ ] Weitere Skills: Human Flag (braucht Gerät „Stange senkrecht“), Straddle/Full Planche, Einarmiger Klimmzug, freier HSPU, V-Sit/Manna, Ring-Muscle-up, Press to Handstand
 - [ ] Fachliche Prüfung der Leitern und Freischalt-Schwellen durch einen Coach
 
 ### Phase 3.1b — Client auf Expo / React Native

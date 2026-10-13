@@ -162,6 +162,89 @@
     "split-squat"
    ],
    "prerequisites": []
+  },
+  {
+   "id": "front-lever",
+   "name": "Front Lever",
+   "targets": [
+    "front-lever"
+   ],
+   "support": [
+    "row",
+    "hollow"
+   ],
+   "prerequisites": [
+    {
+     "progression": "hollow",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "back-lever",
+   "name": "Back Lever",
+   "targets": [
+    "back-lever"
+   ],
+   "support": [
+    "pull-up"
+   ],
+   "prerequisites": []
+  },
+  {
+   "id": "dragon-flag",
+   "name": "Dragon Flag",
+   "targets": [
+    "dragon-flag"
+   ],
+   "support": [
+    "leg-raise"
+   ],
+   "prerequisites": [
+    {
+     "progression": "hollow",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "elbow-lever",
+   "name": "Elbow Lever",
+   "targets": [
+    "arm-balance"
+   ],
+   "support": [
+    "horizontal-push"
+   ],
+   "prerequisites": []
+  },
+  {
+   "id": "one-arm-push-up",
+   "name": "Einarmiger Liegestütz",
+   "targets": [
+    "one-arm-push-up"
+   ],
+   "support": [
+    "horizontal-push",
+    "triceps"
+   ],
+   "prerequisites": [
+    {
+     "progression": "horizontal-push",
+     "minStep": 1
+    }
+   ]
+  },
+  {
+   "id": "shrimp-squat",
+   "name": "Shrimp Squat",
+   "targets": [
+    "shrimp-squat"
+   ],
+   "support": [
+    "split-squat"
+   ],
+   "prerequisites": []
   }
  ]
 }

@@ -665,6 +665,362 @@
    "stress": {
     "shoulder": 1
    }
+  },
+  "tuck-front-lever": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 3,
+   "stress": {
+    "shoulder": 1,
+    "elbow": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "adv-tuck-front-lever": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "one-leg-front-lever": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "straddle-front-lever": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 5,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "front-lever": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 5,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "german-hang": {
+   "equipment": [
+    [
+     "rings"
+    ],
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 2,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "skin-the-cat": {
+   "equipment": [
+    [
+     "rings"
+    ],
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 3,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "tuck-back-lever": {
+   "equipment": [
+    [
+     "rings"
+    ],
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 3,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "adv-tuck-back-lever": {
+   "equipment": [
+    [
+     "rings"
+    ],
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "straddle-back-lever": {
+   "equipment": [
+    [
+     "rings"
+    ],
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "back-lever": {
+   "equipment": [
+    [
+     "rings"
+    ],
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 5,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "dragon-flag-tuck-negative": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 3,
+   "stress": {
+    "shoulder": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "dragon-flag-negative": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "dragon-flag": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 5,
+   "stress": {
+    "shoulder": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "crow-pose": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 2,
+   "stress": {
+    "wrist": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "elbow-lever": {
+   "equipment": [
+    [
+     "floor"
+    ],
+    [
+     "parallettes"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 2,
+    "elbow": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "one-arm-elbow-lever": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 2,
+    "elbow": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "archer-push-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "one-arm-push-up-elevated": {
+   "equipment": [
+    [
+     "box"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1,
+    "elbow": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "one-arm-push-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 5,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1,
+    "elbow": 1
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "shrimp-squat-assisted": {
+   "equipment": [
+    [
+     "wall"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 3,
+   "stress": {
+    "knee": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "shrimp-squat": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 4,
+   "stress": {
+    "knee": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "shrimp-squat-advanced": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 5,
+   "stress": {
+    "knee": 2
+   },
+   "unsure": "Neu – Coach-Prüfung ausstehend"
   }
  }
 }

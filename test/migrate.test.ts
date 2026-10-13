@@ -22,7 +22,11 @@ test("Katalog: IDs eindeutig, alle Verweise lösen auf", () => {
   assert.equal(pr.size, catalog.progressions.length, "doppelte Progressions-ID");
   for (const p of catalog.progressions) for (const s of p.steps) assert.ok(ex.has(s.exercise), s.exercise);
   const used = catalog.workouts.flatMap(w => w.slots.map(s => s.progression));
-  assert.deepEqual([...used].sort(), [...pr].sort(), "jede Progression genau einmal im Plan");
+  assert.equal(new Set(used).size, used.length, "keine Progression doppelt im Plan");
+  for (const pid of used) assert.ok(pr.has(pid), pid);
+  // neue Progressionen (catalog-extra) stehen bewusst nicht im Standardplan – sie kommen über Ziele/Vorlagen
+  const extra = JSON.parse(readFileSync(new URL("../src/seed/catalog-extra.json", import.meta.url), "utf8"));
+  assert.deepEqual([...pr].filter(p => !used.includes(p)).sort(), extra.progressions.map((p: { id: string }) => p.id).sort());
   for (const w of Object.values(catalog.weekplan)) assert.ok(catalog.workouts.some(x => x.id === w), w);
   const items = catalog.workouts.flatMap(w => [...w.warmup, ...w.cooldown].map(i => i.id));
   assert.equal(new Set(items).size, items.length, "doppelte Routine-ID");

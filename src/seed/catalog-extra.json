@@ -1,0 +1,903 @@
+{
+ "_info": "Übungen und Progressionen, die nicht aus v1 stammen. catalog:extract mischt sie in catalog.json ein. Alle Inhalte: Coach-Prüfung ausstehend.",
+ "exercises": [
+  {
+   "id": "tuck-front-lever",
+   "name": "Tuck Front Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aus dem Hang an der Stange, Arme gestreckt, Knie eng zur Brust gezogen.",
+    "execution": "Schulterblätter nach unten ziehen und den Körper nach hinten kippen, bis Rücken und Hüfte waagerecht sind. Arme bleiben gestreckt, der Rücken leicht rund. Halten, kontrolliert ablassen.",
+    "faults": "Arme gebeugt · Hüfte hängt unter Schulterhöhe · Schultern zu den Ohren gezogen",
+    "scaling": "Leichter: Front-Lever-Negative aus der Umkehr. Schwerer: Advanced Tuck mit geradem Rücken."
+   },
+   "media": {
+    "videoQuery": "tuck front lever tutorial"
+   },
+   "cues": [
+    "Arme gestreckt, Stange nach unten drücken",
+    "Schulterblätter nach unten ziehen",
+    "Hüfte auf Schulterhöhe"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Rumpf",
+    "hintere Schulter"
+   ]
+  },
+  {
+   "id": "adv-tuck-front-lever",
+   "name": "Advanced Tuck Front Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Wie der Tuck Front Lever, aber mit geradem Rücken – Oberschenkel etwa im rechten Winkel zum Oberkörper.",
+    "execution": "Der gerade Rücken verlängert den Hebel. Waagerecht halten, Becken leicht nach hinten gekippt, Arme gestreckt.",
+    "faults": "Rücken rundet sich wieder · Knie fallen zur Brust · Becken sackt ab",
+    "scaling": "Leichter: Tuck Front Lever. Schwerer: ein Bein strecken."
+   },
+   "media": {
+    "videoQuery": "advanced tuck front lever"
+   },
+   "cues": [
+    "Rücken flach wie ein Tisch",
+    "Knie über der Hüfte",
+    "Arme gestreckt"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Rumpf",
+    "hintere Schulter"
+   ]
+  },
+  {
+   "id": "one-leg-front-lever",
+   "name": "One-Leg Front Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Advanced Tuck, dann ein Bein gestreckt nach hinten.",
+    "execution": "Ein Bein bleibt angewinkelt, das andere gestreckt in Verlängerung des Körpers. Seite von Satz zu Satz wechseln.",
+    "faults": "Hüfte dreht ein · gestrecktes Bein sinkt · Arme beugen",
+    "scaling": "Leichter: Advanced Tuck. Schwerer: Straddle Front Lever."
+   },
+   "media": {
+    "videoQuery": "one leg front lever"
+   },
+   "cues": [
+    "Gestrecktes Bein in Körperlinie",
+    "Hüfte gerade halten",
+    "Seiten abwechseln"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Rumpf",
+    "hintere Schulter"
+   ]
+  },
+  {
+   "id": "straddle-front-lever",
+   "name": "Straddle Front Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aus dem Hang, Beine gestreckt und weit gegrätscht.",
+    "execution": "Ganzer Körper waagerecht, die gegrätschten Beine verkürzen den Hebel. Gesäß anspannen, Becken leicht nach hinten gekippt.",
+    "faults": "Hohlkreuz · Beine sinken · Arme gebeugt",
+    "scaling": "Leichter: One-Leg Front Lever. Schwerer: Beine schließen."
+   },
+   "media": {
+    "videoQuery": "straddle front lever"
+   },
+   "cues": [
+    "Beine weit, Knie gestreckt",
+    "Gesäß fest",
+    "Körper eine Linie"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Rumpf",
+    "hintere Schulter"
+   ]
+  },
+  {
+   "id": "front-lever",
+   "name": "Front Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aus dem Hang, Beine geschlossen und gestreckt.",
+    "execution": "Den ganzen Körper waagerecht unter die Stange bringen – Kopf, Hüfte und Füße auf einer Linie. Halten, kontrolliert ablassen.",
+    "faults": "Hüfte knickt · Hohlkreuz · Arme gebeugt",
+    "scaling": "Leichter: Straddle Front Lever. Schwerer: Front Lever Pull-ups."
+   },
+   "media": {
+    "videoQuery": "full front lever"
+   },
+   "cues": [
+    "Stange zur Hüfte drücken",
+    "Gesäß und Bauch fest",
+    "Füße auf Schulterhöhe"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Rumpf",
+    "hintere Schulter"
+   ]
+  },
+  {
+   "id": "german-hang",
+   "name": "German Hang",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "An Ringen oder Stange über Skin the Cat durchdrehen, bis die Füße Richtung Boden zeigen.",
+    "execution": "Mit dem Rücken zur Stange hängen, die Schultern öffnen sich. Langsam hinein und heraus – nur so tief, wie es schmerzfrei geht.",
+    "faults": "Ruckartig in die Dehnung fallen · Ellenbogen gebeugt · bei Schmerz weitermachen",
+    "scaling": "Leichter: an Ringen mit den Füßen am Boden. Schwerer: Skin the Cat komplett durch."
+   },
+   "media": {
+    "videoQuery": "german hang progression"
+   },
+   "cues": [
+    "Langsam in die Dehnung",
+    "Arme gestreckt",
+    "Schmerz heißt: sofort raus"
+   ],
+   "muscles": [
+    "Schultern (Beweglichkeit)",
+    "Bizepssehne"
+   ]
+  },
+  {
+   "id": "skin-the-cat",
+   "name": "Skin the Cat",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aus dem Hang an Ringen oder Stange, Arme gestreckt.",
+    "execution": "Knie zur Brust, die Beine zwischen den Armen hindurch nach hinten drehen bis in den German Hang, dann kontrolliert zurück. Langsam, ohne Schwung.",
+    "faults": "Schwung statt Kontrolle · Arme beugen · zu tief ohne Beweglichkeit",
+    "scaling": "Leichter: nur bis in die Umkehr. Schwerer: mit gestreckten Beinen."
+   },
+   "media": {
+    "videoQuery": "skin the cat rings"
+   },
+   "cues": [
+    "Langsam drehen",
+    "Arme gestreckt",
+    "Zurück so kontrolliert wie hin"
+   ],
+   "muscles": [
+    "Schultern",
+    "Rumpf",
+    "Latissimus"
+   ]
+  },
+  {
+   "id": "tuck-back-lever",
+   "name": "Tuck Back Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aus der Umkehr (kopfüber), Knie zur Brust.",
+    "execution": "Aus der Umkehr nach hinten absenken, bis der Rücken waagerecht ist, Blick zum Boden. Arme gestreckt, Schultern aktiv. Halten.",
+    "faults": "Arme beugen · Rücken hängt durch · ruckartig absenken",
+    "scaling": "Leichter: German Hang, Skin the Cat. Schwerer: Advanced Tuck."
+   },
+   "media": {
+    "videoQuery": "tuck back lever"
+   },
+   "cues": [
+    "Arme gestreckt",
+    "Hüfte auf Schulterhöhe",
+    "Langsam hinein"
+   ],
+   "muscles": [
+    "Bizepssehne",
+    "Brust",
+    "Rumpf",
+    "hintere Schulter"
+   ]
+  },
+  {
+   "id": "adv-tuck-back-lever",
+   "name": "Advanced Tuck Back Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Wie der Tuck Back Lever, aber mit geradem Rücken und geöffneter Hüfte.",
+    "execution": "Gerader Rücken, Knie über der Hüfte. Waagerecht halten, Gesäß angespannt.",
+    "faults": "Rücken rundet · Hüfte sinkt · Arme beugen",
+    "scaling": "Leichter: Tuck Back Lever. Schwerer: Straddle Back Lever."
+   },
+   "media": {
+    "videoQuery": "advanced tuck back lever"
+   },
+   "cues": [
+    "Rücken flach",
+    "Gesäß fest",
+    "Arme gestreckt"
+   ],
+   "muscles": [
+    "Bizepssehne",
+    "Brust",
+    "Rumpf",
+    "hintere Schulter"
+   ]
+  },
+  {
+   "id": "straddle-back-lever",
+   "name": "Straddle Back Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aus der Umkehr, Beine gestreckt und gegrätscht.",
+    "execution": "Körper waagerecht absenken, Beine weit gegrätscht, Gesäß und Bauch fest. Halten.",
+    "faults": "Hohlkreuz · Beine sinken · Arme beugen",
+    "scaling": "Leichter: Advanced Tuck. Schwerer: Beine schließen."
+   },
+   "media": {
+    "videoQuery": "straddle back lever"
+   },
+   "cues": [
+    "Beine weit, gestreckt",
+    "Hüfte nicht abknicken",
+    "Arme gestreckt"
+   ],
+   "muscles": [
+    "Bizepssehne",
+    "Brust",
+    "Rumpf",
+    "hintere Schulter"
+   ]
+  },
+  {
+   "id": "back-lever",
+   "name": "Back Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aus der Umkehr, Beine geschlossen und gestreckt.",
+    "execution": "Der ganze Körper waagerecht, Blick zum Boden, eine Linie von Kopf bis Fuß. Halten, kontrolliert zurück in die Umkehr.",
+    "faults": "Hüfte knickt · Hohlkreuz · Arme gebeugt",
+    "scaling": "Leichter: Straddle Back Lever. Schwerer: längere Haltezeiten, Back Lever Pull-outs."
+   },
+   "media": {
+    "videoQuery": "full back lever"
+   },
+   "cues": [
+    "Körper eine Linie",
+    "Gesäß fest",
+    "Arme gestreckt"
+   ],
+   "muscles": [
+    "Bizepssehne",
+    "Brust",
+    "Rumpf",
+    "hintere Schulter"
+   ]
+  },
+  {
+   "id": "dragon-flag-tuck-negative",
+   "name": "Dragon Flag Negativ (gehockt)",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Rücklings auf Bank oder Boden, die Hände greifen hinter dem Kopf einen festen Halt (Bankende, Pfosten, Stange).",
+    "execution": "Hüfte und gehockte Beine nach oben rollen, bis nur noch die oberen Schultern aufliegen. Dann langsam (3–5 s) ablassen, Hüfte gestreckt.",
+    "faults": "Auf den Nacken rollen · Hüfte knickt · zu schnell ablassen",
+    "scaling": "Leichter: Beinheben im Liegen. Schwerer: Beine strecken."
+   },
+   "media": {
+    "videoQuery": "dragon flag progression tuck"
+   },
+   "cues": [
+    "Auf den Schultern, nie auf dem Nacken",
+    "Langsam ablassen, 3–5 s",
+    "Hüfte gestreckt"
+   ],
+   "muscles": [
+    "Bauch",
+    "Hüftbeuger",
+    "Latissimus"
+   ]
+  },
+  {
+   "id": "dragon-flag-negative",
+   "name": "Dragon Flag Negativ",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Wie gehockt, aber mit gestreckten Beinen.",
+    "execution": "Körper gestreckt von den Schultern bis zu den Füßen, langsam ablassen und knapp über dem Boden stoppen.",
+    "faults": "Hohlkreuz · Hüfte knickt beim Ablassen · auf den Nacken rollen",
+    "scaling": "Leichter: gehockt oder mit einem angewinkelten Bein. Schwerer: volle Dragon Flags."
+   },
+   "media": {
+    "videoQuery": "dragon flag negative"
+   },
+   "cues": [
+    "Brett von Schulter bis Fuß",
+    "Langsam ablassen",
+    "Rücken bleibt flach"
+   ],
+   "muscles": [
+    "Bauch",
+    "Hüftbeuger",
+    "Latissimus"
+   ]
+  },
+  {
+   "id": "dragon-flag",
+   "name": "Dragon Flag",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Rücklings, Hände greifen hinter dem Kopf einen festen Halt, Körper gestreckt in der Luft.",
+    "execution": "Aus der gestreckten Position knapp über dem Boden den ganzen Körper als Brett wieder nach oben ziehen und kontrolliert ablassen.",
+    "faults": "Hüfte knickt beim Hochziehen · Schwung · auf den Nacken rollen",
+    "scaling": "Leichter: Negative. Schwerer: langsamer, mit Pause unten."
+   },
+   "media": {
+    "videoQuery": "dragon flag"
+   },
+   "cues": [
+    "Ein Brett von Schulter bis Fuß",
+    "Kein Schwung",
+    "Auf den Schultern bleiben"
+   ],
+   "muscles": [
+    "Bauch",
+    "Hüftbeuger",
+    "Latissimus"
+   ]
+  },
+  {
+   "id": "crow-pose",
+   "name": "Krähe (Crow)",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "In der Hocke, Hände schulterbreit am Boden, Knie gegen die Oberarme.",
+    "execution": "Gewicht nach vorn auf die Hände verlagern, bis die Füße abheben. Blick nach vorn, Arme leicht gebeugt, Rücken rund. Halten.",
+    "faults": "Blick nach unten (Kippen nach vorn) · Gewicht zu weit hinten · Handgelenke nicht aufgewärmt",
+    "scaling": "Leichter: ein Fuß bleibt am Boden. Schwerer: Arme strecken (Crane)."
+   },
+   "media": {
+    "videoQuery": "crow pose tutorial"
+   },
+   "cues": [
+    "Blick nach vorn",
+    "Knie fest gegen die Oberarme",
+    "Finger krallen, Gewicht damit steuern"
+   ],
+   "muscles": [
+    "Handgelenke",
+    "Schultern",
+    "Rumpf"
+   ]
+  },
+  {
+   "id": "elbow-lever",
+   "name": "Elbow Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Hände am Boden, Finger seitlich oder nach hinten, beide Ellenbogen in die Hüfte gestützt.",
+    "execution": "Auf den Ellenbogen balancieren und den Körper waagerecht strecken – Beine gestreckt, eine Linie von Kopf bis Fuß. Halten.",
+    "faults": "Ellenbogen rutschen aus der Hüfte · Hüfte knickt · Handgelenke überlastet",
+    "scaling": "Leichter: Beine gehockt oder Füße am Boden. Schwerer: einarmig."
+   },
+   "media": {
+    "videoQuery": "elbow lever tutorial"
+   },
+   "cues": [
+    "Ellenbogen tief in die Hüfte",
+    "Körper eine Linie",
+    "Gewicht über den Händen"
+   ],
+   "muscles": [
+    "Handgelenke",
+    "Rumpf",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "one-arm-elbow-lever",
+   "name": "Einarmiger Elbow Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Wie der Elbow Lever, aber nur ein Ellenbogen in der Hüfte, die freie Hand zur Seite.",
+    "execution": "Auf einem Arm balancieren, Körper gestreckt und waagerecht. Seite von Satz zu Satz wechseln.",
+    "faults": "Hüfte dreht weg · Ellenbogen rutscht · zu wenig Spannung",
+    "scaling": "Leichter: Elbow Lever mit beiden Händen. Schwerer: längere Haltezeit."
+   },
+   "media": {
+    "videoQuery": "one arm elbow lever"
+   },
+   "cues": [
+    "Ellenbogen tief in die Hüfte",
+    "Ganzkörperspannung",
+    "Freie Hand zur Balance"
+   ],
+   "muscles": [
+    "Handgelenke",
+    "Rumpf",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "archer-push-up",
+   "name": "Archer Liegestütze",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Liegestütz-Position mit sehr weitem Griff.",
+    "execution": "Zu einer Seite absenken: Der arbeitende Arm beugt, der andere bleibt gestreckt zur Seite. Hochdrücken, Seite wechseln.",
+    "faults": "Hüfte dreht ein · der gestreckte Arm hilft zu viel · Ellenbogen flattert nach außen",
+    "scaling": "Leichter: erhöht an Box oder Bank. Schwerer: einarmige Liegestütze erhöht."
+   },
+   "media": {
+    "videoQuery": "archer push up"
+   },
+   "cues": [
+    "Gestreckter Arm stützt nur",
+    "Hüfte parallel zum Boden",
+    "Ellenbogen nah am Körper"
+   ],
+   "muscles": [
+    "Brust",
+    "Trizeps",
+    "Rumpf"
+   ]
+  },
+  {
+   "id": "one-arm-push-up-elevated",
+   "name": "Einarmige Liegestütze (erhöht)",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Eine Hand auf Box oder Bank, Füße weit gegrätscht, die freie Hand auf dem Rücken.",
+    "execution": "Mit einem Arm absenken, bis die Brust die Kante fast berührt, dann hochdrücken. Je höher die Ablage, desto leichter.",
+    "faults": "Hüfte verdreht stark · halbe Bewegung · Schulter fällt nach vorn",
+    "scaling": "Leichter: höher ablegen. Schwerer: niedriger, am Ende vom Boden."
+   },
+   "media": {
+    "videoQuery": "one arm push up incline progression"
+   },
+   "cues": [
+    "Füße breit",
+    "Hüfte nur leicht drehen",
+    "Ganze Bewegung"
+   ],
+   "muscles": [
+    "Brust",
+    "Trizeps",
+    "Rumpf"
+   ]
+  },
+  {
+   "id": "one-arm-push-up",
+   "name": "Einarmige Liegestütze",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Liegestütz-Position, eine Hand unter der Brustmitte, Füße weit gegrätscht, die freie Hand auf dem Rücken.",
+    "execution": "Mit einem Arm kontrolliert absenken, bis die Brust knapp über dem Boden ist, und wieder hochdrücken. Körper bleibt gespannt.",
+    "faults": "Hüfte dreht weg · Ellenbogen flattert · Bewegung zu kurz",
+    "scaling": "Leichter: erhöht. Schwerer: Füße enger, langsamer."
+   },
+   "media": {
+    "videoQuery": "one arm push up tutorial"
+   },
+   "cues": [
+    "Ganzkörperspannung",
+    "Ellenbogen nah am Körper",
+    "Füße breit"
+   ],
+   "muscles": [
+    "Brust",
+    "Trizeps",
+    "Rumpf"
+   ]
+  },
+  {
+   "id": "shrimp-squat-assisted",
+   "name": "Shrimp Squat (assistiert)",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Auf einem Bein stehen, an Wand oder Pfosten festhalten, das andere Bein nach hinten anwinkeln.",
+    "execution": "Mit dem Standbein tief beugen, bis das hintere Knie den Boden (oder ein Kissen) berührt. Oberkörper leicht nach vorn, kontrolliert hochdrücken.",
+    "faults": "Knie kippt nach innen · Ferse hebt ab · zu viel Zug mit den Armen",
+    "scaling": "Leichter: auf ein Kissen absenken. Schwerer: ohne Hilfe."
+   },
+   "media": {
+    "videoQuery": "assisted shrimp squat"
+   },
+   "cues": [
+    "Knie über dem Fuß",
+    "Ferse bleibt unten",
+    "Hände nur zur Balance"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Gesäß",
+    "Fußgelenk"
+   ]
+  },
+  {
+   "id": "shrimp-squat",
+   "name": "Shrimp Squat",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Auf einem Bein, das hintere Bein angewinkelt, Arme nach vorn.",
+    "execution": "Tief beugen, bis das hintere Knie den Boden berührt, Oberkörper kommt nach vorn. Aus der Ferse hochdrücken.",
+    "faults": "Knie kippt nach innen · Abfallen in die unterste Position · Ferse hebt ab",
+    "scaling": "Leichter: mit Halt an der Wand. Schwerer: hinteren Fuß festhalten."
+   },
+   "media": {
+    "videoQuery": "shrimp squat tutorial"
+   },
+   "cues": [
+    "Kontrolliert absenken",
+    "Knie über dem Fuß",
+    "Arme als Gegengewicht"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Gesäß",
+    "Fußgelenk"
+   ]
+  },
+  {
+   "id": "shrimp-squat-advanced",
+   "name": "Shrimp Squat (Fuß gehalten)",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Auf einem Bein, den hinteren Fuß mit der Hand derselben Seite halten.",
+    "execution": "Absenken, bis das Knie den Boden berührt, ohne die Fußspitze aufzusetzen, und wieder hochdrücken.",
+    "faults": "Fußspitze setzt auf · Knie kippt · Schwung aus dem Oberkörper",
+    "scaling": "Leichter: Shrimp Squat mit freien Armen. Schwerer: mit Zusatzgewicht."
+   },
+   "media": {
+    "videoQuery": "advanced shrimp squat"
+   },
+   "cues": [
+    "Nur das Knie berührt den Boden",
+    "Brust aufrecht",
+    "Langsam unten"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Gesäß",
+    "Fußgelenk"
+   ]
+  }
+ ],
+ "progressions": [
+  {
+   "id": "front-lever",
+   "name": "Front Lever",
+   "region": "pull",
+   "steps": [
+    {
+     "exercise": "tuck-front-lever",
+     "target": {
+      "label": "4 × 8–12 s",
+      "sets": 4,
+      "restSec": 120,
+      "unlockAt": 12,
+      "min": 8,
+      "max": 12
+     }
+    },
+    {
+     "exercise": "adv-tuck-front-lever",
+     "target": {
+      "label": "4 × 6–10 s",
+      "sets": 4,
+      "restSec": 120,
+      "unlockAt": 10,
+      "min": 6,
+      "max": 10
+     }
+    },
+    {
+     "exercise": "one-leg-front-lever",
+     "target": {
+      "label": "4 × 5–8 s",
+      "sets": 4,
+      "restSec": 150,
+      "unlockAt": 8,
+      "min": 5,
+      "max": 8
+     }
+    },
+    {
+     "exercise": "straddle-front-lever",
+     "target": {
+      "label": "4 × 4–6 s",
+      "sets": 4,
+      "restSec": 150,
+      "unlockAt": 6,
+      "min": 4,
+      "max": 6
+     }
+    },
+    {
+     "exercise": "front-lever",
+     "target": {
+      "label": "4 × 3–5 s",
+      "sets": 4,
+      "restSec": 180,
+      "unlockAt": null,
+      "min": 3,
+      "max": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "back-lever",
+   "name": "Back Lever",
+   "region": "pull",
+   "steps": [
+    {
+     "exercise": "german-hang",
+     "target": {
+      "label": "3 × 15–30 s",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 30,
+      "min": 15,
+      "max": 30
+     }
+    },
+    {
+     "exercise": "skin-the-cat",
+     "target": {
+      "label": "3 × 3–5",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 5,
+      "min": 3,
+      "max": 5
+     }
+    },
+    {
+     "exercise": "tuck-back-lever",
+     "target": {
+      "label": "4 × 8–12 s",
+      "sets": 4,
+      "restSec": 120,
+      "unlockAt": 12,
+      "min": 8,
+      "max": 12
+     }
+    },
+    {
+     "exercise": "adv-tuck-back-lever",
+     "target": {
+      "label": "4 × 6–10 s",
+      "sets": 4,
+      "restSec": 120,
+      "unlockAt": 10,
+      "min": 6,
+      "max": 10
+     }
+    },
+    {
+     "exercise": "straddle-back-lever",
+     "target": {
+      "label": "4 × 4–8 s",
+      "sets": 4,
+      "restSec": 150,
+      "unlockAt": 8,
+      "min": 4,
+      "max": 8
+     }
+    },
+    {
+     "exercise": "back-lever",
+     "target": {
+      "label": "4 × 3–6 s",
+      "sets": 4,
+      "restSec": 180,
+      "unlockAt": null,
+      "min": 3,
+      "max": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "dragon-flag",
+   "name": "Dragon Flag",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "dragon-flag-tuck-negative",
+     "target": {
+      "label": "3 × 4–6",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 6,
+      "min": 4,
+      "max": 6
+     }
+    },
+    {
+     "exercise": "dragon-flag-negative",
+     "target": {
+      "label": "3 × 3–5",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 5,
+      "min": 3,
+      "max": 5
+     }
+    },
+    {
+     "exercise": "dragon-flag",
+     "target": {
+      "label": "3 × 3–5",
+      "sets": 3,
+      "restSec": 150,
+      "unlockAt": null,
+      "min": 3,
+      "max": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "arm-balance",
+   "name": "Elbow Lever",
+   "region": "push",
+   "steps": [
+    {
+     "exercise": "crow-pose",
+     "target": {
+      "label": "3 × 15–30 s",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 30,
+      "min": 15,
+      "max": 30
+     }
+    },
+    {
+     "exercise": "elbow-lever",
+     "target": {
+      "label": "3 × 10–20 s",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 20,
+      "min": 10,
+      "max": 20
+     }
+    },
+    {
+     "exercise": "one-arm-elbow-lever",
+     "target": {
+      "label": "3 × 5–10 s / Seite",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": null,
+      "min": 5,
+      "max": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "one-arm-push-up",
+   "name": "Einarmiger Liegestütz",
+   "region": "push",
+   "steps": [
+    {
+     "exercise": "archer-push-up",
+     "target": {
+      "label": "3 × 5–8 / Seite",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 8,
+      "min": 5,
+      "max": 8
+     }
+    },
+    {
+     "exercise": "one-arm-push-up-elevated",
+     "target": {
+      "label": "3 × 4–6 / Seite",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 6,
+      "min": 4,
+      "max": 6
+     }
+    },
+    {
+     "exercise": "one-arm-push-up",
+     "target": {
+      "label": "3 × 3–5 / Seite",
+      "sets": 3,
+      "restSec": 150,
+      "unlockAt": null,
+      "min": 3,
+      "max": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "shrimp-squat",
+   "name": "Shrimp Squat",
+   "region": "legs",
+   "steps": [
+    {
+     "exercise": "shrimp-squat-assisted",
+     "target": {
+      "label": "3 × 5–8 / Seite",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 8,
+      "min": 5,
+      "max": 8
+     }
+    },
+    {
+     "exercise": "shrimp-squat",
+     "target": {
+      "label": "3 × 4–6 / Seite",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 6,
+      "min": 4,
+      "max": 6
+     }
+    },
+    {
+     "exercise": "shrimp-squat-advanced",
+     "target": {
+      "label": "3 × 3–5 / Seite",
+      "sets": 3,
+      "restSec": 150,
+      "unlockAt": null,
+      "min": 3,
+      "max": 5
+     }
+    }
+   ]
+  }
+ ]
+}

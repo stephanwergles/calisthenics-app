@@ -239,8 +239,9 @@ test('Skill-Tree: Leitern, Stand zur Freischaltung', () => {
   assert.equal(L.unlockProgress([cb('2026-10-01', [5, 5, 5, 5, 5]), cb('2026-10-04', [5, 5, 5, 5, 4])], 'chest-to-bar-pull-up', target)!.missing, 1)
 
   const tree = L.skillTree(ix, state, [cb('2026-10-04', [5, 5, 5, 5, 5])])
-  assert.equal(tree.length, 24)
-  assert.equal(tree[0].workout.id, 'legs', 'Wochenreihenfolge: Mo zuerst')
+  assert.equal(tree.length, catalog.progressions.length, 'alle Progressionen, auch die nicht im Plan')
+  assert.equal(tree[0].workout!.id, 'legs', 'Wochenreihenfolge: Mo zuerst')
+  assert.equal(tree.filter(p => !p.workout).length, catalog.progressions.length - 24, 'neue Progressionen hinten, ohne Workout')
   const mu = tree.find(p => p.pid === 'muscle-up-pull')!
   assert.deepEqual(mu.nodes.map(n => n.state), ['done', 'current', 'locked'])
   assert.equal(mu.nodes[1].sessions, 1)

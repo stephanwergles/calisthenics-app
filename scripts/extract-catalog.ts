@@ -166,6 +166,19 @@ const workouts: Workout[] = PLAN.map((day: any, di: number) => {
 const weekplan: Catalog["weekplan"] = {};
 Object.entries(WEEKPLAN).forEach(([wd, di]) => { weekplan[WEEKDAYS[+wd]] = WORKOUT_IDS[di as number]; });
 
+/* Inhalte, die nicht aus v1 stammen (neue Skills): src/seed/catalog-extra.json */
+const extraFile = new URL("src/seed/catalog-extra.json", root);
+const extra: Pick<Catalog, "exercises" | "progressions"> = existsSync(extraFile) ? JSON.parse(readFileSync(extraFile, "utf8")) : { exercises: [], progressions: [] };
+for (const e of extra.exercises) {
+  if (exercises.has(e.id)) throw new Error(`Übung ${e.id} gibt es schon in v1`);
+  exercises.set(e.id, e);
+}
+for (const p of extra.progressions) {
+  if (progressions.some(x => x.id === p.id)) throw new Error(`Progression ${p.id} gibt es schon in v1`);
+  for (const st of p.steps) if (!exercises.has(st.exercise)) throw new Error(`${p.id}: Übung ${st.exercise} fehlt`);
+  progressions.push(p);
+}
+
 const catalog: Catalog = { schema: 1, exercises: [...exercises.values()], progressions, workouts, weekplan };
 
 /* Schutz: eine erneute Ausführung darf keine bestehende ID entfernen */

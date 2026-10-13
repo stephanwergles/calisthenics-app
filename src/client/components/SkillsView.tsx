@@ -23,7 +23,13 @@ export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) =
   const bySkill = [...skills].sort((a, b) => Number(goals.includes(b.id)) - Number(goals.includes(a.id)))
     .map(sk => ({
       key: sk.id, label: sk.name, detail: goals.includes(sk.id) ? 'Dein Ziel' : 'Skill',
-      paths: [...sk.targets, ...sk.support].flatMap(pid => { const p = tree.find(x => x.pid === pid); return p && !seen.has(pid) && seen.add(pid) ? [p] : [] }),
+      // Ziel-Progressionen immer beim Skill, Hilfs-Progressionen nur beim ersten Skill
+      paths: [...sk.targets.map(pid => ({ pid, always: true })), ...sk.support.map(pid => ({ pid, always: false }))].flatMap(({ pid, always }) => {
+        const p = tree.find(x => x.pid === pid)
+        if (!p || (!always && seen.has(pid))) return []
+        seen.add(pid)
+        return [p]
+      }).filter((p, i, all) => all.findIndex(x => x.pid === p.pid) === i),
     })).filter(g => g.paths.length)
   const groups = [...bySkill, ...[...REGIONS, { id: undefined, label: 'Weitere', detail: '' }]
     .map(r => ({ key: r.label, label: `${r.label}`, detail: 'Grundlagen', paths: tree.filter(p => p.region === r.id && !seen.has(p.pid)) }))
@@ -50,7 +56,7 @@ export function SkillSheet({ t, pid, onClose }: { t: Training; pid: string; onCl
   const tree = useMemo(() => L.skillTree(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
   const p = tree.find(x => x.pid === pid)
   const native = useNativeShell()
-  const region = p ? REGIONS.find(r => r.id === p.region)?.label ?? p.workout.name : ''
+  const region = p ? REGIONS.find(r => r.id === p.region)?.label ?? p.workout?.name ?? '' : ''
   const sub = p ? `${region} · ${L.BLOCK_LABEL[p.block]} · Stufe ${p.step.index + 1}/${p.step.total}${p.paused ? ' · pausiert' : ''}` : ''
   // Kopf nennt das Ziel der Leiter (letzte Stufe), nicht die aktuelle Übung – so sieht man, wohin es geht
   const goal = p ? L.progressionName(t.ix, p.pid) : ''

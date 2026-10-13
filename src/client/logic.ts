@@ -632,18 +632,23 @@ export function stepStanding(sessions: Session[], exercise: Exercise, target: Ta
 const sum = (sets: SetLog[]) => sets.reduce((n, x) => n + x.value, 0)
 
 export interface SkillNode { exercise: Exercise; target: Target; state: 'done' | 'current' | 'locked'; sessions: number }
-export interface SkillPath { pid: ProgressionId; workout: Workout; region?: Region; block: string; step: Step; nodes: SkillNode[]; paused: boolean
+export interface SkillPath { pid: ProgressionId
+  /** Workout im Plan, in dem die Progression vorkommt – fehlt, wenn sie (noch) in keinem steht */
+  workout?: Workout; region?: Region; block: string; step: Step; nodes: SkillNode[]; paused: boolean
   progress: ReturnType<typeof unlockProgress>; readiness: number | null }
 
-/** alle Progressionen als Leitern, in Wochen- und Trainingsreihenfolge */
+/** alle Progressionen: erst die aus dem Plan (Wochen- und Trainingsreihenfolge), dann die übrigen aus dem Katalog */
 export function skillTree(ix: Index, user: UserState, sessions: Session[]): SkillPath[] {
   const count = (id: ExerciseId) => sessions.filter(s => s.sets.some(x => x.exercise === id)).length
   const seen = new Set<ProgressionId>()
-  return workoutsInWeekOrder(ix).flatMap(w => w.slots.filter(sl => !seen.has(sl.progression) && seen.add(sl.progression)).map(sl => {
-    const step = currentStep(ix, user, sl.progression)
-    const p = ix.progressions.get(sl.progression)!
+  const inPlan = workoutsInWeekOrder(ix).flatMap(w => w.slots.filter(sl => !seen.has(sl.progression) && seen.add(sl.progression))
+    .map(sl => ({ pid: sl.progression, block: sl.block as string, workout: w as Workout | undefined })))
+  const rest = [...ix.progressions.keys()].filter(pid => !seen.has(pid)).map(pid => ({ pid, block: 'skill', workout: undefined }))
+  return [...inPlan, ...rest].filter(x => ix.progressions.get(x.pid)?.steps.length).map(({ pid, block, workout }) => {
+    const step = currentStep(ix, user, pid)
+    const p = ix.progressions.get(pid)!
     return {
-      pid: sl.progression, workout: w, region: p.region, block: sl.block, step, paused: user.paused.includes(sl.progression),
+      pid, workout, region: p.region, block, step, paused: user.paused.includes(pid),
       nodes: p.steps.map((st, i) => ({
         exercise: ix.exercises.get(st.exercise)!, target: st.target, sessions: count(st.exercise),
         state: i < step.index ? 'done' as const : i === step.index ? 'current' as const : 'locked' as const,
@@ -651,7 +656,7 @@ export function skillTree(ix: Index, user: UserState, sessions: Session[]): Skil
       progress: step.next ? unlockProgress(sessions, step.exercise.id, step.target, step.nextTarget) : null,
       readiness: step.next ? unlockReadiness(sessions, step.exercise.id, step.target, step.nextTarget) : null,
     }
-  }))
+  })
 }
 
 /** Monatsbilanz für den Kalender: Einheiten, Trainingszeit, Sätze, Cardio-Einheiten */
