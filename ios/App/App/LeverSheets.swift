@@ -124,7 +124,11 @@ struct NBlock: Decodable {
     let items: [NStat]?, options: [NOption]?, selected: String?, done: Int?, total: Int?, buttons: [NButton]?
     let before: Double?, now: Double?, max: Double?
     let clip: String?
+    // Zeitleiste (type "track")
+    let nodes: [NTrackNode]?
+    let criterion: String?, hint: String?, unlock: String?, force: String?, back: String?
 }
+struct NTrackNode: Decodable { let title: String; let subtitle: String; let state: String; let label: String; let clip: String? }
 struct NSheetSpec: Decodable {
     let id: String; let title: String; let subtitle: String?
     /// "auto" (Inhaltshöhe), "medium", "large"
@@ -513,6 +517,9 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
             // jede Stufe im gleichen Rahmen-Abstand – Bilder stehen auf einer Linie, nur die aktive ist eingefärbt
             // jede Stufe als Karte: dezent, die aktive in Volt – Bilder bündig
             return card(h, tint: state == "current" ? Lever.volt.withAlphaComponent(0.1) : nil, padding: 10)
+
+        case "track":
+            return LadderTrack(block: b) { [weak self] id in self?.tapped(id) }
 
         case "compare":
             // Balken: letztes Mal (grau) und heute (Volt) relativ zum größten Wert, rechts das Delta
@@ -1361,4 +1368,165 @@ extension LeverTabBarPlugin {
             call.resolve()
         }
     }
+}
+
+
+// MARK: - Skill-Leiter als Zeitleiste
+
+/// Stufen an einer durchgehenden Linie: erledigt (Kreide, Häkchen), aktuell (Volt, leuchtend, mit
+/// Bild, Fortschritt und Aktionen), gesperrt (gestrichelt, Schloss). Zeigt auf einen Blick, wo man steht.
+final class LadderTrack: UIStackView {
+    private let onTap: (String) -> Void
+    init(block b: NBlock, onTap: @escaping (String) -> Void) {
+        self.onTap = onTap
+        super.init(frame: .zero)
+        axis = .vertical; spacing = 0
+        let nodes = b.nodes ?? []
+        for (i, n) in nodes.enumerated() {
+            let last = i == nodes.count - 1
+            let nextState = last ? nil : nodes[i + 1].state
+            addArrangedSubview(row(n, b: b, lineTo: nextState))
+        }
+        if let back = b.back {
+            let btn = UIButton(type: .system)
+            var cfg = UIButton.Configuration.plain()
+            var t = AttributedString(back); t.font = .body(14, .semibold); t.foregroundColor = Lever.muted
+            cfg.attributedTitle = t; cfg.image = UIImage(systemName: "arrow.uturn.backward", withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .semibold))
+            cfg.imagePadding = 6; cfg.baseForegroundColor = Lever.muted; cfg.contentInsets = .init(top: 10, leading: 0, bottom: 4, trailing: 0)
+            btn.configuration = cfg; btn.contentHorizontalAlignment = .leading
+            btn.addAction(UIAction { [weak self] _ in self?.onTap("back") }, for: .touchUpInside)
+            setCustomSpacing(6, after: arrangedSubviews.last ?? self)
+            addArrangedSubview(btn)
+        }
+    }
+    required init(coder: NSCoder) { fatalError() }
+
+    private func row(_ n: NTrackNode, b: NBlock, lineTo next: String?) -> UIView {
+        let current = n.state == "current", done = n.state == "done"
+        let col = UIView(); col.translatesAutoresizingMaskIntoConstraints = false
+        col.widthAnchor.constraint(equalToConstant: 44).isActive = true
+        let dot = TrackDot(state: n.state, label: n.label); dot.translatesAutoresizingMaskIntoConstraints = false
+        col.addSubview(dot)
+        NSLayoutConstraint.activate([dot.topAnchor.constraint(equalTo: col.topAnchor), dot.centerXAnchor.constraint(equalTo: col.centerXAnchor),
+                                     dot.widthAnchor.constraint(equalToConstant: current ? 40 : 34), dot.heightAnchor.constraint(equalToConstant: current ? 40 : 34)])
+        if let next {
+            let line = TrackLine(from: done ? UIColor(white: 0.95, alpha: 1) : current ? Lever.volt : UIColor(white: 1, alpha: 0.14),
+                                 to: next == "locked" ? UIColor(white: 1, alpha: 0.14) : UIColor(white: 0.95, alpha: 1))
+            line.translatesAutoresizingMaskIntoConstraints = false
+            col.insertSubview(line, belowSubview: dot)
+            NSLayoutConstraint.activate([line.topAnchor.constraint(equalTo: dot.bottomAnchor, constant: 4), line.bottomAnchor.constraint(equalTo: col.bottomAnchor),
+                                         line.centerXAnchor.constraint(equalTo: col.centerXAnchor), line.widthAnchor.constraint(equalToConstant: 3)])
+        }
+
+        let content = UIStackView(); content.axis = .vertical; content.spacing = 2
+        content.isLayoutMarginsRelativeArrangement = true
+        content.layoutMargins = UIEdgeInsets(top: current ? 6 : 5, left: 0, bottom: current ? 22 : 18, right: 0)
+        let title = UILabel(); title.numberOfLines = 0
+        title.text = n.title.uppercased()
+        title.font = current ? .display(24, .black) : .display(18, .heavy)
+        title.textColor = current ? .white : Lever.muted
+        let sub = UILabel(); sub.text = n.subtitle; sub.numberOfLines = 0
+        sub.font = .body(current ? 14 : 13); sub.textColor = Lever.muted
+        content.addArrangedSubview(title); content.addArrangedSubview(sub)
+        if current { content.setCustomSpacing(12, after: sub); content.addArrangedSubview(currentCard(n, b: b)) }
+
+        let h = UIStackView(arrangedSubviews: [col, content]); h.spacing = 12; h.alignment = .fill
+        return h
+    }
+
+    private func currentCard(_ n: NTrackNode, b: NBlock) -> UIView {
+        let box = UIStackView(); box.axis = .vertical; box.spacing = 10
+        box.isLayoutMarginsRelativeArrangement = true; box.layoutMargins = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+        box.backgroundColor = UIColor(white: 1, alpha: 0.06); box.layer.cornerRadius = 18; box.layer.cornerCurve = .continuous
+        box.layer.borderWidth = 1; box.layer.borderColor = Lever.volt.withAlphaComponent(0.3).cgColor
+
+        let top = UIStackView(); top.spacing = 12; top.alignment = .center
+        if let clip = n.clip {
+            let thumb = UIImageView(); thumb.contentMode = .scaleAspectFill; thumb.clipsToBounds = true
+            thumb.layer.cornerRadius = 12; thumb.layer.cornerCurve = .continuous; thumb.backgroundColor = UIColor(white: 1, alpha: 0.04)
+            thumb.widthAnchor.constraint(equalToConstant: 76).isActive = true; thumb.heightAnchor.constraint(equalToConstant: 76).isActive = true
+            ClipStill.load(clip) { [weak thumb] img in thumb?.image = img }
+            top.addArrangedSubview(thumb)
+        }
+        let crit = UILabel(); crit.numberOfLines = 0; crit.font = .body(14.5); crit.textColor = .white
+        crit.text = b.criterion
+        top.addArrangedSubview(crit)
+        box.addArrangedSubview(top)
+
+        if let total = b.total, total > 0 {
+            let bar = UIStackView(); bar.axis = .horizontal; bar.spacing = 6; bar.distribution = .fillEqually
+            for i in 0..<total {
+                let seg = UIView(); seg.layer.cornerRadius = 4; seg.heightAnchor.constraint(equalToConstant: 8).isActive = true
+                if i < (b.done ?? 0) { seg.backgroundColor = Lever.volt }
+                else { seg.backgroundColor = UIColor(white: 0, alpha: 0.35); seg.layer.borderWidth = 1; seg.layer.borderColor = Lever.line.cgColor }
+                bar.addArrangedSubview(seg)
+            }
+            box.addArrangedSubview(bar)
+        }
+        if let hint = b.hint {
+            let l = UILabel(); l.text = hint; l.font = .body(13); l.textColor = Lever.muted; l.numberOfLines = 0
+            box.addArrangedSubview(l)
+        }
+        if let unlock = b.unlock {
+            let btn = Lever.button(title: unlock, symbol: "arrow.up", style: "prominent", size: 16, display: true)
+            btn.heightAnchor.constraint(equalToConstant: 50).isActive = true
+            btn.addAction(UIAction { [weak self] _ in self?.onTap("unlock") }, for: .touchUpInside)
+            box.addArrangedSubview(btn)
+        } else if let force = b.force {
+            // dezent: vorzeitiger Wechsel ist die Ausnahme
+            let btn = UIButton(type: .system)
+            var cfg = UIButton.Configuration.plain()
+            var t = AttributedString(force); t.font = .body(14, .semibold); t.foregroundColor = Lever.volt
+            cfg.attributedTitle = t; cfg.contentInsets = .init(top: 2, leading: 0, bottom: 0, trailing: 0)
+            btn.configuration = cfg; btn.contentHorizontalAlignment = .leading
+            btn.addAction(UIAction { [weak self] _ in self?.onTap("force") }, for: .touchUpInside)
+            box.addArrangedSubview(btn)
+        }
+        return box
+    }
+}
+
+final class TrackDot: UIView {
+    private let ring = CAShapeLayer()
+    init(state: String, label: String) {
+        super.init(frame: .zero)
+        let l = UILabel(); l.translatesAutoresizingMaskIntoConstraints = false; l.textAlignment = .center
+        addSubview(l)
+        NSLayoutConstraint.activate([l.centerXAnchor.constraint(equalTo: centerXAnchor), l.centerYAnchor.constraint(equalTo: centerYAnchor)])
+        switch state {
+        case "done":
+            backgroundColor = UIColor(white: 0.95, alpha: 1)
+            let i = UIImageView(image: UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .black)))
+            i.tintColor = Lever.ink; i.translatesAutoresizingMaskIntoConstraints = false; addSubview(i)
+            NSLayoutConstraint.activate([i.centerXAnchor.constraint(equalTo: centerXAnchor), i.centerYAnchor.constraint(equalTo: centerYAnchor)])
+        case "current":
+            backgroundColor = Lever.volt
+            l.text = label; l.font = .display(20, .black); l.textColor = Lever.ink
+            layer.shadowColor = Lever.volt.cgColor; layer.shadowOpacity = 0.55; layer.shadowRadius = 12; layer.shadowOffset = .zero
+            layer.borderWidth = 5; layer.borderColor = Lever.volt.withAlphaComponent(0.25).cgColor
+        default:
+            ring.fillColor = UIColor.clear.cgColor; ring.strokeColor = UIColor(white: 1, alpha: 0.25).cgColor
+            ring.lineWidth = 2; ring.lineDashPattern = [4, 3]; layer.addSublayer(ring)
+            let i = UIImageView(image: UIImage(systemName: "lock.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .semibold)))
+            i.tintColor = UIColor(white: 1, alpha: 0.4); i.translatesAutoresizingMaskIntoConstraints = false; addSubview(i)
+            NSLayoutConstraint.activate([i.centerXAnchor.constraint(equalTo: centerXAnchor), i.centerYAnchor.constraint(equalTo: centerYAnchor)])
+        }
+    }
+    required init?(coder: NSCoder) { fatalError() }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        layer.cornerRadius = bounds.width / 2
+        ring.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 1, dy: 1)).cgPath
+    }
+}
+
+final class TrackLine: UIView {
+    private let g = CAGradientLayer()
+    init(from: UIColor, to: UIColor) {
+        super.init(frame: .zero)
+        g.colors = [from.cgColor, to.cgColor]; g.cornerRadius = 1.5
+        layer.addSublayer(g)
+    }
+    required init?(coder: NSCoder) { fatalError() }
+    override func layoutSubviews() { super.layoutSubviews(); g.frame = bounds }
 }

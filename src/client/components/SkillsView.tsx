@@ -3,7 +3,7 @@
    Antippen öffnet die Leiter als Sheet. */
 import { useMemo } from 'react'
 import * as L from '../logic'
-import { REGIONS } from '@/domain/model'
+import { REGIONS, type Session } from '@/domain/model'
 import type { Training } from '../useTraining'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
@@ -40,15 +40,17 @@ export function SkillSheet({ t, pid, onClose }: { t: Training; pid: string; onCl
   const native = useNativeShell()
   const region = p ? REGIONS.find(r => r.id === p.region)?.label ?? p.workout.name : ''
   const sub = p ? `${region} · ${L.BLOCK_LABEL[p.block]} · Stufe ${p.step.index + 1}/${p.step.total}${p.paused ? ' · pausiert' : ''}` : ''
+  // Kopf nennt das Ziel der Leiter (letzte Stufe), nicht die aktuelle Übung – so sieht man, wohin es geht
+  const goal = p ? p.nodes[p.nodes.length - 1].exercise.name : ''
   // Stufe wechseln: wie im Technik-Sheet auch von Hand – vor dem Kriterium mit Rückfrage
   const act = (id: string) => { if (p) void switchStep(t, p, id) }
-  useNativeSheet(native && p ? { id: 'skill', title: p.step.exercise.name, subtitle: sub, detents: ['auto', 'large'], blocks: ladderBlocks(p) } : null, e => {
+  useNativeSheet(native && p ? { id: 'skill', title: goal, subtitle: sub, detents: ['auto', 'large'], blocks: ladderBlocks(p, t.sessions) } : null, e => {
     if (e.type === 'dismiss') onClose()
     else if (e.type === 'tap' && e.id) act(e.id)
   })
   if (!p || native) return null
   return (
-    <Sheet title={p.step.exercise.name} sub={sub} onClose={onClose}>
+    <Sheet title={goal} sub={sub} onClose={onClose}>
       <Ladder t={t} p={p} onAct={act} />
     </Sheet>
   )
@@ -59,8 +61,11 @@ function Row({ p, onOpen }: { p: L.SkillPath; onOpen: () => void }) {
     <button className={`sk-row${p.paused ? ' paused' : ''}`} onClick={onOpen}>
       {hasClip(p.step.exercise.id) && <span className="sk-thumb" aria-hidden="true"><ExerciseStill exercise={p.step.exercise} /></span>}
       <span className="sk-row-main">
-        <b className="display">{p.step.exercise.name}</b>
-        <small>{p.step.next ? `nächste: ${p.step.next.name}` : p.nodes.length > 1 ? 'höchste Stufe erreicht' : 'eine Stufe'}{p.paused ? ' · pausiert' : ''}</small>
+        {/* Titel = Ziel der Leiter, darunter wo man gerade steht (wie im Leiter-Sheet) */}
+        <b className="display">{p.nodes[p.nodes.length - 1].exercise.name}</b>
+        <small>{p.nodes.length === 1 ? 'eine Stufe'
+          : !p.step.next ? 'Ziel erreicht'
+          : `${p.step.exercise.name} · Stufe ${p.step.index + 1}/${p.step.total}`}{p.paused ? ' · pausiert' : ''}</small>
       </span>
       <span className="sk-steps" aria-label={`Stufe ${p.step.index + 1} von ${p.step.total}`}>
         {p.nodes.map((n, i) => <i key={i} className={n.state} />)}
@@ -143,33 +148,31 @@ function Ladder({ t, p, onAct }: { t: Training; p: L.SkillPath; onAct: (id: stri
   )
 }
 
-/** Leiter als native Bausteine – gleiche Aussagen wie <Ladder> */
-function ladderBlocks(p: L.SkillPath): NBlock[] {
+/** Leiter als Zeitleiste (nativ): Stufen an einer Linie, die aktuelle mit Bild, Fortschritt und Aktionen */
+function ladderBlocks(p: L.SkillPath, sessions: Session[]): NBlock[] {
   const prog = p.progress, at = p.step.target.unlockAt
   const unit = p.step.exercise.unit === 'seconds' ? ' s' : ''
   const ready = !p.paused && prog?.done === 2 && !!p.step.next
-  const out: NBlock[] = []
-  p.nodes.forEach((n, i) => {
-    out.push({
-      type: 'ladder', title: n.exercise.name, label: String(i + 1), state: n.state,
-      clip: hasClip(n.exercise.id) ? n.exercise.id : undefined,
-      subtitle: n.state === 'done' ? `geschafft · ${n.sessions} ${n.sessions === 1 ? 'Einheit' : 'Einheiten'}`
-        : n.state === 'current' ? `aktuell · Ziel ${n.target.label}${n.sessions ? ` · ${n.sessions} ${n.sessions === 1 ? 'Einheit' : 'Einheiten'}` : ''}`
-        : i === p.nodes.length - 1 ? 'letzte Stufe dieser Leiter' : 'noch gesperrt',
-    })
-    if (n.state !== 'current' || !p.step.next) return
-    if (at == null) {
-      out.push({ type: 'text', style: 'muted', text: 'Kein festes Kriterium – wechsle, wenn es sich sauber anfühlt.' })
-      out.push({ type: 'button', id: 'force', title: `Zu ${p.step.next.name} wechseln`, symbol: 'arrow.up' })
-      return
-    }
-    out.push({ type: 'text', text: `Freischalten: 2 Einheiten in Folge, alle Sätze ≥ ${at}${unit}` })
-    out.push({ type: 'segments', done: prog?.done ?? 0, total: 2,
-      label: `${prog?.done ?? 0} von 2${prog && prog.done < 2 && prog.sessions > 0 && prog.missing > 0 ? ` · zuletzt ${prog.missing} ${prog.missing === 1 ? 'Satz' : 'Sätze'} unter ${at}${unit}` : ''}` })
-    out.push(ready
-      ? { type: 'button', id: 'unlock', title: `${p.step.next.name} freischalten`, symbol: 'arrow.up', style: 'prominent' }
-      : { type: 'button', id: 'force', title: 'Trotzdem wechseln', symbol: 'arrow.up' })
-  })
-  if (p.step.prev) out.push({ type: 'button', id: 'back', title: `Zurück zu ${p.step.prev.name}`, symbol: 'arrow.uturn.backward' })
-  return out
+  const ex = p.step.exercise
+  const lastSets = [...sessions].sort((a, b) => (a.date < b.date ? 1 : -1)).map(x => L.setsOf(x, ex.id)).find(x => x.length)
+  const einh = (n: number) => `${n} ${n === 1 ? 'Einheit' : 'Einheiten'}`
+  const nodes = p.nodes.map((n, i) => ({
+    title: n.exercise.name, label: String(i + 1), state: n.state,
+    clip: hasClip(n.exercise.id) ? n.exercise.id : undefined,
+    subtitle: n.state === 'done' ? `geschafft · ${einh(n.sessions)}`
+      : n.state === 'current' ? `Aktuell · Ziel ${n.target.label}${lastSets ? ` · zuletzt ${lastSets.map(x => x.value).join('·')}` : ''}`
+      : i === p.nodes.length - 1 ? 'Das Ziel dieser Leiter' : 'noch gesperrt',
+  }))
+  const next = p.step.next
+  return [{
+    type: 'track', nodes,
+    criterion: !next ? 'Höchste Stufe erreicht – halte sie sauber.'
+      : at == null ? 'Kein festes Kriterium – wechsle, wenn es sich sauber anfühlt.'
+      : `Freischalten: 2 Einheiten in Folge, alle Sätze ≥ ${at}${unit}`,
+    done: next && at != null ? prog?.done ?? 0 : undefined, total: next && at != null ? 2 : undefined,
+    hint: next && at != null ? `${prog?.done ?? 0} von 2${prog && prog.done < 2 && prog.sessions > 0 && prog.missing > 0 ? ` · zuletzt ${prog.missing} ${prog.missing === 1 ? 'Satz' : 'Sätze'} unter ${at}${unit}` : ''}` : undefined,
+    unlock: ready ? `${next!.name} freischalten` : undefined,
+    force: next && !ready ? (at == null ? `Zu ${next.name} wechseln` : 'Trotzdem wechseln →') : undefined,
+    back: p.step.prev ? `Zurück zu ${p.step.prev.name}` : undefined,
+  }]
 }

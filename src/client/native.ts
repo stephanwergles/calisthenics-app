@@ -154,6 +154,8 @@ export type NBlock =
   | { type: 'button'; id: string; title: string; symbol?: string; style?: NButton['style'] }
   | { type: 'buttons'; buttons: NButton[] }
   | { type: 'compare'; title: string; before: number; now: number; max: number; delta: string }
+  | { type: 'track'; nodes: { title: string; subtitle: string; state: 'done' | 'current' | 'locked'; label: string; clip?: string }[]
+      criterion?: string; done?: number; total?: number; hint?: string; unlock?: string; force?: string; back?: string }
 export interface NSheet { id: string; title: string; subtitle?: string; detents?: ('auto' | 'medium' | 'large')[]; blocks: NBlock[]; footer?: NButton[] }
 export interface SheetEvent { sheet: string; type: 'tap' | 'toggle' | 'text' | 'dismiss'; id?: string; value?: unknown }
 

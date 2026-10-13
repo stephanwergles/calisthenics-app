@@ -20,6 +20,8 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
   const streak = useMemo(() => L.streakWeeks(t.sessions, t.today), [t.sessions, t.today])
   const minutes = useMemo(() => L.estimateMinutes(t.sessions, t.workout), [t.sessions, t.workout])
   const skills = useMemo(() => L.nextSkills(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
+  // Ziel der Leiter (letzte Stufe) – zeigt, wohin es geht, statt nur die nächste Stufe
+  const goalOf = (pid: string) => { const st = t.ix.progressions.get(pid)?.steps; return st ? t.ix.exercises.get(st[st.length - 1].exercise)?.name ?? '' : '' }
 
   const active = slots.filter(s => s.state !== 'paused' && s.state !== 'skipped')
   const sets = active.reduce((n, s) => n + s.planned, 0)
@@ -97,8 +99,6 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
               const pct = Math.round(s.readiness * 100)
               const prog = L.unlockProgress(t.sessions, s.step.exercise.id, s.step.target)
               const ready = !!prog && prog.done >= prog.needed
-              const unit = s.step.exercise.unit === 'seconds' ? ' s' : ''
-              const rule = `alle ${s.step.target.sets} Sätze ≥ ${s.step.target.unlockAt}${unit}`
               return (
                 <div key={s.pid} className={`h-skill${ready ? ' ready' : ''}`}>
                   <svg viewBox="0 0 52 52" role="img" aria-label={ready ? `Bereit für ${s.step.next!.name}` : `${pct} Prozent bereit für ${s.step.next!.name}`}>
@@ -109,10 +109,10 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
                       : <text x="26" y="31" textAnchor="middle">{pct}%</text>}
                   </svg>
                   <span>
-                    <b className="display">{s.step.next!.name}</b>
+                    <b className="display">{goalOf(s.pid)}</b>
                     <small>{ready
-                      ? `Bereit – ${rule}, 2× geschafft`
-                      : `Ziel: ${rule} · ${prog?.done ?? 0} von 2 Einheiten`}</small>
+                      ? `Bereit für ${s.step.next!.name}`
+                      : `${s.step.exercise.name} · Stufe ${s.step.index + 1}/${s.step.total} · ${prog?.done ?? 0} von 2`}</small>
                   </span>
                   {ready && (
                     <button className="btn btn-outline btn-sm" onClick={() => t.setState(st => ({ ...st, current: { ...st.current, [s.pid]: s.step.next!.id } }))}>
