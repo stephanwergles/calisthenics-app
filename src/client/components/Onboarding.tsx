@@ -13,6 +13,7 @@ import { SuggestionSheet } from './SuggestionSheet'
 import { TemplatesSheet } from './TemplatesSheet'
 import { Sheet } from './Sheets'
 import { Icon } from './Icon'
+import { t as tr } from '../i18n'
 
 const DONE = 'lever-onboarded'
 const done = () => { try { return localStorage.getItem(DONE) === '1' } catch { return false } }
@@ -26,9 +27,7 @@ const STEPS = ['welcome', 'assessment', 'goals', 'equipment', 'days', 'suggestio
 const SHEET_ID: Record<(typeof STEPS)[number], string> = {
   welcome: 'onboarding', assessment: 'assessment', goals: 'goals', equipment: 'equipment', days: 'days', suggestion: 'suggestion',
 }
-const TITLE: Record<(typeof STEPS)[number], string> = {
-  welcome: 'Willkommen', assessment: 'Einstufung', goals: 'Ziele', equipment: 'Ausrüstung', days: 'Tage', suggestion: 'Plan',
-}
+const TITLE = (step: (typeof STEPS)[number]) => tr(`onboarding.step.${step}`)
 
 export function Onboarding({ t, ps, onClose }: { t: Training; ps: PlanSuggestion; onClose: () => void }) {
   const native = useNativeShell()
@@ -36,19 +35,19 @@ export function Onboarding({ t, ps, onClose }: { t: Training; ps: PlanSuggestion
   const [library, setLibrary] = useState(false)
   const finish = () => { markDone(); onClose() }
   const go = (i: number) => setAt(i)
-  const parentOf = (i: number) => ({ id: SHEET_ID[STEPS[i - 1]], title: TITLE[STEPS[i - 1]] })
+  const parentOf = (i: number) => ({ id: SHEET_ID[STEPS[i - 1]], title: TITLE(STEPS[i - 1]) })
   const back = (i: number) => () => setAt(i - 1)
   const hasGoals = ps.hasGoals
-  const intro = 'Zwei Wege zu deinem Plan: In fünf kurzen Schritten aus deinen Zielen (Kurztest, Ziele, Ausrüstung, Tage) – oder du wählst einen fertigen Plan aus der Bibliothek. Alles lässt sich später ändern.'
+  const intro = tr('onboarding.intro')
 
   useNativeSheet(native ? {
-    id: 'onboarding', title: 'Willkommen bei Lever', subtitle: 'Calisthenics mit Plan – jede Übung ist eine Stufe auf dem Weg zu deinem Skill.', detents: ['large'],
+    id: 'onboarding', title: tr('onboarding.title'), subtitle: tr('onboarding.subtitle'), detents: ['large'],
     blocks: [
       { type: 'text', text: intro, style: 'body' },
-      { type: 'button', id: 'library', title: 'Fertigen Plan wählen', symbol: 'square.grid.2x2' },
-      { type: 'button', id: 'skip', title: 'Überspringen – Standardplan nutzen' },
+      { type: 'button', id: 'library', title: tr('onboarding.library'), symbol: 'square.grid.2x2' },
+      { type: 'button', id: 'skip', title: tr('onboarding.skip') },
     ] as NBlock[],
-    footer: [{ id: 'start', title: 'Aus meinen Zielen', symbol: 'arrow.right', style: 'prominent' }],
+    footer: [{ id: 'start', title: tr('onboarding.fromGoals'), symbol: 'arrow.right', style: 'prominent' }],
   } : null, e => {
     if (e.type === 'tap' && e.id === 'start') go(1)
     else if (e.type === 'tap' && e.id === 'library') setLibrary(true)
@@ -57,22 +56,22 @@ export function Onboarding({ t, ps, onClose }: { t: Training; ps: PlanSuggestion
   })
 
   const pages = <>
-    {library && <TemplatesSheet t={t} ps={ps} plansOnly parent={{ id: 'onboarding', title: 'Willkommen' }} onClose={() => setLibrary(false)} onDone={finish} />}
+    {library && <TemplatesSheet t={t} ps={ps} plansOnly parent={{ id: 'onboarding', title: TITLE('welcome') }} onClose={() => setLibrary(false)} onDone={finish} />}
     {at >= 1 && <AssessmentPage t={t} parent={parentOf(1)} onClose={back(1)} onDone={() => go(2)} />}
-    {at >= 2 && <GoalPicker t={t} parent={parentOf(2)} onClose={back(2)} next={{ title: 'Weiter', onNext: () => go(3) }} />}
-    {at >= 3 && <EquipmentSheet t={t} parent={parentOf(3)} onClose={back(3)} next={{ title: 'Weiter', onNext: () => go(4) }} />}
+    {at >= 2 && <GoalPicker t={t} parent={parentOf(2)} onClose={back(2)} next={{ title: tr('common.next'), onNext: () => go(3) }} />}
+    {at >= 3 && <EquipmentSheet t={t} parent={parentOf(3)} onClose={back(3)} next={{ title: tr('common.next'), onNext: () => go(4) }} />}
     {at >= 4 && <DaysSheet t={t} parent={parentOf(4)} onClose={back(4)}
-      next={{ title: hasGoals && ps.suggestion ? 'Plan vorschlagen' : 'Fertig', onNext: () => (hasGoals && ps.suggestion ? go(5) : finish()) }} />}
+      next={{ title: hasGoals && ps.suggestion ? tr('onboarding.suggest') : tr('common.done'), onNext: () => (hasGoals && ps.suggestion ? go(5) : finish()) }} />}
     {at >= 5 && ps.suggestion && <SuggestionSheet t={t} s={ps.suggestion} ps={ps} parent={parentOf(5)} onClose={back(5)} onDone={finish} />}
   </>
   if (native) return pages
   return (
     <>
-      <Sheet large title="Willkommen bei Lever" sub="Calisthenics mit Plan – jede Übung ist eine Stufe auf dem Weg zu deinem Skill." onClose={finish}
+      <Sheet large title={tr('onboarding.title')} sub={tr('onboarding.subtitle')} onClose={finish}
         footer={<div className="sg-foot">
-          <button className="btn btn-primary btn-block" onClick={() => go(1)}>Aus meinen Zielen <Icon name="right" size={18} /></button>
-          <button className="btn btn-secondary btn-block" onClick={() => setLibrary(true)}>Fertigen Plan wählen</button>
-          <button className="btn btn-ghost btn-block" onClick={finish}>Überspringen – Standardplan nutzen</button>
+          <button className="btn btn-primary btn-block" onClick={() => go(1)}>{tr('onboarding.fromGoals')} <Icon name="right" size={18} /></button>
+          <button className="btn btn-secondary btn-block" onClick={() => setLibrary(true)}>{tr('onboarding.library')}</button>
+          <button className="btn btn-ghost btn-block" onClick={finish}>{tr('onboarding.skip')}</button>
         </div>}>
         <p className="hint">{intro}</p>
       </Sheet>

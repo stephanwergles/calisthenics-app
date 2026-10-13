@@ -69,12 +69,13 @@ export function useTraining() {
     setSync(s => ({ ...s, pending: api.pendingCount(outbox.current) }))
   }
 
-  const runSync = useCallback(async () => {
-    if (running.current) return
-    if (typeof navigator !== 'undefined' && !navigator.onLine) { setSync(s => ({ ...s, phase: 'offline' })); return }
-    if (!meta.current.account) return
+  /** Ergebnis für Rückmeldungen beim manuellen Abgleich (Toast); automatische Läufe ignorieren es */
+  const runSync = useCallback(async (): Promise<'ok' | 'error' | 'skipped'> => {
+    if (running.current) return 'skipped'
+    if (typeof navigator !== 'undefined' && !navigator.onLine) { setSync(s => ({ ...s, phase: 'offline' })); return 'error' }
+    if (!meta.current.account) return 'skipped'
     // ohne Einwilligung keine Gesundheitsdaten auf den Server (Art. 9 DSGVO)
-    if (consentRef.current.health !== HEALTH_CONSENT_VERSION) { setSync(s => ({ ...s, phase: 'idle', consentMissing: true })); return }
+    if (consentRef.current.health !== HEALTH_CONSENT_VERSION) { setSync(s => ({ ...s, phase: 'idle', consentMissing: true })); return 'skipped' }
     running.current = true
     setSync(s => ({ ...s, phase: 'syncing', error: undefined }))
     try {
@@ -132,6 +133,7 @@ export function useTraining() {
       void db.kvSet('meta', { lastSync: res.serverTime, catalogVersion: res.catalogVersion })
       saveOutbox()
       setSync(s => ({ ...s, phase: 'idle', lastSync: res.serverTime, error: res.rejected.length ? res.rejected.join(' · ') : undefined }))
+      return res.rejected.length ? 'error' : 'ok'
     } catch (e) {
       if (e instanceof api.AuthError) {
         meta.current.account = null; void db.kvSet('account', null)
@@ -139,6 +141,7 @@ export function useTraining() {
       } else {
         setSync(s => ({ ...s, phase: navigator.onLine ? 'error' : 'offline', error: (e as Error).message }))
       }
+      return 'error'
     } finally {
       running.current = false
       // Änderungen während des Syncs → gleich noch eine Runde

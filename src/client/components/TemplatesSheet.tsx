@@ -13,11 +13,13 @@ import { catalogData } from '../data'
 import { DAY_NAME } from './PlanEditor'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
+import { t as tr, tn } from '../i18n'
+import { toast } from '../toast'
 
-const meta = (tp: Template) => [L.LEVEL_LABEL[tp.level], tp.days ? `${tp.days}× pro Woche` : null, `ca. ${tp.minutes} min`]
+const meta = (tp: Template) => [L.LEVEL_LABEL[tp.level], tp.days ? tr('plan.templates.perWeek', { n: tp.days }) : null, tr('plan.templates.minutes', { n: tp.minutes })]
   .filter(Boolean).join(' · ')
 const gear = (tp: Template) => tp.equipment.length
-  ? tp.equipment.map(e => L.EQUIPMENT_LABEL[e as keyof typeof L.EQUIPMENT_LABEL] ?? e).join(', ') : 'nur Boden und Wand'
+  ? tp.equipment.map(e => L.EQUIPMENT_LABEL[e as keyof typeof L.EQUIPMENT_LABEL] ?? e).join(', ') : tr('plan.templates.noGear')
 
 export function TemplatesSheet({ t, ps, onClose, parent, plansOnly, onDone }: {
   t: Training; ps: PlanSuggestion; onClose: () => void
@@ -30,11 +32,11 @@ export function TemplatesSheet({ t, ps, onClose, parent, plansOnly, onDone }: {
   const all = catalogData(t.ix.catalog).templates
   const list = all.filter(x => x.kind === kind)
   const tpl = all.find(x => x.id === open)
-  const sub = 'Fertige Pläne und Workouts – sie starten auf deiner aktuellen Stufe jeder Progression.'
+  const sub = tr('plan.templates.sub')
   useNativeSheet(native ? {
-    id: 'templates', parent: parent?.id, title: plansOnly ? 'Plan-Vorlagen' : 'Vorlagen', subtitle: sub, detents: ['large'],
+    id: 'templates', parent: parent?.id, title: plansOnly ? tr('plan.templates.titlePlans') : tr('plan.templates.title'), subtitle: sub, detents: ['large'],
     blocks: [
-      ...(plansOnly ? [] : [{ type: 'segmented', id: 'kind', options: [{ id: 'plan', title: 'Pläne' }, { id: 'workout', title: 'Workouts' }], selected: kind } as NBlock]),
+      ...(plansOnly ? [] : [{ type: 'segmented', id: 'kind', options: [{ id: 'plan', title: tr('plan.templates.plans') }, { id: 'workout', title: tr('plan.templates.workouts') }], selected: kind } as NBlock]),
       ...list.map((x): NBlock => ({ type: 'row', id: `tpl:${x.id}`, title: x.name, subtitle: meta(x), symbol: 'none' })),
     ],
   } : null, e => {
@@ -46,9 +48,9 @@ export function TemplatesSheet({ t, ps, onClose, parent, plansOnly, onDone }: {
   if (native) return detail ?? null
   return (
     <>
-      <Sheet large title={plansOnly ? 'Plan-Vorlagen' : 'Vorlagen'} sub={sub} back={parent?.title} onClose={onClose}>
-        {!plansOnly && <div className="seg pill" role="group" aria-label="Art">
-          {(['plan', 'workout'] as const).map(k => <button key={k} className={kind === k ? 'on' : ''} aria-pressed={kind === k} onClick={() => setKind(k)}>{k === 'plan' ? 'Pläne' : 'Workouts'}</button>)}
+      <Sheet large title={plansOnly ? tr('plan.templates.titlePlans') : tr('plan.templates.title')} sub={sub} back={parent?.title} onClose={onClose}>
+        {!plansOnly && <div className="seg pill" role="group" aria-label={tr('plan.templates.kindAria')}>
+          {(['plan', 'workout'] as const).map(k => <button key={k} className={kind === k ? 'on' : ''} aria-pressed={kind === k} onClick={() => setKind(k)}>{k === 'plan' ? tr('plan.templates.plans') : tr('plan.templates.workouts')}</button>)}
         </div>}
         <div className="tp-list">
           {list.map(x => (
@@ -78,28 +80,29 @@ function TemplatePage({ t, ps, tpl, onBack, onDone }: { t: Training; ps: PlanSug
   })
   const applyPlan = async () => {
     if (!plan) return
-    if (!await ask({ title: `„${tpl.name}“ übernehmen?`, message: `${changes} Änderungen an deiner Woche. Deine Einheiten bleiben im Verlauf; im Plan-Tab lässt sich das rückgängig machen.`, ok: 'Übernehmen' })) return
+    if (!await ask({ title: tr('plan.templates.applyTitle', { name: tpl.name }), message: tn('plan.templates.applyMessage', changes), ok: tr('plan.templates.applyOk') })) return
     ps.apply(plan); onDone()
   }
   const addWorkout = (today: boolean) => {
     const w = L.workoutFromTemplate(t.ix, tpl)
     t.editPlan(p => L.withWorkout(p, w))
+    toast(tr('common.toast.workoutAdded'), 'success')
     if (today) { t.chooseWorkout(w.id); onDone() } else setAdded(w.name)
   }
   const sub = `${meta(tpl)} · ${gear(tpl)}`
   const footer = tpl.kind === 'plan'
-    ? [{ id: 'apply', title: 'Plan übernehmen', symbol: 'checkmark', style: 'prominent' as const }]
-    : [{ id: 'today', title: 'Heute trainieren', symbol: 'play.fill', style: 'prominent' as const }, { id: 'add', title: 'Zu meinen Workouts' }]
+    ? [{ id: 'apply', title: tr('plan.templates.applyPlan'), symbol: 'checkmark', style: 'prominent' as const }]
+    : [{ id: 'today', title: tr('plan.templates.trainToday'), symbol: 'play.fill', style: 'prominent' as const }, { id: 'add', title: tr('plan.templates.addToMine') }]
   useNativeSheet(native ? {
     id: 'template', parent: 'templates', title: tpl.name, subtitle: sub, detents: ['large'], footer,
     blocks: [
       { type: 'text', text: tpl.description, style: 'body' },
-      ...(added ? [{ type: 'text', text: `„${added}“ steht jetzt unter Meine Workouts.`, style: 'accent' } as NBlock] : []),
+      ...(added ? [{ type: 'text', text: tr('plan.templates.added', { name: added }), style: 'accent' } as NBlock] : []),
       ...tpl.workouts.flatMap((w): NBlock[] => [
-        { type: 'section', title: tpl.kind === 'plan' ? `${w.name}${dayOf(w.id) ? ` · ${dayOf(w.id)}` : ''}` : 'Übungen' },
-        ...exercises(w).map((x): NBlock => ({ type: 'row', title: x.name, trailing: `${x.sets} Sätze`, symbol: 'none' })),
+        { type: 'section', title: tpl.kind === 'plan' ? `${w.name}${dayOf(w.id) ? ` · ${dayOf(w.id)}` : ''}` : tr('plan.templates.exercises') },
+        ...exercises(w).map((x): NBlock => ({ type: 'row', title: x.name, trailing: tn('plan.templates.sets', x.sets), symbol: 'none' })),
       ]),
-      ...(plan ? [{ type: 'text', text: `Übernehmen ändert ${changes} Dinge an deiner Woche${profileDays.length === (tpl.days ?? 0) ? ' – auf deinen Trainingstagen' : ''}.`, style: 'small' } as NBlock] : []),
+      ...(plan ? [{ type: 'text', text: tn('plan.templates.applyNote', changes, { days: profileDays.length === (tpl.days ?? 0) ? tr('plan.templates.applyNoteDays') : '' }), style: 'small' } as NBlock] : []),
     ],
   } : null, e => {
     if (e.type === 'tap' && e.id === 'apply') void applyPlan()
@@ -109,22 +112,22 @@ function TemplatePage({ t, ps, tpl, onBack, onDone }: { t: Training; ps: PlanSug
   })
   if (native) return null
   return (
-    <Sheet large title={tpl.name} sub={sub} back="Vorlagen" onClose={onBack}
+    <Sheet large title={tpl.name} sub={sub} back={tr('plan.templates.title')} onClose={onBack}
       footer={tpl.kind === 'plan'
-        ? <button className="btn btn-primary btn-block" onClick={() => void applyPlan()}><Icon name="check" size={18} /> Plan übernehmen</button>
+        ? <button className="btn btn-primary btn-block" onClick={() => void applyPlan()}><Icon name="check" size={18} /> {tr('plan.templates.applyPlan')}</button>
         : <div className="sg-foot">
-            <button className="btn btn-primary btn-block" onClick={() => addWorkout(true)}><Icon name="play" size={18} /> Heute trainieren</button>
-            <button className="btn btn-secondary btn-block" onClick={() => addWorkout(false)}>Zu meinen Workouts</button>
+            <button className="btn btn-primary btn-block" onClick={() => addWorkout(true)}><Icon name="play" size={18} /> {tr('plan.templates.trainToday')}</button>
+            <button className="btn btn-secondary btn-block" onClick={() => addWorkout(false)}>{tr('plan.templates.addToMine')}</button>
           </div>}>
       <p className="hint">{tpl.description}</p>
-      {added && <p className="hint tp-added" role="status">„{added}“ steht jetzt unter Meine Workouts.</p>}
+      {added && <p className="hint tp-added" role="status">{tr('plan.templates.added', { name: added })}</p>}
       {tpl.workouts.map(w => (
         <section key={w.id}>
-          <h4 className="pe-section">{tpl.kind === 'plan' ? `${w.name}${dayOf(w.id) ? ` · ${dayOf(w.id)}` : ''}` : 'Übungen'}</h4>
-          <ul className="tp-ex">{exercises(w).map(x => <li key={x.pid}><span>{x.name}</span><em>{x.sets} Sätze</em></li>)}</ul>
+          <h4 className="pe-section">{tpl.kind === 'plan' ? `${w.name}${dayOf(w.id) ? ` · ${dayOf(w.id)}` : ''}` : tr('plan.templates.exercises')}</h4>
+          <ul className="tp-ex">{exercises(w).map(x => <li key={x.pid}><span>{x.name}</span><em>{tn('plan.templates.sets', x.sets)}</em></li>)}</ul>
         </section>
       ))}
-      {plan && <p className="hint">Übernehmen ändert {changes} Dinge an deiner Woche{profileDays.length === (tpl.days ?? 0) ? ' – auf deinen Trainingstagen' : ''}.</p>}
+      {plan && <p className="hint">{tn('plan.templates.applyNote', changes, { days: profileDays.length === (tpl.days ?? 0) ? tr('plan.templates.applyNoteDays') : '' })}</p>}
     </Sheet>
   )
 }

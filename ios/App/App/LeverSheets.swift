@@ -114,7 +114,9 @@ enum Lever {
 
 // MARK: - Datenmodell (gespiegelt von NSheet in native.ts)
 
-struct NButton: Decodable { let id: String; let title: String; let symbol: String?; let style: String? }
+struct NButton: Decodable { let id: String; let title: String; let symbol: String?; let style: String?; let busy: Bool? }
+/// Zeile einer gruppierten Liste (wie die iOS-Einstellungen)
+struct NListRow: Decodable { let id: String?; let title: String; let subtitle: String?; let trailing: String?; let symbol: String? }
 struct NStat: Decodable { let value: String; let label: String; let accent: Bool?; let delta: String? }
 struct NOption: Decodable { let id: String; let title: String }
 struct NBlock: Decodable {
@@ -123,12 +125,18 @@ struct NBlock: Decodable {
     let trailing: String?, eyebrow: String?, state: String?, chips: [String]?, delta: String?
     let on: Bool?, value: String?, label: String?, placeholder: String?, keyboard: String?, symbol: String?
     let items: [NStat]?, options: [NOption]?, selected: String?, done: Int?, total: Int?, buttons: [NButton]?
+    let rows: [NListRow]?
+    let tiles: [NTile]?
+    let busy: Bool?
     let before: Double?, now: Double?, max: Double?
     let clip: String?
     // Zeitleiste (type "track")
     let nodes: [NTrackNode]?
     let criterion: String?, hint: String?, unlock: String?, force: String?, back: String?
 }
+/// Auswahl-Kachel (Ziele, Ausrüstung): Bild (Clip-Standbild oder SF-Symbol), Name, Erklärung, Status
+struct NTile: Decodable { let id: String; let title: String; let subtitle: String?; let detail: String?; let accent: Bool?
+    let clip: String?; let symbol: String?; let on: Bool }
 struct NTrackNode: Decodable { let title: String; let subtitle: String; let state: String; let label: String; let clip: String? }
 struct NSheetSpec: Decodable {
     let id: String; let title: String; let subtitle: String?
@@ -156,6 +164,7 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
     private let stack = UIStackView()
     private let foot = UIStackView()
     private var fields: [String: UITextView] = [:]
+    private var footIds: [String] = []
     var closedByApp = false
     /// Push-Seite innerhalb eines Sheets (eigener Zurück-Button, Wisch-Geste)
     let isPage: Bool
@@ -185,6 +194,8 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
         super.viewWillAppear(animated)
         // keine Navigationsleiste: ihr Ein-/Ausblenden verschiebt den Inhalt (Springen beim Hineinschieben)
         navigationController?.setNavigationBarHidden(true, animated: false)
+        // Layout vor der Push-Animation festlegen – sonst wachsen Stepper, Felder usw. sichtbar aus dem Nichts
+        UIView.performWithoutAnimation { self.view.layoutIfNeeded() }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -240,7 +251,7 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
             scroll.topAnchor.constraint(equalTo: view.topAnchor),
             scroll.leadingAnchor.constraint(equalTo: view.leadingAnchor), scroll.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scroll.bottomAnchor.constraint(equalTo: foot.topAnchor, constant: -8),
-            stack.topAnchor.constraint(equalTo: scroll.contentLayoutGuide.topAnchor, constant: 30),
+            stack.topAnchor.constraint(equalTo: scroll.contentLayoutGuide.topAnchor, constant: isPage ? 76 : 30),
             stack.bottomAnchor.constraint(equalTo: scroll.contentLayoutGuide.bottomAnchor, constant: -24),
             stack.leadingAnchor.constraint(equalTo: scroll.frameLayoutGuide.leadingAnchor, constant: 22),
             stack.trailingAnchor.constraint(equalTo: scroll.frameLayoutGuide.trailingAnchor, constant: -22),
@@ -248,7 +259,31 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
             foot.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -22),
             foot.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -10),
         ])
+        if isPage { addBackButton() }
         render()
+    }
+
+    /// Zurück wie in iOS 26: runder, echter Glas-Button oben links, steht fest – der Inhalt scrollt
+    /// darunter durch (Push-Seiten sind deckend, also kein Glas auf Glas). Wisch-Geste vom Rand bleibt.
+    private func addBackButton() {
+        var cfg: UIButton.Configuration
+        if #available(iOS 26.0, *) { cfg = .glass() } else {
+            cfg = .filled(); cfg.background.backgroundColor = UIColor(white: 1, alpha: 0.14)
+        }
+        cfg.cornerStyle = .capsule
+        cfg.image = UIImage(systemName: "chevron.left", withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold))
+        cfg.baseForegroundColor = .white
+        cfg.contentInsets = .zero
+        let back = UIButton(configuration: cfg)
+        back.translatesAutoresizingMaskIntoConstraints = false
+        back.accessibilityLabel = "Zurück zu \(backTitle ?? "vorher")"
+        back.addAction(UIAction { [weak self] _ in self?.navigationController?.popViewController(animated: true) }, for: .touchUpInside)
+        view.addSubview(back)
+        NSLayoutConstraint.activate([
+            back.topAnchor.constraint(equalTo: view.topAnchor, constant: 16),
+            back.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            back.widthAnchor.constraint(equalToConstant: 44), back.heightAnchor.constraint(equalToConstant: 44),
+        ])
     }
 
     func update(_ next: NSheetSpec) {
@@ -266,16 +301,6 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
 
     private func render() {
         stack.arrangedSubviews.forEach { if !($0 is FieldBox) { $0.removeFromSuperview() } else { stack.removeArrangedSubview($0); $0.removeFromSuperview() } }
-        if isPage {
-            // Zurück als Glas-Button über dem Titel (die Wisch-Geste vom Rand bleibt)
-            let back = Lever.button(title: backTitle ?? "Zurück", symbol: "chevron.left", style: "glass", size: 15, upper: false)
-            back.heightAnchor.constraint(equalToConstant: 44).isActive = true
-            back.addAction(UIAction { [weak self] _ in self?.navigationController?.popViewController(animated: true) }, for: .touchUpInside)
-            back.accessibilityLabel = "Zurück zu \(backTitle ?? "vorher")"
-            let row = UIStackView(arrangedSubviews: [back, UIView()]); row.axis = .horizontal
-            stack.addArrangedSubview(row)
-            stack.setCustomSpacing(14, after: row)
-        }
         let head = UIStackView(); head.axis = .vertical; head.spacing = 3
         let h = UILabel(); h.text = spec.title.uppercased(); h.numberOfLines = 0; h.font = .display(30, .black); h.textColor = .white
         head.addArrangedSubview(h)
@@ -284,12 +309,31 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
         stack.setCustomSpacing(18, after: head)
         for b in spec.blocks { if let v = view(for: b) { stack.addArrangedSubview(v) } }
 
-        foot.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        for f in spec.footer ?? [] {
-            let b = Lever.button(title: f.title, symbol: f.symbol, style: f.style ?? "glass", size: 17, display: f.style == "prominent")
-            b.heightAnchor.constraint(equalToConstant: 56).isActive = true
-            b.addAction(UIAction { [weak self] _ in self?.tapped(f.id) }, for: .touchUpInside)
-            foot.addArrangedSubview(b)
+        // Fußzeile: gleiche Buttons behalten und nur umgestalten – neu gebaute Glas-Buttons blenden
+        // sonst bei jeder Änderung (z. B. Titel „2 Stufen übernehmen“) sichtbar neu ein
+        let footer = spec.footer ?? []
+        // lange Titel nebeneinander würden abgeschnitten → dann untereinander
+        let stacked = footer.count > 1 && footer.reduce(0) { $0 + $1.title.count } > 26
+        foot.axis = stacked ? .vertical : .horizontal
+        if footer.map({ $0.id }) == footIds, foot.arrangedSubviews.count == footer.count {
+            UIView.performWithoutAnimation {
+                for (f, v) in zip(footer, foot.arrangedSubviews) {
+                    guard let b = v as? UIButton else { continue }
+                    Lever.restyle(b, title: f.title, symbol: f.symbol, style: f.style ?? "glass", size: 17, display: f.style == "prominent")
+                    b.configuration?.showsActivityIndicator = f.busy == true; b.isEnabled = f.busy != true
+                    b.layoutIfNeeded()
+                }
+            }
+        } else {
+            foot.arrangedSubviews.forEach { $0.removeFromSuperview() }
+            footIds = footer.map { $0.id }
+            for f in footer {
+                let b = Lever.button(title: f.title, symbol: f.symbol, style: f.style ?? "glass", size: 17, display: f.style == "prominent")
+                if f.busy == true { b.configuration?.showsActivityIndicator = true; b.isEnabled = false }
+                b.heightAnchor.constraint(equalToConstant: 56).isActive = true
+                b.addAction(UIAction { [weak self] _ in self?.tapped(f.id) }, for: .touchUpInside)
+                foot.addArrangedSubview(b)
+            }
         }
     }
 
@@ -300,6 +344,69 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
 
     private func label(_ text: String, _ font: UIFont, _ color: UIColor = .white, lines: Int = 0) -> UILabel {
         let l = UILabel(); l.text = text; l.font = font; l.textColor = color; l.numberOfLines = lines; return l
+    }
+
+    private func tile(_ x: NTile) -> UIView {
+        let box = UIView()
+        box.backgroundColor = x.on ? Lever.volt.withAlphaComponent(0.10) : Lever.card
+        box.layer.cornerRadius = 20; box.layer.cornerCurve = .continuous; box.clipsToBounds = true
+        box.layer.borderWidth = x.on ? 2 : 1
+        box.layer.borderColor = (x.on ? Lever.volt : Lever.line).cgColor
+        let v = UIStackView(); v.axis = .vertical; v.spacing = 4; v.alignment = .fill
+        v.isUserInteractionEnabled = false
+        // Bildfläche: Clip-Standbild (Figur in der Zielposition) oder großes Symbol
+        let art = UIView(); art.backgroundColor = UIColor(white: 1, alpha: 0.04); art.layer.cornerRadius = 14; art.clipsToBounds = true
+        art.translatesAutoresizingMaskIntoConstraints = false
+        if let clip = x.clip {
+            art.heightAnchor.constraint(equalTo: art.widthAnchor, multiplier: 0.78).isActive = true
+            let img = UIImageView(); img.contentMode = .scaleAspectFill; img.clipsToBounds = true
+            img.translatesAutoresizingMaskIntoConstraints = false; art.addSubview(img)
+            NSLayoutConstraint.activate([img.topAnchor.constraint(equalTo: art.topAnchor), img.bottomAnchor.constraint(equalTo: art.bottomAnchor),
+                                         img.leadingAnchor.constraint(equalTo: art.leadingAnchor), img.trailingAnchor.constraint(equalTo: art.trailingAnchor)])
+            img.alpha = x.on ? 1 : 0.85
+            ClipStill.load(clip) { [weak img] i in img?.image = i }
+        } else {
+            art.heightAnchor.constraint(equalToConstant: 64).isActive = true
+            let icon = UIImageView(image: UIImage(systemName: x.symbol ?? "figure.strengthtraining.functional"))
+            icon.tintColor = x.on ? Lever.volt : .white; icon.contentMode = .center
+            icon.preferredSymbolConfiguration = .init(pointSize: 30, weight: .semibold)
+            icon.translatesAutoresizingMaskIntoConstraints = false; art.addSubview(icon)
+            NSLayoutConstraint.activate([icon.centerXAnchor.constraint(equalTo: art.centerXAnchor), icon.centerYAnchor.constraint(equalTo: art.centerYAnchor)])
+        }
+        v.addArrangedSubview(art)
+        v.setCustomSpacing(10, after: art)
+        let title = label(x.title.uppercased(), .display(19, .heavy), .white); v.addArrangedSubview(title)
+        if let s = x.subtitle { v.addArrangedSubview(label(s, .body(13), Lever.muted)) }
+        if let d = x.detail {
+            let dl = label(d, .body(12, .semibold), x.accent == true ? Lever.volt : Lever.muted)
+            v.setCustomSpacing(8, after: v.arrangedSubviews.last!); v.addArrangedSubview(dl)
+        }
+        v.addArrangedSubview(UIView())   // füllt nach unten, Kacheln einer Zeile sind gleich hoch
+        v.translatesAutoresizingMaskIntoConstraints = false
+        box.addSubview(v)
+        NSLayoutConstraint.activate([v.topAnchor.constraint(equalTo: box.topAnchor, constant: 10), v.bottomAnchor.constraint(equalTo: box.bottomAnchor, constant: -14),
+                                     v.leadingAnchor.constraint(equalTo: box.leadingAnchor, constant: 10), v.trailingAnchor.constraint(equalTo: box.trailingAnchor, constant: -10)])
+        // Haken oben rechts
+        let check = UIImageView(image: UIImage(systemName: x.on ? "checkmark.circle.fill" : "circle"))
+        check.tintColor = x.on ? Lever.volt : UIColor(white: 1, alpha: 0.5)
+        check.preferredSymbolConfiguration = .init(pointSize: 22, weight: .semibold)
+        check.backgroundColor = x.on ? Lever.ink : UIColor(white: 0, alpha: 0.35); check.layer.cornerRadius = 12; check.clipsToBounds = true
+        check.translatesAutoresizingMaskIntoConstraints = false
+        box.addSubview(check)
+        NSLayoutConstraint.activate([check.topAnchor.constraint(equalTo: box.topAnchor, constant: 16), check.trailingAnchor.constraint(equalTo: box.trailingAnchor, constant: -16),
+                                     check.widthAnchor.constraint(equalToConstant: 24), check.heightAnchor.constraint(equalToConstant: 24)])
+        let btn = UIButton(type: .custom); btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.addAction(UIAction { [weak self] _ in
+            UISelectionFeedbackGenerator().selectionChanged()
+            self?.emit("toggle", x.id, !x.on)
+        }, for: .touchUpInside)
+        btn.accessibilityLabel = [x.title, x.subtitle, x.detail].compactMap { $0 }.joined(separator: ", ")
+        btn.accessibilityTraits = x.on ? [.button, .selected] : .button
+        btn.configurationUpdateHandler = { b in UIView.animate(withDuration: 0.12) { box.transform = b.isHighlighted ? CGAffineTransform(scaleX: 0.97, y: 0.97) : .identity } }
+        box.addSubview(btn)
+        NSLayoutConstraint.activate([btn.topAnchor.constraint(equalTo: box.topAnchor), btn.bottomAnchor.constraint(equalTo: box.bottomAnchor),
+                                     btn.leadingAnchor.constraint(equalTo: box.leadingAnchor), btn.trailingAnchor.constraint(equalTo: box.trailingAnchor)])
+        return box
     }
 
     private func card(_ content: UIView, tint: UIColor? = nil, padding: CGFloat = 14) -> UIView {
@@ -637,8 +744,76 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
             box.configure(label: b.label, placeholder: b.placeholder, text: tv)
             return box
 
+        case "list":
+            // Gruppierte Liste wie in den iOS-Einstellungen: ein Block, Zeilen mit Trennlinien
+            let box = UIView(); box.backgroundColor = Lever.card
+            box.layer.cornerRadius = 20; box.layer.cornerCurve = .continuous; box.clipsToBounds = true
+            box.layer.borderWidth = 1; box.layer.borderColor = Lever.line.cgColor
+            let col = UIStackView(); col.axis = .vertical; col.translatesAutoresizingMaskIntoConstraints = false
+            box.addSubview(col)
+            NSLayoutConstraint.activate([col.topAnchor.constraint(equalTo: box.topAnchor), col.bottomAnchor.constraint(equalTo: box.bottomAnchor),
+                                         col.leadingAnchor.constraint(equalTo: box.leadingAnchor), col.trailingAnchor.constraint(equalTo: box.trailingAnchor)])
+            for (i, r) in (b.rows ?? []).enumerated() {
+                if i > 0 {
+                    let sep = UIView(); sep.backgroundColor = Lever.line
+                    sep.heightAnchor.constraint(equalToConstant: 1 / UIScreen.main.scale).isActive = true
+                    let inset = UIStackView(arrangedSubviews: [sep]); inset.isLayoutMarginsRelativeArrangement = true
+                    inset.layoutMargins = UIEdgeInsets(top: 0, left: r.symbol != nil ? 54 : 16, bottom: 0, right: 0)
+                    col.addArrangedSubview(inset)
+                }
+                let h = UIStackView(); h.spacing = 12; h.alignment = .center
+                h.isLayoutMarginsRelativeArrangement = true; h.layoutMargins = UIEdgeInsets(top: 11, left: 16, bottom: 11, right: 14)
+                h.isUserInteractionEnabled = false
+                if let sym = r.symbol {
+                    let icon = UIImageView(image: UIImage(systemName: sym)); icon.tintColor = Lever.volt; icon.contentMode = .center
+                    icon.preferredSymbolConfiguration = .init(pointSize: 17, weight: .semibold)
+                    icon.widthAnchor.constraint(equalToConstant: 26).isActive = true
+                    h.addArrangedSubview(icon)
+                }
+                let v = UIStackView(); v.axis = .vertical; v.spacing = 2
+                v.addArrangedSubview(label(r.title, .body(16.5, .medium), .white))
+                if let sub = r.subtitle { v.addArrangedSubview(label(sub, .body(13), Lever.muted)) }
+                h.addArrangedSubview(v)
+                if let tr = r.trailing {
+                    let tl = label(tr, .body(15), Lever.muted, lines: 1)
+                    tl.setContentHuggingPriority(.required, for: .horizontal); tl.setContentCompressionResistancePriority(.required, for: .horizontal)
+                    h.addArrangedSubview(tl)
+                }
+                let cell: UIView
+                if let id = r.id {
+                    let chev = UIImageView(image: UIImage(systemName: "chevron.right")); chev.tintColor = Lever.muted
+                    chev.preferredSymbolConfiguration = .init(pointSize: 13, weight: .semibold)
+                    chev.setContentHuggingPriority(.required, for: .horizontal)
+                    h.addArrangedSubview(chev)
+                    let btn = UIButton(type: .custom)
+                    btn.addAction(UIAction { [weak self] _ in self?.tapped(id) }, for: .touchUpInside)
+                    btn.accessibilityLabel = [r.title, r.subtitle].compactMap { $0 }.joined(separator: ", ")
+                    btn.configurationUpdateHandler = { b in b.backgroundColor = b.isHighlighted ? UIColor(white: 1, alpha: 0.06) : .clear }
+                    btn.addSubview(h); h.translatesAutoresizingMaskIntoConstraints = false
+                    NSLayoutConstraint.activate([h.topAnchor.constraint(equalTo: btn.topAnchor), h.bottomAnchor.constraint(equalTo: btn.bottomAnchor),
+                                                 h.leadingAnchor.constraint(equalTo: btn.leadingAnchor), h.trailingAnchor.constraint(equalTo: btn.trailingAnchor)])
+                    cell = btn
+                } else { cell = h }
+                cell.heightAnchor.constraint(greaterThanOrEqualToConstant: 52).isActive = true
+                col.addArrangedSubview(cell)
+            }
+            return box
+
+        case "tiles":
+            // Zwei Spalten Auswahl-Kacheln; gewählt = Volt-Rand + Haken. Antippen meldet toggle mit neuem Zustand.
+            let grid = UIStackView(); grid.axis = .vertical; grid.spacing = 10
+            let all = b.tiles ?? []
+            for start in stride(from: 0, to: all.count, by: 2) {
+                let row = UIStackView(); row.axis = .horizontal; row.spacing = 10; row.distribution = .fillEqually; row.alignment = .fill
+                for x in all[start..<min(start + 2, all.count)] { row.addArrangedSubview(tile(x)) }
+                if all.count - start == 1 { row.addArrangedSubview(UIView()) }
+                grid.addArrangedSubview(row)
+            }
+            return grid
+
         case "button":
             let btn = Lever.button(title: b.title, symbol: b.symbol, style: b.style ?? "glass", size: 16, display: b.style == "prominent")
+            if b.busy == true { btn.configuration?.showsActivityIndicator = true; btn.isEnabled = false }
             btn.heightAnchor.constraint(equalToConstant: 50).isActive = true
             btn.addAction(UIAction { [weak self] _ in self?.tapped(b.id ?? "") }, for: .touchUpInside)
             return btn
@@ -647,6 +822,8 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
             let row = UIStackView(); row.axis = .horizontal; row.spacing = 10; row.distribution = .fillEqually
             for x in b.buttons ?? [] {
                 let btn = Lever.button(title: x.title, symbol: x.symbol, style: x.style ?? "glass", size: 15)
+                // Busy: Aktivitäts-Indikator statt Symbol (z. B. „Gleiche ab …“)
+                if x.busy == true { btn.configuration?.showsActivityIndicator = true; btn.isEnabled = false }
                 btn.heightAnchor.constraint(equalToConstant: 50).isActive = true
                 btn.titleLabel?.numberOfLines = 2
                 btn.addAction(UIAction { [weak self] _ in self?.tapped(x.id) }, for: .touchUpInside)
@@ -1650,4 +1827,69 @@ extension LeverTabBarPlugin {
             top.present(picker, animated: true)
         }
     }
+}
+
+// MARK: - Toast: kurze Meldung als Glas-Kapsel über allem (auch über Sheets)
+
+extension LeverTabBarPlugin {
+    private static weak var toastView: UIView?
+
+    @objc func toast(_ call: CAPPluginCall) {
+        let text = call.getString("text") ?? ""
+        let tone = call.getString("tone") ?? "info"
+        let symbol = call.getString("symbol") ?? (tone == "success" ? "checkmark.circle.fill" : tone == "error" ? "exclamationmark.triangle.fill" : "info.circle.fill")
+        DispatchQueue.main.async {
+            guard let window = self.tabsRef?.view.window else { call.resolve(); return }
+            Self.toastView?.removeFromSuperview()
+            let effect: UIVisualEffect
+            if #available(iOS 26.0, *) { effect = UIGlassEffect() } else { effect = UIBlurEffect(style: .systemThinMaterialDark) }
+            let pill = UIVisualEffectView(effect: effect)
+            pill.overrideUserInterfaceStyle = .dark
+            pill.layer.cornerRadius = 24; pill.layer.cornerCurve = .continuous; pill.clipsToBounds = true
+            pill.translatesAutoresizingMaskIntoConstraints = false
+            let icon = UIImageView(image: UIImage(systemName: symbol))
+            icon.tintColor = tone == "error" ? UIColor.systemRed : Lever.volt
+            icon.preferredSymbolConfiguration = .init(pointSize: 17, weight: .semibold)
+            icon.setContentHuggingPriority(.required, for: .horizontal)
+            let label = UILabel(); label.text = text; label.font = .body(15, .semibold); label.textColor = .white; label.numberOfLines = 2
+            let row = UIStackView(arrangedSubviews: [icon, label]); row.spacing = 10; row.alignment = .center
+            row.translatesAutoresizingMaskIntoConstraints = false
+            pill.contentView.addSubview(row)
+            window.addSubview(pill)
+            NSLayoutConstraint.activate([
+                row.topAnchor.constraint(equalTo: pill.contentView.topAnchor, constant: 13),
+                row.bottomAnchor.constraint(equalTo: pill.contentView.bottomAnchor, constant: -13),
+                row.leadingAnchor.constraint(equalTo: pill.contentView.leadingAnchor, constant: 18),
+                row.trailingAnchor.constraint(equalTo: pill.contentView.trailingAnchor, constant: -20),
+                pill.topAnchor.constraint(equalTo: window.safeAreaLayoutGuide.topAnchor, constant: 6),
+                pill.centerXAnchor.constraint(equalTo: window.centerXAnchor),
+                pill.widthAnchor.constraint(lessThanOrEqualTo: window.widthAnchor, constant: -32),
+            ])
+            pill.isAccessibilityElement = true; pill.accessibilityLabel = text
+            UIAccessibility.post(notification: .announcement, argument: text)
+            if tone == "success" { UINotificationFeedbackGenerator().notificationOccurred(.success) }
+            else if tone == "error" { UINotificationFeedbackGenerator().notificationOccurred(.error) }
+            Self.toastView = pill
+            pill.alpha = 0; pill.transform = CGAffineTransform(translationX: 0, y: -16).scaledBy(x: 0.96, y: 0.96)
+            UIView.animate(withDuration: 0.45, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.4) {
+                pill.alpha = 1; pill.transform = .identity
+            }
+            let hide = { [weak pill] in
+                guard let pill, pill.superview != nil else { return }
+                UIView.animate(withDuration: 0.25, animations: { pill.alpha = 0; pill.transform = CGAffineTransform(translationX: 0, y: -10) }) { _ in pill.removeFromSuperview() }
+            }
+            let tap = UITapGestureRecognizer(); pill.addGestureRecognizer(tap)
+            tap.addTarget(LeverToastTap.shared, action: #selector(LeverToastTap.fire(_:)))
+            LeverToastTap.shared.action = hide
+            DispatchQueue.main.asyncAfter(deadline: .now() + (tone == "error" ? 4 : 2.6), execute: hide)
+            call.resolve()
+        }
+    }
+}
+
+/// Tipp auf den Toast blendet ihn sofort aus
+final class LeverToastTap: NSObject {
+    static let shared = LeverToastTap()
+    var action: (() -> Void)?
+    @objc func fire(_ g: UITapGestureRecognizer) { action?() }
 }

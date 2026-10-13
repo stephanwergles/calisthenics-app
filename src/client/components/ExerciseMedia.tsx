@@ -7,6 +7,7 @@ import type { Exercise } from '@/domain/model'
 import clips from '@/seed/clips.json'
 import { Sketch } from './Sketch'
 import { Icon } from './Icon'
+import { t } from '../i18n'
 
 const CLIPS = new Set((clips as { clips: string[] }).clips)
 const STILLS = new Set((clips as { stills: string[] }).stills)
@@ -44,7 +45,7 @@ export function ExerciseMedia({ exercise, label }: { exercise: Exercise; label: 
   if (!clip || state === 'failed') return <Sketch id={exercise.media.sketch} label={label} />
   return (
     <button type="button" className={`clip${state === 'ready' ? ' ready' : ''}${playing ? '' : ' stopped'}`} onClick={replay}
-      aria-label={playing ? label : `${label} – nochmal abspielen`}>
+      aria-label={playing ? label : t('app.replay', { label })}>
       {state !== 'ready' && <Sketch id={exercise.media.sketch} label="" />}
       <video key={exercise.id} ref={video} src={`/clips/${exercise.id}.mp4`} muted playsInline autoPlay preload="auto"
         aria-hidden="true" disablePictureInPicture tabIndex={-1}

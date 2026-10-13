@@ -9,8 +9,9 @@ import { DAY_NAME } from './PlanEditor'
 import { catalogData } from '../data'
 import { Sheet } from './Sheets'
 import * as L from '../logic'
+import { t as tr, tn, type Key } from '../i18n'
 
-const KIND: Record<string, string> = { neu: 'neu', raus: 'raus', sätze: 'Sätze' }
+const KIND: Record<string, Key> = { neu: 'plan.suggestion.kind.new', raus: 'plan.suggestion.kind.out', sätze: 'plan.suggestion.kind.sets' }
 
 export function SuggestionSheet({ t, s, ps, onClose, parent, onDone }: {
   t: Training; s: Suggestion; ps: PlanSuggestion; onClose: () => void
@@ -20,25 +21,25 @@ export function SuggestionSheet({ t, s, ps, onClose, parent, onDone }: {
   const native = useNativeShell()
   const goals = L.profileOf(t.ix, t.state).goals.map(g => catalogData(t.ix.catalog).skills.find(x => x.id === g)?.name ?? g).join(', ')
   const version = (t.plan?.version ?? 0)
-  const sub = `Für ${goals} · ${s.changes} ${s.changes === 1 ? 'Änderung' : 'Änderungen'}`
-  const intro = 'Aus deinen Zielen, Trainingstagen, deiner Ausrüstung und deinem Stand. Nichts ändert sich, bevor du übernimmst – danach lässt es sich im Plan rückgängig machen.'
-  const head = (d: L.DayDiff) => `${DAY_NAME[d.day]} · ${d.before ?? 'Ruhetag'} → ${d.after ?? 'Ruhetag'}`
+  const sub = tn('plan.suggestion.sub', s.changes, { goals })
+  const intro = tr('plan.suggestion.intro')
+  const head = (d: L.DayDiff) => `${DAY_NAME[d.day]} · ${d.before ?? tr('plan.restDay')} → ${d.after ?? tr('plan.restDay')}`
   const kept = (d: L.DayDiff) => d.changes.filter(c => c.kind === 'bleibt').map(c => c.name)
   const accept = () => { ps.accept(); (onDone ?? onClose)() }
   const later = () => { ps.dismiss(); (onDone ?? onClose)() }
 
   useNativeSheet(native ? {
-    id: 'suggestion', parent: parent?.id, title: 'Planvorschlag', subtitle: sub, detents: ['large'],
+    id: 'suggestion', parent: parent?.id, title: tr('plan.suggestion.title'), subtitle: sub, detents: ['large'],
     blocks: [
       { type: 'text', text: intro, style: 'muted' },
       ...s.warnings.map((w): NBlock => ({ type: 'text', text: w, style: 'warn' })),
       ...s.diff.flatMap((d): NBlock[] => [
         { type: 'section', title: head(d) },
-        ...d.changes.filter(c => c.kind !== 'bleibt').map((c): NBlock => ({ type: 'row', title: c.name, subtitle: c.detail, trailing: KIND[c.kind], symbol: 'none' })),
-        ...(kept(d).length ? [{ type: 'text', text: `Bleibt: ${kept(d).join(', ')}`, style: 'small' } as NBlock] : []),
+        ...d.changes.filter(c => c.kind !== 'bleibt').map((c): NBlock => ({ type: 'row', title: c.name, subtitle: c.detail, trailing: tr(KIND[c.kind]), symbol: 'none' })),
+        ...(kept(d).length ? [{ type: 'text', text: tr('plan.suggestion.kept', { names: kept(d).join(', ') }), style: 'small' } as NBlock] : []),
       ]),
     ],
-    footer: [{ id: 'accept', title: `Übernehmen · Plan v${version + 1}`, symbol: 'checkmark', style: 'prominent' }, { id: 'later', title: 'Später' }],
+    footer: [{ id: 'accept', title: tr('plan.suggestion.accept', { n: version + 1 }), symbol: 'checkmark', style: 'prominent' }, { id: 'later', title: tr('plan.suggestion.later') }],
   } : null, e => {
     if (e.type === 'tap' && e.id === 'accept') accept()
     else if (e.type === 'tap' && e.id === 'later') later()
@@ -46,10 +47,10 @@ export function SuggestionSheet({ t, s, ps, onClose, parent, onDone }: {
   })
   if (native) return null
   return (
-    <Sheet large title="Planvorschlag" sub={sub} back={parent?.title} onClose={onClose}
+    <Sheet large title={tr('plan.suggestion.title')} sub={sub} back={parent?.title} onClose={onClose}
       footer={<div className="sg-foot">
-        <button className="btn btn-primary btn-block" onClick={accept}>Übernehmen · Plan v{version + 1}</button>
-        <button className="btn btn-secondary btn-block" onClick={later}>Später</button>
+        <button className="btn btn-primary btn-block" onClick={accept}>{tr('plan.suggestion.accept', { n: version + 1 })}</button>
+        <button className="btn btn-secondary btn-block" onClick={later}>{tr('plan.suggestion.later')}</button>
       </div>}>
       <p className="hint">{intro}</p>
       {s.warnings.map(w => <p key={w} className="warn">{w}</p>)}
@@ -59,12 +60,12 @@ export function SuggestionSheet({ t, s, ps, onClose, parent, onDone }: {
           <ul>
             {d.changes.filter(c => c.kind !== 'bleibt').map(c => (
               <li key={`${c.kind}-${c.name}`} className={`sg-${c.kind === 'sätze' ? 'sets' : c.kind}`}>
-                <span className="sg-badge">{KIND[c.kind]}</span>
+                <span className="sg-badge">{tr(KIND[c.kind])}</span>
                 <span><b>{c.name}</b>{c.detail && <small>{c.detail}</small>}</span>
               </li>
             ))}
           </ul>
-          {kept(d).length > 0 && <p className="sg-kept">Bleibt: {kept(d).join(', ')}</p>}
+          {kept(d).length > 0 && <p className="sg-kept">{tr('plan.suggestion.kept', { names: kept(d).join(', ') })}</p>}
         </section>
       ))}
     </Sheet>

@@ -68,6 +68,7 @@ export async function nativeKeepAwake(on: boolean) {
 interface LeverTabBarPlugin {
   configure(o: { items: { id: string; title: string; symbol: string }[]; selected: string }): Promise<void>
   select(o: { id: string }): Promise<void>
+  retitle(o: { items: { id: string; title: string }[] }): Promise<void>
   setHidden(o: { hidden: boolean }): Promise<void>
   setBadge(o: { id: string; value: string | null; tone?: 'volt' | 'error' }): Promise<void>
   setAction(o: { id: string; title?: string; symbol?: string; prominent?: boolean; position?: 'bottom' | 'topLeading' | 'topTrailing' }): Promise<void>
@@ -80,6 +81,7 @@ interface LeverTabBarPlugin {
   setRest(o: { spec: NRest | null }): Promise<void>
   shareFile(o: { name: string; content: string }): Promise<{ done: boolean }>
   pickFile(): Promise<{ content?: string; name?: string }>
+  toast(o: { text: string; tone?: 'info' | 'success' | 'error'; symbol?: string }): Promise<void>
   addListener(event: 'select' | 'action', cb: (d: { id: string }) => void): Promise<PluginListenerHandle>
   addListener(event: 'sheet', cb: (d: SheetEvent) => void): Promise<PluginListenerHandle>
   addListener(event: 'panel', cb: (d: PanelEvent) => void): Promise<PluginListenerHandle>
@@ -104,6 +106,8 @@ export const nativeTabs = {
     } catch { return false }
   },
   select: (id: string) => { if (isNative()) void TabBar.select({ id }).catch(() => undefined) },
+  /** Sprachwechsel: nur Titel tauschen (configure würde Listener doppeln und Badges löschen) */
+  retitle: (items: { id: string; title: string }[]) => { if (isNative()) void TabBar.retitle({ items }).catch(() => undefined) },
   hide: (hidden: boolean) => { if (isNative()) void TabBar.setHidden({ hidden }).catch(() => undefined) },
   badge: (id: string, value: string | null, tone?: 'volt' | 'error') => {
     if (isNative()) void TabBar.setBadge({ id, value, tone }).catch(() => undefined)
@@ -135,7 +139,9 @@ export async function ask(o: { title: string; message?: string; ok: string; dest
 /* ── Native Sheets ────────────────────────────────────────────────────────────
    Die Web-App beschreibt ein Sheet als Bausteine, iOS zeichnet es mit UIKit (echtes Glas,
    Detents). Ereignisse kommen zurück; ein erneutes showSheet mit gleicher id aktualisiert. */
-export interface NButton { id: string; title: string; symbol?: string; style?: 'glass' | 'prominent' | 'destructive' }
+export interface NButton { id: string; title: string; symbol?: string; style?: 'glass' | 'prominent' | 'destructive'
+  /** Aktivitäts-Indikator statt Symbol, Button gesperrt (z. B. während des Abgleichs) */
+  busy?: boolean }
 export type NBlock =
   | { type: 'section'; title: string }
   | { type: 'text'; text: string; title?: string; style?: 'body' | 'muted' | 'small' | 'note' | 'warn' | 'accent' }
@@ -155,7 +161,11 @@ export type NBlock =
   | { type: 'stepper'; id: string; label: string; value: string }
   | { type: 'segmented'; id: string; options: { id: string; title: string }[]; selected: string }
   | { type: 'field'; id: string; label?: string; value: string; placeholder?: string; keyboard?: 'email' | 'password' }
-  | { type: 'button'; id: string; title: string; symbol?: string; style?: NButton['style'] }
+  | { type: 'button'; id: string; title: string; symbol?: string; style?: NButton['style']; busy?: boolean }
+  /** gruppierte Liste wie die iOS-Einstellungen: ein Block, Zeilen mit Trennlinien; id = antippbar (mit Chevron) */
+  | { type: 'list'; rows: { id?: string; title: string; subtitle?: string; trailing?: string; symbol?: string }[] }
+  /** Auswahl-Kacheln in zwei Spalten (Ziele, Ausrüstung): Antippen → toggle mit neuem Zustand */
+  | { type: 'tiles'; tiles: { id: string; title: string; subtitle?: string; detail?: string; accent?: boolean; clip?: string; symbol?: string; on: boolean }[] }
   | { type: 'buttons'; buttons: NButton[] }
   | { type: 'compare'; title: string; before: number; now: number; max: number; delta: string }
   | { type: 'track'; nodes: { title: string; subtitle: string; state: 'done' | 'current' | 'locked'; label: string; clip?: string }[]
@@ -228,4 +238,9 @@ export const nativeFiles = {
     if (!isNative()) return null
     try { return (await TabBar.pickFile()).content ?? null } catch { return null }
   },
+}
+
+/* ── Toast (App): Glas-Kapsel oben über allem ── */
+export const nativeToast = (text: string, tone?: 'info' | 'success' | 'error', symbol?: string) => {
+  if (isNative()) void TabBar.toast({ text, tone, symbol }).catch(() => undefined)
 }

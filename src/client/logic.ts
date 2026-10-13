@@ -308,7 +308,7 @@ export function fmtDuration(sec: number) {
 export const fmtDate = (date: string) =>
   new Date(`${date}T12:00`).toLocaleDateString(intl(), { weekday: 'short', day: '2-digit', month: '2-digit' })
 export const fmtSet = (x: SetLog, ex: Exercise) =>
-  `${x.value}${ex.unit === 'seconds' ? ' s' : ''}${x.weightKg ? ` +${x.weightKg} kg` : ''}`
+  `${x.value}${ex.unit === 'seconds' ? ' s' : ''}${x.weightKg ? ` +${fmtNum(x.weightKg)} kg` : ''}`
 export const fmtRest = (sec: number) => (sec >= 60 ? `${fmtClock(sec)} min` : `${sec} s`)
 
 /* ── Ansicht eines Workouts ──────────────────────────────────────────────── */

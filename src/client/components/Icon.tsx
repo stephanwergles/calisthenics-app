@@ -3,7 +3,7 @@
    damit das Set an einer Stelle austauschbar bleibt. Rein dekorativ – das Label trägt der Button. */
 import {
   ArrowDown, ArrowUp, CalendarDays, CircleUserRound, ClipboardList, History, Check, ChevronDown, ChevronLeft, ChevronRight, Database, Dumbbell, List, Lock,
-  MessageSquareText, Minus, Network, Pause, Pencil, Play, Plus, SlidersHorizontal, SkipForward, Square, Timer, Trash2, Trophy, Undo2, X, type LucideIcon,
+  MessageSquareText, Minus, Network, Pause, Pencil, Play, Plus, RefreshCw, SlidersHorizontal, SkipForward, Square, Timer, Trash2, Trophy, Undo2, X, type LucideIcon,
 } from 'lucide-react'
 
 const ICONS = {
@@ -11,7 +11,7 @@ const ICONS = {
   play: Play, stop: Square, check: Check, pause: Pause, minus: Minus, plus: Plus, undo: Undo2, up: ArrowUp,
   left: ChevronLeft, right: ChevronRight, down: ChevronDown, timer: Timer, note: MessageSquareText, close: X,
   lock: Lock, trophy: Trophy, list: List, skip: SkipForward, skills: Network, trash: Trash2,
-  adjust: SlidersHorizontal, edit: Pencil, lower: ArrowDown,
+  adjust: SlidersHorizontal, edit: Pencil, lower: ArrowDown, sync: RefreshCw,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS

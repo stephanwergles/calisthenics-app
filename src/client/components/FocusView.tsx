@@ -10,6 +10,7 @@ import { useNow } from '../useNow'
 import { Icon } from './Icon'
 import { ExerciseMedia } from './ExerciseMedia'
 import { tap } from '../native'
+import { t as tr, tn } from '../i18n'
 import { useHoldTimer, type HoldTimer } from '../useHoldTimer'
 import { useNativeShell, usePanel } from '../useNativeSheet'
 import type { NPanel, PanelEvent } from '../native'
@@ -42,20 +43,20 @@ export function FocusView({ t, rest, slots, slot, drag, onMinimize, onList, onPi
     <section className="focus">
       <header className="f-top" {...drag}>
         <span className="grabber f-grabber" aria-hidden="true" />
-        <button className="btn btn-secondary btn-icon f-min" aria-label="Training minimieren" onClick={onMinimize}><Icon name="down" size={22} /></button>
-        <nav className="f-segs" aria-label="Übungen">
+        <button className="btn btn-secondary btn-icon f-min" aria-label={tr('training.focus.minimize')} onClick={onMinimize}><Icon name="down" size={22} /></button>
+        <nav className="f-segs" aria-label={tr('training.focus.exercises')}>
           {slots.map(s => (
             <button key={s.pid} className={`f-seg ${s.state}${s.pid === slot?.pid ? ' current' : ''}`}
-              aria-label={`${s.step.exercise.name}${s.state === 'done' ? ', erledigt' : ''}`} aria-current={s.pid === slot?.pid ? 'step' : undefined}
+              aria-label={s.state === 'done' ? tr('training.focus.segDone', { name: s.step.exercise.name }) : s.step.exercise.name} aria-current={s.pid === slot?.pid ? 'step' : undefined}
               onClick={() => onPick(s.pid)}><i /></button>
           ))}
         </nav>
         {rest.running || rest.ringing
-          ? <button className={`f-clock rest${rest.ringing ? ' ringing' : ''}`} onClick={onRest} aria-label="Pause öffnen">
+          ? <button className={`f-clock rest${rest.ringing ? ' ringing' : ''}`} onClick={onRest} aria-label={tr('training.focus.openRest')}>
               <Icon name="timer" size={16} />{rest.ringing ? '0:00' : L.fmtClock(rest.remaining)}
             </button>
           : <span className="f-clock num">{t.active ? L.fmtDuration(Math.max(0, now - t.active.start) / 1000) : ''}</span>}
-        <button className="btn btn-secondary btn-icon f-list" aria-label="Alle Übungen" onClick={onList}><Icon name="list" size={20} /></button>
+        <button className="btn btn-secondary btn-icon f-list" aria-label={tr('training.focus.allExercises')} onClick={onList}><Icon name="list" size={20} /></button>
       </header>
 
       {!slot ? <AllDone onBack={onList} onFinish={t.active ? onFinish : undefined} /> : (
@@ -69,10 +70,10 @@ export function FocusView({ t, rest, slots, slot, drag, onMinimize, onList, onPi
 function AllDone({ onBack, onFinish }: { onBack: () => void; onFinish?: () => void }) {
   return (
     <div className="f-done">
-      <span className="display f-done-title">Stark<span className="accent">.</span></span>
-      <p>Alle Übungen erledigt oder übersprungen. In der Übersicht warten Cool-down und deine Notiz zur Einheit.</p>
-      {onFinish && <button className="btn btn-primary btn-block f-cta" onClick={onFinish}><Icon name="check" size={20} /> Training beenden</button>}
-      <button className={`btn ${onFinish ? 'btn-secondary' : 'btn-primary f-cta'} btn-block`} onClick={onBack}><Icon name="list" /> Alle Übungen</button>
+      <span className="display f-done-title">{tr('training.strong')}<span className="accent">.</span></span>
+      <p>{tr('training.focus.allDone')}</p>
+      {onFinish && <button className="btn btn-primary btn-block f-cta" onClick={onFinish}><Icon name="check" size={20} /> {tr('training.focus.finish')}</button>}
+      <button className={`btn ${onFinish ? 'btn-secondary' : 'btn-primary f-cta'} btn-block`} onClick={onBack}><Icon name="list" /> {tr('training.focus.allExercises')}</button>
     </div>
   )
 }
@@ -134,7 +135,7 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved, 
   const native = useNativeShell()
   const tiles: NPanel['tiles'] = Array.from({ length: bars }, (_, i) => {
     const v = slot.sets.find(x => x.set === i + 1)
-    return { n: i + 1, text: v ? String(v.value) : '', sub: v?.weightKg ? `+${String(v.weightKg).replace('.', ',')}` : undefined,
+    return { n: i + 1, text: v ? String(v.value) : '', sub: v?.weightKg ? `+${L.fmtNum(v.weightKg)}` : undefined,
       state: v ? 'done' : i + 1 === setNo ? 'current' : 'open', note: !!v?.note }
   })
   const canRemove = slot.planned > Math.max(1, ...slot.sets.map(x => x.set))
@@ -149,23 +150,23 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved, 
   }
   usePanel(native && panel && setNo === null ? {
     key: `${slot.pid}-state`, caption: '', value: '', seconds: false, timerPhase: 'idle', primary: 'save', tiles, canRemove,
-    stateText: slot.state === 'skipped' ? 'Heute übersprungen.' : slot.state === 'paused' ? 'Pausiert, bis du sie wieder aufnimmst.'
-      : `Alle ${slot.planned} Sätze erfasst: ${slot.sets.map(x => L.fmtSet(x, ex)).join(' · ')}`,
-    stateButton: slot.state === 'skipped' ? 'Doch machen' : slot.state === 'paused' ? 'Wieder aufnehmen' : undefined,
+    stateText: slot.state === 'skipped' ? tr('training.skippedToday') : slot.state === 'paused' ? tr('training.pausedUntil')
+      : tn('training.focus.allLogged', slot.planned, { sets: slot.sets.map(x => L.fmtSet(x, ex)).join(' · ') }),
+    stateButton: slot.state === 'skipped' ? tr('training.undoSkip') : slot.state === 'paused' ? tr('training.resume') : undefined,
   } : null, onTileEvent)
 
   return (
     <>
       <div className="f-scroll">
       <div className="f-figure">
-        <span className="f-label">{L.BLOCK_LABEL[slot.block]} · {index + 1}/{total}{step.total > 1 && <span className="f-level"> · Stufe {step.index + 1}/{step.total}</span>}</span>
-        <button className="btn btn-secondary btn-sm f-opts" onClick={() => openOptions(slot.pid)}>Technik</button>
-        <ExerciseMedia exercise={ex} label={`Bewegung: ${ex.name}`} />
+        <span className="f-label">{L.BLOCK_LABEL[slot.block]} · {index + 1}/{total}{step.total > 1 && <span className="f-level"> · {tr('logic.stage', { i: step.index + 1, n: step.total })}</span>}</span>
+        <button className="btn btn-secondary btn-sm f-opts" onClick={() => openOptions(slot.pid)}>{tr('training.focus.technique')}</button>
+        <ExerciseMedia exercise={ex} label={tr('training.focus.movement', { name: ex.name })} />
         {/* Name und Muskeln liegen im Bild – alles Wichtige passt so über das Erfassungs-Sheet */}
         <div className="f-over">
           <h1 className="display f-name">{ex.name}</h1>
           {muscles.length > 0 && (
-            <p className="f-muscles" aria-label="Muskeln">
+            <p className="f-muscles" aria-label={tr('training.focus.muscles')}>
               {muscles.map((m, i) => <span key={m} className={i < 2 ? 'main' : ''}>{m}</span>)}
             </p>
           )}
@@ -173,18 +174,18 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved, 
       </div>
 
       {ex.cues?.length ? (
-        <ol className="f-cues" aria-label="Worauf es ankommt">
+        <ol className="f-cues" aria-label={tr('training.focus.cues')}>
           {ex.cues.map((c, i) => <li key={i}><span className="num">{i + 1}</span>{c}</li>)}
         </ol>
       ) : <p className="f-exec">{ex.technique.execution}</p>}
 
       {lastNotes.map(n => (
-        <p key={n.set} className="f-note"><Icon name="note" size={16} /><span>Letztes Mal, Satz {n.set}: „{n.note}“</span></p>
+        <p key={n.set} className="f-note"><Icon name="note" size={16} /><span>{tr('training.focus.lastNote', { set: n.set, note: n.note })}</span></p>
       ))}
 
       {slot.ready && step.next && (
         <button className="btn btn-outline btn-block" onClick={() => t.setState(st => ({ ...st, current: { ...st.current, [slot.pid]: step.next!.id } }))}>
-          <Icon name="up" /> Bereit für: {step.next.name}
+          <Icon name="up" /> {tr('training.focus.readyFor', { name: step.next.name })}
         </button>
       )}
 
@@ -194,50 +195,50 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved, 
         <SetInput key={`${slot.pid}-${setNo}`} t={t} rest={rest} slot={slot} setNo={setNo} seconds={seconds} onSaved={onSaved}
           note="" onNoteToggle={() => undefined} panel={panel ? { tiles, canRemove, onTileEvent } : null} />
       )}
-      {!native && <div className={`f-bottom${expanded ? ' expanded' : ''}`} role="region" aria-label="Satz erfassen" onPointerDown={onSheetDown}>
+      {!native && <div className={`f-bottom${expanded ? ' expanded' : ''}`} role="region" aria-label={tr('training.focus.logSet')} onPointerDown={onSheetDown}>
         {/* Tastatur/Screenreader: Griff ist ein Button; Zeiger-Tipp schaltet in onSheetDown um */}
         <button className="f-handle" onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(x => !x) } }}
-          aria-expanded={expanded} aria-label={expanded ? 'Erfassung einklappen' : 'Mehr: Sätze und Notiz'}>
+          aria-expanded={expanded} aria-label={expanded ? tr('training.focus.collapse') : tr('training.focus.expand')}>
           <span className="grabber" aria-hidden="true" />
         </button>
         <div className={`f-more${dragH !== null ? ' dragging' : ''}`} style={{ height: moreH }} aria-hidden={!expanded}><div ref={moreRef}>
-        <span className="f-more-label">Sätze</span>
+        <span className="f-more-label">{tr('training.focus.sets')}</span>
         <div className="f-bars">
           {Array.from({ length: bars }, (_, i) => {
             const v = slot.sets.find(x => x.set === i + 1)
             const cls = v ? 'done' : i + 1 === setNo ? 'current' : ''
             return (
               <button key={i} className={`f-bar ${cls}${v?.note ? ' has-note' : ''}`} onClick={() => openSet(slot.pid, i + 1)}
-                aria-label={v ? `Satz ${i + 1}: ${L.fmtSet(v, ex)} – ändern` : `Satz ${i + 1} erfassen`}>
+                aria-label={v ? tr('training.focus.setEdit', { set: i + 1, value: L.fmtSet(v, ex) }) : tr('training.focus.setLog', { set: i + 1 })}>
                 <span className="num">{v ? v.value : ''}</span>
               </button>
             )
           })}
           {slot.planned > Math.max(1, ...slot.sets.map(x => x.set)) && (
-            <button className="f-bar add" aria-label="Einen Satz weniger" onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned - 1))}><Icon name="minus" size={14} /></button>
+            <button className="f-bar add" aria-label={tr('training.focus.setLess')} onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned - 1))}><Icon name="minus" size={14} /></button>
           )}
-          <button className="f-bar add" aria-label="Einen Satz mehr" onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned + 1))}><Icon name="plus" size={14} /></button>
+          <button className="f-bar add" aria-label={tr('training.focus.setMore')} onClick={() => t.updateToday(x => L.withPlan(x, slot.pid, slot.planned + 1))}><Icon name="plus" size={14} /></button>
         </div>
         {setNo !== null && (
           <label className="field f-notefield">
-            <span className="f-more-label">Notiz zu Satz {setNo}</span>
-            <textarea rows={2} maxLength={L.NOTE_MAX} value={note} placeholder="z. B. Ellenbogen gezwickt" onChange={e => setNote(e.target.value)} />
+            <span className="f-more-label">{tr('training.focus.noteSet', { set: setNo })}</span>
+            <textarea rows={2} maxLength={L.NOTE_MAX} value={note} placeholder={tr('training.focus.noteSetPlaceholder')} onChange={e => setNote(e.target.value)} />
           </label>
         )}
         </div></div>
 
         {slot.state === 'skipped' || slot.state === 'paused' ? (
           <div className="f-state">
-            <p>{slot.state === 'skipped' ? 'Heute übersprungen.' : 'Pausiert, bis du sie wieder aufnimmst.'}</p>
+            <p>{slot.state === 'skipped' ? tr('training.skippedToday') : tr('training.pausedUntil')}</p>
             <button className="btn btn-secondary btn-block" onClick={() => slot.state === 'skipped'
               ? t.updateToday(x => L.withSkip(x, ex.id, false))
               : t.setState(st => ({ ...st, paused: st.paused.filter(p => p !== slot.pid) }))}>
-              <Icon name="undo" /> {slot.state === 'skipped' ? 'Doch machen' : 'Wieder aufnehmen'}
+              <Icon name="undo" /> {slot.state === 'skipped' ? tr('training.undoSkip') : tr('training.resume')}
             </button>
           </div>
         ) : setNo === null ? (
           <div className="f-state">
-            <p><Icon name="check" /> Alle {slot.planned} Sätze erfasst: {slot.sets.map(x => L.fmtSet(x, ex)).join(' · ')}</p>
+            <p><Icon name="check" /> {tn('training.focus.allLogged', slot.planned, { sets: slot.sets.map(x => L.fmtSet(x, ex)).join(' · ') })}</p>
           </div>
         ) : (
           <SetInput key={`${slot.pid}-${setNo}`} t={t} rest={rest} slot={slot} setNo={setNo} seconds={seconds} onSaved={onSaved}
@@ -274,19 +275,19 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, note, onNoteToggle, 
     // Rückmeldung für den Pausen-Screen: Wert und Vergleich zum gleichen Satz beim letzten Mal
     const before = slot.last?.sets.find(x => x.set === setNo)
     const d = before ? value - before.value : null
-    const unit = seconds ? 's' : 'Wdh.'
-    onSaved(slot, setNo, `${value}${weight ? ` +${weight} kg` : ''} ${unit}${d === null ? '' : d === 0 ? ' · wie letztes Mal' : ` · ${d > 0 ? '+' : '−'}${Math.abs(d)} zum letzten Mal`}`)
+    const unit = seconds ? 's' : tr('training.unitReps')
+    onSaved(slot, setNo, `${value}${weight ? ` +${weight} kg` : ''} ${unit}${d === null ? '' : d === 0 ? tr('training.focus.sameAsLast') : tr('training.focus.vsLast', { d: `${d > 0 ? '+' : '−'}${Math.abs(d)}` })}`)
   }
 
   // Ziel und letzter Wert stehen direkt über dem Zähler (statt als Chips im verdeckten Inhalt)
   const lastSet = slot.last?.sets.find(x => x.set === setNo)
-  const caption = `Satz ${setNo}/${slot.planned} · Ziel ${target.label}${lastSet ? ` · zuletzt ${lastSet.value}${seconds ? ' s' : ''}${lastSet.weightKg ? ` +${String(lastSet.weightKg).replace('.', ',')} kg` : ''}` : ''}`
+  const caption = `${tr('training.focus.caption', { set: setNo, planned: slot.planned, target: target.label })}${lastSet ? tr('training.focus.captionLast', { value: `${lastSet.value}${seconds ? ' s' : ''}${lastSet.weightKg ? ` +${L.fmtNum(lastSet.weightKg)} kg` : ''}` }) : ''}`
   usePanel(panel ? {
     key: `${slot.pid}-${setNo}`, caption, value: String(value), unit: seconds ? 's' : undefined,
-    weight: ex.weighted ? String(weight).replace('.', ',') : undefined, seconds,
+    weight: ex.weighted ? L.fmtNum(weight) : undefined, seconds,
     timerPhase: hold.phase, timerLeft: hold.left, timerShare: Math.round(hold.share * 1000) / 1000,
-    timerTitle: timing ? 'Timer abbrechen' : hold.phase === 'done' ? `Nochmal · ${value} s` : `Timer starten · ${value} s`,
-    primary: timerFirst ? 'timer' : 'save', doneHint: hold.phase === 'done' ? `${value} s gehalten – jetzt speichern` : undefined,
+    timerTitle: timing ? tr('training.focus.cancelTimer') : hold.phase === 'done' ? tr('training.focus.again', { n: value }) : tr('training.focus.startTimer', { n: value }),
+    primary: timerFirst ? 'timer' : 'save', doneHint: hold.phase === 'done' ? tr('training.focus.held', { n: value }) : undefined,
     tiles: panel.tiles, canRemove: panel.canRemove,
   } : null, e => {
     if (e.type === 'minus') setValue(v => Math.max(1, v - stepBy))
@@ -305,30 +306,30 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, note, onNoteToggle, 
       <p className="f-caption">{caption}</p>
       {timing ? <HoldRing hold={hold} /> : (
         <div className="f-counter">
-          <button className="f-round" aria-label={`${stepBy} weniger`} onClick={() => setValue(v => Math.max(1, v - stepBy))}><Icon name="minus" size={28} /></button>
+          <button className="f-round" aria-label={tr('training.focus.less', { n: stepBy })} onClick={() => setValue(v => Math.max(1, v - stepBy))}><Icon name="minus" size={28} /></button>
           <output className="num f-value" aria-live="polite">{value}{seconds && <small>s</small>}</output>
-          <button className="f-round" aria-label={`${stepBy} mehr`} onClick={() => setValue(v => v + stepBy)}><Icon name="plus" size={28} /></button>
+          <button className="f-round" aria-label={tr('training.focus.more', { n: stepBy })} onClick={() => setValue(v => v + stepBy)}><Icon name="plus" size={28} /></button>
         </div>
       )}
       {ex.weighted && (
         <div className="f-weight">
-          <span>Zusatzgewicht</span>
-          <button className="btn btn-secondary btn-icon" aria-label="2,5 kg weniger" onClick={() => setWeight(w => Math.max(0, +(w - 2.5).toFixed(1)))}><Icon name="minus" /></button>
-          <output className="num">{String(weight).replace('.', ',')} <small>kg</small></output>
-          <button className="btn btn-secondary btn-icon" aria-label="2,5 kg mehr" onClick={() => setWeight(w => +(w + 2.5).toFixed(1))}><Icon name="plus" /></button>
+          <span>{tr('training.focus.weight')}</span>
+          <button className="btn btn-secondary btn-icon" aria-label={tr('training.focus.weightLess')} onClick={() => setWeight(w => Math.max(0, +(w - 2.5).toFixed(1)))}><Icon name="minus" /></button>
+          <output className="num">{L.fmtNum(weight)} <small>kg</small></output>
+          <button className="btn btn-secondary btn-icon" aria-label={tr('training.focus.weightMore')} onClick={() => setWeight(w => +(w + 2.5).toFixed(1))}><Icon name="plus" /></button>
         </div>
       )}
       {seconds && (timing
-        ? <button className="btn btn-secondary btn-block f-timer" onClick={hold.cancel}><Icon name="close" size={20} /> Timer abbrechen</button>
+        ? <button className="btn btn-secondary btn-block f-timer" onClick={hold.cancel}><Icon name="close" size={20} /> {tr('training.focus.cancelTimer')}</button>
         : <button className={`btn ${timerFirst ? 'btn-primary' : 'btn-outline'} btn-block f-timer`} onClick={() => hold.start(value)}>
-            <Icon name="timer" size={22} /> {hold.phase === 'done' ? `Nochmal · ${value} s` : `Timer starten · ${value} s`}
+            <Icon name="timer" size={22} /> {hold.phase === 'done' ? tr('training.focus.again', { n: value }) : tr('training.focus.startTimer', { n: value })}
           </button>)}
-      {hold.phase === 'done' && <p className="f-holddone"><Icon name="check" size={16} /> {value} s gehalten – jetzt speichern</p>}
+      {hold.phase === 'done' && <p className="f-holddone"><Icon name="check" size={16} /> {tr('training.focus.held', { n: value })}</p>}
       <div className="f-actions">
-        <button className={`btn btn-secondary f-notebtn${note.trim() ? ' on' : ''}`} aria-label="Notiz zu diesem Satz" onClick={onNoteToggle}>
+        <button className={`btn btn-secondary f-notebtn${note.trim() ? ' on' : ''}`} aria-label={tr('training.focus.noteThisSet')} onClick={onNoteToggle}>
           <Icon name="note" size={22} />
         </button>
-        <button className={`btn ${timerFirst ? 'btn-secondary' : 'btn-primary'} grow f-cta`} onClick={() => save()}><Icon name="check" size={22} /> Satz speichern</button>
+        <button className={`btn ${timerFirst ? 'btn-secondary' : 'btn-primary'} grow f-cta`} onClick={() => save()}><Icon name="check" size={22} /> {tr('training.focus.saveSet')}</button>
       </div>
     </>
   )
@@ -347,7 +348,7 @@ function HoldRing({ hold }: { hold: HoldTimer }) {
       </svg>
       <div className="fh-center">
         <span className="num fh-time">{hold.left}</span>
-        <small>{prep ? 'In Position' : 'Halten!'}</small>
+        <small>{prep ? tr('training.focus.inPosition') : tr('training.focus.hold')}</small>
       </div>
     </div>
   )

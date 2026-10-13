@@ -5,6 +5,7 @@ import type { Training } from '../useTraining'
 import type { RestTimer } from '../useRestTimer'
 import { Icon } from './Icon'
 import { ask } from '../native'
+import { t as tr } from '../i18n'
 
 /** Eine Zeile: ohne Session nur „Workout starten“. Mit Session links Dauer + Workout (Tipp öffnet
     das Training), rechts außen Beenden. Während einer Pause stattdessen Timer + drei Längen zum Umschalten. */
@@ -21,7 +22,7 @@ export function BottomBar({ t, rest, onStart, onStop, onOpen }: { t: Training; r
     <div className={`bar${rest.ringing ? ' alarm' : ''}${!t.active ? ' start' : ''}`}>
       {!t.active ? (
         <>
-          <button className="btn btn-primary grow bar-start" onClick={onStart}><Icon name="play" size={20} /> {t.ix.workouts.get(t.workout)!.name} starten</button>
+          <button className="btn btn-primary grow bar-start" onClick={onStart}><Icon name="play" size={20} /> {tr('training.bar.start', { name: t.ix.workouts.get(t.workout)!.name })}</button>
           {(rest.running || rest.ringing) && <RestButton rest={rest} />}
         </>
       ) : (
@@ -34,16 +35,16 @@ export function BottomBar({ t, rest, onStart, onStop, onOpen }: { t: Training; r
               ))}</div>}
             </>
           ) : (
-            <button className="session" onClick={onOpen} title="Training öffnen">
+            <button className="session" onClick={onOpen} title={tr('training.bar.open')}>
               <span className="dot" aria-hidden="true" />
               <span className="session-info">
                 <span className="session-time">{L.fmtDuration(Math.max(0, now - t.active.start) / 1000)}</span>
-                <span className="session-name">{t.ix.workouts.get(t.active.workout)?.name ?? 'Training'}</span>
+                <span className="session-name">{t.ix.workouts.get(t.active.workout)?.name ?? tr('training.bar.fallback')}</span>
               </span>
               <Icon name="right" size={18} />
             </button>
           )}
-          <button className="btn btn-secondary btn-icon stop" onClick={async () => { if (await ask({ title: 'Training beenden?', message: 'Die Zeit wird gespeichert.', ok: 'Beenden' })) onStop() }} aria-label="Workout beenden">
+          <button className="btn btn-secondary btn-icon stop" onClick={async () => { if (await ask({ title: tr('training.bar.stopTitle'), message: tr('training.bar.stopMessage'), ok: tr('training.bar.stopOk') })) onStop() }} aria-label={tr('training.bar.stop')}>
             <Icon name="stop" size={16} />
           </button>
         </>
@@ -54,8 +55,8 @@ export function BottomBar({ t, rest, onStart, onStop, onOpen }: { t: Training; r
 
 function RestButton({ rest }: { rest: RestTimer }) {
   return (
-    <button className="btn btn-outline rest" onClick={rest.stop} aria-label="Pausen-Timer stoppen">
-      {rest.ringing ? 'FERTIG' : <><Icon name="timer" size={18} />{L.fmtClock(rest.remaining)}</>}
+    <button className="btn btn-outline rest" onClick={rest.stop} aria-label={tr('training.bar.stopRest')}>
+      {rest.ringing ? tr('training.bar.ringing') : <><Icon name="timer" size={18} />{L.fmtClock(rest.remaining)}</>}
     </button>
   )
 }

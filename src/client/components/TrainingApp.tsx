@@ -27,18 +27,31 @@ import { PlanSheet } from './WorkoutView'
 import { WorkoutsHost } from './PlanEditor'
 import { SkillSheet } from './SkillsView'
 import { useDrag, usePresence } from '../useSheet'
+import { currentChoice, initialLocale, saveLocale, setLocale, t as tr, type Locale, type LocaleChoice } from '../i18n'
+import { Toaster } from './Toaster'
 
 type SheetState = { kind: 'set'; pid: string; setNo: number } | { kind: 'activity'; date: string } | { kind: 'options'; pid: string } | null
 type View = 'train' | 'plan' | 'skills' | 'history'
-const VIEWS: [View, string, IconName][] = [['train', 'Heute', 'training'], ['plan', 'Plan', 'plan'], ['skills', 'Skills', 'skills'], ['history', 'Log', 'history']]
+const VIEWS: [View, IconName][] = [['train', 'training'], ['plan', 'plan'], ['skills', 'skills'], ['history', 'history']]
+const tabTitle = (v: View) => tr(`app.tab.${v}`)
 /** SF Symbols für die native Tab-Leiste der iOS-App */
 const SYMBOLS: Record<View, string> = { train: 'figure.strengthtraining.traditional', plan: 'list.bullet.rectangle', skills: 'point.3.connected.trianglepath.dotted', history: 'clock.arrow.circlepath' }
 
 /** kleiner Punkt am „Daten“-Button: grün = abgeglichen, orange = läuft/wartet, rot = Fehler, grau = nicht angemeldet/offline */
 const syncDot = (s: Training['sync']) => !s.account ? '' : s.phase === 'error' ? 'err' : s.phase === 'syncing' || s.pending ? 'busy' : s.phase === 'offline' ? '' : 'on'
-const syncLabel = (s: Training['sync']) => !s.account ? 'Nicht angemeldet' : s.phase === 'error' ? 'Sync-Fehler' : s.pending ? 'Änderungen warten auf Abgleich' : 'Abgeglichen'
+const syncLabel = (s: Training['sync']) => !s.account ? tr('app.sync.signedOut') : s.phase === 'error' ? tr('app.sync.error') : s.pending ? tr('app.sync.pending') : tr('app.sync.synced')
+
 
 export function TrainingApp() {
+  // Sprache vor dem ersten Rendern der Texte setzen; Wechsel → State → ganze App rendert neu
+  const [locale, setLocaleState] = useState<Locale>(() => { const l = initialLocale(); setLocale(l); return l })
+  const [localeChoice, setLocaleChoice] = useState<LocaleChoice>(currentChoice)
+  const changeLocale = (l: LocaleChoice) => {
+    saveLocale(l)
+    const next = initialLocale()
+    setLocale(next); setLocaleChoice(l); setLocaleState(next)
+  }
+  useEffect(() => { document.documentElement.lang = locale }, [locale])
   const t = useTraining()
   const ps = usePlanSuggestion(t)
   const rest = useRestTimer()
@@ -82,7 +95,7 @@ export function TrainingApp() {
 
   const slots = useMemo(
     () => (t.loaded ? L.workoutSlots(t.ix, t.workout, t.state, t.todaySession, t.sessions, t.today, { meta: catalogData(t.ix.catalog).meta }) : []),
-    [t.loaded, t.ix, t.workout, t.state, t.todaySession, t.sessions, t.today],
+    [t.loaded, t.ix, t.workout, t.state, t.todaySession, t.sessions, t.today, locale],   // locale: Beschriftungen in den Slots
   )
   // Fokus: ausgewählte Übung, sonst die erste offene
   const focus = picked && slots.some(s => s.pid === picked) ? picked : L.firstOpen(slots.map(s => ({ pid: s.pid, state: s.state })))
@@ -122,7 +135,7 @@ export function TrainingApp() {
   }
   useEffect(() => {
     if (!t.loaded || !splashDone || !isNative()) return
-    void nativeTabs.configure(VIEWS.map(([id, title]) => ({ id, title, symbol: SYMBOLS[id] })), view, id => goTo.current(id as View), id => onAction.current(id))
+    void nativeTabs.configure(VIEWS.map(([id]) => ({ id, title: tabTitle(id), symbol: SYMBOLS[id] })), view, id => goTo.current(id as View), id => onAction.current(id))
       .then(ok => setNativeShell(ok))
   }, [t.loaded, splashDone]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (nativeShell) nativeTabs.select(view) }, [nativeShell, view])
@@ -167,8 +180,8 @@ export function TrainingApp() {
   const restNext = restOpen ? L.upNext(slots, focus) : null
   const restSpec = nativeShell && restOpen ? JSON.stringify({
     end: rest.end, total: rest.total, ringing: rest.ringing, saved: restView || undefined,
-    nextTitle: restNext ? `Satz ${restNext.setNo} von ${restNext.slot.planned}` : undefined,
-    nextSubtitle: restNext ? `${restNext.slot.step.exercise.name} · Ziel ${restNext.slot.step.target.label}` : undefined,
+    nextTitle: restNext ? tr('app.restNext', { set: restNext.setNo, total: restNext.slot.planned }) : undefined,
+    nextSubtitle: restNext ? tr('app.restNextSub', { name: restNext.slot.step.exercise.name, target: restNext.slot.step.target.label }) : undefined,
     nextClip: restNext && hasClip(restNext.slot.step.exercise.id) ? restNext.slot.step.exercise.id : undefined,
   }) : ''
   useEffect(() => { if (nativeShell) nativeRest.set(restSpec ? JSON.parse(restSpec) : null) }, [nativeShell, restSpec])
@@ -182,6 +195,8 @@ export function TrainingApp() {
   // Punkt am Plan-Tab, solange ein Vorschlag auf Bestätigung wartet
   const pending = !!ps.suggestion
   useEffect(() => { if (nativeShell) nativeTabs.badge('plan', pending ? '' : null, 'volt') }, [nativeShell, pending])
+  // Sprachwechsel: nur die Tab-Titel tauschen
+  useEffect(() => { if (nativeShell) nativeTabs.retitle(VIEWS.map(([id]) => ({ id, title: tabTitle(id) }))) }, [nativeShell, locale])
 
   // Splash steht in beiden Zweigen an derselben Stelle – so läuft die Animation beim Laden einfach weiter
   const splash = <Splash ready={t.loaded} onDone={() => setSplashDone(true)} />
@@ -194,7 +209,7 @@ export function TrainingApp() {
     <main ref={scroller} className={`app${showBar ? ' with-bar' : ''}`} aria-hidden={trainOpen || undefined}>
       <h1 className="sr-only">Lever</h1>
       {!nativeShell && (
-        <button className="profile-btn" aria-label={`Profil – ${syncLabel(t.sync)}`} onClick={() => setProfileOpen(true)}>
+        <button className="profile-btn" aria-label={tr('app.profileButton', { status: syncLabel(t.sync) })} onClick={() => setProfileOpen(true)}>
           <Icon name="user" size={22} />
           <span className={`sync-dot ${syncDot(t.sync)}`} aria-hidden="true" />
         </button>
@@ -210,7 +225,7 @@ export function TrainingApp() {
     </main>
 
       {train.mounted && (
-        <div className={`tsheet${train.shown ? ' open' : ''}${nativeShell ? ' native-panel' : ''}`} role="dialog" aria-modal="true" aria-label="Training"
+        <div className={`tsheet${train.shown ? ' open' : ''}${nativeShell ? ' native-panel' : ''}`} role="dialog" aria-modal="true" aria-label={tr('app.training')}
           style={{ ...trainDrag.style, ...(panelH ? { ['--panel-h' as string]: `${panelH}px` } : {}) }}>
           <FocusView t={t} rest={rest} slots={slots} slot={focusSlot} drag={trainDrag.bind}
             onMinimize={() => setTrainOpen(false)}
@@ -232,15 +247,15 @@ export function TrainingApp() {
 
       <div className={`dock${trainOpen ? ' under' : ''}`}>
         {showBar && <BottomBar t={t} rest={rest} onStart={start} onStop={finish} onOpen={() => setTrainOpen(true)} />}
-        {!nativeShell && <nav className="tabs" aria-label="Bereiche">
-          {VIEWS.map(([k, l, icon]) => (
+        {!nativeShell && <nav className="tabs" aria-label={tr('app.tabsLabel')}>
+          {VIEWS.map(([k, icon]) => (
             <button key={k} className={view === k ? 'on' : ''} aria-current={view === k ? 'page' : undefined}
               onClick={() => { setView(k); toTop() }}>
               <span className="tab-icon">
                 <Icon name={icon} size={22} />
-                {k === 'plan' && pending && <span className="sync-dot busy" role="img" aria-label="Planvorschlag wartet" />}
+                {k === 'plan' && pending && <span className="sync-dot busy" role="img" aria-label={tr('app.planPending')} />}
               </span>
-              {l}
+              {tabTitle(k)}
             </button>
           ))}
         </nav>}
@@ -252,7 +267,7 @@ export function TrainingApp() {
           onSavedWorkout={id => { setPlanOpen(false); setWorkouts({ edit: id }) }} />
       )}
       {workouts && <WorkoutsHost t={t} list={false} initial={workouts.edit} onClose={() => setWorkouts(null)} />}
-      {profileOpen && <ProfileSheet t={t} onClose={() => setProfileOpen(false)} />}
+      {profileOpen && <ProfileSheet t={t} onClose={() => setProfileOpen(false)} localeChoice={localeChoice} changeLocale={changeLocale} />}
       {onboarding && <Onboarding t={t} ps={ps} onClose={() => setOnboarding(false)} />}
       {skillPid && <SkillSheet t={t} pid={skillPid} onClose={() => setSkillPid(null)} />}
       {day && <DaySheet t={t} item={day} onClose={() => setDay(null)} openActivity={date => setSheet({ kind: 'activity', date })} />}
@@ -269,6 +284,7 @@ export function TrainingApp() {
       {sheetSlot && sheet?.kind === 'options' && !nativeShell && <ExerciseSheet t={t} slot={sheetSlot} onClose={() => setSheet(null)} />}
       {sheet?.kind === 'activity' && <ActivitySheet t={t} date={sheet.date} onClose={() => setSheet(null)} />}
       <ConsentGate t={t} />
+      {!nativeShell && <Toaster />}
       {summarySession && <SummaryOverlay t={t} session={summarySession} onClose={() => { setSummaryId(null); toTop() }} />}
     </div>
     </NativeShell.Provider>

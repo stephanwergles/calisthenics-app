@@ -1,18 +1,22 @@
 /* Einwilligung (Art. 9 DSGVO) und Gesundheits-Hinweis. Neue Textfassung = Version hochzählen,
-   dann fragt die App erneut. Texte: ENTWURF – vor dem Store-Release rechtlich prüfen lassen. */
+   dann fragt die App erneut. Texte: ENTWURF – vor dem Store-Release rechtlich prüfen lassen.
+   Die Texte selbst stehen im Wörterbuch (i18n/<sprache>/profile.ts: disclaimer, health);
+   die Getter lesen immer in der aktuellen Sprache. */
+import { t } from './i18n'
+
 export const HEALTH_CONSENT_VERSION = '2026-10-13'
 export const DISCLAIMER_VERSION = '2026-10-13'
 export const PRIVACY_URL = 'https://calisthenics.apps.blank-studio.de/datenschutz'
 
 export const DISCLAIMER = {
-  title: 'Bevor du startest',
-  text: 'Lever macht Trainingsvorschläge, ersetzt aber keine ärztliche oder physiotherapeutische Beratung. Trainiere nur, wenn du dich gesund fühlst, und hör bei Schmerzen sofort auf. Bei Vorerkrankungen, Verletzungen oder Unsicherheit sprich vorher mit einer Ärztin oder einem Arzt.',
-  ok: 'Verstanden',
+  get title() { return t('profile.disclaimer.title') },
+  get text() { return t('profile.disclaimer.text') },
+  get ok() { return t('profile.disclaimer.ok') },
 }
 
 export const HEALTH_CONSENT = {
-  title: 'Einwilligung Gesundheitsdaten',
-  text: 'Für Sicherung und Abgleich speichert Lever deine Trainingsdaten – Einheiten, Sätze, Notizen, Cardio und deinen Trainingsstand – auf dem Lever-Server. Diese Angaben können Rückschlüsse auf deine Gesundheit zulassen und sind deshalb besonders geschützt (Art. 9 DSGVO). Ich willige ein, dass sie zu diesem Zweck verarbeitet werden. Widerrufen kann ich jederzeit, indem ich mich abmelde oder mein Konto lösche; ohne Einwilligung bleibt alles nur auf diesem Gerät.',
-  short: 'Ich willige ein, dass meine Trainingsdaten (Gesundheitsdaten, Art. 9 DSGVO) für Sicherung und Abgleich auf dem Lever-Server gespeichert werden.',
-  ok: 'Einwilligen',
+  get title() { return t('profile.health.title') },
+  get text() { return t('profile.health.text') },
+  get short() { return t('profile.health.short') },
+  get ok() { return t('profile.health.ok') },
 }

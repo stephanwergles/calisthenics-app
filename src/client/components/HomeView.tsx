@@ -7,6 +7,7 @@ import type { Training } from '../useTraining'
 import { Icon } from './Icon'
 import { Wordmark } from './LeverMark'
 import { ExerciseStill, hasClip } from './ExerciseMedia'
+import { intl, t as tr, tn, getLocale } from '../i18n'
 
 const R = 22, C = 2 * Math.PI * R
 
@@ -16,17 +17,17 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
 }) {
   const w = t.ix.workouts.get(t.workout)!
   const [picking, setPicking] = useState(false)
-  const week = useMemo(() => L.weekStrip(t.ix, t.sessions, t.activities, t.today), [t.ix, t.sessions, t.activities, t.today])
+  const week = useMemo(() => L.weekStrip(t.ix, t.sessions, t.activities, t.today), [t.ix, t.sessions, t.activities, t.today, getLocale()])
   const streak = useMemo(() => L.streakWeeks(t.sessions, t.today, t.state.phases), [t.sessions, t.today, t.state.phases])
   const resting = L.restingPhase(t.state, t.today)
   const blocked = slots.filter(s => s.blockedBy)
   const subs = slots.filter(s => s.substituteFor).length
-  const notice = resting ? `${L.fmtPhase(resting)} – heute ist nichts fällig, deine Serie bleibt.`
-    : blocked.length ? `${blocked.length} ${blocked.length === 1 ? 'Übung ruht' : 'Übungen ruhen'} heute (${[...new Set(blocked.map(s => s.blockedBy))].join(', ')})`
-      + (subs ? ` – ${subs === blocked.length ? 'Ersatz ist eingeplant' : `${subs}× Ersatz eingeplant`}.` : '.')
-    : L.reentry(t.state, t.today) ? 'Wiedereinstieg nach der Pause: diese Woche je Übung ein Satz weniger.' : null
+  const notice = resting ? tr('home.noticeResting', { phase: L.fmtPhase(resting) })
+    : blocked.length ? tn('home.noticeBlocked', blocked.length, { reasons: [...new Set(blocked.map(s => s.blockedBy))].join(', ') })
+      + (subs ? (subs === blocked.length ? tr('home.noticeSubsAll') : tr('home.noticeSubsSome', { n: subs })) : '.')
+    : L.reentry(t.state, t.today) ? tr('home.noticeReentry') : null
   const minutes = useMemo(() => L.estimateMinutes(t.sessions, t.workout), [t.sessions, t.workout])
-  const skills = useMemo(() => L.nextSkills(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
+  const skills = useMemo(() => L.nextSkills(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions, getLocale()])
   // Ziel der Leiter (letzte Stufe) – zeigt, wohin es geht, statt nur die nächste Stufe
   const goalOf = (pid: string) => L.progressionName(t.ix, pid)
 
@@ -35,9 +36,9 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
   const [first, ...rest] = w.focus.split(' · ')
   // Bild im Hero: erste Übung des Tages mit 3D-Clip, sonst die erste mit Skizze
   const hero = (active.find(s => hasClip(s.step.exercise.id)) ?? active[0])?.step.exercise
-  const dateLabel = new Date(`${t.today}T12:00`).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })
+  const dateLabel = new Date(`${t.today}T12:00`).toLocaleDateString(intl(), { weekday: 'long', day: 'numeric', month: 'long' })
   const doneSets = active.reduce((n, s) => n + Math.min(s.sets.length, s.planned), 0)
-  const cta = t.active ? 'Weiter trainieren' : done ? 'Noch eine Runde' : started ? 'Training fortsetzen' : 'Training starten'
+  const cta = t.active ? tr('home.ctaActive') : done ? tr('home.ctaAgain') : started ? tr('home.ctaResume') : tr('home.ctaStart')
 
   return (
     <section className="home">
@@ -45,20 +46,20 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
       <header className="h-head">
         <div>
           <span className="h-date">{dateLabel}</span>
-          <h2 className="display h-title">{done ? <>Heute<br /><span className="accent">erledigt.</span></> : t.active ? <>Weiter mit<br /><span className="accent">{first}.</span></> : <>Bereit für<br /><span className="accent">{first}.</span></>}</h2>
+          <h2 className="display h-title">{done ? <>{tr('home.titleDone')}<br /><span className="accent">{tr('home.titleDoneAccent')}</span></> : t.active ? <>{tr('home.titleActive')}<br /><span className="accent">{first}.</span></> : <>{tr('home.titleReady')}<br /><span className="accent">{first}.</span></>}</h2>
         </div>
         {streak > 0 && (
           <div className="h-streak">
             <span className="num">{streak}</span>
-            <small>{streak === 1 ? 'Woche' : 'Wochen'} in Serie</small>
+            <small>{tn('home.streak', streak)}</small>
           </div>
         )}
       </header>
 
-      <ol className="h-week" aria-label="Diese Woche">
+      <ol className="h-week" aria-label={tr('home.weekAria')}>
         {week.map(d => (
           <li key={d.date} className={['h-day', d.trained && 'trained', d.today && 'today', d.planned && 'planned', d.cardio && 'cardio'].filter(Boolean).join(' ')}
-            aria-label={`${d.label}${d.trained ? ', trainiert' : d.planned ? ', geplant' : ''}${d.cardio ? ', Cardio' : ''}${d.today ? ', heute' : ''}`}>
+            aria-label={`${d.label}${d.trained ? tr('home.dayTrained') : d.planned ? tr('home.dayPlanned') : ''}${d.cardio ? tr('home.dayCardio') : ''}${d.today ? tr('home.dayToday') : ''}`}>
             <small>{d.label}</small>
             <span className="num">{d.trained ? <Icon name="check" size={16} /> : Number(d.date.slice(8))}</span>
           </li>
@@ -69,23 +70,23 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
 
       <div className="h-hero">
         {hero && <ExerciseStill exercise={hero} className="h-still" />}
-        <span className="h-label">Heute · {w.name}{started ? ` · ${doneSets}/${sets} Sätze` : ''}</span>
+        <span className="h-label">{tr('home.heroLabel', { name: w.name })}{started ? tr('home.heroSets', { done: doneSets, total: sets }) : ''}</span>
         <h3 className="display h-focus">{first}{rest.length > 0 && <><br />{rest.join(' · ')}</>}</h3>
-        {!started && <p className="h-meta">{active.length} Übungen · {sets} Sätze{minutes ? ` · ca. ${minutes} min` : ''}</p>}
+        {!started && <p className="h-meta">{tn('home.meta.exercises', active.length)} · {tn('home.meta.sets', sets)}{minutes ? tr('home.metaMinutes', { n: minutes }) : ''}</p>}
         <ul className="h-chips">
           {active.slice(0, 3).map(s => <li key={s.pid}>{s.step.exercise.name}</li>)}
           {active.length > 3 && <li className="more">+{active.length - 3}</li>}
         </ul>
         {done && onSummary
-          ? <button className="btn btn-primary btn-block f-cta" onClick={onSummary}><Icon name="trophy" size={20} /> Abschluss ansehen</button>
+          ? <button className="btn btn-primary btn-block f-cta" onClick={onSummary}><Icon name="trophy" size={20} /> {tr('home.summary')}</button>
           : <button className="btn btn-primary btn-block f-cta" onClick={onStart}><Icon name="play" size={20} /> {cta}</button>}
         {done && <button className="btn btn-secondary btn-block" onClick={onStart}><Icon name="play" size={18} /> {cta}</button>}
         <div className="h-links">
-          <button className="btn btn-ghost btn-sm" onClick={onBrowse}><Icon name="list" size={16} /> Übungen</button>
-          <button className="btn btn-ghost btn-sm" aria-expanded={picking} onClick={() => setPicking(p => !p)}>Tauschen <Icon name="down" size={16} className={picking ? 'flip' : ''} /></button>
+          <button className="btn btn-ghost btn-sm" onClick={onBrowse}><Icon name="list" size={16} /> {tr('home.exercises')}</button>
+          <button className="btn btn-ghost btn-sm" aria-expanded={picking} onClick={() => setPicking(p => !p)}>{tr('home.swap')} <Icon name="down" size={16} className={picking ? 'flip' : ''} /></button>
         </div>
         {picking && (
-          <div className="picker" role="group" aria-label="Workout wählen">
+          <div className="picker" role="group" aria-label={tr('home.pickAria')}>
             {L.workoutsInWeekOrder(t.ix).map(x => (
               <button key={x.id} className={x.id === t.workout ? 'on' : ''} aria-pressed={x.id === t.workout} onClick={() => { t.chooseWorkout(x.id); setPicking(false) }}>
                 <span className="display">{x.name}</span>
@@ -94,8 +95,8 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
               </button>
             ))}
             <button className="manage" onClick={() => { setPicking(false); onManage() }}>
-              <span className="display">Im Plan bearbeiten</span>
-              <small>Eigene Workouts, Übungen und Wochentage</small>
+              <span className="display">{tr('home.manage')}</span>
+              <small>{tr('home.manageSub')}</small>
               <em><Icon name="right" size={16} /></em>
             </button>
           </div>
@@ -105,8 +106,8 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
       {skills.length > 0 && (
         <div className="h-skills">
           <div className="h-skills-head">
-            <h3 className="display">Nächste Skills</h3>
-            <button className="btn btn-ghost btn-sm" onClick={onSkills}>Alle Skills <Icon name="right" size={16} /></button>
+            <h3 className="display">{tr('home.nextSkills')}</h3>
+            <button className="btn btn-ghost btn-sm" onClick={onSkills}>{tr('home.allSkills')} <Icon name="right" size={16} /></button>
           </div>
           <div className="h-skill-grid">
             {skills.map(s => {
@@ -115,7 +116,7 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
               const ready = !!prog && prog.done >= prog.needed
               return (
                 <div key={s.pid} className={`h-skill${ready ? ' ready' : ''}`}>
-                  <svg viewBox="0 0 52 52" role="img" aria-label={ready ? `Bereit für ${s.step.next!.name}` : `${pct} Prozent bereit für ${s.step.next!.name}`}>
+                  <svg viewBox="0 0 52 52" role="img" aria-label={ready ? tr('home.readyFor', { name: s.step.next!.name }) : tr('home.readyPct', { pct, name: s.step.next!.name })}>
                     <circle cx="26" cy="26" r={R} className="ring-track" />
                     {s.readiness > 0 && <circle cx="26" cy="26" r={R} className="ring-arc" strokeDasharray={`${(s.readiness * C).toFixed(1)} ${C.toFixed(1)}`} transform="rotate(-90 26 26)" />}
                     {ready
@@ -125,12 +126,12 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
                   <span>
                     <b className="display">{goalOf(s.pid)}</b>
                     <small>{ready
-                      ? `Bereit für ${s.step.next!.name}`
-                      : `${s.step.exercise.name} · Stufe ${s.step.index + 1}/${s.step.total} · ${prog?.done ?? 0} von 2`}</small>
+                      ? tr('home.readyFor', { name: s.step.next!.name })
+                      : tr('home.skillProgress', { exercise: s.step.exercise.name, stage: s.step.index + 1, total: s.step.total, done: prog?.done ?? 0 })}</small>
                   </span>
                   {ready && (
                     <button className="btn btn-outline btn-sm" onClick={() => t.setState(st => ({ ...st, current: { ...st.current, [s.pid]: s.step.next!.id } }))}>
-                      Freischalten
+                      {tr('home.unlock')}
                     </button>
                   )}
                 </div>

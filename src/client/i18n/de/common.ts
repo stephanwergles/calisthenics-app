@@ -1,3 +1,31 @@
-/* Deutsch: common */
+/* Deutsch: common – wiederkehrende Beschriftungen (Knöpfe, Links) */
 export const common = {
+  cancel: 'Abbrechen',
+  save: 'Speichern',
+  close: 'Schließen',
+  back: 'Zurück',
+  next: 'Weiter',
+  done: 'Fertig',
+  apply: 'Übernehmen',
+  later: 'Später',
+  send: 'Senden',
+  delete: 'Löschen',
+  edit: 'Bearbeiten',
+  privacy: 'Datenschutzerklärung',
+  /* kurze Bestätigungen als Toast */
+  toast: {
+    synced: 'Abgeglichen',
+    syncFailed: 'Abgleich fehlgeschlagen',
+    planApplied: 'Plan übernommen',
+    suggestionApplied: 'Vorschlag übernommen',
+    undone: 'Rückgängig gemacht',
+    workoutAdded: 'Workout hinzugefügt',
+    exported: 'Export gesichert',
+    imported: 'Import abgeschlossen',
+    feedbackSent: 'Feedback gesendet – danke!',
+    assessmentApplied: 'Einstufung übernommen',
+    phaseStarted: 'Phase gestartet',
+    phaseEnded: 'Phase beendet',
+    saved: 'Gespeichert',
+  },
 }

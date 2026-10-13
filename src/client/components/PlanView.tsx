@@ -14,8 +14,10 @@ import { ask } from '../native'
 import { PhaseSheet } from './PhaseSheet'
 import { TemplatesSheet } from './TemplatesSheet'
 import type { PhaseKind } from '@/domain/model'
+import { t as tr, tn } from '../i18n'
+import { toast } from '../toast'
 
-const count = (n: number) => `${n} ${n === 1 ? 'Übung' : 'Übungen'}`
+const count = (n: number) => tn('plan.exercises', n)
 
 export function PlanView({ t, ps }: { t: Training; ps: PlanSuggestion }) {
   const [edit, setEdit] = useState<{ id?: WorkoutId; startNew?: boolean } | null>(null)
@@ -38,48 +40,48 @@ export function PlanView({ t, ps }: { t: Training; ps: PlanSuggestion }) {
 
   return (
     <section className="plan">
-      <span className="h-date">{t.plan ? 'Mein Plan' : 'Standardplan'} · {days} {days === 1 ? 'Tag' : 'Tage'}{minutes ? ` · ca. ${minutes} min` : ''}</span>
-      <h2 className="page-title display">Plan</h2>
+      <span className="h-date">{t.plan ? tr('plan.view.myPlan') : tr('plan.view.defaultPlan')} · {tn('plan.view.days', days)}{minutes ? tr('plan.view.minutes', { n: minutes }) : ''}</span>
+      <h2 className="page-title display">{tr('plan.view.title')}</h2>
 
       {ps.suggestion ? (
         <button className="pl-suggest" onClick={() => setViewing(true)}>
-          <span className="h-date">Vorschlag · wartet auf dich</span>
-          <b className="display">Plan für deine Ziele</b>
-          <small>{ps.suggestion.changes} {ps.suggestion.changes === 1 ? 'Änderung' : 'Änderungen'} · erst nach deiner Bestätigung</small>
-          <em>Ansehen <Icon name="right" size={14} /></em>
+          <span className="h-date">{tr('plan.view.suggestLabel')}</span>
+          <b className="display">{tr('plan.view.suggestTitle')}</b>
+          <small>{tn('plan.view.suggestChanges', ps.suggestion.changes)}</small>
+          <em>{tr('plan.view.view')} <Icon name="right" size={14} /></em>
         </button>
       ) : !ps.hasGoals ? (
         <button className="pl-suggest quiet" onClick={() => setGoals(true)}>
-          <b className="display">Ziele wählen</b>
-          <small>Dann schlägt Lever einen Plan dafür vor – du entscheidest, ob er gilt.</small>
+          <b className="display">{tr('plan.view.goalsTitle')}</b>
+          <small>{tr('plan.view.goalsSub')}</small>
         </button>
       ) : ps.hidden ? (
-        <button className="btn btn-ghost btn-sm pl-hidden" onClick={() => { ps.show(); setViewing(true) }}>Ausgeblendeten Vorschlag ansehen</button>
+        <button className="btn btn-ghost btn-sm pl-hidden" onClick={() => { ps.show(); setViewing(true) }}>{tr('plan.view.showHidden')}</button>
       ) : null}
       {ps.canUndo && (
         <button className="btn btn-ghost btn-sm pl-hidden" onClick={async () => {
-          if (await ask({ title: 'Vorherigen Plan wiederherstellen?', message: 'Der zuletzt übernommene Vorschlag wird zurückgenommen. Deine Einheiten bleiben, wie sie sind.', ok: 'Wiederherstellen' })) ps.undo()
-        }}><Icon name="undo" size={16} /> Letzten Vorschlag rückgängig</button>
+          if (await ask({ title: tr('plan.view.undoTitle'), message: tr('plan.view.undoMessage'), ok: tr('plan.view.undoOk') })) ps.undo()
+        }}><Icon name="undo" size={16} /> {tr('plan.view.undo')}</button>
       )}
 
       <button className="pl-suggest quiet pl-library" onClick={() => setLibrary(true)}>
-        <b className="display">Vorlagen</b>
-        <small>Fertige Pläne und Workouts – Einsteiger, Zuhause, Muscle-up, Core-Finisher …</small>
-        <em>Ansehen <Icon name="right" size={14} /></em>
+        <b className="display">{tr('plan.view.templates')}</b>
+        <small>{tr('plan.view.templatesSub')}</small>
+        <em>{tr('plan.view.view')} <Icon name="right" size={14} /></em>
       </button>
 
-      <h3 className="pl-head display">Woche</h3>
+      <h3 className="pl-head display">{tr('plan.view.week')}</h3>
       <ol className="pl-week card">
         {week.map(({ d, w }) => (
           <li key={d}>
             <button className={`pl-day${d === today ? ' today' : ''}`} onClick={() => (w ? setEdit({ id: w.id }) : setDay(d))}
-              aria-label={`${DAY_NAME[d]}: ${w ? w.name : 'Ruhetag'}${d === today ? ', heute' : ''}`}>
+              aria-label={`${DAY_NAME[d]}: ${w ? w.name : tr('plan.restDay')}${d === today ? tr('plan.view.todaySuffix') : ''}`}>
               <span className="pl-wd">{L.WEEKDAY_SHORT[d]}</span>
               <span className="pl-main">
-                <b className={w ? '' : 'off'}>{w ? w.name : 'Ruhetag'}</b>
+                <b className={w ? '' : 'off'}>{w ? w.name : tr('plan.restDay')}</b>
                 {w && <small>{w.focus && w.focus !== w.name ? `${w.focus} · ` : ''}{count(w.slots.length)}</small>}
               </span>
-              {d === today && <span className="pl-tag">heute</span>}
+              {d === today && <span className="pl-tag">{tr('plan.view.today')}</span>}
               <Icon name="right" size={16} className="pl-chev" />
             </button>
           </li>
@@ -87,36 +89,36 @@ export function PlanView({ t, ps }: { t: Training; ps: PlanSuggestion }) {
       </ol>
 
       <div className="pl-head-row">
-        <h3 className="pl-head display">Meine Workouts</h3>
-        <button className="btn btn-ghost btn-sm" onClick={() => setEdit({ startNew: true })}><Icon name="plus" size={16} /> Neu</button>
+        <h3 className="pl-head display">{tr('plan.view.myWorkouts')}</h3>
+        <button className="btn btn-ghost btn-sm" onClick={() => setEdit({ startNew: true })}><Icon name="plus" size={16} /> {tr('plan.view.new')}</button>
       </div>
       <div className="pl-grid">
         {list.map(w => (
           <button key={w.id} className="pl-card" onClick={() => setEdit({ id: w.id })}>
             <b className="display">{w.name}</b>
             <small>{w.focus} · {count(w.slots.length)}</small>
-            <em>{L.plannedDays(t.ix, w.id).map(x => L.WEEKDAY_SHORT[x]).join(' · ') || 'kein Tag'}</em>
+            <em>{L.plannedDays(t.ix, w.id).map(x => L.WEEKDAY_SHORT[x]).join(' · ') || tr('plan.view.noDay')}</em>
           </button>
         ))}
       </div>
-      <h3 className="pl-head display">Phasen</h3>
+      <h3 className="pl-head display">{tr('plan.view.phases')}</h3>
       {[...active, ...upcoming].map(p => (
         <div key={p.id} className="card pl-phase">
-          <span><b>{L.fmtPhase(p)}</b><small>seit {L.fmtShortDate(p.from)}</small></span>
+          <span><b>{L.fmtPhase(p)}</b><small>{tr('plan.view.since', { date: L.fmtShortDate(p.from) })}</small></span>
           <button className="btn btn-secondary btn-sm" onClick={async () => {
-            if (await ask({ title: `${L.PHASE_LABEL[p.kind]} beenden?`, message: 'Ab heute gilt wieder dein normaler Plan.', ok: 'Beenden' }))
-              t.setState(st => L.withPhaseEnded(st, p.id, t.today))
-          }}>Beenden</button>
+            if (await ask({ title: tr('plan.view.endTitle', { phase: L.PHASE_LABEL[p.kind] }), message: tr('plan.view.endMessage'), ok: tr('plan.view.end') }))
+              { t.setState(st => L.withPhaseEnded(st, p.id, t.today)); toast(tr('common.toast.phaseEnded')) }
+          }}>{tr('plan.view.end')}</button>
         </div>
       ))}
-      {!active.length && <p className="hint pl-note pl-phase-hint">Bei Pause, Urlaub oder Verletzung passt Lever an, was fällig ist – deine Serie bleibt.</p>}
+      {!active.length && <p className="hint pl-note pl-phase-hint">{tr('plan.view.phaseHint')}</p>}
       <div className="pl-phase-btns">
         {(Object.keys(L.PHASE_LABEL) as PhaseKind[]).filter(k => !active.some(p => p.kind === k)).map(k => (
           <button key={k} className="btn btn-secondary" onClick={() => setPhase(k)}>{L.PHASE_LABEL[k]}</button>
         ))}
       </div>
 
-      {!t.plan && <p className="hint pl-note">Das ist noch der Standardplan. Deine erste Änderung macht ihn zu deinem – danach gleicht er sich über dein Konto ab.</p>}
+      {!t.plan && <p className="hint pl-note">{tr('plan.view.defaultHint')}</p>}
 
       {edit && <WorkoutsHost t={t} list={false} initial={edit.id} startNew={edit.startNew} onClose={() => setEdit(null)} />}
       {day && <DayAssign t={t} day={day} onClose={() => setDay(null)} />}

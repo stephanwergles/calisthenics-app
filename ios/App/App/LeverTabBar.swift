@@ -74,6 +74,14 @@ final class LeverTabController: UITabBarController, UITabBarControllerDelegate {
         setHidden(false, animated: false)
     }
 
+    /// Sprachwechsel: nur die Titel tauschen – Badge, Auswahl und Ausblenden bleiben
+    func retitle(_ titles: [String: String]) {
+        for (i, id) in ids.enumerated() {
+            guard let t = titles[id], let item = viewControllers?[i].tabBarItem else { continue }
+            item.title = t
+        }
+    }
+
     func select(id: String) {
         guard let i = ids.firstIndex(of: id), let vcs = viewControllers, i < vcs.count else { return }
         selectedIndex = i
@@ -250,6 +258,7 @@ public class LeverTabBarPlugin: CAPPlugin, CAPBridgedPlugin {
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "configure", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "select", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "retitle", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setHidden", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setBadge", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setAction", returnType: CAPPluginReturnPromise),
@@ -262,6 +271,7 @@ public class LeverTabBarPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "setRest", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "shareFile", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "pickFile", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "toast", returnType: CAPPluginReturnPromise),
     ]
 
     /// Tab-Controller finden: über die Controller-Kette oder direkt als Wurzel des Fensters
@@ -289,6 +299,14 @@ public class LeverTabBarPlugin: CAPPlugin, CAPBridgedPlugin {
             tabs.configure(items: items, selected: selected)
             call.resolve()
         }
+    }
+
+    @objc func retitle(_ call: CAPPluginCall) {
+        var titles: [String: String] = [:]
+        for x in call.getArray("items", JSObject.self) ?? [] {
+            if let id = x["id"] as? String, let title = x["title"] as? String { titles[id] = title }
+        }
+        DispatchQueue.main.async { self.tabs?.retitle(titles); call.resolve() }
     }
 
     @objc func select(_ call: CAPPluginCall) {

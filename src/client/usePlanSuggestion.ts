@@ -8,6 +8,8 @@ import { generatePlan } from '@/domain/generator'
 import { catalogData } from './data'
 import * as L from './logic'
 import type { Training } from './useTraining'
+import { toast } from './toast'
+import { getLocale, t as tr } from './i18n'
 
 const DISMISSED = 'lever-suggestion-dismissed'
 const PREVIOUS = 'lever-plan-previous'
@@ -30,7 +32,7 @@ export function usePlanSuggestion(t: Training) {
     if (L.samePlan(t.ix, plan)) return null
     const diff = L.planDiff(t.ix, t.state, plan)
     return { plan, diff, warnings: g.warnings, changes: diff.reduce((n, d) => n + d.changes.filter(c => c.kind !== 'bleibt').length, 0) }
-  }, [sig, t.ix]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sig, t.ix, getLocale()]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const dismiss = () => { write(DISMISSED, sig); setDismissed(sig) }
   const accept = () => {
@@ -39,12 +41,14 @@ export function usePlanSuggestion(t: Training) {
     write(PREVIOUS, prev); setPrevious(prev)
     t.savePlan(suggestion.plan)
     dismiss()
+    toast(tr('common.toast.suggestionApplied'), 'success')
   }
   /** beliebigen Plan übernehmen (z. B. eine Vorlage) – rückgängig wie ein Vorschlag */
   const apply = (plan: Plan) => {
     const prev = JSON.stringify(t.plan ?? null)
     write(PREVIOUS, prev); setPrevious(prev)
     t.savePlan(plan)
+    toast(tr('common.toast.planApplied'), 'success')
   }
   const undo = () => {
     if (previous === null) return
@@ -52,6 +56,7 @@ export function usePlanSuggestion(t: Training) {
     t.savePlan(prev ?? L.planFromCatalog(t.baseCatalog))
     write(PREVIOUS, null); setPrevious(null)
     dismiss()
+    toast(tr('common.toast.undone'))
   }
   return {
     suggestion: suggestion && dismissed !== sig ? suggestion : null,

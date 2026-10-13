@@ -41,17 +41,23 @@ export function tn(key: string, n: number, vars?: Record<string, string | number
   return fill(lookup(k, current) ?? lookup(k, 'de') ?? k, { n, ...vars })
 }
 
-/** Gespeicherte Wahl (pro Gerät) oder Systemsprache. Solange Englisch Beta ist: ohne Wahl Deutsch. */
+/* Sprachwahl pro Gerät: 'de' | 'en' | 'system' (ausdrücklich gewählt). Ohne Wahl gilt die
+   Systemsprache – solange Englisch Beta ist, ohne Wahl Deutsch. */
 const STORE = 'lever-locale'
 export const EN_BETA = true
-export function initialLocale(): Locale {
-  try {
-    const saved = localStorage.getItem(STORE)
-    if (saved === 'de' || saved === 'en') return saved
-  } catch { /* ohne Speicher */ }
-  if (!EN_BETA && typeof navigator !== 'undefined' && !navigator.language.toLowerCase().startsWith('de')) return 'en'
-  return 'de'
+export type LocaleChoice = Locale | 'system'
+const systemLocale = (): Locale => (typeof navigator !== 'undefined' && !navigator.language.toLowerCase().startsWith('de') ? 'en' : 'de')
+function savedChoice(): LocaleChoice | null {
+  try { const v = localStorage.getItem(STORE); if (v === 'de' || v === 'en' || v === 'system') return v } catch { /* ohne Speicher */ }
+  return null
 }
-export function saveLocale(l: Locale | null) {
-  try { if (l) localStorage.setItem(STORE, l); else localStorage.removeItem(STORE) } catch { /* ohne Speicher */ }
+/** was die Sprachwahl anzeigt: ohne gespeicherte Wahl in der Beta „Deutsch“, sonst „Systemsprache“ */
+export const currentChoice = (): LocaleChoice => savedChoice() ?? (EN_BETA ? 'de' : 'system')
+export function initialLocale(): Locale {
+  const c = savedChoice()
+  if (c === 'de' || c === 'en') return c
+  return c === 'system' || !EN_BETA ? systemLocale() : 'de'
+}
+export function saveLocale(c: LocaleChoice) {
+  try { localStorage.setItem(STORE, c) } catch { /* ohne Speicher */ }
 }
