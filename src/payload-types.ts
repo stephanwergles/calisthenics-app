@@ -170,6 +170,15 @@ export interface Session {
     | number
     | boolean
     | null;
+  adjust?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * In der App gelöscht – bleibt als Markierung, damit der Sync es an alle Geräte weitergibt
    */
@@ -520,6 +529,7 @@ export interface SessionsSelect<T extends boolean = true> {
   routineDone?: T;
   note?: T;
   setPlan?: T;
+  adjust?: T;
   deleted?: T;
   clientUpdatedAt?: T;
   updatedAt?: T;

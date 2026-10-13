@@ -144,7 +144,9 @@ export type NBlock =
       state?: 'open' | 'done' | 'skipped' | 'paused' | 'next'; chips?: string[]; symbol?: 'none'
       /** Übungs-ID mit 3D-Clip – Standbild links statt Statuskreis */
       clip?: string }
-  | { type: 'check'; id: string; title: string; subtitle?: string; on: boolean }
+  | { type: 'check'; id: string; title: string; subtitle?: string; on: boolean
+      /** select = Auswahl (an = hell); ohne = Checkliste (an = erledigt, gedimmt) */
+      style?: 'select' }
   | { type: 'disclosure'; id: string; title: string; trailing?: string; on: boolean }
   | { type: 'record'; title: string; subtitle: string; value: string }
   | { type: 'ladder'; title: string; subtitle: string; state: 'done' | 'current' | 'locked'; label: string; clip?: string }

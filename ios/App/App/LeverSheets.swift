@@ -425,7 +425,9 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
             mark.preferredSymbolConfiguration = .init(pointSize: 22, weight: .regular)
             mark.setContentHuggingPriority(.required, for: .horizontal)
             let v = UIStackView(); v.axis = .vertical; v.spacing = 2
-            v.addArrangedSubview(label(b.title ?? "", .body(16, .semibold), on ? Lever.muted : .white))
+            // „select“ = Auswahl (an = dabei, hell); sonst Checkliste (an = erledigt, gedimmt)
+            let dim = b.style == "select" ? !on : on
+            v.addArrangedSubview(label(b.title ?? "", .body(16, .semibold), dim ? Lever.muted : .white))
             if let s = b.subtitle { v.addArrangedSubview(label(s, .body(13), Lever.muted)) }
             h.addArrangedSubview(mark); h.addArrangedSubview(v)
             let btn = UIButton(type: .custom)

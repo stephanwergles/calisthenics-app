@@ -937,3 +937,24 @@ button.clip { display: block; border: none; padding: 0; background: none; color:
 .legal p { font-size: 15.5px; line-height: 1.6; color: var(--text); margin-bottom: 10px; }
 .legal-draft { display: inline-block; font-size: 12px !important; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #101010 !important; background: var(--accent); padding: 4px 10px; border-radius: 999px; }
 .legal-meta { color: var(--muted) !important; margin-top: 30px; }
+
+/* Eigener Plan: Workouts verwalten, Tagesanpassung (PlanEditor.tsx, PlanSheet) */
+.picker button.manage { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; align-items: center; text-align: left; padding: 10px 14px; border-style: dashed; }
+.picker button.manage small, .picker button.manage .display { grid-column: 1; }
+.picker button.manage em { grid-column: 2; grid-row: 1 / span 2; margin: 0; opacity: .8; }
+.pe-section { font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin: 18px 4px 8px; }
+.pe-group:first-child .pe-section { margin-top: 4px; }
+.pe-days, .pe-week { list-style: none; padding: 0; margin: 0 0 12px; }
+.pe-days .check { color: var(--muted); font-size: 13px; text-align: left; }
+.pe-days .check.on b { color: var(--text); text-decoration: none; }
+.pe-days .check:disabled { opacity: .55; }
+.pe-days .check span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.pe-week li { display: flex; justify-content: space-between; min-height: var(--tap); align-items: center; padding: 0 8px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.pe-week li b { font-weight: 600; }
+.pe-week li b.pe-off { color: var(--muted); font-weight: 400; }
+.sheet .hint { color: var(--muted); font-size: 13px; margin: 6px 4px 12px; }
+.sheet .pe-note { margin-top: -4px; text-align: center; }
+.pe-name { display: grid; gap: 14px; padding: 4px 0 8px; }
+.sheet .slots + .btn, .sheet .pe-days + .btn { margin-bottom: 8px; }
+.sheet .stepper + .row-btns { margin: 14px 0 8px; }
+.pe-days .check:not(.on) b { color: var(--muted); }

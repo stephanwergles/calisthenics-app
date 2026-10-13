@@ -7,6 +7,7 @@ import * as migration_20261012_154049_session_deleted from './20261012_154049_se
 import * as migration_20261013_193014_add_user_roles from './20261013_193014_add_user_roles';
 import * as migration_20261013_202958_user_consent from './20261013_202958_user_consent';
 import * as migration_20261013_203657_user_plans from './20261013_203657_user_plans';
+import * as migration_20261013_205009_session_adjust from './20261013_205009_session_adjust';
 
 export const migrations = [
   {
@@ -52,6 +53,11 @@ export const migrations = [
   {
     up: migration_20261013_203657_user_plans.up,
     down: migration_20261013_203657_user_plans.down,
-    name: '20261013_203657_user_plans'
+    name: '20261013_203657_user_plans',
+  },
+  {
+    up: migration_20261013_205009_session_adjust.up,
+    down: migration_20261013_205009_session_adjust.down,
+    name: '20261013_205009_session_adjust'
   },
 ];

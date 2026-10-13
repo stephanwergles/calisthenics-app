@@ -4,7 +4,7 @@ import type {
   Activity, Catalog, Exercise, ExerciseId, Plan, Progression, ProgressionId, Region, Session, SetLog,
   Target, UserState, Weekday, Workout, WorkoutId,
 } from '../domain/model.ts'
-import { NOTE_MAX } from '../domain/model.ts'
+import { NOTE_MAX, REGIONS } from '../domain/model.ts'
 
 export { NOTE_MAX }
 
@@ -42,6 +42,81 @@ export const planFromCatalog = (catalog: Catalog): Plan => ({
   workouts: structuredClone(catalog.workouts), weekplan: { ...catalog.weekplan },
 })
 
+/* ── Eigener Plan bearbeiten (jede Änderung ergibt einen neuen Plan, gespeichert wird in useTraining) ── */
+
+/** stabiler Key aus dem Namen: Kleinbuchstaben, Umlaute ausgeschrieben, eindeutig im Plan */
+export function workoutKey(name: string, taken: Iterable<string>): string {
+  const used = new Set(taken)
+  const base = name.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'workout'
+  let key = base, n = 2
+  while (used.has(key)) key = `${base}-${n++}`
+  return key
+}
+/** Fokuszeile aus den Körperregionen der Slots, z. B. „Ziehen · Rumpf“ */
+export function focusOf(ix: Index, slots: { progression: ProgressionId }[]): string {
+  const regions = new Set(slots.map(sl => ix.progressions.get(sl.progression)?.region).filter(Boolean))
+  return REGIONS.filter(r => regions.has(r.id)).map(r => r.label).join(' · ') || 'Eigenes Workout'
+}
+/** neues eigenes Workout (ohne Warm-up/Cool-down, solange keins übernommen wird) */
+export function newWorkout(ix: Index, name: string, slots: Workout['slots'], from?: Workout): Workout {
+  return {
+    id: workoutKey(name, ix.workouts.keys()), name: name.trim().slice(0, 80) || 'Eigenes Workout', focus: focusOf(ix, slots),
+    slots, warmup: from ? structuredClone(from.warmup) : [], cooldown: from ? structuredClone(from.cooldown) : [], custom: true,
+  }
+}
+/** heutige Einheit als neues Workout: angepasste Übungsliste, Satzzahlen des Tages, Warm-up/Cool-down des Ausgangs-Workouts */
+export function workoutFromDay(ix: Index, workout: WorkoutId, s: Session | undefined, name: string): Workout {
+  const slots = daySlots(ix, workout, s).map(({ added, ...sl }) => {
+    const sets = s?.setPlan?.[sl.progression] ?? sl.sets
+    return { block: added ? 'strength' as const : sl.block, progression: sl.progression, ...(sets ? { sets } : {}) }
+  })
+  return newWorkout(ix, name, slots, ix.workouts.get(workout))
+}
+/** Workout einfügen oder ersetzen (gleiche id) */
+export const withWorkout = (plan: Plan, w: Workout): Plan => ({
+  ...plan, workouts: plan.workouts.some(x => x.id === w.id) ? plan.workouts.map(x => (x.id === w.id ? w : x)) : [...plan.workouts, w],
+})
+/** Workout löschen: bleibt als gelöscht markiert (Verlauf kennt Namen und Reihenfolge weiter), fällt aus dem Wochenplan */
+export const withoutWorkout = (plan: Plan, id: WorkoutId): Plan => ({
+  ...plan,
+  workouts: plan.workouts.map(w => (w.id === id ? { ...w, archived: true } : w)),
+  weekplan: Object.fromEntries(Object.entries(plan.weekplan).filter(([, w]) => w !== id)),
+})
+/** Slot im Workout ändern, verschieben, entfernen, anhängen – eigene Workouts bekommen die Fokuszeile neu */
+type Slots = Workout['slots']
+const reslot = (ix: Index, w: Workout, slots: Slots): Workout => ({ ...w, slots, ...(w.custom ? { focus: focusOf(ix, slots) } : {}) })
+export const withSlotSets = (ix: Index, w: Workout, pid: ProgressionId, sets: number): Workout =>
+  reslot(ix, w, w.slots.map(sl => (sl.progression === pid ? { ...sl, sets: Math.min(10, Math.max(1, sets)) } : sl)))
+export function movedSlot(ix: Index, w: Workout, pid: ProgressionId, by: -1 | 1): Workout {
+  const i = w.slots.findIndex(sl => sl.progression === pid), j = i + by
+  if (i < 0 || j < 0 || j >= w.slots.length) return w
+  const slots = [...w.slots];[slots[i], slots[j]] = [slots[j], slots[i]]
+  return reslot(ix, w, slots)
+}
+export const withoutSlot = (ix: Index, w: Workout, pid: ProgressionId): Workout => reslot(ix, w, w.slots.filter(sl => sl.progression !== pid))
+export const withSlot = (ix: Index, w: Workout, pid: ProgressionId): Workout =>
+  w.slots.some(sl => sl.progression === pid) ? w : reslot(ix, w, [...w.slots, { block: 'strength', progression: pid }])
+
+/** Wochentag belegen (oder mit undefined freigeben) */
+export function withDay(plan: Plan, day: Weekday, id: WorkoutId | undefined): Plan {
+  const weekplan = { ...plan.weekplan }
+  if (id) weekplan[day] = id; else delete weekplan[day]
+  return { ...plan, weekplan }
+}
+/** Leitern zur Auswahl (Übung hinzufügen), nach Körperregion gruppiert, mit aktueller Stufe */
+export function ladderChoices(ix: Index, user: UserState, exclude: Iterable<ProgressionId> = []) {
+  const skip = new Set(exclude)
+  const all = [...ix.progressions.values()].filter(p => !skip.has(p.id) && p.steps.length)
+  return [...REGIONS.map(r => ({ id: r.id as string, label: r.label })), { id: 'other', label: 'Weitere' }].map(g => ({
+    ...g,
+    items: all.filter(p => (p.region ?? 'other') === g.id).map(p => {
+      const step = currentStep(ix, user, p.id)
+      return { pid: p.id, name: step.exercise.name, sub: `Stufe ${step.index + 1}/${step.total} · ${step.target.label}`, exercise: step.exercise }
+    }),
+  })).filter(g => g.items.length)
+}
+
 export function indexCatalog(catalog: Catalog): Index {
   return {
     catalog,
@@ -68,10 +143,10 @@ export function currentStep(ix: Index, state: UserState, pid: ProgressionId): St
 export const plannedDays = (ix: Index, workout: WorkoutId) =>
   WEEK_ORDER.filter(d => ix.catalog.weekplan[d] === workout)
 
-/** Workouts in Wochenreihenfolge ihres ersten Plantags */
+/** Workouts in Wochenreihenfolge ihres ersten Plantags (gelöschte nicht) */
 export function workoutsInWeekOrder(ix: Index): Workout[] {
   const first = (w: Workout) => { const d = plannedDays(ix, w.id)[0]; return d ? WEEK_ORDER.indexOf(d) : 99 }
-  return [...ix.workouts.values()].sort((a, b) => first(a) - first(b))
+  return [...ix.workouts.values()].filter(w => !w.archived).sort((a, b) => first(a) - first(b))
 }
 
 const trained = (s: Session) => s.sets.length > 0 || s.durationSec !== undefined
@@ -82,7 +157,7 @@ export function recommendWorkout(ix: Index, sessions: Session[], date: string): 
   if (planned) return planned
   const last = (w: WorkoutId) => sessions.filter(s => s.workout === w && s.date < date && trained(s))
     .reduce((m, s) => (s.date > m ? s.date : m), '')
-  return [...ix.workouts.keys()].sort((a, b) => (last(a) < last(b) ? -1 : last(a) > last(b) ? 1 : 0))[0]
+  return workoutsInWeekOrder(ix).map(w => w.id).sort((a, b) => (last(a) < last(b) ? -1 : last(a) > last(b) ? 1 : 0))[0]
 }
 
 /* ── Historie ────────────────────────────────────────────────────────────── */
@@ -115,8 +190,19 @@ export function readyToProgress(sessions: Session[], exercise: ExerciseId, targe
 
 /* ── Heutige Einheit ─────────────────────────────────────────────────────── */
 
-export const plannedSets = (s: Session | undefined, pid: ProgressionId, target: Target) =>
-  s?.setPlan?.[pid] ?? target.sets
+/** Satzzahl heute: Abweichung des Tages → Vorgabe im eigenen Workout → Ziel der Stufe */
+export const plannedSets = (s: Session | undefined, pid: ProgressionId, target: Target, slotSets?: number) =>
+  s?.setPlan?.[pid] ?? slotSets ?? target.sets
+
+export type DaySlot = Workout['slots'][number] & { added?: boolean }
+/** Slots der heutigen Einheit: das Workout ohne weggelassene, plus für heute hinzugefügte Leitern */
+export function daySlots(ix: Index, workout: WorkoutId, s: Session | undefined): DaySlot[] {
+  const base = (ix.workouts.get(workout)?.slots ?? []).filter(sl => !s?.removed?.includes(sl.progression))
+  const have = new Set(base.map(sl => sl.progression))
+  const extra = (s?.added ?? []).filter(pid => ix.progressions.has(pid) && !have.has(pid))
+    .map((pid): DaySlot => ({ block: 'extra', progression: pid, added: true }))
+  return [...base, ...extra]
+}
 
 export type SlotState = 'open' | 'done' | 'skipped' | 'paused'
 export function slotState(s: Session | undefined, exercise: ExerciseId, planned: number, paused: boolean): SlotState {
@@ -144,6 +230,22 @@ export const withSkip = (s: Session, exercise: ExerciseId, on: boolean): Session
   touch({ ...s, skipped: on ? [...new Set([...s.skipped, exercise])] : s.skipped.filter(e => e !== exercise) })
 export const withPlan = (s: Session, pid: ProgressionId, n: number): Session =>
   touch({ ...s, setPlan: { ...s.setPlan, [pid]: Math.max(1, n) } })
+/** Tagesanpassung: Leiter nur heute dazunehmen (hebt ein Weglassen auf) */
+export const withAdded = (s: Session, pid: ProgressionId): Session => touch(tidyAdjust({
+  ...s, added: [...new Set([...(s.added ?? []), pid])], removed: (s.removed ?? []).filter(x => x !== pid),
+}))
+/** Tagesanpassung: Leiter heute weglassen (eine nur heute hinzugefügte fällt einfach wieder raus) bzw. zurückholen */
+export const withRemoved = (s: Session, pid: ProgressionId, on: boolean): Session => touch(tidyAdjust(on
+  ? (s.added ?? []).includes(pid)
+    ? { ...s, added: s.added!.filter(x => x !== pid) }
+    : { ...s, removed: [...new Set([...(s.removed ?? []), pid])] }
+  : { ...s, removed: (s.removed ?? []).filter(x => x !== pid) }))
+const tidyAdjust = (s: Session): Session => {
+  const { added, removed, ...rest } = s
+  return { ...rest, ...(added?.length ? { added } : {}), ...(removed?.length ? { removed } : {}) }
+}
+/** heute vom Workout abgewichen? */
+export const isAdjusted = (s: Session | undefined) => !!(s?.added?.length || s?.removed?.length)
 export const withRoutine = (s: Session, item: string, on: boolean): Session =>
   touch({ ...s, routineDone: on ? [...new Set([...s.routineDone, item])] : s.routineDone.filter(i => i !== item) })
 export const withDuration = (s: Session, seconds: number): Session =>
@@ -202,16 +304,18 @@ export interface SlotView {
   state: SlotState
   last: { date: string; sets: SetLog[] } | null
   ready: boolean
+  /** nur heute hinzugefügt (Tagesanpassung) */
+  added?: boolean
 }
 
 /** Alles, was die Ansicht pro Slot braucht – in Trainingsreihenfolge */
 export function workoutSlots(ix: Index, workout: WorkoutId, user: UserState, today: Session | undefined, sessions: Session[], date: string): SlotView[] {
-  return ix.workouts.get(workout)!.slots.map(sl => {
+  return daySlots(ix, workout, today).map(sl => {
     const step = currentStep(ix, user, sl.progression)
     const paused = user.paused.includes(sl.progression)
-    const planned = plannedSets(today, sl.progression, step.target)
+    const planned = plannedSets(today, sl.progression, step.target, sl.sets)
     return {
-      pid: sl.progression, block: sl.block, step, planned,
+      pid: sl.progression, block: sl.block, step, planned, added: sl.added,
       sets: setsOf(today, step.exercise.id),
       state: slotState(today, step.exercise.id, planned, paused),
       last: lastPerformance(sessions, step.exercise.id, date),

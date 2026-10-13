@@ -38,7 +38,7 @@ export function BottomBar({ t, rest, onStart, onStop, onOpen }: { t: Training; r
               <span className="dot" aria-hidden="true" />
               <span className="session-info">
                 <span className="session-time">{L.fmtDuration(Math.max(0, now - t.active.start) / 1000)}</span>
-                <span className="session-name">{t.ix.workouts.get(t.active.workout)!.name}</span>
+                <span className="session-name">{t.ix.workouts.get(t.active.workout)?.name ?? 'Training'}</span>
               </span>
               <Icon name="right" size={18} />
             </button>

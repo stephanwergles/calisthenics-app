@@ -42,6 +42,7 @@ export const Sessions: CollectionConfig = {
     { name: 'routineDone', type: 'text', hasMany: true, label: 'Warm-up/Cool-down erledigt' },
     { name: 'note', type: 'textarea', label: 'Notiz zur Einheit' },
     { name: 'setPlan', type: 'json', label: 'Geplante Satzzahl (Abweichungen vom Ziel)' },
+    { name: 'adjust', type: 'json', label: 'Tagesanpassung (hinzugefügte/weggelassene Leitern)' },
     {
       name: 'deleted', type: 'checkbox', label: 'Gelöscht', defaultValue: false,
       admin: { position: 'sidebar', description: 'In der App gelöscht – bleibt als Markierung, damit der Sync es an alle Geräte weitergibt' },

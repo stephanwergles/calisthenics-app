@@ -226,7 +226,7 @@ export function useTraining() {
   /** Workout von heute: ausdrückliche Wahl > laufende/begonnene Einheit > Empfehlung */
   const workout: WorkoutId = useMemo(() => {
     const known = (w?: WorkoutId) => (w && ix.workouts.has(w) ? w : undefined)
-    if (choice?.date === today && known(choice.workout)) return choice.workout
+    if (choice?.date === today && known(choice.workout) && !ix.workouts.get(choice.workout)!.archived) return choice.workout
     const started = sessionList.filter(s => s.date === today && s.sets.length)
       .sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))[0]
     return known(active?.workout) ?? known(started?.workout) ?? recommended
@@ -365,6 +365,10 @@ export function useTraining() {
     planRef.current = p; setPlanRaw(p); void db.kvSet('plan', p)
     markDirty('plan')
   }, [markDirty])
+  /** Plan ändern; ohne eigenen Plan entsteht er hier aus dem Katalog-Plan (erst die erste Änderung legt ihn an) */
+  const editPlan = useCallback((fn: (p: Plan) => Plan) => {
+    savePlan(fn(planRef.current ?? L.planFromCatalog(catalog)))
+  }, [savePlan, catalog])
 
   /** Konto löschen (Server: Konto + alle Trainingsdaten); auf dem Gerät bleibt alles, ohne Abgleich */
   const deleteAccount = useCallback(async () => {
@@ -382,7 +386,7 @@ export function useTraining() {
     addActivity, removeActivity, removeSession, importV1, exportData,
     sync, syncNow: runSync, signIn, signOut, deleteAccount,
     consent, acceptHealthConsent, acceptDisclaimer,
-    plan, savePlan, baseCatalog: catalog,
+    plan, savePlan, editPlan, baseCatalog: catalog,
   }
 }
 export type Training = ReturnType<typeof useTraining>

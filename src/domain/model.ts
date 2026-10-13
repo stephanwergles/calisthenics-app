@@ -72,10 +72,15 @@ export interface Workout {
   id: WorkoutId;
   name: string;
   focus: string;
-  /** Array-Reihenfolge = Trainingsreihenfolge. v1 brauchte dafür `ord`. */
-  slots: { block: Block; progression: ProgressionId }[];
+  /** Array-Reihenfolge = Trainingsreihenfolge. v1 brauchte dafür `ord`.
+      `sets` (nur im eigenen Plan) überschreibt die Satzzahl der Stufe. */
+  slots: { block: Block; progression: ProgressionId; sets?: number }[];
   warmup: RoutineItem[];
   cooldown: RoutineItem[];
+  /** nur im eigenen Plan: selbst angelegt (statt aus dem Katalog/Generator) */
+  custom?: boolean;
+  /** nur im eigenen Plan: gelöscht – bleibt für Namen und Reihenfolge im Verlauf erhalten */
+  archived?: boolean;
 }
 
 export interface Catalog {
@@ -124,6 +129,9 @@ export interface Session {
   sets: SetLog[];
   skipped: ExerciseId[];
   routineDone: RoutineItemId[];
+  /** Tagesanpassung: nur für diese Einheit hinzugefügte bzw. weggelassene Leitern */
+  added?: ProgressionId[];
+  removed?: ProgressionId[];
   /** heute geplante Satzzahl je Progression, wenn vom Ziel abgewichen wurde (± in der Ansicht) */
   setPlan?: Record<ProgressionId, number>;
   /** Freitext zur ganzen Einheit, z. B. „schlecht geschlafen, Schulter links zwickt“ */

@@ -134,5 +134,22 @@ test('Plan-Eingaben werden geprüft', () => {
   assert.equal(C.isPlan({ ...plan, weekplan: { funday: plan.workouts[0].id } }), false)
   assert.equal(C.isPlan({ ...plan, workouts: [{ ...plan.workouts[0], id: '<x>' }] }), false)
   assert.equal(C.isPlan({ ...plan, version: 1.5 }), false)
+  const w0 = plan.workouts[0]
+  assert.ok(C.isPlan({ ...plan, workouts: [{ ...w0, custom: true, slots: [{ ...w0.slots[0], sets: 5 }] }, ...plan.workouts.slice(1)] }), 'Satzzahl im Slot')
+  assert.equal(C.isPlan({ ...plan, workouts: [{ ...w0, slots: [{ ...w0.slots[0], sets: 0 }] }, ...plan.workouts.slice(1)] }), false)
+  assert.equal(C.isPlan({ ...plan, workouts: [{ ...w0, slots: [{ ...w0.slots[0], sets: 11 }] }, ...plan.workouts.slice(1)] }), false)
+  assert.equal(C.isPlan({ ...plan, workouts: plan.workouts.map(w => ({ ...w, archived: true })) }), false, 'Wochenplan auf gelöschtes Workout')
   assert.equal(C.isPlan({ ...plan, name: 'x'.repeat(81) }), false)
+})
+
+test('Tagesanpassung und eigene Workout-Felder überleben den Sync', () => {
+  const adj: Session = { ...session, added: ['pistol'], removed: ['body-row'] }
+  const doc = C.sessionToDoc(adj)
+  assert.deepEqual(doc.adjust, { added: ['pistol'], removed: ['body-row'] })
+  assert.deepEqual(C.docToSession(asPayload(doc)), adj)
+  assert.equal(C.sessionToDoc(session).adjust, null)
+  assert.equal('added' in C.docToSession(asPayload(C.sessionToDoc(session))), false)
+  assert.equal(C.isSession(adj), true)
+  assert.equal(C.isSession({ ...adj, added: ['<x>'] }), false)
+  assert.equal(C.isSession({ ...adj, removed: 'pistol' }), false)
 })

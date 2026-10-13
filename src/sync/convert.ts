@@ -30,6 +30,8 @@ export function docToSession(d: Doc): Session {
     skipped: (d.skipped ?? []).map(idOf),
     routineDone: d.routineDone ?? [],
     setPlan: opt(d.setPlan),
+    added: d.adjust?.added?.length ? d.adjust.added as string[] : undefined,
+    removed: d.adjust?.removed?.length ? d.adjust.removed as string[] : undefined,
     note: opt<string>(d.note),
     updatedAt: opt<number>(d.clientUpdatedAt),
     deleted: d.deleted === true ? true : undefined,
@@ -43,6 +45,7 @@ export const sessionToDoc = (s: Session) => ({
     weightKg: x.weightKg ?? null, attempts: x.attempts ?? null, note: x.note ?? null,
   })),
   skipped: s.skipped, routineDone: s.routineDone, setPlan: s.setPlan ?? null, note: s.note ?? null,
+  adjust: s.added?.length || s.removed?.length ? tidy({ added: s.added?.length ? s.added : undefined, removed: s.removed?.length ? s.removed : undefined }) : null,
   clientUpdatedAt: s.updatedAt ?? 0, deleted: s.deleted === true,
 })
 
@@ -98,17 +101,23 @@ export function isSession(s: any): s is Session {
     && isNote(s.note) && (s.deleted === undefined || typeof s.deleted === 'boolean')
     && Array.isArray(s.skipped) && s.skipped.every(isId)
     && Array.isArray(s.routineDone) && s.routineDone.every(isId)
+    && isIds(s.added) && isIds(s.removed)
 }
+/** optionale Liste von IDs (Tagesanpassung) */
+const isIds = (v: any) => v === undefined || (Array.isArray(v) && v.length <= 30 && v.every(isId))
+const isFlag = (v: any) => v === undefined || typeof v === 'boolean'
+const isSlot = (s: any) => !!s && isId(s.progression) && typeof s.block === 'string'
+  && (s.sets === undefined || (Number.isInteger(s.sets) && s.sets >= 1 && s.sets <= 10))
 const isRoutine = (r: any) => !!r && isId(r.id) && typeof r.name === 'string' && r.name.length <= 200
 export function isPlan(p: any): p is Plan {
   return !!p && isId(p.id) && Number.isInteger(p.version) && typeof p.name === 'string' && p.name.length <= 80
     && ['catalog', 'generated', 'custom'].includes(p.source)
     && Array.isArray(p.workouts) && p.workouts.length <= 14
     && p.workouts.every((w: any) => w && isId(w.id) && typeof w.name === 'string' && w.name.length <= 80 && typeof w.focus === 'string'
-      && Array.isArray(w.slots) && w.slots.length <= 30 && w.slots.every((s: any) => s && isId(s.progression) && typeof s.block === 'string')
+      && Array.isArray(w.slots) && w.slots.length <= 30 && w.slots.every(isSlot) && isFlag(w.custom) && isFlag(w.archived)
       && Array.isArray(w.warmup) && w.warmup.every(isRoutine) && Array.isArray(w.cooldown) && w.cooldown.every(isRoutine))
     && !!p.weekplan && typeof p.weekplan === 'object'
-    && Object.entries(p.weekplan).every(([d, w]) => WEEKDAYS.includes(d as Weekday) && p.workouts.some((x: any) => x.id === w))
+    && Object.entries(p.weekplan).every(([d, w]) => WEEKDAYS.includes(d as Weekday) && p.workouts.some((x: any) => x.id === w && !x.archived))
 }
 export function isActivity(a: any): a is Activity {
   return !!a && isId(a.id) && isDate(a.date) && ['run', 'ride', 'workout'].includes(a.kind)

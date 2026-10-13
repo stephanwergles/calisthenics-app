@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
 
     return webpackConfig
   },
+  // Dev: 127.0.0.1 als zweiter Ursprung – eigener Speicher, nicht angemeldet (Testen ohne das eigene Konto)
+  allowedDevOrigins: ['127.0.0.1'],
   turbopack: {
     root: path.resolve(dirname),
   },

@@ -10,9 +10,9 @@ import { ExerciseStill, hasClip } from './ExerciseMedia'
 
 const R = 22, C = 2 * Math.PI * R
 
-export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse, onSkills }: {
+export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse, onSkills, onManage }: {
   t: Training; slots: L.SlotView[]; started: boolean; done: boolean
-  onStart: () => void; onSummary?: () => void; onBrowse: () => void; onSkills: () => void
+  onStart: () => void; onSummary?: () => void; onBrowse: () => void; onSkills: () => void; onManage: () => void
 }) {
   const w = t.ix.workouts.get(t.workout)!
   const [picking, setPicking] = useState(false)
@@ -84,6 +84,11 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
                 <em className={x.id === t.recommended ? 'rec' : ''}>{L.plannedDays(t.ix, x.id).map(d => L.WEEKDAY_SHORT[d]).join(' · ') || '—'}</em>
               </button>
             ))}
+            <button className="manage" onClick={() => { setPicking(false); onManage() }}>
+              <span className="display">Workouts verwalten</span>
+              <small>Eigene anlegen, Übungen und Wochentage ändern</small>
+              <em><Icon name="right" size={16} /></em>
+            </button>
           </div>
         )}
       </div>

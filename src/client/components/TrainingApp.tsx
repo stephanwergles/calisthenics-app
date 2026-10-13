@@ -20,6 +20,7 @@ import { SummaryOverlay } from './SummaryOverlay'
 import { ConsentGate } from './ConsentGate'
 import { RestOverlay } from './RestOverlay'
 import { PlanSheet } from './WorkoutView'
+import { WorkoutsHost } from './PlanEditor'
 import { SkillSheet } from './SkillsView'
 import { useDrag, usePresence } from '../useSheet'
 
@@ -44,6 +45,7 @@ export function TrainingApp() {
   const [planOpen, setPlanOpen] = useState(false)          // Übungsplan als Sheet (vor und während des Trainings)
   const [skillPid, setSkillPid] = useState<string | null>(null)
   const [day, setDay] = useState<DayItem | null>(null)          // Einheit/Cardio aus dem Verlauf
+  const [workouts, setWorkouts] = useState<{ edit?: string } | null>(null)   // Meine Workouts (eigener Plan)
   // Gescrollt wird nur der Inhaltsbereich, nie die Seite: iOS verschiebt fixierte Leisten sonst,
   // sobald sich die Seitenhöhe ändert (Tab-Wechsel von lang nach kurz)
   const scroller = useRef<HTMLElement>(null)
@@ -179,7 +181,7 @@ export function TrainingApp() {
       {showHome && (
         <HomeView t={t} slots={slots} started={started} done={doneToday} onStart={t.active ? () => openFocus(undefined) : start}
           onSummary={t.todaySession ? () => setSummaryId(t.todaySession!.id) : undefined}
-          onBrowse={() => setPlanOpen(true)} onSkills={() => { setView('skills'); toTop() }} />
+          onBrowse={() => setPlanOpen(true)} onSkills={() => { setView('skills'); toTop() }} onManage={() => setWorkouts({})} />
       )}
     </main>
 
@@ -222,8 +224,10 @@ export function TrainingApp() {
 
       {planOpen && (
         <PlanSheet t={t} slots={slots} focus={focus} onClose={() => setPlanOpen(false)} onStart={t.active ? undefined : start}
-          openFocus={openFocus} openActivity={() => setSheet({ kind: 'activity', date: t.today })} />
+          openFocus={openFocus} openActivity={() => setSheet({ kind: 'activity', date: t.today })}
+          onSavedWorkout={id => { setPlanOpen(false); setWorkouts({ edit: id }) }} />
       )}
+      {workouts && <WorkoutsHost t={t} initial={workouts.edit} onClose={() => setWorkouts(null)} />}
       {skillPid && <SkillSheet t={t} pid={skillPid} onClose={() => setSkillPid(null)} />}
       {day && <DaySheet t={t} item={day} onClose={() => setDay(null)} openActivity={date => setSheet({ kind: 'activity', date })} />}
 

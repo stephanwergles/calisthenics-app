@@ -137,6 +137,20 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 - [ ] Erste neue Skill-Leitern: Front Lever · Back Lever · Planche · Handstand-Push-up (weitere in 3.4)
 - [ ] Fachliche Prüfung der Leitern und Freischalt-Schwellen durch einen Coach
 
+### Phase 3.1b — Client auf Expo / React Native
+
+**Entscheidung (Okt 2026):** Der App-Client wechselt von Capacitor (Next-Oberfläche in der WebView + handgebaute UIKit-Bridge) auf **Expo / React Native**. Gründe: Android gehört zum Produkt (SwiftUI schied deshalb aus); die native Oberfläche entstand schon Stück für Stück über ein eigenes JSON-Protokoll (`LeverSheets.swift`, `LeverTabBar.swift`, `native.ts`) – also die Kosten beider Welten; Erfahrung mit Expo aus banking.vision; die Fachlogik ist reines TypeScript und bleibt eine Quelle für Client und Server. **Backend (Payload, Postgres, Sync-Endpunkt) bleibt unverändert.**
+
+Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fertig vor 3.2** – sonst entstehen Kurztest, Onboarding und Generator-UI zweimal. Bis dahin wandert nichts Neues mehr in die Capacitor-Bridge.
+
+- [ ] **Gemeinsamen Kern herauslösen:** npm-Workspaces – `packages/core` (`src/domain`, `src/client/logic.ts`, `src/sync/convert.ts`, Seeds), Server wie bisher, neu `mobile/`; Tests ziehen mit. Reiner Umbau ohne Änderung am Verhalten, Regel: im Kern kein DOM, kein Next, kein Payload
+- [ ] **Expo-Grundgerüst** nach dem Muster von banking.vision: EAS, Sentry, Tokens (Volt, Barlow über expo-font), Anmeldung per Token gegen die Live-Instanz. Vorher prüfen: Expo Router mit nativen Tabs und aktuelle NativeWind-Version statt React Navigation 6 / NativeWind 2 übernehmen; React-Version zwischen Server und Expo abstimmen
+- [ ] **Datenhaltung:** `db.ts` (IndexedDB) → expo-sqlite mit gleicher Schnittstelle; `useTraining.ts`: `visibilitychange` → `AppState`, `online`/`offline` → NetInfo; Token in expo-secure-store statt Preferences
+- [ ] **Herzstück zuerst:** Fokus-Screen, Satz-Erfassung (natives Sheet mit Detents), Pausen-Screen mit Benachrichtigung am Pausenende, Haptik, Display wach, Kreide-Skizzen über react-native-svg. Erst weiter, wenn sich das im Gym besser anfühlt als die Capacitor-App
+- [ ] **Restliche Ansichten:** Heute, Skills, Verlauf (Kalender, Tagesansicht, Fortschritt), Daten/Konto inkl. Einwilligung und Konto löschen
+- [ ] **Umstieg:** bei Gleichstand eigene Daten migrieren (Export/Import bzw. Sync), dann `ios/`, Capacitor-Pakete und `native.ts` entfernen; Next liefert danach Admin, API, Datenschutz und optional die Web-App. CLAUDE.md anpassen
+- [ ] Danach erst, was vorher nicht ging: **Live Activity** für den Pausen-Timer (Sperrbildschirm/Dynamic Island, Config-Plugin), Android-Gegenstück als laufende Benachrichtigung
+
 ### Phase 3.2 — Training aus Skills (Herzstück) → geschlossene Beta
 
 - [ ] **Kurztest:** Max-Tests (Klimmzüge, Dips, Liegestütze, Hollow Hold, L-Sit, Pistol-Tiefe) → Startstufe jeder Leiter; wiederholbar; bei vorhandener Historie aus den Logs abgeleitet
@@ -151,10 +165,10 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 - [ ] **Anpassen:** Übung tauschen (andere Stufe oder gleiches `pattern`), Slot festpinnen, Volumen überschreiben, Slot entfernen; neu erzeugen behält gepinnte Slots und Überschreibungen
 - [ ] Ziel erreicht → Vorschlag für den nächsten Skill; Ziele/Tage/Vorlage ändern → **Vorschlag als Diff, erst nach Bestätigung neue Planversion**
 - [ ] **Phasen:** Pause/Krank (Serie bleibt, Wiedereinstieg mit reduziertem Volumen), Urlaub, Equipment temporär, Verletzung (Sehne/Körperstelle → Übungen ersetzen) – mit Zeitraum oder bis auf Weiteres
-- [ ] **Eigene Workouts:** Name, Übungen oder Leitern mit Sätzen/Wdh./Pause, im Plan einsetzbar
-- [ ] **Tagesanpassung:** Übungen für eine Einheit hinzufügen/entfernen, danach „als neues Workout speichern“
+- [x] **Eigene Workouts:** Name, Leitern mit Satzzahl, Reihenfolge, Wochentage (Heute → „Anderes Workout“ → „Workouts verwalten“, `PlanEditor.tsx`); löschen = `archived` (Verlauf behält den Namen). Offen: feste Übung ohne Leiter, Wdh.-Bereich/Pause je Slot
+- [x] **Tagesanpassung:** Übungen für eine Einheit hinzufügen/weglassen (`sessions.adjust`), danach „Als neues Workout speichern“ (Übungsplan → „Heute anpassen“)
 - [ ] Onboarding: Sprache → Kurztest → Ziele → Equipment/Tage → erzeugter Plan mit Begründung pro Slot („wegen Muscle-up“, „Ausgleich Druck“)
-- [ ] Apple Health: Workouts speichern
+- [ ] Apple Health / Health Connect (Android): Workouts speichern
 - [ ] **TestFlight, geschlossene Beta** mit 5–10 Fortgeschrittenen, Feedback-Kanal in der App
 
 ### Phase 3.3 — Englisch & Store-Bereitschaft
@@ -165,7 +179,7 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 - [ ] Impressum/Anbieter, AGB/EULA
 - [ ] Datenschutzfreundliche Nutzungsstatistik (ohne Tracking-SDK) für Onboarding-Abbrüche
 - [ ] Review-Vorbereitung: Demo-Account, Guideline 4.2 (native Funktionen: Tab-Leiste, Benachrichtigungen, HealthKit, Haptik)
-- [ ] In-App-Purchase technisch (StoreKit, serverseitige Prüfung, Freischaltung im Profil) — Modell wird außerhalb des Repos entschieden
+- [ ] In-App-Purchase technisch (StoreKit und Google Play Billing, serverseitige Prüfung, Freischaltung im Profil) — Modell wird außerhalb des Repos entschieden
 
 ### Phase 3.4 — Ausbau nach dem Release
 
@@ -179,7 +193,7 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 
 ### Später / bewusst nicht jetzt
 
-- Android (Capacitor macht es möglich, erst nach stabilem iOS-Release)
+- Android-Release im Play Store (mit Expo technisch von Anfang an dabei – siehe Phase 3.1b; Store-Release nach stabilem iOS-Release)
 - Trainer-/Team-Features, Plan-Sharing, Community
 - Apple Watch
 
