@@ -582,6 +582,16 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
                 tv.font = .body(16); tv.textColor = .white; tv.backgroundColor = .clear
                 tv.isScrollEnabled = false; tv.textContainerInset = UIEdgeInsets(top: 12, left: 10, bottom: 12, right: 10)
                 tv.delegate = self; tv.accessibilityIdentifier = id
+                // Anmeldung: E-Mail- bzw. Passwort-Tastatur, Autofill aus dem Schlüsselbund
+                switch b.keyboard {
+                case "email":
+                    tv.keyboardType = .emailAddress; tv.textContentType = .username
+                    tv.autocapitalizationType = .none; tv.autocorrectionType = .no; tv.spellCheckingType = .no
+                case "password":
+                    tv.isSecureTextEntry = true; tv.textContentType = .password
+                    tv.autocapitalizationType = .none; tv.autocorrectionType = .no; tv.spellCheckingType = .no
+                default: break
+                }
                 tv.text = b.value ?? ""
                 fields[id] = tv
                 return tv

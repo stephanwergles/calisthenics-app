@@ -22,7 +22,7 @@ export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) =
   return (
     <section className="skills">
       <span className="h-date">{tree.length} Progressionen · {unlocked} {unlocked === 1 ? 'Stufe' : 'Stufen'} freigeschaltet</span>
-      <h2 className="page-title display">Skill-Tree</h2>
+      <h2 className="page-title display">Skills</h2>
       {groups.map(g => (
         <div key={g.label} className="sk-group">
           <h3 className="pg-day"><span className="display">{g.label}</span><span>{g.detail}</span></h3>

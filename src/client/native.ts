@@ -152,7 +152,7 @@ export type NBlock =
   | { type: 'ladder'; title: string; subtitle: string; state: 'done' | 'current' | 'locked'; label: string; clip?: string }
   | { type: 'stepper'; id: string; label: string; value: string }
   | { type: 'segmented'; id: string; options: { id: string; title: string }[]; selected: string }
-  | { type: 'field'; id: string; label?: string; value: string; placeholder?: string }
+  | { type: 'field'; id: string; label?: string; value: string; placeholder?: string; keyboard?: 'email' | 'password' }
   | { type: 'button'; id: string; title: string; symbol?: string; style?: NButton['style'] }
   | { type: 'buttons'; buttons: NButton[] }
   | { type: 'compare'; title: string; before: number; now: number; max: number; delta: string }

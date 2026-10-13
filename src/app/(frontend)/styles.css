@@ -958,3 +958,36 @@ button.clip { display: block; border: none; padding: 0; background: none; color:
 .sheet .slots + .btn, .sheet .pe-days + .btn { margin-bottom: 8px; }
 .sheet .stepper + .row-btns { margin: 14px 0 8px; }
 .pe-days .check:not(.on) b { color: var(--muted); }
+
+/* Navigation v3: Profil-Avatar rechts oben (Web; in der App ein nativer Glas-Button) */
+.profile-btn { position: fixed; z-index: 30; top: calc(env(safe-area-inset-top) + 10px); right: max(16px, calc(50vw - 280px + 16px));
+  width: var(--tap); height: var(--tap); border-radius: 50%; border: 1px solid rgba(255,255,255,.12); background: rgba(40,40,40,.72);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.profile-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.profile-btn .sync-dot { position: absolute; top: 2px; right: 2px; border: 2px solid var(--bg); box-sizing: content-box; }
+.plan > .h-date, .skills > .h-date, .history > .h-date { padding-right: 56px; }
+
+/* Tab „Plan“ */
+.pl-head { font-size: 20px; text-transform: uppercase; letter-spacing: .04em; margin: 18px 2px 8px; }
+.pl-head-row { display: flex; justify-content: space-between; align-items: center; }
+.pl-head-row .pl-head { margin-bottom: 8px; }
+.pl-week { list-style: none; padding: 0; margin: 0; overflow: hidden; }
+.pl-week li + li { border-top: 1px solid var(--line); }
+.pl-day { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 54px; padding: 8px 14px; border: none; background: none; color: var(--text); text-align: left; cursor: pointer; }
+.pl-day.today { background: var(--accent-dim); }
+.pl-day:active { background: rgba(255,255,255,.04); }
+.pl-wd { width: 28px; font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+.pl-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pl-main b { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-main b.off { font-weight: 400; color: var(--muted); }
+.pl-main small { font-size: 12px; color: var(--muted); }
+.pl-tag { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.pl-chev { color: var(--muted); flex: none; }
+.pl-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.pl-card { display: flex; flex-direction: column; gap: 2px; min-height: 84px; padding: 12px 14px; border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--card); color: var(--text); text-align: left; cursor: pointer; }
+.pl-card .display { font-size: 20px; text-transform: uppercase; line-height: 1; }
+.pl-card small { font-size: 12px; color: var(--muted); }
+.pl-card em { margin-top: auto; padding-top: 6px; font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.pl-card:active { transform: scale(.98); }
+.pl-note { color: var(--muted); font-size: 13px; margin: 14px 2px 0; }
+.pl-day:focus-visible, .pl-card:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }

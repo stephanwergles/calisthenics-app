@@ -15,6 +15,13 @@ const fmtSync = (iso: string | null) => {
     : d.toLocaleString('de-DE', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
+/** Sync-Zustand in einem Satz (Profil-Kopf, Konto-Karte) */
+export const syncStatus = (s: Training['sync']) => s.phase === 'syncing' ? 'Gleiche ab …'
+  : s.phase === 'offline' ? 'Offline – wird nachgeholt, sobald Netz da ist.'
+  : s.phase === 'error' ? `Fehler beim Abgleich: ${s.error ?? 'unbekannt'}`
+  : s.pending ? `${s.pending} Änderung${s.pending === 1 ? '' : 'en'} warten auf Abgleich.`
+  : 'Alles abgeglichen.'
+
 function Account({ t }: { t: Training }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -24,11 +31,7 @@ function Account({ t }: { t: Training }) {
   const s = t.sync
 
   if (s.account) {
-    const status = s.phase === 'syncing' ? 'Gleiche ab …'
-      : s.phase === 'offline' ? 'Offline – wird nachgeholt, sobald Netz da ist.'
-      : s.phase === 'error' ? `Fehler beim Abgleich: ${s.error ?? 'unbekannt'}`
-      : s.pending ? `${s.pending} Änderung${s.pending === 1 ? '' : 'en'} warten auf Abgleich.`
-      : 'Alles abgeglichen.'
+    const status = syncStatus(s)
     return (
       <div className="card">
         <h2>Sync</h2>
@@ -83,7 +86,8 @@ function Account({ t }: { t: Training }) {
   )
 }
 
-export function DataView({ t }: { t: Training }) {
+/** Inhalt des Profils (im Web als Sheet; embedded = ohne eigene Seitenüberschrift) */
+export function DataView({ t, embedded }: { t: Training; embedded?: boolean }) {
   const [msg, setMsg] = useState<string[] | null>(null)
   const sets = t.sessions.reduce((n, s) => n + s.sets.length, 0)
 
@@ -115,8 +119,10 @@ export function DataView({ t }: { t: Training }) {
 
   return (
     <section className="data">
-      <span className="h-date">{!t.sync.account ? 'Nur auf diesem Gerät' : t.sync.phase === 'error' ? 'Sync-Fehler' : t.sync.pending ? 'Änderungen warten auf Abgleich' : 'Abgeglichen'}</span>
-      <h2 className="page-title display">Daten</h2>
+      {!embedded && <>
+        <span className="h-date">{!t.sync.account ? 'Nur auf diesem Gerät' : t.sync.phase === 'error' ? 'Sync-Fehler' : t.sync.pending ? 'Änderungen warten auf Abgleich' : 'Abgeglichen'}</span>
+        <h2 className="page-title display">Daten</h2>
+      </>}
       <div className="card hv-month">
         <div className="hv-stats" aria-label="Auf diesem Gerät">
           <div><span className="num">{t.sessions.length}</span><small>Einheiten</small></div>

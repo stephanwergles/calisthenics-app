@@ -111,6 +111,14 @@ Historie hängt weiter **pro Übungs-ID**, nie am Plan — deshalb darf ein Plan
 - Jedes neue Nutzerfeld durch `src/sync/convert.ts` + Roundtrip-Test (siehe CLAUDE.md).
 - **Prototyp:** `src/domain/generator.ts` mit `src/seed/exercise-meta.json` und `skills.json` (ohne UI/Payload, `node scripts/generate-plan.ts`) – erkennt Tagesthemen heute selbst; nächster Schritt: Split-Vorlagen als Eingabe.
 
+### Navigation (entschieden 13.10.2026, Entwurf im Canvas „Navigation v3“)
+
+Vier Tabs **Heute · Plan · Skills · Log**, Profil über den Avatar rechts oben (ersetzt den Tab „Daten“).
+- [x] Tabs umgestellt, Profil-Sheet (Konto, Sync, Einwilligung, Konto löschen; Import/Export im Web), Plan-Tab mit Woche (Tag antippen → Workout bzw. belegen) und „Meine Workouts“
+- [ ] Plan-Tab: Planvorschläge (Diff bestätigen, Badge am Tab), Phasen (Pause/krank, Urlaub, Verletzung, Equipment)
+- [ ] Skills-Tab: „Deine Ziele“ und „Realistisch als Nächstes“; Profil: Ausrüstung, Trainingstage & Dauer, Einstufung wiederholen
+- [ ] Profil nativ: Import/Export (Teilen-Sheet statt Download)
+
 ### Phase 3.0 — Mehrbenutzer-Fundament
 
 Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Features.

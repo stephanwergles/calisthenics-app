@@ -2,12 +2,12 @@
    ins Bundle kommen nur die hier genannten. Komponenten nutzen ausschließlich <Icon name>,
    damit das Set an einer Stelle austauschbar bleibt. Rein dekorativ – das Label trägt der Button. */
 import {
-  ArrowDown, ArrowUp, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Database, Dumbbell, List, Lock,
+  ArrowDown, ArrowUp, CalendarDays, CircleUserRound, ClipboardList, History, Check, ChevronDown, ChevronLeft, ChevronRight, Database, Dumbbell, List, Lock,
   MessageSquareText, Minus, Network, Pause, Pencil, Play, Plus, SlidersHorizontal, SkipForward, Square, Timer, Trash2, Trophy, Undo2, X, type LucideIcon,
 } from 'lucide-react'
 
 const ICONS = {
-  training: Dumbbell, history: CalendarDays, data: Database,
+  training: Dumbbell, history: History, data: Database, plan: ClipboardList, user: CircleUserRound, calendar: CalendarDays,
   play: Play, stop: Square, check: Check, pause: Pause, minus: Minus, plus: Plus, undo: Undo2, up: ArrowUp,
   left: ChevronLeft, right: ChevronRight, down: ChevronDown, timer: Timer, note: MessageSquareText, close: X,
   lock: Lock, trophy: Trophy, list: List, skip: SkipForward, skills: Network, trash: Trash2,

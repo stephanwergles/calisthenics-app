@@ -7,7 +7,8 @@ import { NativeShell, useNativeSheet } from '../useNativeSheet'
 import { useTraining, type Training } from '../useTraining'
 import { useRestTimer } from '../useRestTimer'
 import { BottomBar } from './BottomBar'
-import { DataView } from './DataView'
+import { ProfileSheet } from './ProfileSheet'
+import { PlanView } from './PlanView'
 import { Icon, type IconName } from './Icon'
 import { DaySheet, HistoryView, type DayItem } from './HistoryView'
 import { hasClip } from './ExerciseMedia'
@@ -25,10 +26,10 @@ import { SkillSheet } from './SkillsView'
 import { useDrag, usePresence } from '../useSheet'
 
 type SheetState = { kind: 'set'; pid: string; setNo: number } | { kind: 'activity'; date: string } | { kind: 'options'; pid: string } | null
-type View = 'train' | 'history' | 'skills' | 'data'
-const VIEWS: [View, string, IconName][] = [['train', 'Training', 'training'], ['history', 'Verlauf', 'history'], ['skills', 'Skills', 'skills'], ['data', 'Daten', 'data']]
+type View = 'train' | 'plan' | 'skills' | 'history'
+const VIEWS: [View, string, IconName][] = [['train', 'Heute', 'training'], ['plan', 'Plan', 'plan'], ['skills', 'Skills', 'skills'], ['history', 'Log', 'history']]
 /** SF Symbols für die native Tab-Leiste der iOS-App */
-const SYMBOLS: Record<View, string> = { train: 'figure.strengthtraining.traditional', history: 'calendar', skills: 'point.3.connected.trianglepath.dotted', data: 'icloud' }
+const SYMBOLS: Record<View, string> = { train: 'figure.strengthtraining.traditional', plan: 'list.bullet.rectangle', skills: 'point.3.connected.trianglepath.dotted', history: 'clock.arrow.circlepath' }
 
 /** kleiner Punkt am „Daten“-Button: grün = abgeglichen, orange = läuft/wartet, rot = Fehler, grau = nicht angemeldet/offline */
 const syncDot = (s: Training['sync']) => !s.account ? '' : s.phase === 'error' ? 'err' : s.phase === 'syncing' || s.pending ? 'busy' : s.phase === 'offline' ? '' : 'on'
@@ -45,7 +46,8 @@ export function TrainingApp() {
   const [planOpen, setPlanOpen] = useState(false)          // Übungsplan als Sheet (vor und während des Trainings)
   const [skillPid, setSkillPid] = useState<string | null>(null)
   const [day, setDay] = useState<DayItem | null>(null)          // Einheit/Cardio aus dem Verlauf
-  const [workouts, setWorkouts] = useState<{ edit?: string } | null>(null)   // Meine Workouts (eigener Plan)
+  const [workouts, setWorkouts] = useState<{ edit?: string } | null>(null)   // neu gespeichertes Workout weiterbearbeiten
+  const [profileOpen, setProfileOpen] = useState(false)          // Profil (Konto, Sync, Daten) über den Avatar
   // Gescrollt wird nur der Inhaltsbereich, nie die Seite: iOS verschiebt fixierte Leisten sonst,
   // sobald sich die Seitenhöhe ändert (Tab-Wechsel von lang nach kurz)
   const scroller = useRef<HTMLElement>(null)
@@ -108,6 +110,7 @@ export function TrainingApp() {
   onAction.current = (id: string) => {
     if (id === 'back') setTrainOpen(false)
     else if (id === 'list') setPlanOpen(true)
+    else if (id === 'profile') setProfileOpen(true)
   }
   useEffect(() => {
     if (!t.loaded || !splashDone || !isNative()) return
@@ -125,6 +128,14 @@ export function TrainingApp() {
       nativeActions.set('list', { symbol: 'list.bullet', position: 'topTrailing' })
     } else { nativeActions.remove('back'); nativeActions.remove('list') }
   }, [nativeShell, trainButtons])
+  // Profil rechts oben auf den Hauptseiten (im Training belegt die Übungsliste den Platz)
+  const profileButton = nativeShell && !trainOpen && !summaryId && !restShown
+  const syncError = !!t.sync.account && t.sync.phase === 'error'
+  useEffect(() => {
+    if (!nativeShell) return
+    if (profileButton) nativeActions.set('profile', { symbol: syncError ? 'exclamationmark.icloud' : 'person.crop.circle', position: 'topTrailing' })
+    else nativeActions.remove('profile')
+  }, [nativeShell, profileButton, syncError])
   // Technik & Optionen als natives Sheet
   const optSlot = nativeShell && sheet?.kind === 'options' ? slots.find(s => s.pid === sheet.pid) : undefined
   const opt = optSlot ? exerciseSheetSpec(t, optSlot) : null
@@ -160,10 +171,6 @@ export function TrainingApp() {
     else setRestView(null)
   }), [rest.shift, rest.stop]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => nativePanel.onHeight(setPanelH), [])
-  const dot = syncDot(t.sync)
-  useEffect(() => {
-    if (nativeShell) nativeTabs.badge('data', dot === 'err' ? '!' : dot === 'busy' ? '' : null, dot === 'err' ? 'error' : 'volt')
-  }, [nativeShell, dot])
 
   // Splash steht in beiden Zweigen an derselben Stelle – so läuft die Animation beim Laden einfach weiter
   const splash = <Splash ready={t.loaded} onDone={() => setSplashDone(true)} />
@@ -175,13 +182,19 @@ export function TrainingApp() {
     <div className={`shell${nativeShell ? ' native' : ''}`}>
     <main ref={scroller} className={`app${showBar ? ' with-bar' : ''}`} aria-hidden={trainOpen || undefined}>
       <h1 className="sr-only">Lever</h1>
-      {view === 'data' && <DataView t={t} />}
+      {!nativeShell && (
+        <button className="profile-btn" aria-label={`Profil – ${syncLabel(t.sync)}`} onClick={() => setProfileOpen(true)}>
+          <Icon name="user" size={22} />
+          <span className={`sync-dot ${syncDot(t.sync)}`} aria-hidden="true" />
+        </button>
+      )}
+      {view === 'plan' && <PlanView t={t} />}
       {view === 'skills' && <SkillsView t={t} onOpen={setSkillPid} />}
       {view === 'history' && <HistoryView t={t} openActivity={date => setSheet({ kind: 'activity', date })} openDay={setDay} />}
       {showHome && (
         <HomeView t={t} slots={slots} started={started} done={doneToday} onStart={t.active ? () => openFocus(undefined) : start}
           onSummary={t.todaySession ? () => setSummaryId(t.todaySession!.id) : undefined}
-          onBrowse={() => setPlanOpen(true)} onSkills={() => { setView('skills'); toTop() }} onManage={() => setWorkouts({})} />
+          onBrowse={() => setPlanOpen(true)} onSkills={() => { setView('skills'); toTop() }} onManage={() => { setView('plan'); toTop() }} />
       )}
     </main>
 
@@ -214,7 +227,6 @@ export function TrainingApp() {
               onClick={() => { setView(k); toTop() }}>
               <span className="tab-icon">
                 <Icon name={icon} size={22} />
-                {k === 'data' && <span className={`sync-dot ${syncDot(t.sync)}`} role="img" aria-label={syncLabel(t.sync)} />}
               </span>
               {l}
             </button>
@@ -227,7 +239,8 @@ export function TrainingApp() {
           openFocus={openFocus} openActivity={() => setSheet({ kind: 'activity', date: t.today })}
           onSavedWorkout={id => { setPlanOpen(false); setWorkouts({ edit: id }) }} />
       )}
-      {workouts && <WorkoutsHost t={t} initial={workouts.edit} onClose={() => setWorkouts(null)} />}
+      {workouts && <WorkoutsHost t={t} list={false} initial={workouts.edit} onClose={() => setWorkouts(null)} />}
+      {profileOpen && <ProfileSheet t={t} onClose={() => setProfileOpen(false)} />}
       {skillPid && <SkillSheet t={t} pid={skillPid} onClose={() => setSkillPid(null)} />}
       {day && <DaySheet t={t} item={day} onClose={() => setDay(null)} openActivity={date => setSheet({ kind: 'activity', date })} />}
 

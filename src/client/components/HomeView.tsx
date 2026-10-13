@@ -72,8 +72,8 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
           : <button className="btn btn-primary btn-block f-cta" onClick={onStart}><Icon name="play" size={20} /> {cta}</button>}
         {done && <button className="btn btn-secondary btn-block" onClick={onStart}><Icon name="play" size={18} /> {cta}</button>}
         <div className="h-links">
-          <button className="btn btn-ghost btn-sm" onClick={onBrowse}><Icon name="list" size={16} /> Übungen ansehen</button>
-          <button className="btn btn-ghost btn-sm" aria-expanded={picking} onClick={() => setPicking(p => !p)}>Anderes Workout <Icon name="down" size={16} className={picking ? 'flip' : ''} /></button>
+          <button className="btn btn-ghost btn-sm" onClick={onBrowse}><Icon name="list" size={16} /> Übungen</button>
+          <button className="btn btn-ghost btn-sm" aria-expanded={picking} onClick={() => setPicking(p => !p)}>Tauschen <Icon name="down" size={16} className={picking ? 'flip' : ''} /></button>
         </div>
         {picking && (
           <div className="picker" role="group" aria-label="Workout wählen">
@@ -85,8 +85,8 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
               </button>
             ))}
             <button className="manage" onClick={() => { setPicking(false); onManage() }}>
-              <span className="display">Workouts verwalten</span>
-              <small>Eigene anlegen, Übungen und Wochentage ändern</small>
+              <span className="display">Im Plan bearbeiten</span>
+              <small>Eigene Workouts, Übungen und Wochentage</small>
               <em><Icon name="right" size={16} /></em>
             </button>
           </div>
@@ -97,7 +97,7 @@ export function HomeView({ t, slots, started, done, onStart, onSummary, onBrowse
         <div className="h-skills">
           <div className="h-skills-head">
             <h3 className="display">Nächste Skills</h3>
-            <button className="btn btn-ghost btn-sm" onClick={onSkills}>Skill-Tree <Icon name="right" size={16} /></button>
+            <button className="btn btn-ghost btn-sm" onClick={onSkills}>Alle Skills <Icon name="right" size={16} /></button>
           </div>
           <div className="h-skill-grid">
             {skills.map(s => {

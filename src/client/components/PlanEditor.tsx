@@ -12,7 +12,7 @@ import { hasClip, ExerciseStill } from './ExerciseMedia'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
 
-const DAY_NAME: Record<Weekday, string> = { mon: 'Montag', tue: 'Dienstag', wed: 'Mittwoch', thu: 'Donnerstag', fri: 'Freitag', sat: 'Samstag', sun: 'Sonntag' }
+export const DAY_NAME: Record<Weekday, string> = { mon: 'Montag', tue: 'Dienstag', wed: 'Mittwoch', thu: 'Donnerstag', fri: 'Freitag', sat: 'Samstag', sun: 'Sonntag' }
 const count = (n: number) => `${n} ${n === 1 ? 'Übung' : 'Übungen'}`
 const daysOf = (t: Training, id: WorkoutId) => L.plannedDays(t.ix, id).map(d => L.WEEKDAY_SHORT[d]).join(' · ')
 
@@ -94,23 +94,27 @@ export function NameSheet({ title, sub, initial = '', ok, onSave, onClose }: {
 type Layer = { kind: 'edit'; id: WorkoutId } | null
 type Over = { kind: 'slot'; pid: ProgressionId } | { kind: 'add' } | { kind: 'rename' } | { kind: 'new' } | null
 
-/** Einstieg „Workouts verwalten“: Übersicht, darüber Editor, darüber Slot/Auswahl/Name */
-export function WorkoutsHost({ t, initial, onClose }: { t: Training; initial?: WorkoutId; onClose: () => void }) {
+/** Workouts bearbeiten: (optional) Übersicht, darüber Editor, darüber Slot/Auswahl/Name.
+    Ohne `list` (Plan-Tab) schließt das Ganze, sobald der Editor bzw. das Namens-Sheet zugeht. */
+export function WorkoutsHost({ t, initial, startNew, list = true, onClose }: {
+  t: Training; initial?: WorkoutId; startNew?: boolean; list?: boolean; onClose: () => void
+}) {
   const [layer, setLayer] = useState<Layer>(initial ? { kind: 'edit', id: initial } : null)
-  const [over, setOver] = useState<Over>(null)
+  const [over, setOver] = useState<Over>(startNew ? { kind: 'new' } : null)
+  const closeEditor = () => { setLayer(null); setOver(null); if (!list) onClose() }
   const edited = layer?.kind === 'edit' ? t.ix.workouts.get(layer.id) : undefined
   const change = (w: Workout) => t.editPlan(p => L.withWorkout(p, w))
 
   return (
     <>
-      <WorkoutsSheet t={t} onClose={onClose} onEdit={id => setLayer({ kind: 'edit', id })} onNew={() => setOver({ kind: 'new' })} />
+      {list && <WorkoutsSheet t={t} onClose={onClose} onEdit={id => setLayer({ kind: 'edit', id })} onNew={() => setOver({ kind: 'new' })} />}
       {edited && !edited.archived && (
-        <WorkoutEditor t={t} w={edited} onClose={() => { setLayer(null); setOver(null) }}
+        <WorkoutEditor t={t} w={edited} onClose={closeEditor}
           onSlot={pid => setOver({ kind: 'slot', pid })} onAdd={() => setOver({ kind: 'add' })} onRename={() => setOver({ kind: 'rename' })}
           onDelete={async () => {
             if (L.workoutsInWeekOrder(t.ix).length <= 1) { await ask({ title: 'Letztes Workout', message: 'Mindestens ein Workout muss im Plan bleiben.', ok: 'OK' }); return }
             if (!await ask({ title: `„${edited.name}“ löschen?`, message: 'Das Workout verschwindet aus dem Plan und von seinen Wochentagen. Deine Einheiten damit bleiben im Verlauf.', ok: 'Löschen', destructive: true })) return
-            t.editPlan(p => L.withoutWorkout(p, edited.id)); setLayer(null)
+            t.editPlan(p => L.withoutWorkout(p, edited.id)); closeEditor()
           }} />
       )}
       {edited && over?.kind === 'slot' && edited.slots.some(s => s.progression === over.pid) && (
@@ -125,7 +129,7 @@ export function WorkoutsHost({ t, initial, onClose }: { t: Training; initial?: W
           onSave={name => { change({ ...edited, name }); setOver(null) }} />
       )}
       {over?.kind === 'new' && (
-        <NameSheet title="Neues Workout" sub="Danach Übungen und Wochentage wählen" ok="Anlegen" onClose={() => setOver(null)}
+        <NameSheet title="Neues Workout" sub="Danach Übungen und Wochentage wählen" ok="Anlegen" onClose={() => { setOver(null); if (!list && !layer) onClose() }}
           onSave={name => {
             const w = L.newWorkout(t.ix, name, [])
             t.editPlan(p => L.withWorkout(p, w)); setOver(null); setLayer({ kind: 'edit', id: w.id })
@@ -295,6 +299,44 @@ function SlotSheet({ t, w, pid, onChange, onClose }: { t: Training; w: Workout; 
         <button className="btn btn-secondary grow" disabled={i >= w.slots.length - 1} onClick={() => move(1)}><Icon name="lower" size={18} /> Später</button>
       </div>
       <button className="btn btn-ghost btn-block" onClick={remove}><Icon name="minus" size={18} /> Aus dem Workout entfernen</button>
+    </Sheet>
+  )
+}
+
+/* ── Wochentag belegen (Plan-Tab: Tipp auf einen Tag) ─────────────────────── */
+
+export function DayAssign({ t, day, onClose }: { t: Training; day: Weekday; onClose: () => void }) {
+  const native = useNativeShell()
+  const current = t.ix.catalog.weekplan[day]
+  const list = L.workoutsInWeekOrder(t.ix)
+  const pick = (id: WorkoutId | undefined) => { if (id !== current) t.editPlan(p => L.withDay(p, day, id)); onClose() }
+  useNativeSheet(native ? {
+    id: 'day-assign', title: DAY_NAME[day], subtitle: 'Welches Workout an diesem Tag?', detents: ['medium', 'large'],
+    blocks: [
+      ...list.map((w): NBlock => ({ type: 'check', style: 'select', id: `w:${w.id}`, title: w.name, subtitle: `${w.focus} · ${count(w.slots.length)}`, on: current === w.id })),
+      { type: 'check', style: 'select', id: 'rest', title: 'Ruhetag', on: !current },
+    ],
+  } : null, e => {
+    if (e.type === 'toggle' && e.id?.startsWith('w:')) pick(e.id.slice(2))
+    else if (e.type === 'toggle' && e.id === 'rest') pick(undefined)
+    else if (e.type === 'dismiss') onClose()
+  })
+  if (native) return null
+  return (
+    <Sheet title={DAY_NAME[day]} sub="Welches Workout an diesem Tag?" onClose={onClose}>
+      <ul className="pe-days">
+        {[...list.map(w => ({ id: w.id as string | undefined, name: w.name, sub: `${w.focus} · ${count(w.slots.length)}` })), { id: undefined, name: 'Ruhetag', sub: '' }].map(x => {
+          const on = x.id === current
+          return (
+            <li key={x.id ?? 'rest'}>
+              <button className={`check${on ? ' on' : ''}`} aria-pressed={on} onClick={() => pick(x.id)}>
+                <span className="box" aria-hidden="true">{on && <Icon name="check" size={14} />}</span>
+                <span><b>{x.name}</b>{x.sub}</span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
     </Sheet>
   )
 }

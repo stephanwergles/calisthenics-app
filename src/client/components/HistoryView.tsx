@@ -20,7 +20,7 @@ export function HistoryView({ t, openActivity, openDay }: { t: Training; openAct
   return (
     <section className="history">
       <span className="h-date">{sub === 'cal' ? (n => `${n} ${n === 1 ? 'Einheit' : 'Einheiten'} insgesamt`)(t.sessions.filter(L.isTrained).length) : 'Pro Übung, über alle Stufen'}</span>
-      <h2 className="page-title display">Verlauf</h2>
+      <h2 className="page-title display">Log</h2>
       <div className="seg pill" role="group" aria-label="Ansicht">
         {([['cal', 'Monat'], ['prog', 'Fortschritt']] as const).map(([k, l]) => (
           <button key={k} className={sub === k ? 'on' : ''} aria-pressed={sub === k} onClick={() => setSub(k)}>{l}</button>
