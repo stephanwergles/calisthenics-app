@@ -136,7 +136,8 @@ export function TrainingApp() {
     if (e.type === 'tap' || e.type === 'dismiss') setSheet(null)
   })
   // Erfassungs-Panel: nur im offenen Training ohne Pause/Abschluss darüber
-  const panelOn = nativeShell && trainOpen && train.shown && !restShown && !summaryId
+  // bleibt auch während der Pause stehen – der Pausen-Screen liegt darüber (nie umgekehrt)
+  const panelOn = nativeShell && trainOpen && train.shown && !summaryId
   useEffect(() => { if (nativeShell && !panelOn) nativePanel.set(null) }, [nativeShell, panelOn])
   const [panelH, setPanelH] = useState(0)
   // Pausen-Screen nativ: zeigen, solange eine Pause läuft/klingelt und die Ansicht offen ist

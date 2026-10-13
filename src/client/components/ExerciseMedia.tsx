@@ -6,31 +6,51 @@ import { useEffect, useRef, useState } from 'react'
 import type { Exercise } from '@/domain/model'
 import clips from '@/seed/clips.json'
 import { Sketch } from './Sketch'
+import { Icon } from './Icon'
 
 const CLIPS = new Set((clips as { clips: string[] }).clips)
 const STILLS = new Set((clips as { stills: string[] }).stills)
 export const hasClip = (id: string) => CLIPS.has(id)
 
+/** Clip läuft dreimal und bleibt dann auf der Schlüsselposition stehen (Strom sparen);
+    Tipp darauf spielt ihn wieder dreimal ab. */
+const RUNS = 3
 export function ExerciseMedia({ exercise, label }: { exercise: Exercise; label: string }) {
   const clip = CLIPS.has(exercise.id)
   const [state, setState] = useState<'loading' | 'ready' | 'failed'>('loading')
+  const [playing, setPlaying] = useState(true)
+  const runs = useRef(0)
   const video = useRef<HTMLVideoElement>(null)
-  useEffect(() => { setState('loading') }, [exercise.id])
+  useEffect(() => { setState('loading'); setPlaying(true); runs.current = 0 }, [exercise.id])
+  const still = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const rest = (v: HTMLVideoElement) => { v.pause(); v.currentTime = 1; setPlaying(false) }
   useEffect(() => {
     const v = video.current
     if (!v || state !== 'ready') return
-    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (still) { v.pause(); v.currentTime = 0.8 } else void v.play().catch(() => undefined)
+    if (still()) rest(v); else void v.play().catch(() => setPlaying(false))
   }, [state])
+  const onEnded = () => {
+    const v = video.current
+    if (!v) return
+    runs.current++
+    if (runs.current < RUNS) { v.currentTime = 0; void v.play().catch(() => undefined) } else rest(v)
+  }
+  const replay = () => {
+    const v = video.current
+    if (!v || playing) return
+    runs.current = 0; setPlaying(true); v.currentTime = 0; void v.play().catch(() => setPlaying(false))
+  }
 
   if (!clip || state === 'failed') return <Sketch id={exercise.media.sketch} label={label} />
   return (
-    <div className={`clip${state === 'ready' ? ' ready' : ''}`}>
+    <button type="button" className={`clip${state === 'ready' ? ' ready' : ''}${playing ? '' : ' stopped'}`} onClick={replay}
+      aria-label={playing ? label : `${label} – nochmal abspielen`}>
       {state !== 'ready' && <Sketch id={exercise.media.sketch} label="" />}
-      <video key={exercise.id} ref={video} src={`/clips/${exercise.id}.mp4`} muted loop playsInline autoPlay preload="auto"
-        aria-label={label} role="img" disablePictureInPicture
-        onLoadedData={() => setState('ready')} onError={() => setState('failed')} />
-    </div>
+      <video key={exercise.id} ref={video} src={`/clips/${exercise.id}.mp4`} muted playsInline autoPlay preload="auto"
+        aria-hidden="true" disablePictureInPicture tabIndex={-1}
+        onLoadedData={() => setState('ready')} onEnded={onEnded} onError={() => setState('failed')} />
+      {!playing && state === 'ready' && <span className="clip-replay" aria-hidden="true"><Icon name="undo" size={18} /></span>}
+    </button>
   )
 }
 

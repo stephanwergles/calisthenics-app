@@ -161,15 +161,15 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved, 
         <span className="f-label">{L.BLOCK_LABEL[slot.block]} · {index + 1}/{total}{step.total > 1 && <span className="f-level"> · Stufe {step.index + 1}/{step.total}</span>}</span>
         <button className="btn btn-secondary btn-sm f-opts" onClick={() => openOptions(slot.pid)}>Technik</button>
         <ExerciseMedia exercise={ex} label={`Bewegung: ${ex.name}`} />
-      </div>
-
-      <div className="f-head">
-        <h1 className="display f-name">{ex.name}</h1>
-        {muscles.length > 0 && (
-          <ul className="f-chips" aria-label="Muskeln">
-            {muscles.map((m, i) => <li key={m} className={i < 2 ? 'main' : ''}>{m}</li>)}
-          </ul>
-        )}
+        {/* Name und Muskeln liegen im Bild – alles Wichtige passt so über das Erfassungs-Sheet */}
+        <div className="f-over">
+          <h1 className="display f-name">{ex.name}</h1>
+          {muscles.length > 0 && (
+            <p className="f-muscles" aria-label="Muskeln">
+              {muscles.map((m, i) => <span key={m} className={i < 2 ? 'main' : ''}>{m}</span>)}
+            </p>
+          )}
+        </div>
       </div>
 
       {ex.cues?.length ? (
@@ -178,11 +178,6 @@ function Exercise({ t, rest, slot, index, total, openSet, openOptions, onSaved, 
         </ol>
       ) : <p className="f-exec">{ex.technique.execution}</p>}
 
-      <ul className="f-facts">
-        <li>Ziel {target.label}</li>
-        <li>Pause {L.fmtClock(target.restSec)}</li>
-        {slot.last && <li className="muted">Zuletzt {slot.last.sets.map(x => `${x.value}${x.weightKg ? `+${x.weightKg}` : ''}`).join(' · ')}</li>}
-      </ul>
       {lastNotes.map(n => (
         <p key={n.set} className="f-note"><Icon name="note" size={16} /><span>Letztes Mal, Satz {n.set}: „{n.note}“</span></p>
       ))}
@@ -283,7 +278,9 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, note, onNoteToggle, 
     onSaved(slot, setNo, `${value}${weight ? ` +${weight} kg` : ''} ${unit}${d === null ? '' : d === 0 ? ' · wie letztes Mal' : ` · ${d > 0 ? '+' : '−'}${Math.abs(d)} zum letzten Mal`}`)
   }
 
-  const caption = `Satz ${setNo} von ${slot.planned} · ${seconds ? 'Sekunden' : 'Wiederholungen'}${ex.perSide ? ' pro Seite' : ''}`
+  // Ziel und letzter Wert stehen direkt über dem Zähler (statt als Chips im verdeckten Inhalt)
+  const lastSet = slot.last?.sets.find(x => x.set === setNo)
+  const caption = `Satz ${setNo}/${slot.planned} · Ziel ${target.label}${lastSet ? ` · zuletzt ${lastSet.value}${seconds ? ' s' : ''}${lastSet.weightKg ? ` +${String(lastSet.weightKg).replace('.', ',')} kg` : ''}` : ''}`
   usePanel(panel ? {
     key: `${slot.pid}-${setNo}`, caption, value: String(value), unit: seconds ? 's' : undefined,
     weight: ex.weighted ? String(weight).replace('.', ',') : undefined, seconds,
@@ -305,7 +302,7 @@ function SetInput({ t, rest, slot, setNo, seconds, onSaved, note, onNoteToggle, 
 
   return (
     <>
-      <p className="f-caption">Satz {setNo} von {slot.planned} · {seconds ? 'Sekunden' : 'Wiederholungen'}{ex.perSide ? ' pro Seite' : ''}</p>
+      <p className="f-caption">{caption}</p>
       {timing ? <HoldRing hold={hold} /> : (
         <div className="f-counter">
           <button className="f-round" aria-label={`${stepBy} weniger`} onClick={() => setValue(v => Math.max(1, v - stepBy))}><Icon name="minus" size={28} /></button>

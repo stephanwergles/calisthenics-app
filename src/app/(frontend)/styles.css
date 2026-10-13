@@ -900,3 +900,24 @@ img.still { display: block; }
 .sk-thumb .still, .row-thumb .still { transform: scale(1.55); transform-origin: 50% 42%; }
 .row-thumb { overflow: hidden; border-radius: 12px; }
 .row-thumb .mark { z-index: 1; right: 2px; bottom: 2px; }
+/* Clip als Knopf: angehalten → Tipp spielt nochmal ab */
+button.clip { display: block; border: none; padding: 0; background: none; color: inherit; cursor: pointer; }
+.clip-replay { position: absolute; right: 12px; bottom: 12px; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .18); color: #fff; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+
+/* Fokus v3: Name + Muskeln im Bild, Ziel/zuletzt im Erfassungs-Sheet – der sichtbare Bereich
+   über dem Sheet zeigt Bewegung, Name und Kernpunkte */
+.f-figure { padding: 0; min-height: 0; }
+.f-figure:not(:has(.clip)) { padding: 44px 16px 92px; }
+.clip { max-height: 40vh; }
+.f-over { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 16px 14px; pointer-events: none;
+  background: linear-gradient(to top, rgba(26, 26, 26, .96) 30%, rgba(26, 26, 26, 0)); display: flex; flex-direction: column; gap: 4px; }
+.f-over .f-name { font-size: 32px; line-height: .95; }
+.f-muscles { display: flex; flex-wrap: wrap; gap: 0 10px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.f-muscles .main { color: var(--accent); }
+.f-scroll { gap: 14px; }
+.f-cues li { font-size: 15.5px; }
+.clip-replay { z-index: 2; top: 56px; bottom: auto; right: 14px; }
+.f-figure:has(.clip)::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 64px; z-index: 1; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(26, 26, 26, .85), rgba(26, 26, 26, 0)); }
+.f-figure .f-label, .f-figure .f-opts { z-index: 2; }

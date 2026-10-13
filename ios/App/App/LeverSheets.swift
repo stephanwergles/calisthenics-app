@@ -1063,6 +1063,18 @@ extension LeverTabBarPlugin {
         return top
     }
 
+    /// Ganz oben präsentieren – läuft gerade ein Ein-/Ausblenden, kurz warten (sonst verweigert
+    /// UIKit das Präsentieren still, und Ebenen landen in falscher Reihenfolge)
+    func presentOnTop(_ vc: UIViewController, tries: Int = 8) {
+        guard let top = topController() else { return }
+        let busy = top.isBeingPresented || top.isBeingDismissed || (top.presentedViewController?.isBeingDismissed ?? false)
+        if busy && tries > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in self?.presentOnTop(vc, tries: tries - 1) }
+            return
+        }
+        top.present(vc, animated: true)
+    }
+
     /// Sheet zeigen – oder, wenn eines mit gleicher id offen ist, an Ort und Stelle aktualisieren
     @objc func showSheet(_ call: CAPPluginCall) {
         guard let spec = decode(NSheetSpec.self, call.getObject("spec")) else { call.reject("Sheet unlesbar"); return }
@@ -1121,8 +1133,7 @@ extension LeverTabBarPlugin {
                     self?.notifyListeners("panel", data: data)
                 }
                 Self.panel = p
-                guard let top = self.topController() else { return }
-                top.present(p, animated: true)
+                presentOnTop(p)
     }
 }
 
@@ -1314,7 +1325,8 @@ final class LeverRestController: UIViewController, UISheetPresentationController
 
 extension LeverTabBarPlugin {
     private static var rest: LeverRestController?
-    static var restOpen: Bool { rest != nil }
+    /// nur wenn wirklich sichtbar – ein weggewischter Pausen-Screen zählt nicht
+    static var restOpen: Bool { rest?.presentingViewController != nil && rest?.isBeingDismissed == false }
 
     /// Pausen-Screen: spec = null schließt
     @objc func setRest(_ call: CAPPluginCall) {
@@ -1326,11 +1338,13 @@ extension LeverTabBarPlugin {
         DispatchQueue.main.async {
             if let spec {
                 if let r = Self.rest, r.presentingViewController != nil { r.apply(spec); call.resolve(); return }
-                let r = LeverRestController(spec: spec) { [weak self] ev in self?.notifyListeners("rest", data: ["type": ev]) }
+                let r = LeverRestController(spec: spec) { [weak self] ev in
+                    if ev == "close" { Self.rest = nil }     // vom Nutzer weggewischt
+                    self?.notifyListeners("rest", data: ["type": ev])
+                }
                 Self.rest = r
-                guard var top: UIViewController = self.tabsRef else { call.reject("Kein Controller"); return }
-                while let p = top.presentedViewController, !p.isBeingDismissed { top = p }
-                top.present(r, animated: true)
+                // liegt über dem Erfassungs-Panel; das bleibt darunter und ist nach der Pause sofort da
+                self.presentOnTop(r)
             } else if let r = Self.rest {
                 Self.rest = nil
                 r.closedByApp = true
