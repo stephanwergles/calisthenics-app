@@ -89,6 +89,11 @@ export interface Catalog {
   progressions: Progression[];
   workouts: Workout[];
   weekplan: Partial<Record<Weekday, WorkoutId>>;
+  /* v3, aus Payload (fehlen sie, nutzt die App die mitgelieferten Seed-Daten) */
+  meta?: Record<ExerciseId, ExerciseMeta>;
+  skills?: Skill[];
+  splits?: SplitTemplate[];
+  assessment?: AssessmentData;
 }
 
 /* ── Nutzerdaten ─────────────────────────────────────────────────────────── */
@@ -226,6 +231,12 @@ export interface Skill {
 }
 
 /** Split-Vorlage: ein Thema je Trainingstag mit erlaubten Regionen (src/seed/splits.json) */
+/** Kurztest: Tests und je Leiter die Schwellen (thresholds[i] = Mindestwert für Stufe i+1) */
+export interface AssessmentData {
+  tests: { id: string; name: string; unit: 'reps' | 'seconds' | 'level'; levels?: string[] }[]
+  rules: { progression: ProgressionId; test: string; thresholds: number[] }[]
+}
+
 export interface SplitTemplate { id: string; name: string; themes: { id: string; name: string; regions: Region[] }[] }
 
 export interface GeneratorInput {

@@ -6,7 +6,7 @@ import type { PlanSuggestion, Suggestion } from '../usePlanSuggestion'
 import type { NBlock } from '../native'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { DAY_NAME } from './PlanEditor'
-import { SKILLS } from './ProfileParts'
+import { catalogData } from '../data'
 import { Sheet } from './Sheets'
 import * as L from '../logic'
 
@@ -18,7 +18,7 @@ export function SuggestionSheet({ t, s, ps, onClose, parent, onDone }: {
   parent?: { id: string; title: string }; onDone?: () => void
 }) {
   const native = useNativeShell()
-  const goals = L.profileOf(t.ix, t.state).goals.map(g => SKILLS.find(x => x.id === g)?.name ?? g).join(', ')
+  const goals = L.profileOf(t.ix, t.state).goals.map(g => catalogData(t.ix.catalog).skills.find(x => x.id === g)?.name ?? g).join(', ')
   const version = (t.plan?.version ?? 0)
   const sub = `Für ${goals} · ${s.changes} ${s.changes === 1 ? 'Änderung' : 'Änderungen'}`
   const intro = 'Aus deinen Zielen, Trainingstagen, deiner Ausrüstung und deinem Stand. Nichts ändert sich, bevor du übernimmst – danach lässt es sich im Plan rückgängig machen.'

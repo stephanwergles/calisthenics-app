@@ -5,10 +5,9 @@
 import { useMemo, useState } from 'react'
 import type { Plan } from '@/domain/model'
 import { generatePlan } from '@/domain/generator'
-import { META } from './meta'
+import { catalogData } from './data'
 import * as L from './logic'
 import type { Training } from './useTraining'
-import { SKILLS, SPLITS } from './components/ProfileParts'
 
 const DISMISSED = 'lever-suggestion-dismissed'
 const PREVIOUS = 'lever-plan-previous'
@@ -18,14 +17,15 @@ const write = (k: string, v: string | null) => { try { if (v === null) localStor
 export interface Suggestion { plan: Plan; diff: L.DayDiff[]; warnings: string[]; changes: number }
 
 export function usePlanSuggestion(t: Training) {
-  const input = useMemo(() => L.generatorInput(t.ix, t.state, SKILLS, SPLITS), [t.ix, t.state])
+  const data = catalogData(t.ix.catalog)
+  const input = useMemo(() => L.generatorInput(t.ix, t.state, data.skills, data.splits), [t.ix, t.state, data])
   const sig = input ? JSON.stringify(input) : ''
   const [dismissed, setDismissed] = useState(() => read(DISMISSED))
   const [previous, setPrevious] = useState(() => read(PREVIOUS))
 
   const suggestion = useMemo((): Suggestion | null => {
     if (!input) return null
-    const g = generatePlan({ catalog: t.ix.catalog, meta: META, skills: SKILLS, splits: SPLITS }, input)
+    const g = generatePlan({ catalog: t.ix.catalog, meta: data.meta, skills: data.skills, splits: data.splits }, input)
     const plan = L.planFromGenerated(t.ix, t.plan ?? L.planFromCatalog(t.baseCatalog), g, input)
     if (L.samePlan(t.ix, plan)) return null
     const diff = L.planDiff(t.ix, t.state, plan)

@@ -11,7 +11,7 @@ import { ProfileSheet } from './ProfileSheet'
 import { PlanView } from './PlanView'
 import { Onboarding, needsOnboarding } from './Onboarding'
 import { usePlanSuggestion } from '../usePlanSuggestion'
-import { META } from '../meta'
+import { catalogData } from '../data'
 import { Icon, type IconName } from './Icon'
 import { DaySheet, HistoryView, type DayItem } from './HistoryView'
 import { hasClip } from './ExerciseMedia'
@@ -81,7 +81,7 @@ export function TrainingApp() {
   }, [t.active])
 
   const slots = useMemo(
-    () => (t.loaded ? L.workoutSlots(t.ix, t.workout, t.state, t.todaySession, t.sessions, t.today, { meta: META }) : []),
+    () => (t.loaded ? L.workoutSlots(t.ix, t.workout, t.state, t.todaySession, t.sessions, t.today, { meta: catalogData(t.ix.catalog).meta }) : []),
     [t.loaded, t.ix, t.workout, t.state, t.todaySession, t.sessions, t.today],
   )
   // Fokus: ausgewählte Übung, sonst die erste offene

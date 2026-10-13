@@ -74,6 +74,8 @@ export interface Config {
     exercises: Exercise;
     progressions: Progression;
     workouts: Workout;
+    skills: Skill;
+    splits: Split;
     users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -89,6 +91,8 @@ export interface Config {
     exercises: ExercisesSelect<false> | ExercisesSelect<true>;
     progressions: ProgressionsSelect<false> | ProgressionsSelect<true>;
     workouts: WorkoutsSelect<false> | WorkoutsSelect<true>;
+    skills: SkillsSelect<false> | SkillsSelect<true>;
+    splits: SplitsSelect<false> | SplitsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -101,9 +105,11 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     weekplan: Weekplan;
+    assessment: Assessment;
   };
   globalsSelect: {
     weekplan: WeekplanSelect<false> | WeekplanSelect<true>;
+    assessment: AssessmentSelect<false> | AssessmentSelect<true>;
   };
   locale: null;
   widgets: {
@@ -274,6 +280,13 @@ export interface Progression {
   id: string;
   region?: ('pull' | 'push' | 'core' | 'legs') | null;
   /**
+   * Test aus „Einstufung“ (Global) und Mindestwerte: 1. Wert → Stufe 2, 2. Wert → Stufe 3 …
+   */
+  assessment?: {
+    test?: string | null;
+    thresholds?: number[] | null;
+  };
+  /**
    * Reihenfolge = Progression. Die Vorgabe gehört zur Stufe, nicht zur Übung.
    */
   steps?:
@@ -314,6 +327,44 @@ export interface Exercise {
   };
   cues?: string[] | null;
   muscles?: string[] | null;
+  /**
+   * Grundlage für Planvorschläge und Verletzungs-/Equipment-Phasen
+   */
+  meta?: {
+    /**
+     * Jede Zeile = eine Möglichkeit mit allen nötigen Geräten. Boden und Wand gelten immer als vorhanden.
+     */
+    alternatives?:
+      | {
+          items?:
+            ('bar' | 'rings' | 'parallettes' | 'dip-bars' | 'band' | 'box' | 'weight' | 'floor' | 'wall')[] | null;
+          id?: string | null;
+        }[]
+      | null;
+    pattern?:
+      | (
+          | 'vertical-pull'
+          | 'horizontal-pull'
+          | 'vertical-push'
+          | 'horizontal-push'
+          | 'squat'
+          | 'hinge'
+          | 'core'
+          | 'isolation'
+        )
+      | null;
+    difficulty?: number | null;
+    stress?: {
+      wrist?: number | null;
+      elbow?: number | null;
+      shoulder?: number | null;
+      knee?: number | null;
+    };
+    /**
+     * Offene Frage für die Coach-Prüfung
+     */
+    unsure?: string | null;
+  };
   media?: {
     sketch?: string | null;
     videoQuery?: string | null;
@@ -452,6 +503,49 @@ export interface Feedback {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "skills".
+ */
+export interface Skill {
+  /**
+   * Stabile ID (Slug, z. B. „chest-to-bar-pull-up“). Einmal vergeben, nie ändern.
+   */
+  id: string;
+  name: string;
+  targets: (string | Progression)[];
+  support?: (string | Progression)[] | null;
+  prerequisites?:
+    | {
+        progression: string | Progression;
+        minStep: number;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "splits".
+ */
+export interface Split {
+  /**
+   * Stabile ID (Slug, z. B. „chest-to-bar-pull-up“). Einmal vergeben, nie ändern.
+   */
+  id: string;
+  name: string;
+  themes?:
+    | {
+        key: string;
+        name: string;
+        regions: ('pull' | 'push' | 'core' | 'legs')[];
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -501,6 +595,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'workouts';
         value: string | Workout;
+      } | null)
+    | ({
+        relationTo: 'skills';
+        value: string | Skill;
+      } | null)
+    | ({
+        relationTo: 'splits';
+        value: string | Split;
       } | null)
     | ({
         relationTo: 'users';
@@ -652,6 +754,27 @@ export interface ExercisesSelect<T extends boolean = true> {
       };
   cues?: T;
   muscles?: T;
+  meta?:
+    | T
+    | {
+        alternatives?:
+          | T
+          | {
+              items?: T;
+              id?: T;
+            };
+        pattern?: T;
+        difficulty?: T;
+        stress?:
+          | T
+          | {
+              wrist?: T;
+              elbow?: T;
+              shoulder?: T;
+              knee?: T;
+            };
+        unsure?: T;
+      };
   media?:
     | T
     | {
@@ -668,6 +791,12 @@ export interface ExercisesSelect<T extends boolean = true> {
 export interface ProgressionsSelect<T extends boolean = true> {
   id?: T;
   region?: T;
+  assessment?:
+    | T
+    | {
+        test?: T;
+        thresholds?: T;
+      };
   steps?:
     | T
     | {
@@ -718,6 +847,43 @@ export interface WorkoutsSelect<T extends boolean = true> {
         name?: T;
         detail?: T;
         cardio?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "skills_select".
+ */
+export interface SkillsSelect<T extends boolean = true> {
+  id?: T;
+  name?: T;
+  targets?: T;
+  support?: T;
+  prerequisites?:
+    | T
+    | {
+        progression?: T;
+        minStep?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "splits_select".
+ */
+export interface SplitsSelect<T extends boolean = true> {
+  id?: T;
+  name?: T;
+  themes?:
+    | T
+    | {
+        key?: T;
+        name?: T;
+        regions?: T;
         id?: T;
       };
   updatedAt?: T;
@@ -820,6 +986,24 @@ export interface Weekplan {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "assessment".
+ */
+export interface Assessment {
+  id: number;
+  tests?:
+    | {
+        key: string;
+        name: string;
+        unit: 'reps' | 'seconds' | 'level';
+        levels?: string[] | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "weekplan_select".
  */
 export interface WeekplanSelect<T extends boolean = true> {
@@ -830,6 +1014,24 @@ export interface WeekplanSelect<T extends boolean = true> {
   fri?: T;
   sat?: T;
   sun?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "assessment_select".
+ */
+export interface AssessmentSelect<T extends boolean = true> {
+  tests?:
+    | T
+    | {
+        key?: T;
+        name?: T;
+        unit?: T;
+        levels?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

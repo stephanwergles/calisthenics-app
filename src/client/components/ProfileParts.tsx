@@ -3,15 +3,12 @@
    Trainingsstand (state.profile, synchronisiert). Ändern den Plan nicht – sie sind Eingaben
    für Vorschläge, die erst nach Bestätigung gelten. */
 import type { Equipment, Profile, Weekday } from '@/domain/model'
-import skillsJson from '@/seed/skills.json'
-import splitsJson from '@/seed/splits.json'
-import assessmentJson from '@/seed/assessment.json'
-import { placement, type AssessmentData } from '@/domain/assessment'
+import { placement } from '@/domain/assessment'
+import { catalogData } from '../data'
 import { useState } from 'react'
 import { ask, isNative } from '../native'
 import { sendFeedback } from '../sync'
 import { APP_VERSION } from '../version'
-import type { Skill, SplitTemplate } from '@/domain/model'
 import * as L from '../logic'
 import type { Training } from '../useTraining'
 import type { NBlock } from '../native'
@@ -20,9 +17,6 @@ import { Icon } from './Icon'
 import { Sheet } from './Sheets'
 import { DAY_NAME } from './PlanEditor'
 
-export const SKILLS = (skillsJson as unknown as { skills: Skill[] }).skills
-export const SPLITS = (splitsJson as unknown as { splits: SplitTemplate[] }).splits
-const ASSESSMENT = assessmentJson as unknown as AssessmentData
 
 /** Profil lesen und ändern (legt es beim ersten Ändern mit Standardwerten an) */
 export function useProfile(t: Training) {
@@ -58,7 +52,7 @@ function Choices({ items, onToggle }: { items: { id: string; title: string; sub?
 export function GoalPicker({ t, onClose, parent, next }: { t: Training; onClose: () => void; parent?: { id: string; title: string }; next?: Next }) {
   const native = useNativeShell()
   const { profile, change } = useProfile(t)
-  const items = L.skillChoices(t.ix, t.state, SKILLS).map(c => ({ id: c.skill, title: c.name, sub: choiceSub(c), on: profile.goals.includes(c.skill) }))
+  const items = L.skillChoices(t.ix, t.state, catalogData(t.ix.catalog).skills).map(c => ({ id: c.skill, title: c.name, sub: choiceSub(c), on: profile.goals.includes(c.skill) }))
   const sub = `Bis zu drei · ${profile.goals.length} gewählt · sortiert nach „realistisch als Nächstes“`
   const toggle = (id: string, on: boolean) => change(p => L.withGoal(p, id, on))
   useNativeSheet(native ? {
@@ -99,7 +93,7 @@ export function DaysSheet({ t, onClose, parent, next }: { t: Training; onClose: 
   const toggle = (id: string, on: boolean) => change(p => ({ ...p, days: L.WEEK_ORDER.filter(d => (d === id ? on : p.days.includes(d))) as Weekday[] }))
   const setMin = (m: number) => change(p => ({ ...p, minutes: Math.min(180, Math.max(30, m)) }))
   // Aufteilung: Vorlagen mit so vielen Themen wie Tagen, oder automatisch
-  const fitting = SPLITS.filter(x => x.themes.length === profile.days.length)
+  const fitting = catalogData(t.ix.catalog).splits.filter(x => x.themes.length === profile.days.length)
   const chosen = fitting.some(x => x.id === profile.split) ? profile.split : undefined
   const splits = [{ id: 'auto', title: 'Automatisch', sub: 'passend zu deinen Zielen' },
     ...fitting.map(x => ({ id: x.id, title: x.name, sub: x.themes.map(th => th.name).join(' · ') }))]
@@ -145,6 +139,7 @@ export function DaysSheet({ t, onClose, parent, next }: { t: Training; onClose: 
 /** Zusammenfassungen für die Profil-Zeilen */
 export function profileSummary(t: Training) {
   const p = L.profileOf(t.ix, t.state)
+  const { skills: SKILLS, splits: SPLITS } = catalogData(t.ix.catalog)
   const names = p.goals.map(g => SKILLS.find(s => s.id === g)?.name ?? g)
   return {
     goals: names.length ? names.join(' · ') : 'noch keine gewählt',
@@ -160,6 +155,7 @@ export function AssessmentPage({ t, onClose, parent, onDone }: { t: Training; on
   const native = useNativeShell()
   const { profile, change } = useProfile(t)
   const [values, setValues] = useState<Record<string, number>>(() => ({ ...profile.assessment?.results }))
+  const ASSESSMENT = catalogData(t.ix.catalog).assessment
   const changes = L.placementChanges(t.ix, t.state, placement(ASSESSMENT, t.ix.catalog, values))
   const last = profile.assessment ? `Zuletzt am ${L.fmtShortDate(profile.assessment.date)}` : 'Noch kein Kurztest'
   const sub = `${last} · Jeweils dein bester Versuch, ausgeruht. Lever stuft nur höher ein, nie zurück.`

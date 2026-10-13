@@ -175,3 +175,28 @@ test('Phasen im Trainingsstand: Sync und Prüfung', () => {
   assert.equal(C.isState({ current: {}, paused: [], phases: [{ ...phases[0], tendons: ['nose'] }] }), false)
   assert.equal(C.isState({ current: {}, paused: [], phases: [{ ...phases[0], kind: 'party' }] }), false)
 })
+
+test('v3-Katalog: Metadaten, Skills, Splits, Einstufung überstehen Payload und zurück', () => {
+  const seed = (f: string) => JSON.parse(readFileSync(new URL(`../src/seed/${f}`, import.meta.url), 'utf8'))
+  const meta = seed('exercise-meta.json').exercises, skills = seed('skills.json').skills, splits = seed('splits.json').splits, assess = seed('assessment.json')
+  const docs = C.catalogToDocs(catalog)
+  const exs = docs.exercises.map(e => ({ id: e.id, ...e.data, ...(meta[e.id] ? { meta: C.metaToDoc(meta[e.id]) } : {}) }))
+  const progs = docs.progressions.map(p => {
+    const r = assess.rules.find((x: { progression: string }) => x.progression === p.id)
+    return { id: p.id, ...p.data, ...(r ? { assessment: { test: r.test, thresholds: r.thresholds } } : {}) }
+  })
+  const works = docs.workouts.map(w => ({ id: w.id, ...w.data, warmup: w.data.warmup, cooldown: w.data.cooldown }))
+  const out = C.buildCatalog(exs as never, progs as never, works as never, docs.weekplan as never, {
+    skills: skills.map((s: { id: string }) => ({ id: s.id, ...C.skillToDoc(s as never) })),
+    splits: splits.map((t: { id: string }) => ({ id: t.id, ...C.splitToDoc(t as never) })),
+    assessment: { tests: assess.tests.map((t: { id: string; name: string; unit: string; levels?: string[] }) => ({ key: t.id, name: t.name, unit: t.unit, levels: t.levels ?? [] })) },
+  })
+  const known = Object.fromEntries(Object.entries(meta).filter(([id]) => catalog.exercises.some(e => e.id === id)))
+  assert.deepEqual(out.meta, known)
+  assert.deepEqual(out.skills, skills)
+  assert.deepEqual(out.splits, splits)
+  assert.deepEqual(out.assessment!.tests, assess.tests)
+  assert.deepEqual(out.assessment!.rules.sort((a, b) => a.progression.localeCompare(b.progression)),
+    [...assess.rules].sort((a: { progression: string }, b: { progression: string }) => a.progression.localeCompare(b.progression)))
+  assert.equal('meta' in C.buildCatalog(exs.map(e => ({ ...e, meta: undefined })) as never, progs as never, works as never, null), false, 'ohne Pflege kein Feld')
+})

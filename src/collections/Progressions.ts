@@ -17,6 +17,14 @@ export const Progressions: CollectionConfig = {
       ],
     },
     {
+      name: 'assessment', type: 'group', label: 'Einstufung (Kurztest)',
+      admin: { description: 'Test aus „Einstufung“ (Global) und Mindestwerte: 1. Wert → Stufe 2, 2. Wert → Stufe 3 …' },
+      fields: [{ type: 'row', fields: [
+        { name: 'test', type: 'text', label: 'Test-ID' },
+        { name: 'thresholds', type: 'number', hasMany: true, label: 'Schwellen' },
+      ] }],
+    },
+    {
       name: 'steps', type: 'array', label: 'Stufen', minRows: 1,
       admin: { description: 'Reihenfolge = Progression. Die Vorgabe gehört zur Stufe, nicht zur Übung.' },
       fields: [

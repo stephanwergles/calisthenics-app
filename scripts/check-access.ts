@@ -26,6 +26,11 @@ try {
   await expectDenied('Übung löschen verweigert', () => payload.delete({ ...as, collection: 'exercises', id }))
   await expectDenied('Übung anlegen verweigert', () => payload.create({ ...as, collection: 'exercises', data: { id: 'x', name: 'x' } as never }))
   await expectDenied('Wochenplan ändern verweigert', () => payload.updateGlobal({ ...as, slug: 'weekplan', data: {} as never }))
+  await expectDenied('Skill ändern verweigert', () => payload.update({ ...as, collection: 'skills', id: 'muscle-up', data: { name: 'x' } as never }))
+  await expectDenied('Split-Vorlage anlegen verweigert', () => payload.create({ ...as, collection: 'splits', data: { id: 'x', name: 'x', themes: [] } as never }))
+  await expectDenied('Einstufung ändern verweigert', () => payload.updateGlobal({ ...as, slug: 'assessment', data: { tests: [] } as never }))
+  const sk = await payload.find({ ...as, collection: 'skills', depth: 0, pagination: false })
+  results.push(['Skills lesen erlaubt', sk.docs.length > 0])
 
   await payload.update({ ...as, collection: 'users', id: athlete.id, data: { role: 'admin' } as never }).catch(() => undefined)
   const after = await payload.findByID({ collection: 'users', id: athlete.id, depth: 0 })

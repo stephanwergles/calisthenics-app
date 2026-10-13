@@ -4,7 +4,7 @@
    Payload liefert leere Felder als null, Relationen je nach depth als ID oder
    Objekt und Array-Zeilen mit eigener `id`. Das App-Modell kennt nichts davon. */
 import { NOTE_MAX } from '../domain/model.ts'
-import type { Activity, Catalog, Exercise, Phase, Plan, Profile, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
+import type { Activity, AssessmentData, Catalog, Equipment, Exercise, ExerciseMeta, Phase, Plan, Profile, Skill, SplitTemplate, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
 
 type Doc = Record<string, any>
 const idOf = (v: any): string => (v && typeof v === 'object' ? v.id : v)
@@ -170,7 +170,8 @@ export function catalogToDocs(c: Catalog) {
 }
 
 /** Payload-Dokumente → Katalog im App-Format */
-export function buildCatalog(exs: Doc[], progs: Doc[], works: Doc[], week: Doc | null): Catalog {
+export function buildCatalog(exs: Doc[], progs: Doc[], works: Doc[], week: Doc | null,
+  extra: { skills?: Doc[]; splits?: Doc[]; assessment?: Doc | null } = {}): Catalog {
   const target = (t: Doc): Target => tidy({
     label: t.label, sets: t.sets, min: opt<number>(t.min), max: opt<number>(t.max),
     restSec: t.restSec, unlockAt: t.unlockAt ?? null,
@@ -201,8 +202,48 @@ export function buildCatalog(exs: Doc[], progs: Doc[], works: Doc[], week: Doc |
       warmup: routine(w.warmup), cooldown: routine(w.cooldown),
     })),
     weekplan,
+    ...v3Catalog(exs, progs, extra),
   }
 }
+
+/** Metadaten, Skills, Split-Vorlagen und Einstufung aus Payload – nur was gepflegt ist */
+function v3Catalog(exs: Doc[], progs: Doc[], extra: { skills?: Doc[]; splits?: Doc[]; assessment?: Doc | null }): Partial<Catalog> {
+  const meta: Record<string, ExerciseMeta> = {}
+  for (const e of exs) {
+    const m = e.meta
+    if (!m?.pattern) continue
+    const stress = Object.fromEntries(['wrist', 'elbow', 'shoulder', 'knee'].map(t => [t, m.stress?.[t]]).filter(([, v]) => typeof v === 'number' && v > 0))
+    meta[e.id] = tidy({
+      equipment: (m.alternatives ?? []).map((a: Doc) => (a.items ?? []) as Equipment[]).filter((a: Equipment[]) => a.length),
+      pattern: m.pattern, difficulty: m.difficulty ?? 3, stress, unsure: opt<string>(m.unsure),
+    })
+  }
+  const skills = (extra.skills ?? []).map((d): Skill => ({
+    id: d.id, name: d.name, targets: (d.targets ?? []).map(idOf), support: (d.support ?? []).map(idOf),
+    prerequisites: (d.prerequisites ?? []).map((p: Doc) => ({ progression: idOf(p.progression), minStep: p.minStep ?? 0 })),
+  }))
+  const splits = (extra.splits ?? []).map((d): SplitTemplate => ({
+    id: d.id, name: d.name, themes: (d.themes ?? []).map((t: Doc) => ({ id: t.key, name: t.name, regions: t.regions ?? [] })),
+  }))
+  const tests = (extra.assessment?.tests ?? []).map((t: Doc) => tidy({ id: t.key, name: t.name, unit: t.unit, levels: t.levels?.length ? t.levels : undefined }))
+  const rules = progs.filter(p => p.assessment?.test && p.assessment?.thresholds?.length)
+    .map(p => ({ progression: p.id as string, test: p.assessment.test as string, thresholds: p.assessment.thresholds as number[] }))
+  return {
+    ...(Object.keys(meta).length ? { meta } : {}),
+    ...(skills.length ? { skills } : {}),
+    ...(splits.length ? { splits } : {}),
+    ...(tests.length ? { assessment: { tests, rules } as AssessmentData } : {}),
+  }
+}
+
+/** Seed-Daten → Payload-Felder (für das Seed-Skript) */
+export const metaToDoc = (m: ExerciseMeta) => ({
+  alternatives: m.equipment.map(items => ({ items })), pattern: m.pattern, difficulty: m.difficulty,
+  stress: { wrist: m.stress.wrist ?? 0, elbow: m.stress.elbow ?? 0, shoulder: m.stress.shoulder ?? 0, knee: m.stress.knee ?? 0 },
+  unsure: m.unsure ?? null,
+})
+export const skillToDoc = (s: Skill) => ({ name: s.name, targets: s.targets, support: s.support, prerequisites: s.prerequisites })
+export const splitToDoc = (t: SplitTemplate) => ({ name: t.name, themes: t.themes.map(x => ({ key: x.id, name: x.name, regions: x.regions })) })
 
 /** Mindestprüfung, bevor ein Katalog vom Server den eingebauten ersetzt */
 export function catalogUsable(c: Catalog | undefined | null): c is Catalog {

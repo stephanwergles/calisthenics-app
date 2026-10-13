@@ -103,16 +103,20 @@ export const syncHandler: PayloadHandler = async req => {
     payload.find({ ...asUser, collection: 'activities', where: changed, depth: 0, pagination: false }),
   ])
 
-  // Katalogversion = jüngste Änderung an Übungen, Progressionen, Workouts, Wochenplan
-  const latest = await Promise.all((['exercises', 'progressions', 'workouts'] as const).map(collection =>
+  // Katalogversion = jüngste Änderung an Übungen, Progressionen, Workouts, Skills, Splits, Wochenplan, Einstufung
+  const latest = await Promise.all((['exercises', 'progressions', 'workouts', 'skills', 'splits'] as const).map(collection =>
     payload.find({ ...asUser, collection, sort: '-updatedAt', limit: 1, depth: 0 }).then(r => r.docs[0]?.updatedAt ?? '')))
-  const week = await payload.findGlobal({ ...asUser, slug: 'weekplan', depth: 0 })
-  const catalogVersion = [...latest, week?.updatedAt ?? ''].sort().pop() ?? ''
+  const [week, assessment] = await Promise.all([
+    payload.findGlobal({ ...asUser, slug: 'weekplan', depth: 0 }),
+    payload.findGlobal({ ...asUser, slug: 'assessment', depth: 0 }),
+  ])
+  const catalogVersion = [...latest, week?.updatedAt ?? '', assessment?.updatedAt ?? ''].sort().pop() ?? ''
   let catalog: C.SyncResponse['catalog']
   if (catalogVersion !== body.catalogVersion) {
-    const [exs, progs, works] = await Promise.all((['exercises', 'progressions', 'workouts'] as const).map(collection =>
+    const [exs, progs, works, skills, splits] = await Promise.all((['exercises', 'progressions', 'workouts', 'skills', 'splits'] as const).map(collection =>
       payload.find({ ...asUser, collection, depth: 0, pagination: false }).then(r => r.docs as unknown as Record<string, unknown>[])))
-    catalog = C.buildCatalog(exs, progs, works, week as unknown as Record<string, unknown>)
+    catalog = C.buildCatalog(exs, progs, works, week as unknown as Record<string, unknown>,
+      { skills, splits, assessment: assessment as unknown as Record<string, unknown> })
   }
 
   const planDoc = (await payload.find({ ...asUser, collection: 'plans', where: mine('main'), limit: 1, depth: 0, pagination: false })).docs[0]

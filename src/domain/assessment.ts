@@ -1,12 +1,8 @@
 /* Prototyp v3: Einstufung, Skill-Vorschläge und Split-Vorschläge – reine Funktionen.
    Daten: src/seed/assessment.json, skills.json, splits.json. */
-import type { Catalog, ProgressionId, Region, Skill, SkillId, SplitTemplate } from './model.ts'
+import type { AssessmentData, Catalog, ProgressionId, Region, Skill, SkillId, SplitTemplate } from './model.ts'
 
-export interface AssessmentData {
-  tests: { id: string; name: string; unit: 'reps' | 'seconds' | 'level'; levels?: string[] }[]
-  /** thresholds[i] = Mindestwert für Stufe i+1 (Stufe 0 gilt immer) */
-  rules: { progression: ProgressionId; test: string; thresholds: number[] }[]
-}
+export type { AssessmentData }
 
 /** Kurztest-Ergebnisse → Startstufe je Leiter (nie über die letzte Stufe hinaus) */
 export function placement(data: AssessmentData, catalog: Catalog, results: Record<string, number>): Record<ProgressionId, number> {

@@ -10,7 +10,8 @@ import { Sheet } from './Sheets'
 import { ExerciseStill, hasClip } from './ExerciseMedia'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { ask, type NBlock } from '../native'
-import { GoalPicker, SKILLS, useProfile } from './ProfileParts'
+import { GoalPicker, useProfile } from './ProfileParts'
+import { catalogData } from '../data'
 
 export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
   const tree = useMemo(() => L.skillTree(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions])
@@ -183,6 +184,7 @@ function ladderBlocks(p: L.SkillPath, sessions: Session[]): NBlock[] {
 function Goals({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
   const { profile, change } = useProfile(t)
   const [picking, setPicking] = useState(false)
+  const SKILLS = catalogData(t.ix.catalog).skills
   const goals = profile.goals.flatMap(id => {
     const skill = SKILLS.find(s => s.id === id)
     return skill ? [{ skill, p: L.goalProgress(t.ix, t.state, t.sessions, skill) }] : []
