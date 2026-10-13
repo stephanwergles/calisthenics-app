@@ -68,8 +68,8 @@ export function PlanView({ t, ps }: { t: Training; ps: PlanSuggestion }) {
               aria-label={`${DAY_NAME[d]}: ${w ? w.name : 'Ruhetag'}${d === today ? ', heute' : ''}`}>
               <span className="pl-wd">{L.WEEKDAY_SHORT[d]}</span>
               <span className="pl-main">
-                <b className={w ? '' : 'off'}>{w ? `${w.name} · ${w.focus}` : 'Ruhetag'}</b>
-                {w && <small>{count(w.slots.length)}</small>}
+                <b className={w ? '' : 'off'}>{w ? w.name : 'Ruhetag'}</b>
+                {w && <small>{w.focus && w.focus !== w.name ? `${w.focus} · ` : ''}{count(w.slots.length)}</small>}
               </span>
               {d === today && <span className="pl-tag">heute</span>}
               <Icon name="right" size={16} className="pl-chev" />

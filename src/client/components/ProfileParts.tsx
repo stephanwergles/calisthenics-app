@@ -185,7 +185,7 @@ export function AssessmentPage({ t, onClose, parent, onDone }: { t: Training; on
       { type: 'section', title: changes.length ? 'Würde höher einstufen' : 'Ergebnis' },
       ...(changes.length
         ? changes.map((c): NBlock => ({ type: 'row', title: c.ladder, subtitle: `${c.fromName} → ${c.toName}`, trailing: `Stufe ${c.from + 1} → ${c.to + 1}`, symbol: 'none' }))
-        : [{ type: 'text', text: 'Mit diesen Werten bleibt jede Leiter, wo sie ist.', style: 'muted' } as NBlock]),
+        : [{ type: 'text', text: 'Mit diesen Werten bleibt jede Progression, wo sie ist.', style: 'muted' } as NBlock]),
     ],
     footer: [{ id: 'apply', title: cta, symbol: 'checkmark', style: 'prominent' }],
   } : null, e => {
@@ -221,7 +221,7 @@ export function AssessmentPage({ t, onClose, parent, onDone }: { t: Training; on
         <ul className="pe-days">
           {changes.map(c => <li key={c.pid} className="as-change"><b>{c.ladder}</b><span>{c.fromName} → {c.toName} · Stufe {c.from + 1} → {c.to + 1}</span></li>)}
         </ul>
-      ) : <p className="hint">Mit diesen Werten bleibt jede Leiter, wo sie ist.</p>}
+      ) : <p className="hint">Mit diesen Werten bleibt jede Progression, wo sie ist.</p>}
     </Sheet>
   )
 }

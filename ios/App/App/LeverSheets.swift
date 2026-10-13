@@ -157,8 +157,10 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
     private let foot = UIStackView()
     private var fields: [String: UITextView] = [:]
     var closedByApp = false
-    /// Push-Seite innerhalb eines Sheets (eigene Navigationsleiste mit Zurück)
+    /// Push-Seite innerhalb eines Sheets (eigener Zurück-Button, Wisch-Geste)
     let isPage: Bool
+    /// Titel der Seite davor (Zurück-Button)
+    var backTitle: String?
     /// Sheet, in dem die Seite liegt (gehört dem Navigation-Controller, nicht dieser Seite)
     weak var hostSheet: UISheetPresentationController?
 
@@ -181,7 +183,8 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(!isPage, animated: animated)
+        // keine Navigationsleiste: ihr Ein-/Ausblenden verschiebt den Inhalt (Springen beim Hineinschieben)
+        navigationController?.setNavigationBarHidden(true, animated: false)
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -263,6 +266,16 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
 
     private func render() {
         stack.arrangedSubviews.forEach { if !($0 is FieldBox) { $0.removeFromSuperview() } else { stack.removeArrangedSubview($0); $0.removeFromSuperview() } }
+        if isPage {
+            // Zurück als Glas-Button über dem Titel (die Wisch-Geste vom Rand bleibt)
+            let back = Lever.button(title: backTitle ?? "Zurück", symbol: "chevron.left", style: "glass", size: 15, upper: false)
+            back.heightAnchor.constraint(equalToConstant: 44).isActive = true
+            back.addAction(UIAction { [weak self] _ in self?.navigationController?.popViewController(animated: true) }, for: .touchUpInside)
+            back.accessibilityLabel = "Zurück zu \(backTitle ?? "vorher")"
+            let row = UIStackView(arrangedSubviews: [back, UIView()]); row.axis = .horizontal
+            stack.addArrangedSubview(row)
+            stack.setCustomSpacing(14, after: row)
+        }
         let head = UIStackView(); head.axis = .vertical; head.spacing = 3
         let h = UILabel(); h.text = spec.title.uppercased(); h.numberOfLines = 0; h.font = .display(30, .black); h.textColor = .white
         head.addArrangedSubview(h)
@@ -1139,6 +1152,7 @@ extension LeverTabBarPlugin {
             Self.sheets[spec.id] = vc
             if let nav = parentNav {
                 vc.hostSheet = nav.sheetPresentationController
+                vc.backTitle = spec.parent.flatMap { Self.sheets[$0]?.spec.title }
                 nav.pushViewController(vc, animated: true)
                 if spec.detents == ["large"] { nav.sheetPresentationController?.animateChanges { nav.sheetPresentationController?.selectedDetentIdentifier = .large } }
                 call.resolve(); return
@@ -1152,6 +1166,8 @@ extension LeverTabBarPlugin {
             nav.navigationBar.standardAppearance = bar; nav.navigationBar.scrollEdgeAppearance = bar
             nav.navigationBar.tintColor = .white
             nav.setNavigationBarHidden(true, animated: false)
+            // Zurück-Wischen auch ohne sichtbare Navigationsleiste
+            nav.interactivePopGestureRecognizer?.delegate = nil
             if let sheet = nav.sheetPresentationController { vc.attach(to: sheet) }
             top.present(nav, animated: true)
             call.resolve()

@@ -26,7 +26,7 @@ export function SkillsView({ t, onOpen }: { t: Training; onOpen: (pid: string) =
       <span className="h-date">{tree.length} Progressionen · {unlocked} {unlocked === 1 ? 'Stufe' : 'Stufen'} freigeschaltet</span>
       <h2 className="page-title display">Skills</h2>
       <Goals t={t} onOpen={onOpen} />
-      <h3 className="pl-head display">Alle Leitern</h3>
+      <h3 className="pl-head display">Alle Progressionen</h3>
       {groups.map(g => (
         <div key={g.label} className="sk-group">
           <h3 className="pg-day"><span className="display">{g.label}</span><span>{g.detail}</span></h3>
@@ -114,8 +114,11 @@ function Ladder({ t, p, onAct }: { t: Training; p: L.SkillPath; onAct: (id: stri
               <small>
                 {n.state === 'done' ? `geschafft · ${n.sessions} ${n.sessions === 1 ? 'Einheit' : 'Einheiten'}`
                   : n.state === 'current' ? `Aktuell · ${n.target.label}${standing.best ? ` · beste Einheit ${standing.best}` : ''}`
-                  : i === p.nodes.length - 1 ? 'letzte Stufe dieser Leiter' : 'noch gesperrt'}
+                  : i === p.nodes.length - 1 ? 'letzte Stufe dieser Progression' : 'noch gesperrt'}
               </small>
+              {n.state === 'current' && !!n.exercise.cues?.length && (
+                <ul className="sk-cues" aria-label="Worauf es auf dieser Stufe ankommt">{n.exercise.cues.map(c => <li key={c}>{c}</li>)}</ul>
+              )}
               {n.state === 'current' && p.step.next && (
                 <span className="sk-unlock">
                   {at == null ? (
@@ -164,7 +167,7 @@ function ladderBlocks(p: L.SkillPath, sessions: Session[]): NBlock[] {
     clip: hasClip(n.exercise.id) ? n.exercise.id : undefined,
     subtitle: n.state === 'done' ? `geschafft · ${einh(n.sessions)}`
       : n.state === 'current' ? `Aktuell · ${n.target.label}${standing.best ? ` · beste Einheit ${standing.best}` : ''}`
-      : i === p.nodes.length - 1 ? 'Das Ziel dieser Leiter' : 'noch gesperrt',
+      : i === p.nodes.length - 1 ? 'Das Ziel dieser Progression' : 'noch gesperrt',
   }))
   const next = p.step.next
   return [{
@@ -177,7 +180,12 @@ function ladderBlocks(p: L.SkillPath, sessions: Session[]): NBlock[] {
     unlock: ready ? `${next!.name} freischalten` : undefined,
     force: next && !ready ? (at == null ? `Zu ${next.name} wechseln` : 'Trotzdem wechseln →') : undefined,
     back: p.step.prev ? `Zurück zu ${p.step.prev.name}` : undefined,
-  }]
+  },
+  // was diese Stufe ausmacht – die Clips benachbarter Stufen sehen sich oft ähnlich
+  ...(p.step.exercise.cues?.length ? [
+    { type: 'section', title: `Worauf es bei ${p.step.exercise.name} ankommt` } as NBlock,
+    { type: 'text', text: p.step.exercise.cues.map(c => `• ${c}`).join('\n'), style: 'body' } as NBlock,
+  ] : [])]
 }
 
 /** Ziele (bis zu drei Skills) mit Fortschritt, darunter der realistischste nächste Skill */

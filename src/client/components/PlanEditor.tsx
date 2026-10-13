@@ -25,7 +25,7 @@ export function LadderPicker({ t, exclude, sub, onPick, onClose, parent }: {
 }) {
   const native = useNativeShell()
   const groups = L.ladderChoices(t.ix, t.state, exclude)
-  const subtitle = sub ?? 'Die Stufe folgt deinem Stand in der Leiter'
+  const subtitle = sub ?? 'Die Stufe folgt deinem Stand in der Progression'
   useNativeSheet(native ? {
     id: 'ladders', parent: parent?.id, title: 'Übung hinzufügen', subtitle, detents: ['large'],
     blocks: groups.flatMap(g => [
