@@ -9,6 +9,7 @@ import { useRestTimer } from '../useRestTimer'
 import { BottomBar } from './BottomBar'
 import { ProfileSheet } from './ProfileSheet'
 import { PlanView } from './PlanView'
+import { Onboarding, needsOnboarding } from './Onboarding'
 import { usePlanSuggestion } from '../usePlanSuggestion'
 import { META } from '../meta'
 import { Icon, type IconName } from './Icon'
@@ -51,6 +52,10 @@ export function TrainingApp() {
   const [day, setDay] = useState<DayItem | null>(null)          // Einheit/Cardio aus dem Verlauf
   const [workouts, setWorkouts] = useState<{ edit?: string } | null>(null)   // neu gespeichertes Workout weiterbearbeiten
   const [profileOpen, setProfileOpen] = useState(false)          // Profil (Konto, Sync, Daten) über den Avatar
+  // Onboarding einmal öffnen, sobald die Bedingung erfüllt ist – bleibt offen, auch wenn unterwegs ein Profil entsteht
+  const [onboarding, setOnboarding] = useState(false)
+  const wantsOnboarding = needsOnboarding(t)
+  useEffect(() => { if (wantsOnboarding) setOnboarding(true) }, [wantsOnboarding])
   // Gescrollt wird nur der Inhaltsbereich, nie die Seite: iOS verschiebt fixierte Leisten sonst,
   // sobald sich die Seitenhöhe ändert (Tab-Wechsel von lang nach kurz)
   const scroller = useRef<HTMLElement>(null)
@@ -248,6 +253,7 @@ export function TrainingApp() {
       )}
       {workouts && <WorkoutsHost t={t} list={false} initial={workouts.edit} onClose={() => setWorkouts(null)} />}
       {profileOpen && <ProfileSheet t={t} onClose={() => setProfileOpen(false)} />}
+      {onboarding && <Onboarding t={t} ps={ps} onClose={() => setOnboarding(false)} />}
       {skillPid && <SkillSheet t={t} pid={skillPid} onClose={() => setSkillPid(null)} />}
       {day && <DaySheet t={t} item={day} onClose={() => setDay(null)} openActivity={date => setSheet({ kind: 'activity', date })} />}
 

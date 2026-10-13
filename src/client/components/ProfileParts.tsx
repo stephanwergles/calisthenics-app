@@ -29,6 +29,11 @@ export function useProfile(t: Training) {
   return { profile, change }
 }
 
+/** Onboarding: Weiter-Button in der Fußzeile */
+export type Next = { title: string; onNext: () => void }
+const footerOf = (next?: Next) => (next ? [{ id: 'next', title: next.title, symbol: 'arrow.right', style: 'prominent' as const }] : undefined)
+const webFooter = (next?: Next) => next && <button className="btn btn-primary btn-block" onClick={next.onNext}>{next.title}</button>
+
 const choiceSub = (c: ReturnType<typeof L.skillChoices>[number]) =>
   c.reached ? 'erreicht' : c.missing.length ? `fehlt noch: ${c.missing.join(', ')}` : `${Math.round(c.score * 100)} % bereit`
 
@@ -48,41 +53,43 @@ function Choices({ items, onToggle }: { items: { id: string; title: string; sub?
   )
 }
 
-export function GoalPicker({ t, onClose, parent }: { t: Training; onClose: () => void; parent?: { id: string; title: string } }) {
+export function GoalPicker({ t, onClose, parent, next }: { t: Training; onClose: () => void; parent?: { id: string; title: string }; next?: Next }) {
   const native = useNativeShell()
   const { profile, change } = useProfile(t)
   const items = L.skillChoices(t.ix, t.state, SKILLS).map(c => ({ id: c.skill, title: c.name, sub: choiceSub(c), on: profile.goals.includes(c.skill) }))
   const sub = `Bis zu drei · ${profile.goals.length} gewählt · sortiert nach „realistisch als Nächstes“`
   const toggle = (id: string, on: boolean) => change(p => L.withGoal(p, id, on))
   useNativeSheet(native ? {
-    id: 'goals', parent: parent?.id, title: 'Ziele', subtitle: sub, detents: ['medium', 'large'],
+    id: 'goals', parent: parent?.id, footer: footerOf(next), title: 'Ziele', subtitle: sub, detents: ['medium', 'large'],
     blocks: items.map((x): NBlock => ({ type: 'check', style: 'select', id: x.id, title: x.title, subtitle: x.sub, on: x.on })),
   } : null, e => {
-    if (e.type === 'toggle' && e.id) toggle(e.id, !!e.value)
+    if (e.type === 'tap' && e.id === 'next') next?.onNext()
+    else if (e.type === 'toggle' && e.id) toggle(e.id, !!e.value)
     else if (e.type === 'dismiss') onClose()
   })
   if (native) return null
-  return <Sheet title="Ziele" sub={sub} back={parent?.title} onClose={onClose}><Choices items={items} onToggle={toggle} /></Sheet>
+  return <Sheet title="Ziele" sub={sub} back={parent?.title} onClose={onClose} footer={webFooter(next)}><Choices items={items} onToggle={toggle} /></Sheet>
 }
 
-export function EquipmentSheet({ t, onClose, parent }: { t: Training; onClose: () => void; parent?: { id: string; title: string } }) {
+export function EquipmentSheet({ t, onClose, parent, next }: { t: Training; onClose: () => void; parent?: { id: string; title: string }; next?: Next }) {
   const native = useNativeShell()
   const { profile, change } = useProfile(t)
   const items = (Object.entries(L.EQUIPMENT_LABEL) as [Equipment, string][]).map(([id, title]) => ({ id, title, on: profile.equipment.includes(id) }))
   const sub = 'Vorschläge nutzen nur Übungen, die du damit machen kannst. Boden und Wand gelten immer.'
   const toggle = (id: string, on: boolean) => change(p => ({ ...p, equipment: on ? [...new Set([...p.equipment, id as Equipment])] : p.equipment.filter(e => e !== id) }))
   useNativeSheet(native ? {
-    id: 'equipment', parent: parent?.id, title: 'Ausrüstung', subtitle: sub, detents: ['medium', 'large'],
+    id: 'equipment', parent: parent?.id, footer: footerOf(next), title: 'Ausrüstung', subtitle: sub, detents: ['medium', 'large'],
     blocks: items.map((x): NBlock => ({ type: 'check', style: 'select', id: x.id, title: x.title, on: x.on })),
   } : null, e => {
-    if (e.type === 'toggle' && e.id) toggle(e.id, !!e.value)
+    if (e.type === 'tap' && e.id === 'next') next?.onNext()
+    else if (e.type === 'toggle' && e.id) toggle(e.id, !!e.value)
     else if (e.type === 'dismiss') onClose()
   })
   if (native) return null
-  return <Sheet title="Ausrüstung" sub={sub} back={parent?.title} onClose={onClose}><Choices items={items} onToggle={toggle} /></Sheet>
+  return <Sheet title="Ausrüstung" sub={sub} back={parent?.title} onClose={onClose} footer={webFooter(next)}><Choices items={items} onToggle={toggle} /></Sheet>
 }
 
-export function DaysSheet({ t, onClose, parent }: { t: Training; onClose: () => void; parent?: { id: string; title: string } }) {
+export function DaysSheet({ t, onClose, parent, next }: { t: Training; onClose: () => void; parent?: { id: string; title: string }; next?: Next }) {
   const native = useNativeShell()
   const { profile, change } = useProfile(t)
   const items = L.WEEK_ORDER.map(d => ({ id: d, title: DAY_NAME[d], on: profile.days.includes(d) }))
@@ -96,7 +103,7 @@ export function DaysSheet({ t, onClose, parent }: { t: Training; onClose: () => 
     ...fitting.map(x => ({ id: x.id, title: x.name, sub: x.themes.map(th => th.name).join(' · ') }))]
   const pickSplit = (id: string) => change(p => { const { split: _, ...rest } = p; return id === 'auto' ? rest : { ...rest, split: id } })
   useNativeSheet(native ? {
-    id: 'days', parent: parent?.id, title: 'Trainingstage & Dauer', subtitle: sub, detents: ['large'],
+    id: 'days', parent: parent?.id, footer: footerOf(next), title: 'Trainingstage & Dauer', subtitle: sub, detents: ['large'],
     blocks: [
       { type: 'stepper', id: 'min', label: 'Minuten je Einheit', value: String(profile.minutes) },
       ...items.map((x): NBlock => ({ type: 'check', style: 'select', id: x.id, title: x.title, on: x.on })),
@@ -106,6 +113,7 @@ export function DaysSheet({ t, onClose, parent }: { t: Training; onClose: () => 
       ] : []),
     ],
   } : null, e => {
+    if (e.type === 'tap' && e.id === 'next') { next?.onNext(); return }
     if (e.type === 'toggle' && e.id?.startsWith('split:')) { pickSplit(e.id.slice(6)); return }
     if (e.type === 'tap' && e.id === 'min:minus') setMin(profile.minutes - 5)
     else if (e.type === 'tap' && e.id === 'min:plus') setMin(profile.minutes + 5)
@@ -114,7 +122,7 @@ export function DaysSheet({ t, onClose, parent }: { t: Training; onClose: () => 
   })
   if (native) return null
   return (
-    <Sheet title="Trainingstage & Dauer" sub={sub} back={parent?.title} onClose={onClose}>
+    <Sheet title="Trainingstage & Dauer" sub={sub} back={parent?.title} onClose={onClose} footer={webFooter(next)}>
       <div className="stepper">
         <span className="stepper-label">Minuten je Einheit</span>
         <div className="stepper-row">
@@ -146,7 +154,7 @@ export function profileSummary(t: Training) {
 }
 
 /** Kurztest wiederholen: Werte je Test → höhere Startstufen (nie zurück), erst nach „Übernehmen“ */
-export function AssessmentPage({ t, onClose, parent }: { t: Training; onClose: () => void; parent?: { id: string; title: string } }) {
+export function AssessmentPage({ t, onClose, parent, onDone }: { t: Training; onClose: () => void; parent?: { id: string; title: string }; onDone?: () => void }) {
   const native = useNativeShell()
   const { profile, change } = useProfile(t)
   const [values, setValues] = useState<Record<string, number>>(() => ({ ...profile.assessment?.results }))
@@ -167,7 +175,7 @@ export function AssessmentPage({ t, onClose, parent }: { t: Training; onClose: (
     if (changes.length && !await ask({ title: 'Einstufung übernehmen?', message: changes.map(c => `${c.ladder}: Stufe ${c.from + 1} → ${c.to + 1}`).join('\n'), ok: 'Übernehmen' })) return
     if (changes.length) t.setState(st => L.withPlacement(t.ix, st, changes))
     change(p => ({ ...p, assessment: { date: t.today, results: values } }))
-    onClose()
+    ;(onDone ?? onClose)()
   }
   const cta = changes.length ? `${changes.length} ${changes.length === 1 ? 'Stufe' : 'Stufen'} übernehmen` : 'Ergebnis speichern'
   useNativeSheet(native ? {

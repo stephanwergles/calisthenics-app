@@ -12,7 +12,11 @@ import * as L from '../logic'
 
 const KIND: Record<string, string> = { neu: 'neu', raus: 'raus', sätze: 'Sätze' }
 
-export function SuggestionSheet({ t, s, ps, onClose }: { t: Training; s: Suggestion; ps: PlanSuggestion; onClose: () => void }) {
+export function SuggestionSheet({ t, s, ps, onClose, parent, onDone }: {
+  t: Training; s: Suggestion; ps: PlanSuggestion; onClose: () => void
+  /** Onboarding: als Push-Seite; onDone nach Übernehmen/Später */
+  parent?: { id: string; title: string }; onDone?: () => void
+}) {
   const native = useNativeShell()
   const goals = L.profileOf(t.ix, t.state).goals.map(g => SKILLS.find(x => x.id === g)?.name ?? g).join(', ')
   const version = (t.plan?.version ?? 0)
@@ -20,11 +24,11 @@ export function SuggestionSheet({ t, s, ps, onClose }: { t: Training; s: Suggest
   const intro = 'Aus deinen Zielen, Trainingstagen, deiner Ausrüstung und deinem Stand. Nichts ändert sich, bevor du übernimmst – danach lässt es sich im Plan rückgängig machen.'
   const head = (d: L.DayDiff) => `${DAY_NAME[d.day]} · ${d.before ?? 'Ruhetag'} → ${d.after ?? 'Ruhetag'}`
   const kept = (d: L.DayDiff) => d.changes.filter(c => c.kind === 'bleibt').map(c => c.name)
-  const accept = () => { ps.accept(); onClose() }
-  const later = () => { ps.dismiss(); onClose() }
+  const accept = () => { ps.accept(); (onDone ?? onClose)() }
+  const later = () => { ps.dismiss(); (onDone ?? onClose)() }
 
   useNativeSheet(native ? {
-    id: 'suggestion', title: 'Planvorschlag', subtitle: sub, detents: ['large'],
+    id: 'suggestion', parent: parent?.id, title: 'Planvorschlag', subtitle: sub, detents: ['large'],
     blocks: [
       { type: 'text', text: intro, style: 'muted' },
       ...s.warnings.map((w): NBlock => ({ type: 'text', text: w, style: 'warn' })),
@@ -42,7 +46,7 @@ export function SuggestionSheet({ t, s, ps, onClose }: { t: Training; s: Suggest
   })
   if (native) return null
   return (
-    <Sheet large title="Planvorschlag" sub={sub} onClose={onClose}
+    <Sheet large title="Planvorschlag" sub={sub} back={parent?.title} onClose={onClose}
       footer={<div className="sg-foot">
         <button className="btn btn-primary btn-block" onClick={accept}>Übernehmen · Plan v{version + 1}</button>
         <button className="btn btn-secondary btn-block" onClick={later}>Später</button>

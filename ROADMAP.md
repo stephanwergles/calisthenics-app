@@ -180,7 +180,7 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 - [ ] **Phasen:** Pause/Krank (Serie bleibt, Wiedereinstieg mit reduziertem Volumen), Urlaub, Equipment temporär, Verletzung (Sehne/Körperstelle → Übungen ersetzen) – mit Zeitraum oder bis auf Weiteres
 - [x] **Eigene Workouts:** Name, Leitern mit Satzzahl, Reihenfolge, Wochentage (Heute → „Anderes Workout“ → „Workouts verwalten“, `PlanEditor.tsx`); löschen = `archived` (Verlauf behält den Namen). Offen: feste Übung ohne Leiter, Wdh.-Bereich/Pause je Slot
 - [x] **Tagesanpassung:** Übungen für eine Einheit hinzufügen/weglassen (`sessions.adjust`), danach „Als neues Workout speichern“ (Übungsplan → „Heute anpassen“)
-- [ ] Onboarding: Sprache → Kurztest → Ziele → Equipment/Tage → erzeugter Plan mit Begründung pro Slot („wegen Muscle-up“, „Ausgleich Druck“)
+- [x] Onboarding: Willkommen → Kurztest → Ziele → Equipment → Tage & Dauer → Planvorschlag mit Begründung je Übung (`Onboarding.tsx`, ein Sheet mit Push-Seiten; nur bei frischer Installation, jeder Schritt überspringbar). Offen: Sprache (mit i18n)
 - [ ] Apple Health / Health Connect (Android): Workouts speichern
 - [ ] **TestFlight, geschlossene Beta** mit 5–10 Fortgeschrittenen, Feedback-Kanal in der App
 
