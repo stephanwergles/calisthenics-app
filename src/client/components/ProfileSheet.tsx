@@ -4,7 +4,7 @@
 import { useRef, useState } from 'react'
 import type { Training } from '../useTraining'
 import { APP_VERSION } from '../version'
-import { ask, type NBlock } from '../native'
+import { ask, nativeFiles, type NBlock } from '../native'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { HEALTH_CONSENT, PRIVACY_URL } from '../consent'
 import { DataView, syncStatus } from './DataView'
@@ -23,6 +23,22 @@ export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void 
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [part, setPart] = useState<Part>(null)
+  const [dataMsg, setDataMsg] = useState<string | null>(null)
+  const exportJson = async () => {
+    const ok = await nativeFiles.share(`calisthenics-v2-${t.today}.json`, JSON.stringify(t.exportData(), null, 2))
+    if (ok) setDataMsg('Export gesichert.')
+  }
+  const importV1 = async () => {
+    const text = await nativeFiles.pick()
+    if (!text) return
+    try {
+      const v1 = JSON.parse(text)
+      if (!v1 || typeof v1.log !== 'object') throw new Error('Kein v1-Export')
+      if (!await ask({ title: 'v1-Export übernehmen?', message: 'Einheiten mit gleichem Datum und Workout werden ersetzt, alle anderen bleiben. Der Trainingsstand wird aus dem Export übernommen.', ok: 'Übernehmen' })) return
+      const r = await t.importV1(v1)
+      setDataMsg(`Übernommen: ${r.sessions} Einheiten, ${r.sets} Sätze, ${r.activities} Aktivitäten.${r.warnings.length ? ` ${r.warnings.length} Hinweise.` : ''}`)
+    } catch (e) { setDataMsg(`Import fehlgeschlagen: ${(e as Error).message}`) }
+  }
   const sum = profileSummary(t)
   const training = [
     { id: 'goals' as const, title: 'Ziele', sub: sum.goals },
@@ -70,10 +86,13 @@ export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void 
         { type: 'button', id: 'signin', title: busy ? 'Melde an …' : 'Anmelden', style: 'prominent' } as NBlock,
       ]),
       ...(err ? [{ type: 'text', text: err, style: 'warn' } as NBlock] : []),
+      { type: 'section', title: 'Daten' },
+      { type: 'buttons', buttons: [{ id: 'export', title: 'Export (JSON)', symbol: 'square.and.arrow.up' }, { id: 'import', title: 'v1-Import', symbol: 'square.and.arrow.down' }] },
+      ...(dataMsg ? [{ type: 'text', text: dataMsg, style: dataMsg.startsWith('Import fehlgeschlagen') ? 'warn' : 'small' } as NBlock] : []),
       { type: 'section', title: 'Rechtliches' },
       { type: 'button', id: 'privacy', title: 'Datenschutzerklärung', symbol: 'doc.text' },
       ...(s.account ? [{ type: 'button', id: 'delete', title: 'Konto löschen', symbol: 'trash', style: 'destructive' } as NBlock] : []),
-      { type: 'text', text: `Import aus v1 und JSON-Export: im Browser unter Profil. · Lever v${APP_VERSION}`, style: 'small' },
+      { type: 'text', text: `Lever v${APP_VERSION}`, style: 'small' },
     ],
   } : null, e => {
     if (e.type === 'text' && (e.id === 'email' || e.id === 'password')) form.current[e.id] = String(e.value ?? '')
@@ -87,6 +106,8 @@ export function ProfileSheet({ t, onClose }: { t: Training; onClose: () => void 
     else if (e.type === 'tap' && e.id === 'consent') void t.acceptHealthConsent().catch(x => setErr((x as Error).message))
     else if (e.type === 'tap' && e.id === 'privacy') window.open(PRIVACY_URL, '_blank')
     else if (e.type === 'tap' && e.id === 'delete') void deleteAccount()
+    else if (e.type === 'tap' && e.id === 'export') void exportJson()
+    else if (e.type === 'tap' && e.id === 'import') void importV1()
     else if (e.type === 'tap' && e.id?.startsWith('p:')) setPart(e.id.slice(2) as Part)
     else if (e.type === 'dismiss') onClose()
   })

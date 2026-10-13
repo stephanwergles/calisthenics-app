@@ -78,6 +78,8 @@ interface LeverTabBarPlugin {
   closeSheet(o: { id: string }): Promise<void>
   setPanel(o: { spec: NPanel | null }): Promise<void>
   setRest(o: { spec: NRest | null }): Promise<void>
+  shareFile(o: { name: string; content: string }): Promise<{ done: boolean }>
+  pickFile(): Promise<{ content?: string; name?: string }>
   addListener(event: 'select' | 'action', cb: (d: { id: string }) => void): Promise<PluginListenerHandle>
   addListener(event: 'sheet', cb: (d: SheetEvent) => void): Promise<PluginListenerHandle>
   addListener(event: 'panel', cb: (d: PanelEvent) => void): Promise<PluginListenerHandle>
@@ -213,5 +215,17 @@ export const nativeRest = {
     if (!restListening && isNative()) { restListening = true; void TabBar.addListener('rest', e => restHandler?.(e.type)) }
     restHandler = h
     return () => { if (restHandler === h) restHandler = null }
+  },
+}
+
+/* ── Dateien (App): Export teilen, Import wählen ── */
+export const nativeFiles = {
+  share: async (name: string, content: string) => {
+    if (!isNative()) return false
+    try { return (await TabBar.shareFile({ name, content })).done } catch { return false }
+  },
+  pick: async (): Promise<string | null> => {
+    if (!isNative()) return null
+    try { return (await TabBar.pickFile()).content ?? null } catch { return null }
   },
 }

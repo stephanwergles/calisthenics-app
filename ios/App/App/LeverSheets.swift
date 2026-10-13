@@ -1,6 +1,7 @@
 import UIKit
 import Capacitor
 import AVFoundation
+import UniformTypeIdentifiers
 
 /*
  Native Sheets für Lever. Die Web-App beschreibt ein Sheet als Bausteine (src/client/native.ts,
@@ -1586,4 +1587,48 @@ final class TrackLine: UIView {
     }
     required init?(coder: NSCoder) { fatalError() }
     override func layoutSubviews() { super.layoutSubviews(); g.frame = bounds }
+}
+
+// MARK: - Dateien: Export über das Teilen-Sheet, Import über die Dokumentauswahl
+
+final class LeverDocPicker: NSObject, UIDocumentPickerDelegate {
+    let done: (URL?) -> Void
+    init(done: @escaping (URL?) -> Void) { self.done = done }
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) { done(urls.first) }
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { done(nil) }
+}
+
+extension LeverTabBarPlugin {
+    private static var picker: LeverDocPicker?
+
+    /// Text als Datei teilen (Sichern in Dateien, AirDrop, Mail …)
+    @objc func shareFile(_ call: CAPPluginCall) {
+        let name = call.getString("name") ?? "export.json"
+        let content = call.getString("content") ?? ""
+        DispatchQueue.main.async {
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+            do { try content.write(to: url, atomically: true, encoding: .utf8) } catch { call.reject("Datei nicht schreibbar"); return }
+            let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+            vc.completionWithItemsHandler = { _, done, _, _ in call.resolve(["done": done]) }
+            guard let top = self.topController() else { call.reject("Kein Controller"); return }
+            vc.popoverPresentationController?.sourceView = top.view
+            top.present(vc, animated: true)
+        }
+    }
+
+    /// JSON-Datei wählen; liefert den Inhalt (abgebrochen = leeres Ergebnis)
+    @objc func pickFile(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.json], asCopy: true)
+            let delegate = LeverDocPicker { url in
+                Self.picker = nil
+                guard let url, let text = try? String(contentsOf: url, encoding: .utf8) else { call.resolve([:]); return }
+                call.resolve(["content": text, "name": url.lastPathComponent])
+            }
+            Self.picker = delegate
+            picker.delegate = delegate
+            guard let top = self.topController() else { call.reject("Kein Controller"); return }
+            top.present(picker, animated: true)
+        }
+    }
 }
