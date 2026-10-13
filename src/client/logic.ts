@@ -7,11 +7,22 @@ import type {
 import { usable } from '../domain/generator.ts'
 import { suggestSkills, suggestSplits, type SkillSuggestion } from '../domain/assessment.ts'
 import { NOTE_MAX, REGIONS } from '../domain/model.ts'
+import { intl, t, tn, type Key } from './i18n/index.ts'
 
 export { NOTE_MAX }
 
 export const WEEKDAYS: Weekday[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-export const WEEKDAY_SHORT: Record<Weekday, string> = { mon: 'Mo', tue: 'Di', wed: 'Mi', thu: 'Do', fri: 'Fr', sat: 'Sa', sun: 'So' }
+/** Beschriftungen als Objekte mit Gettern: lesen immer in der aktuellen Sprache (i18n) */
+function labels<K extends string>(keys: readonly K[], key: (k: K) => string): Record<K, string> {
+  return Object.defineProperties({} as Record<K, string>,
+    Object.fromEntries(keys.map(k => [k, { get: () => t(key(k) as Key), enumerable: true }])))
+}
+export const WEEKDAY_SHORT = labels(WEEKDAYS, d => `logic.weekday.${d}`)
+export const WEEKDAY_LONG = labels(WEEKDAYS, d => `logic.weekdayLong.${d}`)
+export const regionLabel = (id: Region | 'other' | undefined) => t(`logic.region.${id ?? 'other'}` as Key)
+export const regionDetail = (id: Region | 'other' | undefined) => t(`logic.regionDetail.${id ?? 'other'}` as Key)
+/** Zahl im Format der Sprache (Dezimalkomma im Deutschen) */
+export const fmtNum = (n: number) => n.toLocaleString(intl())
 /** Anzeige-Reihenfolge: Woche beginnt Montag */
 export const WEEK_ORDER: Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
@@ -65,12 +76,12 @@ export function workoutKey(name: string, taken: Iterable<string>): string {
 /** Fokuszeile aus den Körperregionen der Slots, z. B. „Ziehen · Rumpf“ */
 export function focusOf(ix: Index, slots: { progression: ProgressionId }[]): string {
   const regions = new Set(slots.map(sl => ix.progressions.get(sl.progression)?.region).filter(Boolean))
-  return REGIONS.filter(r => regions.has(r.id)).map(r => r.label).join(' · ') || 'Eigenes Workout'
+  return REGIONS.filter(r => regions.has(r.id)).map(r => regionLabel(r.id)).join(' · ') || t('logic.customWorkout')
 }
 /** neues eigenes Workout (ohne Warm-up/Cool-down, solange keins übernommen wird) */
 export function newWorkout(ix: Index, name: string, slots: Workout['slots'], from?: Workout): Workout {
   return {
-    id: workoutKey(name, ix.workouts.keys()), name: name.trim().slice(0, 80) || 'Eigenes Workout', focus: focusOf(ix, slots),
+    id: workoutKey(name, ix.workouts.keys()), name: name.trim().slice(0, 80) || t('logic.customWorkout'), focus: focusOf(ix, slots),
     slots, warmup: from ? structuredClone(from.warmup) : [], cooldown: from ? structuredClone(from.cooldown) : [], custom: true,
   }
 }
@@ -117,11 +128,11 @@ export function withDay(plan: Plan, day: Weekday, id: WorkoutId | undefined): Pl
 export function ladderChoices(ix: Index, user: UserState, exclude: Iterable<ProgressionId> = []) {
   const skip = new Set(exclude)
   const all = [...ix.progressions.values()].filter(p => !skip.has(p.id) && p.steps.length)
-  return [...REGIONS.map(r => ({ id: r.id as string, label: r.label })), { id: 'other', label: 'Weitere' }].map(g => ({
+  return [...REGIONS.map(r => ({ id: r.id as string, label: regionLabel(r.id) })), { id: 'other', label: regionLabel('other') }].map(g => ({
     ...g,
     items: all.filter(p => (p.region ?? 'other') === g.id).map(p => {
       const step = currentStep(ix, user, p.id)
-      return { pid: p.id, name: step.exercise.name, sub: `Stufe ${step.index + 1}/${step.total} · ${step.target.label}`, exercise: step.exercise }
+      return { pid: p.id, name: step.exercise.name, sub: t('logic.stageTarget', { i: step.index + 1, n: step.total, target: step.target.label }), exercise: step.exercise }
     }),
   })).filter(g => g.items.length)
 }
@@ -295,14 +306,14 @@ export function fmtDuration(sec: number) {
   return h ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`
 }
 export const fmtDate = (date: string) =>
-  new Date(`${date}T12:00`).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' })
+  new Date(`${date}T12:00`).toLocaleDateString(intl(), { weekday: 'short', day: '2-digit', month: '2-digit' })
 export const fmtSet = (x: SetLog, ex: Exercise) =>
   `${x.value}${ex.unit === 'seconds' ? ' s' : ''}${x.weightKg ? ` +${x.weightKg} kg` : ''}`
 export const fmtRest = (sec: number) => (sec >= 60 ? `${fmtClock(sec)} min` : `${sec} s`)
 
 /* ── Ansicht eines Workouts ──────────────────────────────────────────────── */
 
-export const BLOCK_LABEL: Record<string, string> = { skill: 'Skill', strength: 'Kraft', core: 'Core', accessory: 'Zubehör', extra: 'Extra' }
+export const BLOCK_LABEL: Record<string, string> = labels(['skill', 'strength', 'core', 'accessory', 'extra'] as const, b => `logic.block.${b}`)
 
 export interface SlotView {
   pid: ProgressionId
@@ -393,8 +404,9 @@ export function shiftMonth(month: string, delta: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 export const fmtMonth = (month: string) =>
-  new Date(`${month}-15T12:00`).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })
-export const fmtShortDate = (date: string) => `${date.slice(8, 10)}.${date.slice(5, 7)}.`
+  new Date(`${month}-15T12:00`).toLocaleDateString(intl(), { month: 'long', year: 'numeric' })
+export const fmtShortDate = (date: string) => (intl() === 'de-DE' ? `${date.slice(8, 10)}.${date.slice(5, 7)}.`
+  : new Date(`${date}T12:00`).toLocaleDateString(intl(), { day: 'numeric', month: 'short' }))
 
 /** Sätze einer Einheit gruppiert nach Übung, in Trainingsreihenfolge des Workouts
     (Übungen, die nicht mehr im Plan stehen, hinten dran) */
@@ -410,13 +422,13 @@ export function sessionExercises(ix: Index, s: Session): { exercise: Exercise; s
   })
 }
 
-const ACTIVITY_LABEL: Record<Activity['kind'], string> = { run: 'Lauf', ride: 'Rad', workout: 'Workout' }
+const ACTIVITY_LABEL = labels(['run', 'ride', 'workout'] as const, k => `logic.activity.${k}`)
 export const activityTitle = (a: Activity) => a.name || ACTIVITY_LABEL[a.kind]
 export const fmtActivity = (a: Activity) => [
   a.durationMin ? `${a.durationMin} min` : null,
-  a.distanceKm ? `${String(a.distanceKm).replace('.', ',')} km` : null,
-  a.elevationM ? `${a.elevationM} hm` : null,
-  a.rounds ? `${a.rounds} Runden` : null,
+  a.distanceKm ? `${fmtNum(a.distanceKm)} km` : null,
+  a.elevationM ? t('logic.elevation', { n: a.elevationM }) : null,
+  a.rounds ? t('logic.rounds', { n: a.rounds }) : null,
 ].filter(Boolean).join(' · ')
 
 /* ── Verlauf: Fortschritt ────────────────────────────────────────────────── */
@@ -617,17 +629,17 @@ export function unlockProgress(sessions: Session[], exercise: ExerciseId, target
 
 /** Für die aktuelle Stufe: beste Einheit (größte Summe) und in Worten, was zum Freischalten fehlt */
 export function stepStanding(sessions: Session[], exercise: Exercise, target: Target, next?: Target): { best: string | null; missing: string | null } {
-  const unit = exercise.unit === 'seconds' ? ' s' : ' Wdh.'
+  const unit = exercise.unit === 'seconds' ? ' s' : t('logic.unitReps')
   const all = sessions.map(s => setsOf(s, exercise.id)).filter(x => x.length)
   const best = all.length ? all.reduce((a, b) => (sum(b) > sum(a) ? b : a)) : null
   const p = unlockProgress(sessions, exercise.id, target, next)
   let missing: string | null = null
   if (p && target.unlockAt != null && p.done < 2) {
-    missing = p.sessions === 0 ? 'noch keine vollständige Einheit auf dieser Stufe'
-      : p.missing > 0 ? `fehlt noch: ${p.missing} ${p.missing === 1 ? 'Satz' : 'Sätze'} mit ${target.unlockAt}${unit}`
-      : 'fehlt noch: 1 weitere Einheit, alle Sätze geschafft'
+    missing = p.sessions === 0 ? t('logic.standingNone')
+      : p.missing > 0 ? tn('logic.standingSets', p.missing, { target: `${target.unlockAt}${unit}` })
+      : t('logic.standingOneMore')
   }
-  return { best: best ? best.map(x => `${x.value}${x.weightKg ? `+${String(x.weightKg).replace('.', ',')}` : ''}`).join('·') : null, missing }
+  return { best: best ? best.map(x => `${x.value}${x.weightKg ? `+${fmtNum(x.weightKg)}` : ''}`).join('·') : null, missing }
 }
 const sum = (sets: SetLog[]) => sets.reduce((n, x) => n + x.value, 0)
 
@@ -672,9 +684,8 @@ export function monthStats(sessions: Session[], activities: Activity[], month: s
 
 /* ── Profil, Ziele, Skill-Vorschläge ─────────────────────────────────────── */
 
-export const EQUIPMENT_LABEL: Record<Exclude<Equipment, 'floor' | 'wall'>, string> = {
-  bar: 'Stange', rings: 'Ringe', parallettes: 'Parallettes', 'dip-bars': 'Barren', band: 'Band', box: 'Box', weight: 'Zusatzgewicht', pole: 'Senkrechte Stange',
-}
+export const EQUIPMENT_LABEL: Record<Exclude<Equipment, 'floor' | 'wall'>, string> =
+  labels(['bar', 'rings', 'parallettes', 'dip-bars', 'band', 'box', 'weight', 'pole'] as const, k => `logic.equipment.${k}`)
 /** Profil, solange keins gespeichert ist: keine Ziele, alle Geräte, Tage aus dem Wochenplan */
 export function profileOf(ix: Index, user: UserState): Profile {
   return user.profile ?? {
@@ -700,7 +711,7 @@ export function goalProgress(ix: Index, user: UserState, sessions: Session[], sk
   })
   const share = parts.length ? parts.reduce((n, p) => n + p.share, 0) / parts.length : 0
   const lead = parts.reduce((a, b) => (b.share < a.share ? b : a), parts[0])
-  return { share, pid: lead?.pid, current: lead?.step.exercise.name ?? '', stage: lead ? `Stufe ${lead.step.index + 1}/${lead.step.total}` : '' }
+  return { share, pid: lead?.pid, current: lead?.step.exercise.name ?? '', stage: lead ? t('logic.stage', { i: lead.step.index + 1, n: lead.step.total }) : '' }
 }
 /** Ziel an/aus (höchstens drei) */
 export function withGoal(p: Profile, skill: SkillId, on: boolean): Profile {
@@ -736,10 +747,10 @@ export function planFromGenerated(ix: Index, base: Plan, g: GeneratedPlan, input
     const like = [...ix.workouts.values()].filter(w => !w.custom && w.warmup.length)
       .map(w => ({ w, n: [...regionsOf(w.slots.map(s => s.progression))].filter(r => mine.has(r)).length }))
       .sort((a, b) => b.n - a.n)[0]?.w
-    const theme = d.theme ?? 'Ganzkörper'
+    const theme = d.theme ?? t('logic.fullBody')
     const n = (names.get(theme) ?? 0) + 1; names.set(theme, n)
     return {
-      id: `auto-${d.day}`, name: g.days.filter(x => (x.theme ?? 'Ganzkörper') === theme).length > 1 ? `${theme} ${String.fromCharCode(64 + n)}` : theme,
+      id: `auto-${d.day}`, name: g.days.filter(x => (x.theme ?? t('logic.fullBody')) === theme).length > 1 ? `${theme} ${String.fromCharCode(64 + n)}` : theme,
       focus: focusOf(ix, slots), slots, warmup: like ? structuredClone(like.warmup) : [], cooldown: like ? structuredClone(like.cooldown) : [],
     }
   })
@@ -778,7 +789,7 @@ export function planDiff(ix: Index, user: UserState, next: Plan): DayDiff[] {
     for (const sl of b?.slots ?? []) {
       const before = setsOf(a, sl.progression), after = setsOf(b, sl.progression)
       changes.push(!before ? { name: name(sl.progression), kind: 'neu', detail: sl.reason }
-        : before !== after ? { name: name(sl.progression), kind: 'sätze', detail: `${before} → ${after} Sätze` }
+        : before !== after ? { name: name(sl.progression), kind: 'sätze', detail: t('logic.setsChange', { before, after }) }
         : { name: name(sl.progression), kind: 'bleibt' })
     }
     for (const sl of a?.slots ?? []) if (!b?.slots.some(x => x.progression === sl.progression)) changes.push({ name: name(sl.progression), kind: 'raus' })
@@ -788,8 +799,8 @@ export function planDiff(ix: Index, user: UserState, next: Plan): DayDiff[] {
 
 /* ── Phasen: Pause/krank, Urlaub, Verletzung, Equipment ──────────────────── */
 
-export const PHASE_LABEL: Record<PhaseKind, string> = { pause: 'Pause / krank', vacation: 'Urlaub', injury: 'Verletzung', equipment: 'Equipment fehlt' }
-export const TENDON_LABEL: Record<Tendon, string> = { shoulder: 'Schulter', elbow: 'Ellenbogen', wrist: 'Handgelenk', knee: 'Knie' }
+export const PHASE_LABEL: Record<PhaseKind, string> = labels(['pause', 'vacation', 'injury', 'equipment'] as const, k => `logic.phase.${k}`)
+export const TENDON_LABEL: Record<Tendon, string> = labels(['shoulder', 'elbow', 'wrist', 'knee'] as const, k => `logic.tendon.${k}`)
 /** ab dieser Sehnenbelastung (0–3) ruht eine Übung bei Verletzung – jede Belastung des Gelenks */
 const INJURY_STRESS = 1
 
@@ -803,9 +814,9 @@ export function phaseBlock(phases: Phase[], meta: ExerciseMeta | undefined): str
   for (const p of phases) {
     if (p.kind === 'injury') {
       const hit = (p.tendons ?? []).filter(t => (meta.stress[t] ?? 0) >= INJURY_STRESS)
-      if (hit.length) return `Verletzung: ${hit.map(t => TENDON_LABEL[t]).join(', ')}`
+      if (hit.length) return t('logic.injuredBy', { joints: hit.map(x => TENDON_LABEL[x]).join(', ') })
     }
-    if (p.kind === 'equipment' && !usable(meta, p.equipment ?? [])) return 'Gerät fehlt'
+    if (p.kind === 'equipment' && !usable(meta, p.equipment ?? [])) return t('logic.noEquipment')
   }
   return null
 }
@@ -828,7 +839,7 @@ export function withPhaseEnded(user: UserState, id: string, today: string): User
   return { ...user, phases }
 }
 export const fmtPhase = (p: Phase) => `${PHASE_LABEL[p.kind]}${p.kind === 'injury' && p.tendons?.length ? ` · ${p.tendons.map(t => TENDON_LABEL[t]).join(', ')}` : ''}`
-  + (p.to ? ` · bis ${fmtShortDate(p.to)}` : ' · bis auf Weiteres')
+  + (p.to ? t('logic.phaseUntil', { date: fmtShortDate(p.to) }) : t('logic.phaseOpen'))
 
 /* ── Einstufung (Kurztest) ───────────────────────────────────────────────── */
 
@@ -874,4 +885,4 @@ export function workoutFromTemplate(ix: Index, tpl: Template): Workout {
   const known = new Set(ix.progressions.keys())
   return { ...structuredClone(w), id: workoutKey(tpl.name, ix.workouts.keys()), name: tpl.name, slots: w.slots.filter(s => known.has(s.progression)), custom: true }
 }
-export const LEVEL_LABEL: Record<Template['level'], string> = { beginner: 'Einsteiger', intermediate: 'Fortgeschritten', advanced: 'Erfahren' }
+export const LEVEL_LABEL: Record<Template['level'], string> = labels(['beginner', 'intermediate', 'advanced'] as const, k => `logic.level.${k}`)
