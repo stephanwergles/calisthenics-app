@@ -468,16 +468,19 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
         case "ladder":
             let state = b.state ?? "locked"
             let dot = PaddedLabel(); dot.textAlignment = .center
-            dot.text = state == "done" ? "✓" : state == "locked" ? "" : (b.label ?? "")
+            dot.text = state == "done" || state == "locked" ? "" : (b.label ?? "")
             dot.font = .display(18, .heavy)
             dot.textColor = state == "current" ? Lever.ink : .white
-            dot.backgroundColor = state == "current" ? Lever.volt : state == "done" ? UIColor(white: 1, alpha: 0.18) : UIColor(white: 1, alpha: 0.06)
+            dot.backgroundColor = state == "current" ? Lever.volt : state == "done" ? UIColor(white: 0.95, alpha: 1) : UIColor(white: 1, alpha: 0.06)
             dot.layer.cornerRadius = 20; dot.clipsToBounds = true
             dot.widthAnchor.constraint(equalToConstant: 40).isActive = true; dot.heightAnchor.constraint(equalToConstant: 40).isActive = true
-            if state == "locked" {
-                let lock = UIImageView(image: UIImage(systemName: "lock.fill")); lock.tintColor = Lever.muted; lock.translatesAutoresizingMaskIntoConstraints = false
-                dot.addSubview(lock)
-                NSLayoutConstraint.activate([lock.centerXAnchor.constraint(equalTo: dot.centerXAnchor), lock.centerYAnchor.constraint(equalTo: dot.centerYAnchor)])
+            if state == "locked" || state == "done" {
+                // erledigt = kreideweiß mit kräftigem Häkchen (wie erledigte Sätze), gesperrt = Schloss
+                let icon = UIImageView(image: UIImage(systemName: state == "done" ? "checkmark" : "lock.fill",
+                                                      withConfiguration: UIImage.SymbolConfiguration(pointSize: state == "done" ? 12 : 11, weight: .black)))
+                icon.tintColor = state == "done" ? Lever.ink : Lever.muted; icon.translatesAutoresizingMaskIntoConstraints = false
+                dot.addSubview(icon)
+                NSLayoutConstraint.activate([icon.centerXAnchor.constraint(equalTo: dot.centerXAnchor), icon.centerYAnchor.constraint(equalTo: dot.centerYAnchor)])
             }
             let v = UIStackView(arrangedSubviews: [label((b.title ?? "").uppercased(), .display(19, .heavy), state == "locked" ? Lever.muted : .white),
                                                   label(b.subtitle ?? "", .body(13.5), Lever.muted)])
@@ -507,7 +510,10 @@ final class LeverNativeSheet: UIViewController, UISheetPresentationControllerDel
                 lead = holder
             }
             let h = UIStackView(arrangedSubviews: [lead, v]); h.spacing = 14; h.alignment = .center
-            return state == "current" ? card(h, tint: Lever.volt.withAlphaComponent(0.1), padding: 12) : h
+            // jede Stufe im gleichen Rahmen-Abstand – Bilder stehen auf einer Linie, nur die aktive ist eingefärbt
+            let box = card(h, tint: state == "current" ? Lever.volt.withAlphaComponent(0.1) : .clear, padding: 12)
+            if state != "current" { box.layer.borderColor = UIColor.clear.cgColor }
+            return box
 
         case "compare":
             // Balken: letztes Mal (grau) und heute (Volt) relativ zum größten Wert, rechts das Delta
