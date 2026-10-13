@@ -129,8 +129,8 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 
 - [ ] `skills`-Collection + Voraussetzungs-Graph; Skill-Tree-Tab zeigt den Graph (Prototyp-Daten: `src/seed/skills.json`)
 - [ ] Metadaten (`equipment`, `pattern`, `difficulty`, `stress`) für alle bestehenden 47 Übungen (Prototyp-Daten: `src/seed/exercise-meta.json`, unsichere Werte markiert)
-- [ ] `splits`: Split-Vorlagen (2–6 Tage) mit Thema je Tag
-- [ ] Einstufungs-Regel je Leiter (Testwert → Startstufe)
+- [ ] `splits`: Split-Vorlagen (2–6 Tage) mit Thema je Tag (Prototyp: `src/seed/splits.json`, Generator verteilt Themen auf Wochentage)
+- [ ] Einstufungs-Regel je Leiter (Testwert → Startstufe) (Prototyp: `src/seed/assessment.json`, `src/domain/assessment.ts` mit Skill- und Split-Vorschlägen)
 - [ ] Lücken in den Grundmustern schließen, damit jeder Plan ausgeglichen werden kann (je Muster mindestens eine Leiter pro gängiger Equipment-Kombination)
 - [ ] Erste neue Skill-Leitern: Front Lever · Back Lever · Planche · Handstand-Push-up (weitere in 3.4)
 - [ ] Fachliche Prüfung der Leitern und Freischalt-Schwellen durch einen Coach

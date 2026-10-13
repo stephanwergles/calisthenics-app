@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import type { Catalog, Equipment, ExerciseMeta, GeneratedPlan, GeneratorInput, Skill, Weekday } from '../src/domain/model.ts'
+import type { Catalog, Equipment, ExerciseMeta, GeneratedPlan, GeneratorInput, Skill, SplitTemplate, Weekday } from '../src/domain/model.ts'
 import { WEEK, adjacent, generatePlan, usable, type GeneratorData } from '../src/domain/generator.ts'
 
 const json = (f: string) => JSON.parse(readFileSync(new URL(`../src/seed/${f}`, import.meta.url), 'utf8'))
@@ -10,6 +10,7 @@ const data: GeneratorData = {
   catalog: json('catalog.json') as Catalog,
   meta: json('exercise-meta.json').exercises as Record<string, ExerciseMeta>,
   skills: json('skills.json').skills as Skill[],
+  splits: json('splits.json').splits as SplitTemplate[],
 }
 const region = new Map(data.catalog.progressions.map(p => [p.id, p.region]))
 
@@ -100,4 +101,31 @@ test('Abnahme: heutiges Profil ergibt einen A/B/C-artigen Plan', () => {
   // Abweichungen zum heutigen Plan (dokumentiert, nicht erzwungen): Dips stehen am Sonntag
   // (Voraussetzung Muscle-up), Rumpf am Mittwoch statt Montag, kein Zubehör (Bizeps, Trizeps,
   // Waden, Fly), insgesamt weniger Sätze als der handgebaute Plan
+})
+
+test('Abnahme mit Vorlage Pull/Push/Lower: So Pull, Mo Lower, Mi Push', () => {
+  const plan = generatePlan(data, {
+    skills: ['muscle-up', 'l-sit', 'handstand'], equipment: ['bar', 'rings', 'parallettes', 'band'],
+    days: ['sun', 'mon', 'wed'], minutes: 90, current: {}, split: 'ppl-3',
+  })
+  const theme = (d: Weekday) => plan.days.find(x => x.day === d)!.theme
+  assert.deepEqual([theme('sun'), theme('mon'), theme('wed')], ['Pull', 'Lower', 'Push'])
+  for (const d of plan.days) for (const s of d.slots) {
+    const r = region.get(s.progression)
+    const ok = { Pull: ['pull', 'core'], Push: ['push', 'core'], Lower: ['legs', 'core'] }[d.theme!]!
+    assert.ok(ok.includes(r!) || plan.warnings.some(w => w.includes('passt zu keinem Tagesthema')), `${s.exercise} (${r}) an ${d.theme}`)
+  }
+})
+
+test('mit Vorlage: jedes Slot-Thema passt (über alle Vorlagen und Profile)', () => {
+  const r = rng(7)
+  for (let i = 0; i < 150; i++) {
+    const tpl = data.splits![Math.floor(r() * data.splits!.length)]
+    const days = WEEK.slice().sort(() => r() - 0.5).slice(0, tpl.themes.length) as Weekday[]
+    const plan = generatePlan(data, { skills: data.skills.slice(0, 1 + Math.floor(r() * 3)).map(s => s.id), equipment: EQUIP, days, minutes: 90, current: {}, split: tpl.id })
+    for (const d of plan.days) {
+      const th = tpl.themes.find(t => t.name === d.theme)!
+      for (const s of d.slots) assert.ok(th.regions.includes(region.get(s.progression)!) || plan.warnings.some(w => w.includes('passt zu keinem')), `${tpl.id}: ${s.exercise} an ${d.theme}`)
+    }
+  }
 })

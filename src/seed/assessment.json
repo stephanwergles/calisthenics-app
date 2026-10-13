@@ -1,0 +1,158 @@
+{
+ "_info": "Einstufung (Prototyp v3): Kurztest → Startstufe je Leiter. thresholds[i] = Mindestwert für Stufe i+1 (0-basiert: Stufe 0 immer). Werte fachlich zu prüfen.",
+ "tests": [
+  {
+   "id": "pull-ups",
+   "name": "Klimmzüge am Stück",
+   "unit": "reps"
+  },
+  {
+   "id": "dips",
+   "name": "Dips am Stück",
+   "unit": "reps"
+  },
+  {
+   "id": "push-ups",
+   "name": "Liegestütze am Stück",
+   "unit": "reps"
+  },
+  {
+   "id": "hollow",
+   "name": "Hollow Body Hold",
+   "unit": "seconds"
+  },
+  {
+   "id": "l-sit",
+   "name": "L-Sit (beste Variante)",
+   "unit": "seconds"
+  },
+  {
+   "id": "handstand",
+   "name": "Handstand an der Wand",
+   "unit": "seconds"
+  },
+  {
+   "id": "pistol",
+   "name": "Pistol Squat",
+   "unit": "level",
+   "levels": [
+    "nicht möglich",
+    "mit Hilfe",
+    "frei",
+    "mit Gewicht"
+   ]
+  },
+  {
+   "id": "leg-raise",
+   "name": "Hängendes Beinheben",
+   "unit": "reps"
+  }
+ ],
+ "rules": [
+  {
+   "progression": "pull-up",
+   "test": "pull-ups",
+   "thresholds": [
+    10
+   ]
+  },
+  {
+   "progression": "muscle-up-pull",
+   "test": "pull-ups",
+   "thresholds": [
+    12,
+    15
+   ]
+  },
+  {
+   "progression": "one-arm-pull",
+   "test": "pull-ups",
+   "thresholds": [
+    12,
+    15
+   ]
+  },
+  {
+   "progression": "row",
+   "test": "pull-ups",
+   "thresholds": [
+    8
+   ]
+  },
+  {
+   "progression": "dip",
+   "test": "dips",
+   "thresholds": [
+    15
+   ]
+  },
+  {
+   "progression": "bar-dip",
+   "test": "dips",
+   "thresholds": [
+    20
+   ]
+  },
+  {
+   "progression": "horizontal-push",
+   "test": "push-ups",
+   "thresholds": [
+    25
+   ]
+  },
+  {
+   "progression": "planche",
+   "test": "push-ups",
+   "thresholds": [
+    30,
+    40
+   ]
+  },
+  {
+   "progression": "vertical-push",
+   "test": "handstand",
+   "thresholds": [
+    30,
+    60
+   ]
+  },
+  {
+   "progression": "handstand",
+   "test": "handstand",
+   "thresholds": [
+    45,
+    60
+   ]
+  },
+  {
+   "progression": "hollow",
+   "test": "hollow",
+   "thresholds": [
+    45
+   ]
+  },
+  {
+   "progression": "l-sit",
+   "test": "l-sit",
+   "thresholds": [
+    20,
+    30
+   ]
+  },
+  {
+   "progression": "leg-raise",
+   "test": "leg-raise",
+   "thresholds": [
+    12
+   ]
+  },
+  {
+   "progression": "pistol",
+   "test": "pistol",
+   "thresholds": [
+    2,
+    3
+   ]
+  }
+ ]
+}

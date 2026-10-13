@@ -1,0 +1,261 @@
+{
+ "_info": "Split-Vorlagen (Prototyp v3): Thema je Tag mit erlaubten Regionen; Rumpf passt überall dazu.",
+ "splits": [
+  {
+   "id": "full-2",
+   "name": "Ganzkörper ×2",
+   "themes": [
+    {
+     "id": "full",
+     "name": "Ganzkörper",
+     "regions": [
+      "pull",
+      "push",
+      "legs",
+      "core"
+     ]
+    },
+    {
+     "id": "full",
+     "name": "Ganzkörper",
+     "regions": [
+      "pull",
+      "push",
+      "legs",
+      "core"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "full-3",
+   "name": "Ganzkörper ×3",
+   "themes": [
+    {
+     "id": "full",
+     "name": "Ganzkörper",
+     "regions": [
+      "pull",
+      "push",
+      "legs",
+      "core"
+     ]
+    },
+    {
+     "id": "full",
+     "name": "Ganzkörper",
+     "regions": [
+      "pull",
+      "push",
+      "legs",
+      "core"
+     ]
+    },
+    {
+     "id": "full",
+     "name": "Ganzkörper",
+     "regions": [
+      "pull",
+      "push",
+      "legs",
+      "core"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ppl-3",
+   "name": "Pull / Push / Lower",
+   "themes": [
+    {
+     "id": "pull",
+     "name": "Pull",
+     "regions": [
+      "pull",
+      "core"
+     ]
+    },
+    {
+     "id": "push",
+     "name": "Push",
+     "regions": [
+      "push",
+      "core"
+     ]
+    },
+    {
+     "id": "lower",
+     "name": "Lower",
+     "regions": [
+      "legs",
+      "core"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ul-2",
+   "name": "Upper / Lower",
+   "themes": [
+    {
+     "id": "upper",
+     "name": "Upper",
+     "regions": [
+      "pull",
+      "push",
+      "core"
+     ]
+    },
+    {
+     "id": "lower",
+     "name": "Lower",
+     "regions": [
+      "legs",
+      "core"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ul-4",
+   "name": "Upper / Lower ×2",
+   "themes": [
+    {
+     "id": "upper",
+     "name": "Upper",
+     "regions": [
+      "pull",
+      "push",
+      "core"
+     ]
+    },
+    {
+     "id": "lower",
+     "name": "Lower",
+     "regions": [
+      "legs",
+      "core"
+     ]
+    },
+    {
+     "id": "upper",
+     "name": "Upper",
+     "regions": [
+      "pull",
+      "push",
+      "core"
+     ]
+    },
+    {
+     "id": "lower",
+     "name": "Lower",
+     "regions": [
+      "legs",
+      "core"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ppl-ul-5",
+   "name": "Pull / Push / Lower / Upper / Lower",
+   "themes": [
+    {
+     "id": "pull",
+     "name": "Pull",
+     "regions": [
+      "pull",
+      "core"
+     ]
+    },
+    {
+     "id": "push",
+     "name": "Push",
+     "regions": [
+      "push",
+      "core"
+     ]
+    },
+    {
+     "id": "lower",
+     "name": "Lower",
+     "regions": [
+      "legs",
+      "core"
+     ]
+    },
+    {
+     "id": "upper",
+     "name": "Upper",
+     "regions": [
+      "pull",
+      "push",
+      "core"
+     ]
+    },
+    {
+     "id": "lower",
+     "name": "Lower",
+     "regions": [
+      "legs",
+      "core"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ppl-6",
+   "name": "Pull / Push / Lower ×2",
+   "themes": [
+    {
+     "id": "pull",
+     "name": "Pull",
+     "regions": [
+      "pull",
+      "core"
+     ]
+    },
+    {
+     "id": "push",
+     "name": "Push",
+     "regions": [
+      "push",
+      "core"
+     ]
+    },
+    {
+     "id": "lower",
+     "name": "Lower",
+     "regions": [
+      "legs",
+      "core"
+     ]
+    },
+    {
+     "id": "pull",
+     "name": "Pull",
+     "regions": [
+      "pull",
+      "core"
+     ]
+    },
+    {
+     "id": "push",
+     "name": "Push",
+     "regions": [
+      "push",
+      "core"
+     ]
+    },
+    {
+     "id": "lower",
+     "name": "Lower",
+     "regions": [
+      "legs",
+      "core"
+     ]
+    }
+   ]
+  }
+ ]
+}

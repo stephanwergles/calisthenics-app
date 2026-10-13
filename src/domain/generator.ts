@@ -13,7 +13,7 @@
    4. Reihenfolge je Einheit: Skill, Kraft, Rumpf, Zubehör */
 import type {
   Block, Catalog, Equipment, Exercise, ExerciseMeta, GeneratedPlan, GeneratorInput, Pattern, PlanDay,
-  PlanSlot, Progression, Skill, SlotKind, Tendon, Weekday,
+  PlanSlot, Progression, Region, Skill, SlotKind, SplitTemplate, Tendon, Weekday,
 } from './model.ts'
 
 export const WEEK: Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
@@ -31,6 +31,33 @@ export interface GeneratorData {
   catalog: Catalog
   meta: Record<string, ExerciseMeta>
   skills: Skill[]
+  splits?: SplitTemplate[]
+}
+
+type Theme = SplitTemplate['themes'][number]
+const isUpper = (t: Theme) => t.regions.includes('pull') || t.regions.includes('push')
+
+/** Themen der Vorlage so auf die Wochentage legen, dass schwere Skills die längste Pause davor
+    bekommen und Oberkörper-Themen nicht an Kalender-Folgetagen liegen (alle Reihenfolgen probieren) */
+export function assignThemes(themes: Theme[], days: Weekday[], rest: Map<Weekday, number>, weights: { region: Region; weight: number }[]): Map<Weekday, Theme> {
+  const perms: Theme[][] = []
+  const seen = new Set<string>()
+  const walk = (left: Theme[], acc: Theme[]) => {
+    if (!left.length) { const key = acc.map(t => t.id).join(); if (!seen.has(key)) { seen.add(key); perms.push(acc) } return }
+    left.forEach((t, i) => walk([...left.slice(0, i), ...left.slice(i + 1)], [...acc, t]))
+  }
+  walk(themes, [])
+  const score = (perm: Theme[]) => {
+    let s = 0
+    for (const { region, weight } of weights) {
+      const hosts = days.filter((d, i) => perm[i].regions.includes(region))
+      if (hosts.length) s += Math.max(...hosts.map(d => rest.get(d)!)) * weight
+    }
+    days.forEach((d, i) => days.forEach((o, j) => { if (i < j && adjacent(d, o) && isUpper(perm[i]) && isUpper(perm[j])) s -= 5 }))
+    return s
+  }
+  const best = perms.reduce((a, b) => (score(b) > score(a) ? b : a))
+  return new Map(days.map((d, i) => [d, best[i]]))
 }
 
 interface Candidate {
@@ -149,6 +176,21 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
   const days = [...rest.keys()]
   if (!days.length) return { days: [], warnings: [...warnings, 'Keine Trainingstage angegeben'] }
   const plan = new Map<Weekday, Candidate[]>(days.map(d => [d, []]))
+  // Split-Vorlage: Thema je Tag; Slots nur an Tage, deren Thema ihre Region erlaubt
+  let themeOf = new Map<Weekday, Theme>()
+  if (input.split) {
+    const tpl = data.splits?.find(t => t.id === input.split)
+    if (!tpl) warnings.push(`Unbekannte Split-Vorlage: ${input.split}`)
+    else if (tpl.themes.length !== days.length) warnings.push(`${tpl.name} hat ${tpl.themes.length} Tage, gewählt sind ${days.length} – ohne Vorlage verteilt`)
+    else {
+      const weights = candidates.filter(c => c.kind === 'skill').map(c => ({ region: (c.progression.region ?? 'core') as Region, weight: c.meta.difficulty }))
+      themeOf = assignThemes(tpl.themes, days, rest, weights)
+    }
+  }
+  const allowed = (d: Weekday, c: { progression: Progression }) => {
+    const t = themeOf.get(d)
+    return !t || t.regions.includes((c.progression.region ?? 'core') as Region)
+  }
   const minutesOf = (d: Weekday) => WARMUP_MIN + plan.get(d)!.reduce((n, c) => n + c.minutes, 0)
   const highTendons = (c: Candidate) => (Object.entries(c.meta.stress) as [Tendon, number][]).filter(([, v]) => v >= HIGH).map(([t]) => t)
   const conflicts = (d: Weekday, c: Candidate) => days.filter(o => o !== d && adjacent(o, d))
@@ -177,9 +219,12 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
       if (minutesOf(d) + c.minutes > input.minutes) s -= 10
       return s - 0.05 * minutesOf(d)
     }
-    const free = days.filter(d => !conflicts(d, c))
+    const fits = days.filter(d => allowed(d, c))
+    if (!fits.length) warnings.push(`${c.exercise.name}: passt zu keinem Tagesthema der Vorlage`)
+    const pool = fits.length ? fits : days
+    const free = pool.filter(d => !conflicts(d, c))
     if (!free.length) warnings.push(`${c.exercise.name}: an jedem Tag Sehnen-Konflikt mit dem Folgetag`)
-    const best = (free.length ? free : days).reduce((a, b) => (score(b) > score(a) ? b : a))
+    const best = (free.length ? free : pool).reduce((a, b) => (score(b) > score(a) ? b : a))
     plan.get(best)!.push(c)
   }
 
@@ -199,7 +244,7 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
       const t = first.progression.steps.find(x => x.exercise === first.exercise.id)!.target
       const sets = Math.max(3, t.sets - 1)
       const again: Candidate = { ...first, kind: 'skill', reason: `${s.name} · 2. Einheit`, sets, minutes: slotMinutes(first.exercise, t, sets) }
-      if (conflicts(d, again) || minutesOf(d) + again.minutes > input.minutes) continue
+      if (!allowed(d, again) || conflicts(d, again) || minutesOf(d) + again.minutes > input.minutes) continue
       if (upper(again) && upperSkillNear(d) && days.length > 2) continue
       if (!balanced(again.progression.region, again.sets)) continue
       plan.get(d)!.push(again)
@@ -249,7 +294,7 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
     const slots: PlanSlot[] = plan.get(d)!
       .sort((a, b) => BLOCK_ORDER.indexOf(blockOf(a)) - BLOCK_ORDER.indexOf(blockOf(b)) || b.meta.difficulty - a.meta.difficulty)
       .map(c => ({ progression: c.progression.id, exercise: c.exercise.id, kind: c.kind, block: blockOf(c), sets: c.sets, minutes: c.minutes, reason: c.reason }))
-    return { day: d, restBefore: rest.get(d)!, slots, minutes: minutesOf(d) }
+    return { day: d, restBefore: rest.get(d)!, ...(themeOf.get(d) ? { theme: themeOf.get(d)!.name } : {}), slots, minutes: minutesOf(d) }
   })
   return { days: out, warnings }
 }

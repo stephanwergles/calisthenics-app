@@ -177,8 +177,13 @@ export interface Skill {
   prerequisites: { progression: ProgressionId; minStep: number }[];
 }
 
+/** Split-Vorlage: ein Thema je Trainingstag mit erlaubten Regionen (src/seed/splits.json) */
+export interface SplitTemplate { id: string; name: string; themes: { id: string; name: string; regions: Region[] }[] }
+
 export interface GeneratorInput {
   skills: SkillId[];              // 1–3 Ziel-Skills
+  /** Split-Vorlage (Anzahl Themen = Anzahl Tage); fehlt = Generator bildet Tagesthemen selbst */
+  split?: string;
   equipment: Equipment[];
   days: Weekday[];                // Trainingstage
   minutes: number;                // Budget je Einheit inkl. Warm-up
@@ -196,5 +201,5 @@ export interface PlanSlot {
   minutes: number;
   reason: string;                 // kurze Begründung, z. B. „Muscle-up“, „Ausgleich Druck“
 }
-export interface PlanDay { day: Weekday; restBefore: number; slots: PlanSlot[]; minutes: number }
+export interface PlanDay { day: Weekday; restBefore: number; theme?: string; slots: PlanSlot[]; minutes: number }
 export interface GeneratedPlan { days: PlanDay[]; warnings: string[] }
