@@ -74,7 +74,7 @@ export interface Workout {
   focus: string;
   /** Array-Reihenfolge = Trainingsreihenfolge. v1 brauchte dafür `ord`.
       `sets` (nur im eigenen Plan) überschreibt die Satzzahl der Stufe. */
-  slots: { block: Block; progression: ProgressionId; sets?: number }[];
+  slots: { block: Block; progression: ProgressionId; sets?: number; reason?: string }[];
   warmup: RoutineItem[];
   cooldown: RoutineItem[];
   /** nur im eigenen Plan: selbst angelegt (statt aus dem Katalog/Generator) */

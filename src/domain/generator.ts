@@ -18,6 +18,8 @@ import type {
 
 export const WEEK: Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 export const BASE_PATTERNS: Pattern[] = ['vertical-pull', 'horizontal-pull', 'vertical-push', 'horizontal-push', 'squat', 'hinge', 'core']
+/** Tage bis zu diesem Anteil des Zeitbudgets auffüllen */
+const FILL = 0.75
 const PATTERN_LABEL: Record<Pattern, string> = {
   'vertical-pull': 'Zug vertikal', 'horizontal-pull': 'Zug horizontal', 'vertical-push': 'Druck vertikal',
   'horizontal-push': 'Druck horizontal', squat: 'Kniebeuge', hinge: 'Hüftstreckung', core: 'Rumpf', isolation: 'Isolation',
@@ -248,6 +250,35 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
       if (upper(again) && upperSkillNear(d) && days.length > 2) continue
       if (!balanced(again.progression.region, again.sets)) continue
       plan.get(d)!.push(again)
+    }
+  }
+
+  /* ── 2c. Auffüllen: Tage unter ~75 % des Budgets mit passenden Leitern ergänzen – neue Muster
+     zuerst, mittlere Schwierigkeit, Themen, Sehnen und Zug/Druck wie oben ── */
+  // Ziel-Leitern anderer Skills (Planche, Muscle-up …) nur, wenn der Skill gewählt ist
+  const otherSkills = new Set(data.skills.filter(sk => !input.skills.includes(sk.id)).flatMap(sk => sk.targets))
+  const extras = catalog.progressions.filter(p => !otherSkills.has(p.id)).flatMap(p => {
+    const r = resolve(p)
+    return r && meta[r.ex.id] ? [{ p, r }] : []
+  })
+  for (const d of days) {
+    for (let guard = 0; guard < 8 && minutesOf(d) < input.minutes * FILL; guard++) {
+      const here = plan.get(d)!
+      const pick = extras
+        .filter(x => !here.some(c => c.progression.id === x.p.id))
+        .map(({ p, r }) => {
+          const m = meta[r.ex.id]
+          const c: Candidate = { progression: p, exercise: r.ex, meta: m, kind: 'base', reason: `Ergänzung: ${PATTERN_LABEL[m.pattern]}`,
+            sets: r.target.sets, minutes: slotMinutes(r.ex, r.target, r.target.sets) }
+          const score = (here.some(x => x.meta.pattern === m.pattern) ? -5 : 0) + (used.has(p.id) ? -3 : 0)
+            - Math.abs(m.difficulty - 3) - (m.pattern === 'isolation' ? 2 : 0)
+          return { c, score }
+        })
+        .filter(({ c }) => allowed(d, c) && !conflicts(d, c) && minutesOf(d) + c.minutes <= input.minutes && balanced(c.progression.region, c.sets))
+        .sort((a, b) => b.score - a.score)[0]
+      if (!pick) break
+      used.add(pick.c.progression.id)
+      here.push(pick.c)
     }
   }
 

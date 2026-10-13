@@ -396,3 +396,30 @@ test('Profil und Ziele: Standardwerte, höchstens drei Ziele, Vorschläge, Forts
   assert.ok(mu.share > 0 && mu.share < 1, 'Muscle-up: Stufe 2 von 3 in der Zug-Leiter')
   assert.ok(mu.pid)
 })
+
+test('Planvorschlag: Generator → Nutzerplan, Diff, gleicher Plan = kein Vorschlag', async () => {
+  const { generatePlan } = await import('../src/domain/generator.ts')
+  const json = (f: string) => JSON.parse(readFileSync(new URL(`../src/seed/${f}`, import.meta.url), 'utf8'))
+  const skills = json('skills.json').skills, splits = json('splits.json').splits, meta = json('exercise-meta.json').exercises
+  assert.equal(L.generatorInput(ix, state, skills, splits), null, 'ohne Ziele kein Vorschlag')
+  const user = { ...state, profile: { goals: ['muscle-up', 'l-sit'], equipment: ['bar', 'rings', 'parallettes', 'band'], days: ['sun', 'mon', 'wed'], minutes: 90 } } as typeof state
+  const input = L.generatorInput(ix, user, skills, splits)!
+  assert.equal(input.split, 'full-3', 'Muscle-up + L-Sit (Zug + Rumpf) → Ganzkörper ×3')
+  assert.ok(input.equipment.includes('floor') && input.equipment.includes('wall'))
+  const g = generatePlan({ catalog, meta, skills, splits }, input)
+  const base = L.planFromCatalog(catalog)
+  base.workouts.push({ ...L.newWorkout(ix, 'Eigen', []), id: 'eigen' })
+  const plan = L.planFromGenerated(ix, base, g, input)
+  assert.deepEqual(Object.keys(plan.weekplan).sort(), ['mon', 'sun', 'wed'])
+  assert.ok(Object.values(plan.weekplan).every(id => id!.startsWith('auto-')))
+  assert.equal(plan.source, 'generated')
+  assert.ok(plan.workouts.filter(w => w.id.startsWith('auto-')).every(w => w.warmup.length > 0), 'Warm-up aus dem Katalog übernommen')
+  assert.ok(plan.workouts.find(w => w.id === 'pull')!.archived, 'alte Workouts bleiben als gelöscht (Verlauf)')
+  assert.equal(plan.workouts.find(w => w.id === 'eigen')!.archived, undefined, 'eigene bleiben aktiv')
+  assert.equal(L.samePlan(ix, plan), false)
+  const diff = L.planDiff(ix, user, plan)
+  assert.deepEqual(diff.map(d => d.day), ['mon', 'wed', 'sun'])
+  assert.ok(diff.some(d => d.changes.some(c => c.kind === 'neu')) && diff.some(d => d.changes.some(c => c.kind === 'raus')))
+  const after = L.indexCatalog(L.effectiveCatalog(catalog, plan))
+  assert.equal(L.samePlan(after, L.planFromGenerated(after, plan, g, input)), true, 'nach Übernahme kein neuer Vorschlag')
+})

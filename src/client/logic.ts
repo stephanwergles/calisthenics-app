@@ -2,9 +2,9 @@
    Die Oberfläche ruft diese Funktionen auf; getestet wird direkt mit node --test. */
 import type {
   Activity, Catalog, Equipment, Exercise, ExerciseId, Plan, Profile, Progression, ProgressionId, Region, Session, SetLog,
-  Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId,
+  Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId, GeneratedPlan, GeneratorInput, SplitTemplate,
 } from '../domain/model.ts'
-import { suggestSkills, type SkillSuggestion } from '../domain/assessment.ts'
+import { suggestSkills, suggestSplits, type SkillSuggestion } from '../domain/assessment.ts'
 import { NOTE_MAX, REGIONS } from '../domain/model.ts'
 
 export { NOTE_MAX }
@@ -657,4 +657,80 @@ export function goalProgress(ix: Index, user: UserState, sessions: Session[], sk
 export function withGoal(p: Profile, skill: SkillId, on: boolean): Profile {
   const goals = on ? [...new Set([...p.goals, skill])].slice(-3) : p.goals.filter(g => g !== skill)
   return { ...p, goals }
+}
+
+/* ── Planvorschläge (Generator → Diff → Bestätigung) ─────────────────────── */
+
+/** Eingabe für den Generator aus Profil und Stand; ohne Ziele kein Vorschlag */
+export function generatorInput(ix: Index, user: UserState, skills: Skill[], splits: SplitTemplate[]): GeneratorInput | null {
+  const p = profileOf(ix, user)
+  if (!p.goals.length || !p.days.length) return null
+  const regions = [...new Set(p.goals.flatMap(g => skills.find(s => s.id === g)?.targets ?? [])
+    .map(pid => ix.progressions.get(pid)?.region).filter((r): r is Region => !!r))]
+  return {
+    skills: p.goals, equipment: [...new Set([...p.equipment, 'floor', 'wall'])] as Equipment[], days: p.days, minutes: p.minutes,
+    current: stepIndexes(ix, user), split: suggestSplits(splits, p.days.length, regions)[0]?.id,
+  }
+}
+
+/** Erzeugten Plan in einen Nutzerplan übersetzen. Keys `auto-<tag>` bleiben über Vorschläge hinweg
+    stabil; Warm-up/Cool-down vom Katalog-Workout mit den meisten gemeinsamen Körperregionen.
+    Bisherige Workouts bleiben erhalten (eigene aktiv, andere als gelöscht markiert – Verlauf). */
+export function planFromGenerated(ix: Index, base: Plan, g: GeneratedPlan, input: GeneratorInput): Plan {
+  const regionsOf = (pids: ProgressionId[]) => new Set(pids.map(pid => ix.progressions.get(pid)?.region).filter(Boolean))
+  const names = new Map<string, number>()
+  const workouts: Workout[] = g.days.map(d => {
+    const slots = d.slots.map(s => ({ block: s.block, progression: s.progression, sets: s.sets, reason: s.reason }))
+    const mine = regionsOf(slots.map(s => s.progression))
+    const like = [...ix.workouts.values()].filter(w => !w.custom && w.warmup.length)
+      .map(w => ({ w, n: [...regionsOf(w.slots.map(s => s.progression))].filter(r => mine.has(r)).length }))
+      .sort((a, b) => b.n - a.n)[0]?.w
+    const theme = d.theme ?? 'Ganzkörper'
+    const n = (names.get(theme) ?? 0) + 1; names.set(theme, n)
+    return {
+      id: `auto-${d.day}`, name: g.days.filter(x => (x.theme ?? 'Ganzkörper') === theme).length > 1 ? `${theme} ${String.fromCharCode(64 + n)}` : theme,
+      focus: focusOf(ix, slots), slots, warmup: like ? structuredClone(like.warmup) : [], cooldown: like ? structuredClone(like.cooldown) : [],
+    }
+  })
+  const fresh = new Set(workouts.map(w => w.id))
+  const kept = base.workouts.filter(w => !fresh.has(w.id)).map(w => (w.custom ? w : { ...w, archived: true }))
+  return {
+    ...base, source: 'generated', workouts: [...workouts, ...kept],
+    weekplan: Object.fromEntries(g.days.map(d => [d.day, `auto-${d.day}`])),
+    inputs: { skills: input.skills, equipment: input.equipment, days: input.days, minutes: input.minutes, split: input.split },
+  }
+}
+
+/** Gleicher Plan? (Wochentage → Leitern in Reihenfolge, Satzzahlen) – dann kein Vorschlag */
+export function samePlan(ix: Index, next: Plan): boolean {
+  const sig = (wp: Partial<Record<Weekday, WorkoutId>>, get: (id: WorkoutId) => Workout | undefined) =>
+    WEEK_ORDER.map(d => (wp[d] ? (get(wp[d]!)?.slots ?? []).map(s => `${s.progression}:${s.sets ?? ''}`).join(',') : '-')).join('|')
+  return sig(ix.catalog.weekplan, id => ix.workouts.get(id)) === sig(next.weekplan, id => next.workouts.find(w => w.id === id))
+}
+
+export interface DayDiff {
+  day: Weekday; before?: string; after?: string
+  changes: { name: string; kind: 'neu' | 'raus' | 'sätze' | 'bleibt'; detail?: string }[]
+}
+/** Unterschied je Wochentag: welche Leitern kommen dazu, fallen weg, ändern die Satzzahl */
+export function planDiff(ix: Index, user: UserState, next: Plan): DayDiff[] {
+  const name = (pid: ProgressionId) => (ix.progressions.has(pid) ? currentStep(ix, user, pid).exercise.name : pid)
+  return WEEK_ORDER.flatMap(day => {
+    const a = ix.catalog.weekplan[day] ? ix.workouts.get(ix.catalog.weekplan[day]!) : undefined
+    const b = next.weekplan[day] ? next.workouts.find(w => w.id === next.weekplan[day]) : undefined
+    if (!a && !b) return []
+    const setsOf = (w: Workout | undefined, pid: ProgressionId) => {
+      const sl = w?.slots.find(s => s.progression === pid)
+      return sl ? sl.sets ?? (ix.progressions.has(pid) ? currentStep(ix, user, pid).target.sets : 0) : 0
+    }
+    const changes: DayDiff['changes'] = []
+    for (const sl of b?.slots ?? []) {
+      const before = setsOf(a, sl.progression), after = setsOf(b, sl.progression)
+      changes.push(!before ? { name: name(sl.progression), kind: 'neu', detail: sl.reason }
+        : before !== after ? { name: name(sl.progression), kind: 'sätze', detail: `${before} → ${after} Sätze` }
+        : { name: name(sl.progression), kind: 'bleibt' })
+    }
+    for (const sl of a?.slots ?? []) if (!b?.slots.some(x => x.progression === sl.progression)) changes.push({ name: name(sl.progression), kind: 'raus' })
+    return [{ day, before: a?.name, after: b?.name, changes }]
+  })
 }

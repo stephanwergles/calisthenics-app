@@ -9,6 +9,7 @@ import { useRestTimer } from '../useRestTimer'
 import { BottomBar } from './BottomBar'
 import { ProfileSheet } from './ProfileSheet'
 import { PlanView } from './PlanView'
+import { usePlanSuggestion } from '../usePlanSuggestion'
 import { Icon, type IconName } from './Icon'
 import { DaySheet, HistoryView, type DayItem } from './HistoryView'
 import { hasClip } from './ExerciseMedia'
@@ -37,6 +38,7 @@ const syncLabel = (s: Training['sync']) => !s.account ? 'Nicht angemeldet' : s.p
 
 export function TrainingApp() {
   const t = useTraining()
+  const ps = usePlanSuggestion(t)
   const rest = useRestTimer()
   const [view, setView] = useState<View>('train')
   const [sheet, setSheet] = useState<SheetState>(null)
@@ -171,6 +173,9 @@ export function TrainingApp() {
     else setRestView(null)
   }), [rest.shift, rest.stop]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => nativePanel.onHeight(setPanelH), [])
+  // Punkt am Plan-Tab, solange ein Vorschlag auf Bestätigung wartet
+  const pending = !!ps.suggestion
+  useEffect(() => { if (nativeShell) nativeTabs.badge('plan', pending ? '' : null, 'volt') }, [nativeShell, pending])
 
   // Splash steht in beiden Zweigen an derselben Stelle – so läuft die Animation beim Laden einfach weiter
   const splash = <Splash ready={t.loaded} onDone={() => setSplashDone(true)} />
@@ -188,7 +193,7 @@ export function TrainingApp() {
           <span className={`sync-dot ${syncDot(t.sync)}`} aria-hidden="true" />
         </button>
       )}
-      {view === 'plan' && <PlanView t={t} />}
+      {view === 'plan' && <PlanView t={t} ps={ps} />}
       {view === 'skills' && <SkillsView t={t} onOpen={setSkillPid} />}
       {view === 'history' && <HistoryView t={t} openActivity={date => setSheet({ kind: 'activity', date })} openDay={setDay} />}
       {showHome && (
@@ -227,6 +232,7 @@ export function TrainingApp() {
               onClick={() => { setView(k); toTop() }}>
               <span className="tab-icon">
                 <Icon name={icon} size={22} />
+                {k === 'plan' && pending && <span className="sync-dot busy" role="img" aria-label="Planvorschlag wartet" />}
               </span>
               {l}
             </button>
