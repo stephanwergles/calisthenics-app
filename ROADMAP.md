@@ -121,7 +121,8 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 - [x] **App ohne Account nutzbar** (lokal, offline); Account nur für Sync/Backup und Käufe (seit v2: IndexedDB, Anmeldung optional unter „Daten“)
 - [ ] Anmeldung: **Sign in with Apple** + E-Mail
 - [x] **Account-Löschung in der App** (Apple 5.1.1(v)) inkl. Server-Daten (`POST /api/account/delete`, „Daten“ → „Konto löschen“, geprüft in `check:access`); Datenexport als JSON (gab es schon)
-- [ ] Einwilligung Gesundheitsdaten (Art. 9 DSGVO), Datenschutzerklärung de/en, Gesundheits-Disclaimer
+- [x] Einwilligung Gesundheitsdaten (Art. 9 DSGVO): Häkchen bei der Anmeldung bzw. Sheet, Version + Zeitpunkt am Konto (`users.consent`), ohne Einwilligung kein Abgleich (`src/client/consent.ts`, `ConsentGate`); Gesundheits-Hinweis beim ersten Start
+- [ ] Datenschutzerklärung: Entwurf unter `/datenschutz` (Platzhalter füllen, rechtlich prüfen), englische Fassung
 - [ ] **i18n-Gerüst:** UI-Strings in Wörterbücher (de/en), Payload-Localization für Katalogfelder, Datums-/Zahlenformat per Locale
 - [x] Server: Rate-Limit am Sync-Endpunkt (30/min je Person, `src/sync/rateLimit.ts`); Login-Sperre nach 5 Fehlversuchen (Payload-Standard)
 - [ ] Server: tägliche DB-Backups (Ploi → Datenbank → Backups einrichten), Fehler-Monitoring

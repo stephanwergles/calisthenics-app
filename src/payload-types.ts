@@ -185,6 +185,10 @@ export interface Session {
 export interface User {
   id: number;
   role: 'athlete' | 'admin';
+  consent?: {
+    healthVersion?: string | null;
+    healthAt?: string | null;
+  };
   state?: {
     /**
      * Progressions-ID → Übungs-ID (nicht Stufen-Index)
@@ -581,6 +585,12 @@ export interface WorkoutsSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   role?: T;
+  consent?:
+    | T
+    | {
+        healthVersion?: T;
+        healthAt?: T;
+      };
   state?:
     | T
     | {

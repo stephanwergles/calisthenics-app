@@ -20,17 +20,25 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   return data as T
 }
 
-export async function me(): Promise<{ email: string } | null> {
+export interface Who { email: string; id?: number | string; healthConsent?: string | null }
+type ServerUser = { email: string; id: number | string; consent?: { healthVersion?: string | null } }
+const who = (u: ServerUser): Who => ({ email: u.email, id: u.id, healthConsent: u.consent?.healthVersion ?? null })
+
+export async function me(): Promise<Who | null> {
   if (isNative() && !(await getToken())) return null
-  const r = await call<{ user: { email: string } | null }>('/api/users/me')
-  return r.user ? { email: r.user.email } : null
+  const r = await call<{ user: ServerUser | null }>('/api/users/me')
+  return r.user ? who(r.user) : null
 }
 
-export async function login(email: string, password: string): Promise<{ email: string }> {
+/** Einwilligung (Textversion + Zeitpunkt) am eigenen Konto speichern */
+export const saveConsent = (id: number | string, version: string) =>
+  call(`/api/users/${id}`, { method: 'PATCH', body: JSON.stringify({ consent: { healthVersion: version, healthAt: new Date().toISOString() } }) })
+
+export async function login(email: string, password: string): Promise<Who> {
   try {
-    const r = await call<{ user: { email: string }; token?: string }>('/api/users/login', { method: 'POST', body: JSON.stringify({ email, password }) })
+    const r = await call<{ user: ServerUser; token?: string }>('/api/users/login', { method: 'POST', body: JSON.stringify({ email, password }) })
     if (r.token) await setToken(r.token)
-    return { email: r.user.email }
+    return who(r.user)
   } catch (e) {
     if (e instanceof AuthError) throw new Error('E-Mail oder Passwort stimmt nicht.')
     throw e

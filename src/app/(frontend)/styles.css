@@ -922,3 +922,18 @@ button.clip { display: block; border: none; padding: 0; background: none; color:
 .f-figure .f-label, .f-figure .f-opts { z-index: 2; }
 .sk-back { margin-top: 12px; }
 .account-delete { margin-top: 12px; }
+
+/* Einwilligung */
+.consent-text { font-size: 15px; line-height: 1.5; color: var(--text); margin-bottom: 14px; }
+.consent-text a, .consent-check a { color: var(--accent); }
+.consent-check { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.45; color: var(--muted); margin: 4px 0 14px; }
+.consent-check input { flex: none; width: 22px; height: 22px; margin-top: 1px; accent-color: var(--accent); }
+.consent-missing { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+
+/* Rechtstexte */
+.legal { max-width: 640px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 32px) 20px 64px; height: 100%; overflow-y: auto; }
+.legal h1 { font-size: 44px; margin: 8px 0 20px; }
+.legal h2 { font-family: var(--font-display); font-weight: 800; font-size: 20px; text-transform: uppercase; margin: 26px 0 8px; }
+.legal p { font-size: 15.5px; line-height: 1.6; color: var(--text); margin-bottom: 10px; }
+.legal-draft { display: inline-block; font-size: 12px !important; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #101010 !important; background: var(--accent); padding: 4px 10px; border-radius: 999px; }
+.legal-meta { color: var(--muted) !important; margin-top: 30px; }

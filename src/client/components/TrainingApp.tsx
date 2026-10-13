@@ -17,6 +17,7 @@ import { HomeView } from './HomeView'
 import { SkillsView } from './SkillsView'
 import { Splash } from './Splash'
 import { SummaryOverlay } from './SummaryOverlay'
+import { ConsentGate } from './ConsentGate'
 import { RestOverlay } from './RestOverlay'
 import { PlanSheet } from './WorkoutView'
 import { SkillSheet } from './SkillsView'
@@ -237,6 +238,7 @@ export function TrainingApp() {
       )}
       {sheetSlot && sheet?.kind === 'options' && !nativeShell && <ExerciseSheet t={t} slot={sheetSlot} onClose={() => setSheet(null)} />}
       {sheet?.kind === 'activity' && <ActivitySheet t={t} date={sheet.date} onClose={() => setSheet(null)} />}
+      <ConsentGate t={t} />
       {summarySession && <SummaryOverlay t={t} session={summarySession} onClose={() => { setSummaryId(null); toTop() }} />}
     </div>
     </NativeShell.Provider>

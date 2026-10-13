@@ -14,13 +14,16 @@ import { catalogUsable } from '@/sync/convert'
 import * as db from './db'
 import * as L from './logic'
 import * as api from './sync'
+import { DISCLAIMER_VERSION, HEALTH_CONSENT_VERSION } from './consent'
 
 /** Katalog aus dem Build – Fallback und Grundlage für den v1-Import (dessen Positionen auf diese IDs zeigen) */
 export const bundledCatalog = catalogJson as unknown as Catalog
 
 export interface ActiveSession { start: number; workout: WorkoutId }
 export interface SyncStatus {
-  account: { email: string } | null | undefined   // undefined = noch unbekannt (z. B. offline gestartet)
+  account: api.Who | null | undefined   // undefined = noch unbekannt (z. B. offline gestartet)
+  /** angemeldet, aber ohne Einwilligung in die Gesundheitsdaten – Abgleich pausiert */
+  consentMissing?: boolean
   phase: 'idle' | 'syncing' | 'error' | 'offline'
   lastSync: string | null
   pending: number
@@ -48,7 +51,11 @@ export function useTraining() {
   const activitiesRef = useRef(activities); activitiesRef.current = activities
   const stateRef = useRef(state); stateRef.current = state
   const outbox = useRef<api.Outbox>({ ...api.EMPTY_OUTBOX })
-  const meta = useRef<{ lastSync: string | null; catalogVersion: string | null; account: { email: string } | null | undefined }>({ lastSync: null, catalogVersion: null, account: undefined })
+  const meta = useRef<{ lastSync: string | null; catalogVersion: string | null; account: api.Who | null | undefined }>({ lastSync: null, catalogVersion: null, account: undefined })
+  // Einwilligungen (lokal): Gesundheitsdaten-Version für den Abgleich, Hinweis beim ersten Start
+  const [consent, setConsentRaw] = useState<{ health: string | null; disclaimer: string | null }>({ health: null, disclaimer: null })
+  const consentRef = useRef(consent); consentRef.current = consent
+  const setConsent = (c: { health: string | null; disclaimer: string | null }) => { consentRef.current = c; setConsentRaw(c); void db.kvSet('consent', c) }
   const running = useRef(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -63,6 +70,8 @@ export function useTraining() {
     if (running.current) return
     if (typeof navigator !== 'undefined' && !navigator.onLine) { setSync(s => ({ ...s, phase: 'offline' })); return }
     if (!meta.current.account) return
+    // ohne Einwilligung keine Gesundheitsdaten auf den Server (Art. 9 DSGVO)
+    if (consentRef.current.health !== HEALTH_CONSENT_VERSION) { setSync(s => ({ ...s, phase: 'idle', consentMissing: true })); return }
     running.current = true
     setSync(s => ({ ...s, phase: 'syncing', error: undefined }))
     try {
@@ -146,13 +155,14 @@ export function useTraining() {
 
   useEffect(() => {
     void (async () => {
-      const [ss, as, st, ac, ch, ok, cat, ob, m, acct] = await Promise.all([
+      const [ss, as, st, ac, ch, ok, cat, ob, m, acct, cons] = await Promise.all([
         db.getAll<Session>('sessions'), db.getAll<Activity>('activities'),
         db.kvGet<UserState>('state'), db.kvGet<ActiveSession>('active'),
         db.kvGet<{ date: string; workout: WorkoutId }>('choice'), db.persistent(),
         db.kvGet<Catalog>('catalog'), db.kvGet<api.Outbox>('outbox'),
         db.kvGet<{ lastSync: string | null; catalogVersion: string | null }>('meta'),
-        db.kvGet<{ email: string } | null>('account'),
+        db.kvGet<api.Who | null>('account'),
+        db.kvGet<{ health: string | null; disclaimer: string | null }>('consent'),
       ])
       setSessions(new Map(ss.map(s => [s.id, s])))
       setActivities(as)
@@ -160,6 +170,7 @@ export function useTraining() {
       setActive(ac ?? null)
       setChoice(ch ?? null)
       setPersistent(ok)
+      if (cons) { consentRef.current = cons; setConsentRaw(cons) }
       if (catalogUsable(cat)) setCatalog(cat)
       outbox.current = { ...api.EMPTY_OUTBOX, ...ob }
       meta.current = { lastSync: m?.lastSync ?? null, catalogVersion: m?.catalogVersion ?? null, account: acct ?? undefined }
@@ -171,6 +182,9 @@ export function useTraining() {
         try {
           const who = await api.me()
           meta.current.account = who; void db.kvSet('account', who)
+          // auf einem anderen Gerät schon eingewilligt → hier übernehmen
+          if (who?.healthConsent === HEALTH_CONSENT_VERSION && consentRef.current.health !== HEALTH_CONSENT_VERSION)
+            setConsent({ ...consentRef.current, health: HEALTH_CONSENT_VERSION })
           setSync(s => ({ ...s, account: who }))
           if (who) { await api.refresh(); void runSync() }
         } catch { /* Server nicht erreichbar – später erneut */ }
@@ -300,12 +314,28 @@ export function useTraining() {
 
   /* ── Konto ────────────────────────────────────────────────────────────── */
 
-  const signIn = useCallback(async (email: string, password: string) => {
+  /** Anmelden; mit Einwilligung (Häkchen im Formular) wird sie am Konto gespeichert und sofort abgeglichen */
+  const signIn = useCallback(async (email: string, password: string, healthConsent = false) => {
     const who = await api.login(email, password)
     meta.current.account = who; void db.kvSet('account', who)
-    setSync(s => ({ ...s, account: who }))
+    if (healthConsent && who.id != null) {
+      await api.saveConsent(who.id, HEALTH_CONSENT_VERSION)
+      setConsent({ ...consentRef.current, health: HEALTH_CONSENT_VERSION })
+    } else if (who.healthConsent === HEALTH_CONSENT_VERSION) setConsent({ ...consentRef.current, health: HEALTH_CONSENT_VERSION })
+    setSync(s => ({ ...s, account: who, consentMissing: false }))
     await runSync()
   }, [runSync])
+
+  /** Einwilligung nachträglich geben (angemeldet, z. B. nach einem Update mit neuer Textfassung) */
+  const acceptHealthConsent = useCallback(async () => {
+    const who = meta.current.account?.id != null ? meta.current.account : await api.me()
+    if (!who?.id) throw new Error('Nicht angemeldet')
+    await api.saveConsent(who.id, HEALTH_CONSENT_VERSION)
+    setConsent({ ...consentRef.current, health: HEALTH_CONSENT_VERSION })
+    setSync(s => ({ ...s, consentMissing: false }))
+    await runSync()
+  }, [runSync])
+  const acceptDisclaimer = useCallback(() => setConsent({ ...consentRef.current, disclaimer: DISCLAIMER_VERSION }), [])
 
   const signOut = useCallback(async () => {
     await api.logout()
@@ -313,7 +343,8 @@ export function useTraining() {
     meta.current = { ...meta.current, account: null, lastSync: null }
     void db.kvSet('account', null)
     void db.kvSet('meta', { lastSync: null, catalogVersion: meta.current.catalogVersion })
-    setSync(s => ({ ...s, account: null }))
+    setConsent({ ...consentRef.current, health: null })   // gilt pro Konto
+    setSync(s => ({ ...s, account: null, consentMissing: false }))
   }, [])
 
   /** Konto löschen (Server: Konto + alle Trainingsdaten); auf dem Gerät bleibt alles, ohne Abgleich */
@@ -322,7 +353,8 @@ export function useTraining() {
     meta.current = { ...meta.current, account: null, lastSync: null }
     void db.kvSet('account', null)
     void db.kvSet('meta', { lastSync: null, catalogVersion: meta.current.catalogVersion })
-    setSync(s => ({ ...s, account: null, error: undefined }))
+    setConsent({ ...consentRef.current, health: null })
+    setSync(s => ({ ...s, account: null, error: undefined, consentMissing: false }))
   }, [])
 
   return {
@@ -330,6 +362,7 @@ export function useTraining() {
     todaySession, updateToday, setState, chooseWorkout, startSession, endSession,
     addActivity, removeActivity, removeSession, importV1, exportData,
     sync, syncNow: runSync, signIn, signOut, deleteAccount,
+    consent, acceptHealthConsent, acceptDisclaimer,
   }
 }
 export type Training = ReturnType<typeof useTraining>

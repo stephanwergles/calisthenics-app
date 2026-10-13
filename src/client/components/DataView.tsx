@@ -4,6 +4,7 @@ import type { Training } from '../useTraining'
 import { APP_VERSION } from '../version'
 import { Icon } from './Icon'
 import { ask } from '../native'
+import { HEALTH_CONSENT, PRIVACY_URL } from '../consent'
 import { Wordmark } from './LeverMark'
 
 const fmtSync = (iso: string | null) => {
@@ -19,6 +20,7 @@ function Account({ t }: { t: Training }) {
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  const [agree, setAgree] = useState(false)
   const s = t.sync
 
   if (s.account) {
@@ -33,6 +35,12 @@ function Account({ t }: { t: Training }) {
         <p className="meta">Angemeldet als <b>{s.account.email}</b></p>
         <p className={s.phase === 'error' ? 'warn' : 'hint'}>{status} Letzter Abgleich: {fmtSync(s.lastSync)}.</p>
         {s.phase !== 'error' && s.error && <p className="warn">Vom Server abgelehnt: {s.error}</p>}
+        {s.consentMissing && (
+          <div className="consent-missing">
+            <p className="warn">Abgleich pausiert: Für die Speicherung auf dem Server fehlt deine Einwilligung in die Gesundheitsdaten.</p>
+            <button className="btn btn-primary btn-block" onClick={() => void t.acceptHealthConsent().catch(e => alert((e as Error).message))}>{HEALTH_CONSENT.ok}</button>
+          </div>
+        )}
         <div className="row-btns">
           <button className="btn btn-secondary grow" disabled={s.phase === 'syncing'} onClick={() => void t.syncNow()}>Jetzt abgleichen</button>
           <button className="btn btn-ghost" onClick={async () => { if (await ask({ title: 'Abmelden?', message: 'Die Daten bleiben auf diesem Gerät, werden aber nicht mehr abgeglichen.', ok: 'Abmelden' })) void t.signOut() }}>Abmelden</button>
@@ -48,7 +56,7 @@ function Account({ t }: { t: Training }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setBusy(true); setErr(null)
-    try { await t.signIn(email.trim(), password); setPassword('') }
+    try { await t.signIn(email.trim(), password, agree); setPassword('') }
     catch (x) { setErr((x as Error).message) }
     finally { setBusy(false) }
   }
@@ -65,8 +73,12 @@ function Account({ t }: { t: Training }) {
       <label className="field">Passwort
         <input type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} />
       </label>
+      <label className="consent-check">
+        <input type="checkbox" required checked={agree} onChange={e => setAgree(e.target.checked)} />
+        <span>{HEALTH_CONSENT.short} <a href={PRIVACY_URL} target="_blank" rel="noopener">Datenschutzerklärung</a></span>
+      </label>
       {err && <p className="warn">{err}</p>}
-      <button className="btn btn-primary btn-block" disabled={busy}>{busy ? 'Melde an …' : 'Anmelden'}</button>
+      <button className="btn btn-primary btn-block" disabled={busy || !agree}>{busy ? 'Melde an …' : 'Anmelden'}</button>
     </form>
   )
 }

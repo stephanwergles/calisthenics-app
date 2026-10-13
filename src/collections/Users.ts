@@ -33,6 +33,14 @@ export const Users: CollectionConfig = {
       admin: { position: 'sidebar' },
     },
     {
+      // Einwilligung in die Verarbeitung von Gesundheitsdaten (Art. 9 DSGVO): Version des Textes + Zeitpunkt
+      name: 'consent', type: 'group', label: 'Einwilligung',
+      fields: [
+        { name: 'healthVersion', type: 'text', label: 'Gesundheitsdaten – Textversion' },
+        { name: 'healthAt', type: 'date', label: 'Gesundheitsdaten – erteilt am' },
+      ],
+    },
+    {
       name: 'state',
       type: 'group',
       label: 'Trainingsstand',
