@@ -110,7 +110,7 @@ Grafiken entstehen per Skript in Blender (headless, `art/vendor/Blender.app`, ni
 
 | Skript | Ergebnis |
 |---|---|
-| `art/brand/mark.py` | Marke „Gelenk“: einzige Quelle der Geometrie (Modul M, 7°, Gehrungsfuge, Progressionsstufen); schreibt die SVG-Master in `art/brand/` und `public/favicon.svg` (`python3 art/brand/mark.py`) |
+| `art/brand/mark.py` | Marke „Gelenk“: einzige Quelle der Geometrie (Modul M, 7°, Gehrungsfuge, optische Korrekturen, Progressionsstufen, Wortmarke mit dem Zeichen als L); schreibt die SVG-Master in `art/brand/`, `public/favicon.svg` und `src/client/brandPaths.ts` (`python3 art/brand/mark.py`). Anwendungsregeln: `art/brand/guidelines.html` |
 | `art/blender/brand.py` | App-Icon (1024/512/180) und iOS-Startbild aus `mark.py`; Startbild zeigt die Tuck-Stufe, `Splash.tsx` verlängert den Hebel bis Full |
 | `art/blender/lever.py` | Übungsclips und Körperkarte aus den **Human Base Meshes** (Blender Foundation, CC0): realistischer Körper, per Skript athletischer geformt, eigenes Skelett, Posing-Werkzeuge (IK, Platzierung, Prüfung) |
 | `art/blender/moves.py` | Die Übungen als Schlüsselposen, eine Funktion je Katalog-ID |
