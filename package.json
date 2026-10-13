@@ -17,7 +17,7 @@
     "check:access": "npm run payload -- run scripts/check-access.ts",
     "import:v1": "npm run payload -- run scripts/import-v1.ts",
     "catalog:extract": "node scripts/extract-catalog.ts",
-    "test": "node test/smoke.cjs && node --test test/migrate.test.ts test/logic.test.ts test/sync.test.ts test/access.test.ts test/generator.test.ts test/assessment.test.ts",
+    "test": "node test/smoke.cjs && node --test test/migrate.test.ts test/logic.test.ts test/sync.test.ts test/access.test.ts test/generator.test.ts test/assessment.test.ts test/rateLimit.test.ts",
     "native:web": "node scripts/native-web.ts",
     "native:build": "node scripts/clips-manifest.mjs && next build && node scripts/native-web.ts && cap sync ios",
     "native:open": "cap open ios",

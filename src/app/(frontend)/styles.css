@@ -921,3 +921,4 @@ button.clip { display: block; border: none; padding: 0; background: none; color:
   background: linear-gradient(to bottom, rgba(26, 26, 26, .85), rgba(26, 26, 26, 0)); }
 .f-figure .f-label, .f-figure .f-opts { z-index: 2; }
 .sk-back { margin-top: 12px; }
+.account-delete { margin-top: 12px; }

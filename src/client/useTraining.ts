@@ -316,11 +316,20 @@ export function useTraining() {
     setSync(s => ({ ...s, account: null }))
   }, [])
 
+  /** Konto löschen (Server: Konto + alle Trainingsdaten); auf dem Gerät bleibt alles, ohne Abgleich */
+  const deleteAccount = useCallback(async () => {
+    await api.deleteAccount()
+    meta.current = { ...meta.current, account: null, lastSync: null }
+    void db.kvSet('account', null)
+    void db.kvSet('meta', { lastSync: null, catalogVersion: meta.current.catalogVersion })
+    setSync(s => ({ ...s, account: null, error: undefined }))
+  }, [])
+
   return {
     loaded, persistent, today, ix, sessions: sessionList, activities, state, active, workout, recommended,
     todaySession, updateToday, setState, chooseWorkout, startSession, endSession,
     addActivity, removeActivity, removeSession, importV1, exportData,
-    sync, syncNow: runSync, signIn, signOut,
+    sync, syncNow: runSync, signIn, signOut, deleteAccount,
   }
 }
 export type Training = ReturnType<typeof useTraining>

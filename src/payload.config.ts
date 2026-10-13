@@ -13,6 +13,7 @@ import { Users } from './collections/Users'
 import { Workouts } from './collections/Workouts'
 import { WeekPlan } from './globals/WeekPlan'
 import { syncHandler } from './sync/endpoint'
+import { deleteAccountHandler } from './sync/account'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -27,7 +28,10 @@ export default buildConfig({
   collections: [Sessions, Activities, Exercises, Progressions, Workouts, Users],
   globals: [WeekPlan],
   // Abgleich mit der Trainings-App: POST /api/sync (siehe src/sync/endpoint.ts)
-  endpoints: [{ path: '/sync', method: 'post', handler: syncHandler }],
+  endpoints: [
+    { path: '/sync', method: 'post', handler: syncHandler },
+    { path: '/account/delete', method: 'post', handler: deleteAccountHandler },
+  ],
   // iOS-App (Capacitor) lädt die Oberfläche aus dem App-Paket und ruft die API von dort aus auf
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || '', 'capacitor://localhost'].filter(Boolean),
   secret: process.env.PAYLOAD_SECRET || '',

@@ -118,12 +118,13 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 - [x] **Katalog-Rechte:** Lesen für Angemeldete, Schreiben nur Rolle `admin` (`isAdmin` in `src/access.ts`; Sync-Endpunkt läuft mit den Rechten der Person, `npm run check:access` prüft gegen die DB)
 - [x] Rollen an `users` (`admin` / `athlete`), Admin-Panel nur für `admin` (Rolle nur durch Admins änderbar; Migration macht das älteste Konto zum Admin)
 - [ ] `plans` einführen, `workouts` → mein Plan migrieren, Sessions auf Plan-Workout-Keys umstellen (Migration + Sync + Tests)
-- [ ] **App ohne Account nutzbar** (lokal, offline); Account nur für Sync/Backup und Käufe
+- [x] **App ohne Account nutzbar** (lokal, offline); Account nur für Sync/Backup und Käufe (seit v2: IndexedDB, Anmeldung optional unter „Daten“)
 - [ ] Anmeldung: **Sign in with Apple** + E-Mail
-- [ ] **Account-Löschung in der App** (Apple 5.1.1(v)) inkl. Server-Daten; Datenexport als JSON
+- [x] **Account-Löschung in der App** (Apple 5.1.1(v)) inkl. Server-Daten (`POST /api/account/delete`, „Daten“ → „Konto löschen“, geprüft in `check:access`); Datenexport als JSON (gab es schon)
 - [ ] Einwilligung Gesundheitsdaten (Art. 9 DSGVO), Datenschutzerklärung de/en, Gesundheits-Disclaimer
 - [ ] **i18n-Gerüst:** UI-Strings in Wörterbücher (de/en), Payload-Localization für Katalogfelder, Datums-/Zahlenformat per Locale
-- [ ] Server: Rate-Limits am Sync-Endpunkt, tägliche DB-Backups, Fehler-Monitoring
+- [x] Server: Rate-Limit am Sync-Endpunkt (30/min je Person, `src/sync/rateLimit.ts`); Login-Sperre nach 5 Fehlversuchen (Payload-Standard)
+- [ ] Server: tägliche DB-Backups (Ploi → Datenbank → Backups einrichten), Fehler-Monitoring
 
 ### Phase 3.1 — Katalog als Generator-Grundlage
 

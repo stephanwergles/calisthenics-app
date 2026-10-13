@@ -37,6 +37,10 @@ function Account({ t }: { t: Training }) {
           <button className="btn btn-secondary grow" disabled={s.phase === 'syncing'} onClick={() => void t.syncNow()}>Jetzt abgleichen</button>
           <button className="btn btn-ghost" onClick={async () => { if (await ask({ title: 'Abmelden?', message: 'Die Daten bleiben auf diesem Gerät, werden aber nicht mehr abgeglichen.', ok: 'Abmelden' })) void t.signOut() }}>Abmelden</button>
         </div>
+        <button className="btn btn-danger btn-block account-delete" onClick={async () => {
+          if (!await ask({ title: 'Konto löschen?', message: `Das Konto ${s.account!.email} und alle Trainingsdaten auf dem Server werden endgültig gelöscht. Auf diesem Gerät bleiben deine Daten erhalten – sichere sie vorher per Export, wenn du sie behalten willst.`, ok: 'Konto löschen', destructive: true })) return
+          try { await t.deleteAccount() } catch (e) { alert(`Löschen fehlgeschlagen: ${(e as Error).message}`) }
+        }}><Icon name="trash" size={18} /> Konto löschen</button>
       </div>
     )
   }

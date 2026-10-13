@@ -43,6 +43,9 @@ export const logout = () => call('/api/users/logout', { method: 'POST' }).catch(
 export const refresh = () => call<{ refreshedToken?: string }>('/api/users/refresh-token', { method: 'POST' })
   .then(r => (r.refreshedToken ? setToken(r.refreshedToken) : undefined)).catch(() => undefined)
 
+/** Konto samt Server-Daten löschen – danach ist niemand mehr angemeldet */
+export const deleteAccount = () => call('/api/account/delete', { method: 'POST' }).finally(() => setToken(null))
+
 export const postSync = (req: SyncRequest) => call<SyncResponse>('/api/sync', { method: 'POST', body: JSON.stringify(req) })
 
 /** Ersetzt das Server-Dokument das lokale? Saubere lokale Dokumente immer;

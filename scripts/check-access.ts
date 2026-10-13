@@ -4,6 +4,7 @@
      npm run check:access */
 import { getPayload, type PayloadRequest } from 'payload'
 import config from '@payload-config'
+import { deleteAccountHandler } from '../src/sync/account.ts'
 
 const payload = await getPayload({ config })
 const email = `access-check-${Date.now()}@calisthenics.test`
@@ -55,6 +56,26 @@ try {
   results.push(['Admin-Panel verweigert', !(await panel?.({ req } as never))])
 } finally {
   await payload.delete({ collection: 'users', id: athlete.id })
+}
+
+// Konto löschen: eigene Daten weg, fremde bleiben
+{
+  const mk = (tag: string) => payload.create({ collection: 'users', data: { email: `del-${tag}-${email}`, password: crypto.randomUUID() } as never })
+  const [gone, other] = [await mk('a'), await mk('b')]
+  const w = (await payload.find({ collection: 'workouts', limit: 1, depth: 0 })).docs[0].id
+  for (const u of [gone, other]) {
+    await payload.create({ collection: 'sessions', data: { key: `2026-01-02-${w}`, date: '2026-01-02', workout: w, user: u.id, sets: [] } as never })
+    await payload.create({ collection: 'activities', data: { key: `2026-01-02-run-${u.id}`, date: '2026-01-02', kind: 'run', user: u.id } as never })
+  }
+  const res = await deleteAccountHandler({ payload, user: { ...gone, collection: 'users' } } as never)
+  const count = async (c: 'sessions' | 'activities', u: number | string) => (await payload.count({ collection: c, where: { user: { equals: u } } })).totalDocs
+  results.push(['Konto löschen: Antwort ok', res.status === 200])
+  results.push(['Konto löschen: Person weg', (await payload.count({ collection: 'users', where: { id: { equals: gone.id } } })).totalDocs === 0])
+  results.push(['Konto löschen: eigene Einheiten/Aktivitäten weg', (await count('sessions', gone.id)) + (await count('activities', gone.id)) === 0])
+  results.push(['Konto löschen: fremde Daten bleiben', (await count('sessions', other.id)) === 1 && (await count('activities', other.id)) === 1])
+  await payload.delete({ collection: 'sessions', where: { user: { equals: other.id } } })
+  await payload.delete({ collection: 'activities', where: { user: { equals: other.id } } })
+  await payload.delete({ collection: 'users', id: other.id })
 }
 
 for (const [name, ok] of results) console.log(`${ok ? '✓' : '✗'} ${name}`)

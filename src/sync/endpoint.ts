@@ -10,11 +10,18 @@
    nächsten Sync doppelt zurück, als dass eine parallele Änderung verloren geht. */
 import { addDataAndFileToRequest, type PayloadHandler, type Where } from 'payload'
 import * as C from './convert'
+import { createLimiter } from './rateLimit'
 
 const MAX_DOCS = 2000
+/** Die App synchronisiert höchstens alle paar Sekunden – 30 pro Minute ist großzügig */
+const limiter = createLimiter(30, 60_000)
 
 export const syncHandler: PayloadHandler = async req => {
   if (!req.user) return Response.json({ error: 'Nicht angemeldet' }, { status: 401 })
+  const key = `u:${req.user.id}`
+  if (!limiter.take(key)) {
+    return Response.json({ error: 'Zu viele Anfragen – bitte kurz warten' }, { status: 429, headers: { 'Retry-After': String(limiter.retryAfter(key)) } })
+  }
   await addDataAndFileToRequest(req)
   const body = (req.data ?? {}) as Partial<C.SyncRequest>
   const { payload } = req
