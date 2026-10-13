@@ -9,6 +9,7 @@
 
 AZ_HANG = AZ0          # Dreiviertel von vorn links
 AZ_SIDE = -12          # fast seitlich
+VIEW_PULL = (-26, 12)  # Zugübungen: schräg seitlich, leicht erhöht – Kinn über vs. Brust an der Stange ist erkennbar
 
 # ── Grundposen (Körperraum) ─────────────────────────────────────────────────
 HANG = sym({"clavicle.L": (1, 0.05, 0.42),                       # Schultern passiv hochgezogen
@@ -47,18 +48,22 @@ def scapula_shrug():
     return hang_ex([dict(pose=HANG, hang=dict(ext=STRAIGHT)), dict(pose=ACTIVE, hang=dict(ext=STRAIGHT))])
 def pull_up():
     return hang_ex([dict(pose=ACTIVE, hang=dict(ext=STRAIGHT), hint=(0.6, -0.3, -1)),
-                    dict(pose=TOP, hang=dict(ext=0.42, dy=0.2), hint=(0.3, -0.6, -1))])
+                    dict(pose=TOP, hang=dict(ext=0.42, dy=0.2), hint=(0.3, -0.6, -1))], view=VIEW_PULL)
 def pull_up_weighted():
     ex = pull_up(); belt_plate(); return ex
 ARCH = sym({**TOP, "spine": (0, 0.16, 1), "chest": (0, 0.32, 1), "neck": (0, -0.12, 1), "head": (0, -0.15, 1),
             "thigh.L": (0.02, -0.25, -1), "shin.L": (0, 0.12, -1)})
 def explosive_pull_up():
-    """Schnell und hoch (Stange bis unter die Brust), langsam zurück."""
-    return hang_ex([dict(pose=ACTIVE, hang=dict(ext=STRAIGHT), hint=(0.6, -0.3, -1)),
-                    dict(pose=ARCH, hang=dict(ext=0.33, dy=0.24), hint=(0.35, 0.2, -1))], timing="fast")
+    """Schnell und so hoch, dass die Schultern über die Stange kommen (Stange am Bauch), langsam zurück."""
+    top = dict(rot=(8, 0, 0), pose=ARCH, hang=dict(sz=0.06, dy=0.2),
+               hands=pulling(pulling(bar_hands(PULL_H, hint=(0.25, 1, -0.6)), "L"), "R"))
+    mid = dict(pose=ARCH, hang=dict(ext=0.36, dy=0.21), hint=(0.35, 0.2, -1))   # Kopf bleibt hinter der Stange
+    return hang_ex([dict(pose=ACTIVE, hang=dict(ext=STRAIGHT), hint=(0.6, -0.3, -1)), mid, top],
+                   timing="fast", sz=True, view=VIEW_PULL)
 def chest_to_bar_pull_up():
+    """Brust an die Stange: Schultern auf Stangenhöhe (beim Klimmzug nur das Kinn darüber)."""
     return hang_ex([dict(pose=ACTIVE, hang=dict(ext=STRAIGHT), hint=(0.6, -0.3, -1)),
-                    dict(pose=ARCH, hang=dict(ext=0.36, dy=0.2), hint=(0.35, 0.2, -1))])
+                    dict(pose=ARCH, hang=dict(ext=0.3, dy=0.19), hint=(0.35, 0.2, -1))], view=VIEW_PULL)
 def archer_pull_up():
     """Weiter Griff, Zug zur linken Hand, rechter Arm bleibt gestreckt (eine Seite gezeigt)."""
     g = 0.55
@@ -67,7 +72,7 @@ def archer_pull_up():
               hands=pulling(bar_hands(PULL_H, g, hint=(0.25, -0.6, -1)), "L"))
     km = dict(pose=sym({**TOP, "neck": (0.1, -0.05, 1)}), hang=dict(sz=-0.4, sx=0.12, dy=0.14),   # Kopf hinter der Stange hoch
               hands=pulling(bar_hands(PULL_H, g, hint=(0.4, -0.5, -1)), "L", 0.5))
-    return hang_ex([k0, km, k1], grip=g, sz=True, half=0.9)
+    return hang_ex([k0, km, k1], grip=g, sz=True, half=0.9, view=VIEW_PULL)
 def typewriter_pull_up():
     """Oben von Hand zu Hand wandern."""
     g = 0.55
@@ -77,7 +82,7 @@ def typewriter_pull_up():
                                         "R" if s > 0 else "L", 0.0))
     mid = dict(pose=TOP, hang=dict(ext=0.5, dy=0.16),
                hands=pulling(pulling(bar_hands(PULL_H, g, hint=(0.4, -0.6, -1)), "L", 0.5), "R", 0.5))
-    return hang_ex([side(1), mid, side(-1)], grip=g, sz=True, half=0.9)
+    return hang_ex([side(1), mid, side(-1)], grip=g, sz=True, half=0.9, view=VIEW_PULL)
 def uneven_pull_up():
     """Linke Hand an der Stange, rechte am Handtuch (eine Seite gezeigt)."""
     tx, tz = -0.3, PULL_H - 0.44
@@ -88,7 +93,7 @@ def uneven_pull_up():
     def hands(hint): return {"L": bar_hands(PULL_H, 0.14, hint=hint)["L"], "R": towel}
     k0 = dict(pose=ACTIVE, hang=dict(ext=STRAIGHT, sx=0.1), hands=hands((0.6, -0.3, -1)))
     k1 = dict(pose=TOP, hang=dict(ext=0.42, dy=0.2, sx=0.1), hands=hands((0.3, -0.6, -1)))
-    return hang_ex([k0, k1], grip=0.14)
+    return hang_ex([k0, k1], grip=0.14, view=VIEW_PULL)
 
 # ── Muscle-up: Hang → Zug → hoch → Übergang → Stütz ─────────────────────────
 OVER_BAR = sym({"spine": (0, -0.15, 1), "chest": (0, -0.22, 1), "neck": (0, -0.12, 1), "head": (0, -0.05, 1),
@@ -110,12 +115,12 @@ def mu_keys(H):
             dict(rot=(22, 0, 0), pose=OVER_BAR, hang=dict(sz=0.3, dy=0.0), hands=mu_hands(H, 1, (0.1, 1, -0.2))),
             dict(rot=(8, 0, 0), pose=SUPPORT, hang=dict(ext=STRAIGHT, up=True, dy=-0.04), hands=mu_hands(H, 1, (0.1, 1, -0.2)))]
 def muscle_up():          # follow: Kamera geht mit, die Figur füllt das Bild statt der ganzen Bahn
-    return dict(hang_ex(mu_keys(PULL_H), sz=True), follow=True, fit=0.9)
+    return dict(hang_ex(mu_keys(PULL_H), sz=True, view=VIEW_PULL), follow=True, fit=0.9)
 def muscle_up_negative():
     """Oben starten, langsam durch den Übergang ablassen – Hochkommen (Sprung) im Zeitraffer."""
-    return dict(hang_ex(mu_keys(PULL_H), sz=True, timing="fast"), follow=True, fit=0.9)
+    return dict(hang_ex(mu_keys(PULL_H), sz=True, timing="fast", view=VIEW_PULL), follow=True, fit=0.9)
 def muscle_up_band():
-    ex = dict(hang_ex(mu_keys(PULL_H), sz=True), follow=True, fit=0.9)
+    ex = dict(hang_ex(mu_keys(PULL_H), sz=True, view=VIEW_PULL), follow=True, fit=0.9)
     knee = skin("shin.L", (0.13, -0.02, 0.47), (0, -1, 0))        # Band hängt im linken Knie
     chest = skin("chest", (0, -0.15, 1.25), (0, -1, 0))
     def via(x):                     # solange die Brust unter der Stange ist, liegt das Band vor ihr

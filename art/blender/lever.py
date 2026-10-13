@@ -605,9 +605,18 @@ else:
         c = [float(x) for x in os.environ["LEVER_CAM"].split(",")]
         cam.location, target.location = Vector(c[:3]), Vector(c[3:])
     if MODE == "check":                    # ohne Rendern: Durchdringungen, Bodenkontakt, Reichweite pro Bild
-        worst = {}
-        for i, s in enumerate(S_OF):
-            OVER[0] = 0.0; pose_key(key_at(keys, s)); P = mesh_np()
+        worst = {}; prev = {}; jumps = {}
+        JB = [f"{b}.{n}" for b in ("forearm", "hand", "fingers", "shin", "foot") for n in "LR"]
+        for i, s in enumerate(S_OF + S_OF[:1]):      # letztes Bild → erstes: auch die Loop-Naht prüfen
+            OVER[0] = 0.0; pose_key(key_at(keys, s))
+            for b in JB:                     # Drehsprung je Bild (Grad): zeigt kippende Hände/Füße
+                q = (rig.matrix_world @ PB[b].matrix).to_quaternion()
+                if b in prev:
+                    a = math.degrees(prev[b].rotation_difference(q).angle); a = min(a, 360 - a)
+                    if a > jumps.get(b, (0, 0))[0]: jumps[b] = (a, i)
+                prev[b] = q
+            if i == len(S_OF): break
+            P = mesh_np()
             row = {"boden": P[:, 2].min(), "reichweite": -OVER[0]}; where = {"boden": GROUPV[int(P[:, 2].argmin())]}
             for name, f, grip in COLL:
                 d = f(P); d[HANDV & grip] = 9
@@ -615,6 +624,7 @@ else:
             for kk, v in row.items():
                 if v < worst.get(kk, (9, 0))[0]: worst[kk] = (v, i, where.get(kk, ""))
             if os.environ.get("LEVER_DEBUG"): print("FRAME", i, {kk: round(v, 3) for kk, v in row.items()})
+        print("SPRUNG", ARG, " ".join(f"{b}={a:.0f}°@{i}" for b, (a, i) in sorted(jumps.items(), key=lambda x: -x[1][0])[:4]))
         print("CHECK", ARG, " ".join(f"{kk}={v:+.3f}@{i}{'(' + w + ')' if w else ''}" for kk, (v, i, w) in worst.items()))
     elif MODE == "still":                  # jede Schlüsselpose als Bild: <übung>_k0.png …
         for i in range(len(keys)):
