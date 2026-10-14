@@ -909,6 +909,9 @@ else:
             print("WARNUNG", ARG, f"Selbstdurchdringung {selbst[2]} {selbst[0] * 100:.1f} cm @{selbst[1]}")
         if key_sym < 5 and symm[0] > RULES["symmetrie"]: fails.append(f"Asymmetrie {symm[2]} {symm[0]:.0f}°")
         print("SELBST", ARG, f"{selbst[0] * 100:.1f}cm@{selbst[1]}({selbst[2]})", "SYMM", f"{symm[0]:.0f}°@{symm[1]}({symm[2]})", f"schlüssel {key_sym:.0f}°")
+        for ka, kb in zip(keys, keys[1:]):  # Weltrichtungen nur in einem Schlüssel → beim Mischen bleibt sie hängen
+            wa, wb = set(ka.get("wpose", {})), set(kb.get("wpose", {}))
+            if wa != wb: fails.append(f"wpose nur in einem Schlüssel: {sorted(wa ^ wb)}")
         print("PRUEFUNG", ARG, "ok" if not fails else "FEHLER " + "; ".join(fails))
         print("CHECK", ARG, " ".join(f"{kk}={v:+.3f}@{i}{'(' + w + ')' if w else ''}" for kk, (v, i, w) in worst.items()))
     elif MODE == "still":                  # jede Schlüsselpose als Bild: <übung>_k0.png …

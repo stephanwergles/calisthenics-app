@@ -640,7 +640,9 @@ def v_sit_parallettes():
     return dict(ex, keys=[up, vk])
 def v_sit_floor():
     ex = lsit_ex(); down, up = ex["keys"]
-    vk = dict(up, rot=(-24, 0, 0), pose=VSIT, wpose={})
+    # Beine als Weltrichtung (wie im Sitz-Schlüssel), sonst bliebe beim Mischen die Sitz-Richtung stehen
+    vk = dict(up, rot=(-24, 0, 0), pose=VSIT,
+              wpose=sym({"thigh.L": (0.04, -0.62, 0.78), "shin.L": (0.03, -0.62, 0.78), "foot.L": (0, -0.75, 0.55)}))
     solve(vk, set_place(2, 2), 0.05, 0.5, m_arm(), STRAIGHT)
     return dict(ex, keys=[down, vk])
 MANNA = sym({"spine": (0, -0.25, 1), "chest": (0, -0.15, 1), "neck": (0, -0.3, 1), "head": (0, -0.35, 1),
@@ -691,7 +693,8 @@ def wall_straddle_press(): return press_ex(0.42, wall_y=0.85)
 def elevated_pike_press():
     """Füße auf der Box, Hüfte über die Hände schieben, bis die Füße abheben."""
     ex = pike_ex(feet_h=0.5, a_top=150); top = to_hang(ex["keys"][0])
-    lift = press_key(165, pike_legs(100), top["hands"])
+    lift = press_key(165, pike_legs(100), top["hands"]); pose_key(lift, limbs=False)
+    lift["wpose"] = {f"foot.{n}": tuple((world(PB[f"foot.{n}"].tail) - world(PB[f"foot.{n}"].head)).normalized()) for n in "LR"}
     return dict(ex, keys=[top, lift], timing="hold")
 def pike_compression():
     """Langsitz, Hände neben den Knien, gestreckte Beine kurz vom Boden heben."""
