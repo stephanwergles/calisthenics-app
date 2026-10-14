@@ -15,7 +15,9 @@ const MAX = 5
 
 export function WorkoutStrip({ mode }: { mode: 'home' | 'plan' }) {
   const { t } = useApp()
-  const list = L.recentWorkouts(t.ix, t.sessions, t.workout, MAX)
+  // am Ruhetag ist kein Workout „heute“ (t.workout ist dann nur der Vorschlag für „Doch trainieren“)
+  const todayId = t.restDay ? '' : t.workout
+  const list = L.recentWorkouts(t.ix, t.sessions, todayId, MAX)
   const open = (id: string) => router.push({ pathname: '/workouts/[id]', params: { id } })
   return (
     <View>
@@ -23,7 +25,7 @@ export function WorkoutStrip({ mode }: { mode: 'home' | 'plan' }) {
         right={<Button size="sm" variant="ghost" title={tr('home.workoutsMine')} icon="right" onPress={() => router.push('/workouts')} />} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -GUTTER }} contentContainerStyle={{ paddingHorizontal: GUTTER, gap: 10 }}>
         {list.map(w => {
-          const today = w.id === t.workout
+          const today = w.id === todayId
           const days = L.plannedDays(t.ix, w.id).map(d => L.WEEKDAY_SHORT[d]).join(' · ')
           return (
             <Pressable key={w.id} accessibilityRole="button" onPress={() => open(w.id)}
