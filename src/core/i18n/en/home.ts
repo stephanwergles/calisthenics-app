@@ -65,4 +65,6 @@ export const home: Shape<typeof de> = {
   restAnyway: 'Train anyway: {name}',
   restCardio: 'Log cardio',
   restChallenge: 'Challenge',
+  backToRest: 'Rest day after all',
+  bannerFree: 'Nothing planned',
 }

@@ -116,6 +116,8 @@ export function Today() {
                 <Button style={{ flex: 1 }} variant="secondary" icon="list" title={tr('home.exercises')} onPress={() => router.push('/exercises')} />
                 <Button style={{ flex: 1 }} variant="secondary" icon="swap" title={tr('home.swap')} onPress={() => router.push('/swap')} />
               </View>
+              {/* am Ruhetag gewählt, noch nicht begonnen: zurück zum Ruhetag */}
+              {t.restDayChosen && <Button variant="ghost" icon="undo" title={tr('home.backToRest')} onPress={t.clearChoice} />}
             </View>
           </View>
         </Card>}
@@ -221,8 +223,12 @@ function DayBanner({ date, onClose }: { date: string; onClose: () => void }) {
   } else if (planned) {
     label = tr('home.bannerMissed'); title = planned.focus; text = tr('history.restTextPast'); actions = [addCardio, doWorkout]
   } else {
-    label = tr('history.restDay'); title = tr('history.restTitle')
-    text = past ? tr('history.restTextPast') : tr('history.restText'); actions = past ? [addCardio, doWorkout] : [doWorkout]
+    // Ruhetag: nur vergangene Tage laden zum Nachtragen ein; künftige sind einfach frei (die
+    // Einladung zur Bewegung steht schon auf der Karte von heute)
+    label = tr('history.restDay')
+    title = past ? tr('history.restNothing') : tr('home.bannerFree')
+    text = past ? tr('history.restTextPast') : null
+    actions = past ? [addCardio, doWorkout] : []
   }
   return (
     <View accessibilityLiveRegion="polite" style={{ backgroundColor: color.card, borderWidth: 1, borderColor: color.line, borderRadius: radius.card, borderCurve: 'continuous', padding: 16, gap: 10 }}>

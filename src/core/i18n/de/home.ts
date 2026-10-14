@@ -62,4 +62,6 @@ export const home = {
   restAnyway: 'Doch trainieren: {name}',
   restCardio: 'Cardio eintragen',
   restChallenge: 'Challenge',
+  backToRest: 'Doch Ruhetag',
+  bannerFree: 'Nichts geplant',
 }

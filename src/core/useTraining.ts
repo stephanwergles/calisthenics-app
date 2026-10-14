@@ -273,6 +273,11 @@ export function useTraining() {
     const c = { date: today, workout: w }
     setChoice(c); void db.get().kvSet('choice', c)
   }, [today])
+  /** Wahl für heute zurücknehmen (z. B. „Doch trainieren“ am Ruhetag) – zählt dann wieder der Plan */
+  const clearChoice = useCallback(() => { setChoice(null); void db.get().kvSet('choice', undefined) }, [])
+  /** heute eigentlich Ruhetag, aber ein Workout gewählt und noch nicht begonnen */
+  const restDayChosen = useMemo(() => !ix.catalog.weekplan[L.weekdayOf(today)] && choice?.date === today && !active
+    && !sessionList.some(s => s.date === today && s.sets.length), [ix, today, choice, active, sessionList])
 
   /** Session starten – optional für ein anderes Workout als das gewählte (Schnellstart auf Heute) */
   const startSession = useCallback((w?: WorkoutId) => {
@@ -440,7 +445,7 @@ export function useTraining() {
 
   return {
     loaded, persistent, today, ix, sessions: sessionList, activities, state, active, workout, recommended, restDay,
-    todaySession, updateToday, setState, chooseWorkout, startSession, endSession,
+    todaySession, updateToday, setState, chooseWorkout, clearChoice, restDayChosen, startSession, endSession,
     addActivity, removeActivity, removeSession, discardSession, importV1, exportData,
     sync, syncNow: runSync, signIn, signOut, deleteAccount,
     consent, acceptHealthConsent, acceptDisclaimer,
