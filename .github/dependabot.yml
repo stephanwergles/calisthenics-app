@@ -1,11 +1,14 @@
-# Wöchentliche Update-PRs, gruppiert. Expo-SDK und React Native nur innerhalb der SDK-Version –
-# SDK-Sprünge macht `npx expo install --fix` bewusst von Hand.
+# Wöchentliche Update-PRs, gruppiert, nur Minor/Patch. Major-Sprünge (TypeScript, Node-Typen,
+# Payload, Expo-SDK …) bewusst von Hand – Payload und Expo geben die passenden Versionen vor.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /
     schedule: { interval: weekly, day: monday }
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
     groups:
       payload:
         patterns: ['payload', '@payloadcms/*']
@@ -16,14 +19,15 @@ updates:
     schedule: { interval: weekly, day: monday }
     open-pull-requests-limit: 5
     ignore:
-      - dependency-name: 'expo*'
+      - dependency-name: '*'
         update-types: [version-update:semver-major]
-      - dependency-name: 'react-native*'
-        update-types: [version-update:semver-major, version-update:semver-minor]
+      # React Native und React gibt das Expo-SDK exakt vor
+      - dependency-name: 'react-native'
+        update-types: [version-update:semver-minor]
       - dependency-name: 'react'
-        update-types: [version-update:semver-major, version-update:semver-minor]
+        update-types: [version-update:semver-minor]
       - dependency-name: 'react-dom'
-        update-types: [version-update:semver-major, version-update:semver-minor]
+        update-types: [version-update:semver-minor]
     groups:
       minor-and-patch:
         update-types: [minor, patch]
