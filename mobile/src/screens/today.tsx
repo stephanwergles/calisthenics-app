@@ -65,14 +65,13 @@ export function Today() {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }} accessibilityLabel={tr('home.weekAria')}>
           {week.map((d, i) => {
             // Tipp: trainierter Tag → Einheit, Cardio → Eintrag, geplanter Tag → Workout-Übersicht,
-            // künftiger Ruhetag → Workout auf den Wochentag legen, sonst → Tag im Verlauf (Cardio nachtragen)
+            // sonst → Tagesansicht (Ruhetag mit Vorschlägen; ändert nie den Wochenplan)
             const session = d.trained ? t.sessions.find(s => s.date === d.date && L.isTrained(s)) : undefined
             const activity = !session && d.cardio ? L.cardioOnly(t.activities).find(a => a.date === d.date) : undefined
             const planned = t.ix.catalog.weekplan[L.WEEK_ORDER[i]]
             const open = session ? () => router.push(dayHref({ kind: 'session', id: session.id }))
               : activity ? () => router.push(dayHref({ kind: 'activity', id: activity.id }))
               : planned && d.date >= t.today ? () => router.push({ pathname: '/workouts/[id]', params: { id: planned } })
-              : d.date > t.today ? () => router.push({ pathname: '/workouts/day', params: { day: L.WEEK_ORDER[i] } })
               : () => router.push(dayHref({ kind: 'empty', id: d.date }))
             return (
             <Pressable key={d.date} onPress={open} accessibilityRole="button"

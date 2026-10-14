@@ -11,7 +11,7 @@ import type { Activity, RoutineItem, Session, SetLog } from '@lever/domain/model
 import type { Training } from '@lever/core/useTraining.ts'
 import { useApp } from '@/state/app'
 import { CloseButton, stackScreenOptions } from '@/navigation'
-import { Button, color, font, Icon, radius, SheetScreen, Text } from '@/ui'
+import { Button, color, font, Icon, ListGroup, radius, SheetScreen, Text, type ListRowProps } from '@/ui'
 import { parseDayParam } from './params'
 import { NoteLine, SetChips, StatTiles } from './parts'
 import { confirmRemoveActivity, confirmRemoveSession } from './actions'
@@ -38,12 +38,28 @@ export function Day() {
   )
 }
 
-/** Tag ohne Eintrag: zeigen statt gleich ein Formular zu öffnen – Cardio nachtragen ist eine Option */
+/** Tag ohne Eintrag: Ruhetag als Normalfall – aber zur Bewegung einladen (lockeres Cardio,
+    Challenge, spontanes Workout). Heute: alles startbar; vergangen: Cardio nachtragen; künftig:
+    nur der Hinweis, der Wochenplan ändert sich hier nie. */
 function EmptyDay({ date }: { date: string }) {
+  const { t } = useApp()
+  const today = date === t.today, past = date < t.today
+  const planned = t.ix.workouts.get(t.ix.catalog.weekplan[L.weekdayOf(date)] ?? '')
+  const rows: ListRowProps[] = [
+    ...(today || past ? [{ icon: 'walk' as const, title: past ? tr('history.restAddCardio') : tr('history.restCardio'), subtitle: tr('history.restCardioSub'),
+      onPress: () => router.push({ pathname: '/activity', params: { date } }) }] : []),
+    ...(today ? [
+      { icon: 'flame' as const, title: tr('history.restChallenge'), subtitle: tr('history.restChallengeSub'), onPress: () => router.push('/challenges') },
+      { icon: 'play' as const, title: tr('history.restWorkout'), subtitle: tr('history.restWorkoutSub'), onPress: () => router.push('/workouts') },
+    ] : []),
+  ]
   return (
-    <SheetScreen title={L.fmtDate(date)}>
-      <Text variant="muted">{tr('history.emptyDay')}</Text>
-      <Button icon="plus" block title={tr('history.addCardio')} onPress={() => router.push({ pathname: '/activity', params: { date } })} />
+    <SheetScreen title={L.fmtDate(date)} sub={planned && past ? tr('history.missedPlanned', { name: planned.name }) : tr('history.restDay')}>
+      <View style={{ gap: 6 }}>
+        <Text variant="title" style={{ fontSize: 22 }}>{past ? tr('history.restNothing') : tr('history.restTitle')}</Text>
+        <Text variant="muted">{today || !past ? tr('history.restText') : tr('history.restTextPast')}</Text>
+      </View>
+      {rows.length > 0 && <ListGroup rows={rows} />}
     </SheetScreen>
   )
 }
