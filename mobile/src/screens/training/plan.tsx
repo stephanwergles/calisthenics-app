@@ -40,7 +40,7 @@ export function PlanScreen() {
   const done = counted.reduce((n, s) => n + Math.min(s.sets.length, s.planned), 0)
   const skipped = slots.filter(s => s.state === 'skipped').length
   const paused = slots.filter(s => s.state === 'paused').length
-  const sub = `${w.name} · ${tn('training.plan.exercises', counted.length)} · ${tn('training.plan.sets', planned)}${skipped ? ` · ${tr('training.plan.skippedN', { n: skipped })}` : ''}${paused ? ` · ${tr('training.plan.pausedN', { n: paused })}` : ''}`
+  const sub = `${w.name} · ${counted.length || !L.circuitsOf(w).length ? `${tn('training.plan.exercises', counted.length)} · ${tn('training.plan.sets', planned)}` : L.circuitsOf(w).map(L.fmtCircuitRule).join(' · ')}${skipped ? ` · ${tr('training.plan.skippedN', { n: skipped })}` : ''}${paused ? ` · ${tr('training.plan.pausedN', { n: paused })}` : ''}`
 
   const header = (
     <>
@@ -69,7 +69,7 @@ export function PlanScreen() {
   return (
     <>
       {header}
-      <SheetScreen title={w.focus} sub={sub}
+      <SheetScreen title={L.workoutFocus(t.ix, w)} sub={sub}
         footer={editing
           ? <Button variant="primary" size="lg" icon="check" block title={tr('training.done')} onPress={() => setMode('list')} />
           : onStart ? <Button variant="primary" size="lg" icon="play" block title={tr('training.bar.start', { name: w.name })} onPress={onStart} /> : undefined}>
@@ -117,7 +117,8 @@ function Overview({ focus, onOpen, onAdjust }: { focus: string | undefined; onOp
           {L.circuitsOf(w).map(c => <CircuitCard key={c.id} id={c.id} />)}
         </View>
       )}
-      <Button variant="ghost" icon="adjust" block title={tr('training.plan.adjust')} onPress={onAdjust} />
+      {/* Tagesanpassung betrifft die Leiter-Übungen – bei reinen Runden-Workouts gibt es nichts anzupassen */}
+      {slots.length > 0 && <Button variant="ghost" icon="adjust" block title={tr('training.plan.adjust')} onPress={onAdjust} />}
       {adjustNote && <Text variant="small" style={{ textAlign: 'center' }}>{adjustNote}</Text>}
       <Routine title={cool} items={w.cooldown} />
       <SessionNote key={`${t.today}-${t.workout}`} />

@@ -36,7 +36,7 @@ export function WorkoutStrip({ mode }: { mode: 'home' | 'plan' }) {
                 <Icon name="right" size={13} color={color.muted} />
               </View>
               <Text variant="title" style={{ fontSize: 19, lineHeight: 21 }} numberOfLines={2}>{w.name}</Text>
-              <Text variant="small" numberOfLines={2} style={{ flex: 1 }}>{w.focus}</Text>
+              <Text variant="small" numberOfLines={2} style={{ flex: 1 }}>{L.workoutFocus(t.ix, w)}</Text>
               <Text variant="small" numberOfLines={2} style={{ fontFamily: font.bodySemi }}>{workoutSize(w)}</Text>
             </Pressable>
           )

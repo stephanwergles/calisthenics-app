@@ -14,7 +14,7 @@ import { useNow } from '@lever/core/useNow.ts'
 import { platform } from '@lever/core/platform.ts'
 import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
-import { Button, color, ExerciseMedia, font, GUTTER, Icon, radius, sf, space, Text } from '@/ui'
+import { Button, color, ExerciseMedia, ExerciseStill, font, GUTTER, Icon, radius, sf, space, Text } from '@/ui'
 import { setSheet, useSetSheet } from '@/state/set-sheet'
 
 const haptic = (k: 'tap' | 'success' = 'tap') => platform().signals.haptic(k)
@@ -230,9 +230,21 @@ export function CircuitCard({ id }: { id: string }) {
       <View style={{ gap: 3 }}>
         <Text variant="eyebrow" style={{ fontSize: 11 }}>{tr('circuit.section')}</Text>
         <Text variant="title" style={{ fontSize: 22 }}>{L.fmtCircuitRule(c)}</Text>
-        <Text variant="small">{L.fmtCircuitItems(t.ix, c)}</Text>
         {done ? <Text variant="label" style={{ color: color.accent }}>{L.fmtCircuitResult(c, done)}</Text>
           : last ? <Text variant="small">{tr('circuit.last', { value: L.fmtCircuitResult(c, last.r) })}</Text> : null}
+      </View>
+      {/* die Runde: jede Übung mit Bild und Zahl */}
+      <View style={{ gap: 8 }} accessibilityLabel={`${tr('circuit.perRound')}: ${L.fmtCircuitItems(t.ix, c)}`}>
+        {c.items.map((x, i) => {
+          const e = t.ix.exercises.get(x.exercise)
+          return (
+            <View key={`${x.exercise}-${i}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              {e ? <ExerciseStill exercise={e} size={18} style={{ width: 48, height: 48, borderRadius: radius.lg, borderCurve: 'continuous' }} /> : null}
+              <Text variant="num" style={{ fontSize: 24, minWidth: 44, color: color.accent }}>{e?.unit === 'seconds' ? `${x.reps}s` : x.reps}</Text>
+              <Text variant="label" style={{ flex: 1 }} numberOfLines={2}>{e?.name ?? x.exercise}</Text>
+            </View>
+          )
+        })}
       </View>
       {!done && <Button variant="primary" icon="play" title={tr('circuit.start')} onPress={go} />}
     </View>

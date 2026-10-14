@@ -5,7 +5,7 @@
    Die Übungen der Runde stehen immer sichtbar darunter. Ergebnis landet in der heutigen Einheit
    (zählt als Training, nicht für die Leiter-Freischaltung). Params: cid (Block im heutigen Workout). */
 import { useEffect, useState } from 'react'
-import { View } from 'react-native'
+import { Pressable, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router, useLocalSearchParams } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
@@ -14,7 +14,7 @@ import { toast } from '@lever/core/toast.ts'
 import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import type { Circuit, CircuitResult } from '@lever/domain/model.ts'
 import { useApp } from '@/state/app'
-import { ask, Button, ButtonRow, color, CountdownRing, font, GUTTER, Icon, Stepper, Text } from '@/ui'
+import { ask, Button, ButtonRow, color, CountdownRing, ExerciseStill, font, GUTTER, Icon, radius, Stepper, Text } from '@/ui'
 import { useChallengeActivity } from '@/live/use-challenge-activity'
 
 const PREP = 3
@@ -118,11 +118,15 @@ function Run({ c }: { c: Circuit }) {
         </View>
       </View>
 
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 32, borderCurve: 'continuous', backgroundColor: color.card, gap: 6 }}>
+      {/* große Fläche: Tipp = Runde geschafft (wie der Zähler bei Challenges) */}
+      <Pressable disabled={phase !== 'run'} onPress={roundDone} accessibilityRole="button" accessibilityLabel={tr('circuit.roundDone')}
+        style={({ pressed }) => ({ flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: 32, borderCurve: 'continuous',
+          backgroundColor: pressed ? 'rgba(212,255,58,0.10)' : color.card, gap: 6 })}>
         {amrap && phase === 'run' ? <CountdownRing size={250} stroke={12} end={end} totalMs={(c.minutes ?? 10) * 60_000}>{body}</CountdownRing> : body}
         <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', letterSpacing: 1.2 }}>{phase === 'prep' ? '' : tn('circuit.roundsDone', rounds)}</Text>
         <Text variant="muted" style={{ fontSize: 19, fontVariant: ['tabular-nums'] }}>{sub}</Text>
-      </View>
+        {phase === 'run' && <Text variant="small" style={{ position: 'absolute', bottom: 16 }}>{tr('circuit.tapHint')}</Text>}
+      </Pressable>
 
       {/* die Runde: immer sichtbar */}
       <View accessible accessibilityLabel={`${tr('circuit.perRound')}: ${L.fmtCircuitItems(t.ix, c)}`}
@@ -131,7 +135,8 @@ function Run({ c }: { c: Circuit }) {
           const e = t.ix.exercises.get(x.exercise)
           return (
             <View key={`${x.exercise}-${i}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 6 }}>
-              <Text variant="num" style={{ fontSize: 26, minWidth: 54, color: color.accent }}>{e?.unit === 'seconds' ? `${x.reps}s` : x.reps}</Text>
+              {e ? <ExerciseStill exercise={e} size={16} style={{ width: 40, height: 40, borderRadius: radius.lg, borderCurve: 'continuous' }} /> : null}
+              <Text variant="num" style={{ fontSize: 26, minWidth: 44, color: color.accent }}>{e?.unit === 'seconds' ? `${x.reps}s` : x.reps}</Text>
               <Text variant="label" style={{ flex: 1 }} numberOfLines={1}>{e?.name ?? x.exercise}</Text>
             </View>
           )

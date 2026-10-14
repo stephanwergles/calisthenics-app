@@ -35,7 +35,7 @@ export function Today() {
   const active = slots.filter(s => s.state !== 'paused' && s.state !== 'skipped')
   const sets = active.reduce((n, s) => n + s.planned, 0)
   const doneSets = active.reduce((n, s) => n + Math.min(s.sets.length, s.planned), 0)
-  const [first, ...more] = w.focus.split(' · ')
+  const [first, ...more] = L.workoutFocus(t.ix, w).split(' · ')
   const hero = (active.find(s => hasClip(s.step.exercise.id)) ?? active[0])?.step.exercise
   const dateLabel = new Date(`${t.today}T12:00`).toLocaleDateString(intl(), { weekday: 'long', day: 'numeric', month: 'long' })
   const cta = t.active ? tr('home.ctaActive') : done ? tr('home.ctaAgain') : started ? tr('home.ctaResume') : tr('home.ctaStart')

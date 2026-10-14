@@ -1183,3 +1183,12 @@ export function sessionCircuits(ix: Index, s: Session) {
     return { id: r.id, name: c ? fmtCircuitRule(c) : t('logic.circuit.defaultName'), result: fmtCircuitResult({ mode }, r), items: c ? fmtCircuitItems(ix, c) : '' }
   })
 }
+
+/** Fokuszeile eines Workouts für die Anzeige: bei reinen Runden-Workouts aus den Übungen der
+    Runden (Region ihrer Leiter), sonst der gespeicherte Fokus */
+export function workoutFocus(ix: Index, w: Workout): string {
+  if (w.slots.length || !circuitsOf(w).length) return w.focus
+  const ex = new Set(circuitsOf(w).flatMap(c => c.items.map(x => x.exercise)))
+  const pids = [...ix.progressions.values()].filter(p => p.steps.some(s => ex.has(s.exercise))).map(p => ({ progression: p.id }))
+  return pids.length ? focusOf(ix, pids) : w.name
+}

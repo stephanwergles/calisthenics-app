@@ -22,4 +22,5 @@ export const circuit: Shape<typeof de> = {
   save: 'Add to session',
   saved: 'Rounds saved',
   section: 'Rounds',
+  tapHint: 'Tap = round done',
 }

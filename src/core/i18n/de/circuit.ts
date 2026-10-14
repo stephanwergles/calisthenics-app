@@ -19,4 +19,5 @@ export const circuit = {
   save: 'In die Einheit übernehmen',
   saved: 'Runden gespeichert',
   section: 'Runden',
+  tapHint: 'Tippen = Runde geschafft',
 }
