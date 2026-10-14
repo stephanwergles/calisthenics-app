@@ -36,7 +36,6 @@ export const home = {
   nextSkills: 'Nächste Skills',
   workouts: 'Workouts',
   workoutsMine: 'Meine Workouts',
-  workoutsAllN: 'Alle {n}',
   workoutNew: 'Neues Workout',
   workoutNewSub: 'Übungen selbst wählen',
   workoutsMore: 'Vorlagen',

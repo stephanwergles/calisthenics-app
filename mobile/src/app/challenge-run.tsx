@@ -4,7 +4,7 @@
    – Maximum Wiederholungen: Fläche zählt, „Fertig“ – Maximum Halten: Stoppuhr, „Stopp“
    danach Ergebnis mit Bestwert-Vergleich, Notiz, Speichern oder Verwerfen. */
 import { useEffect, useRef, useState } from 'react'
-import { Pressable, View } from 'react-native'
+import { Keyboard, KeyboardAvoidingView, Pressable, View } from 'react-native'
 import Animated, { FadeIn } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router, useLocalSearchParams } from 'expo-router'
@@ -175,7 +175,10 @@ function Result({ c, value, parts, note, setNote, onSave, onDiscard }: {
   const last = L.challengeAttempts(t.activities, c.id)[0]
   const v = L.challengeMeasuresTime(c) ? Math.round(value) : value
   const isBest = !best || L.challengeBetter(c, v, best.value!)
+  // Tastatur der Notiz: Speichern bleibt darüber sichtbar, Tipp daneben schließt sie
   return (
+    <KeyboardAvoidingView behavior={process.env.EXPO_OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: color.bg }}>
+    <Pressable accessible={false} onPress={Keyboard.dismiss} style={{ flex: 1 }}>
     <Animated.View entering={FadeIn.duration(220)} style={{ flex: 1, backgroundColor: color.bg, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 12, paddingHorizontal: GUTTER, gap: 18, justifyContent: 'space-between' }}>
       <View style={{ gap: 10 }}>
         <Text variant="eyebrow">{tr('challenge.resultTitle')} · {c.name}</Text>
@@ -196,5 +199,7 @@ function Result({ c, value, parts, note, setNote, onSave, onDiscard }: {
         <Button variant="ghost" title={tr('challenge.discard')} onPress={onDiscard} />
       </View>
     </Animated.View>
+    </Pressable>
+    </KeyboardAvoidingView>
   )
 }

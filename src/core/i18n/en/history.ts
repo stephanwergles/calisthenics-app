@@ -24,6 +24,7 @@ export const history: Shape<typeof de> = {
   reps: '{n} reps',
   addCardio: 'Log cardio',
   emptyDay: 'Nothing logged on this day.',
+  showMonth: 'Whole month',
   deleteActivityTitle: 'Delete {name}?',
   deleteActivityMessage: 'Entry from {date}.',
   deleteActivity: 'Delete entry',

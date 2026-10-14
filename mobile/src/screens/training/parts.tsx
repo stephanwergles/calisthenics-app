@@ -42,7 +42,9 @@ export function NoteInput({ label, style, ...rest }: TextInputProps & { label: s
         <Text variant="small" style={{ fontFamily: font.bodySemi }}>{label}</Text>
       </View>
       <TextInput
-        multiline maxLength={L.NOTE_MAX} keyboardAppearance="dark" placeholderTextColor={color.muted}
+        // Zeilenschalter = Fertig: mehrzeilig nur zum Umbrechen, sonst gäbe es keinen Weg, die Tastatur zu schließen
+        multiline returnKeyType="done" submitBehavior="blurAndSubmit"
+        maxLength={L.NOTE_MAX} keyboardAppearance="dark" placeholderTextColor={color.muted}
         selectionColor={color.accent} accessibilityLabel={label}
         style={{
           minHeight: 64, maxHeight: 140, paddingHorizontal: 14, paddingTop: 12, paddingBottom: 12,

@@ -1,6 +1,6 @@
-/* Workouts als horizontale Leiste (Heute und Plan-Tab): vorn „Neues Workout“, dann höchstens fünf
-   Workouts (heutiges zuerst, dann zuletzt trainierte), bei mehr eine Karte „Alle“ zum Sheet; auf Heute
-   am Ende die Vorlagen. Ein Tipp öffnet die Übersicht des Workouts – gestartet wird dort. */
+/* Workouts als horizontale Leiste (Heute und Plan-Tab): höchstens fünf Workouts (heutiges zuerst,
+   dann zuletzt trainierte), auf Heute danach die Vorlagen, am Ende „Neues Workout“. Alle Workouts
+   über „Meine Workouts“ in der Überschrift. Ein Tipp öffnet die Übersicht des Workouts – gestartet wird dort. */
 import { Pressable, ScrollView, View } from 'react-native'
 import { router } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
@@ -14,7 +14,6 @@ const MAX = 5
 
 export function WorkoutStrip({ mode }: { mode: 'home' | 'plan' }) {
   const { t } = useApp()
-  const all = L.workoutsInWeekOrder(t.ix)
   const list = L.recentWorkouts(t.ix, t.sessions, t.workout, MAX)
   const open = (id: string) => router.push({ pathname: '/workouts/[id]', params: { id } })
   return (
@@ -22,7 +21,6 @@ export function WorkoutStrip({ mode }: { mode: 'home' | 'plan' }) {
       <SectionTitle title={tr('home.workouts')}
         right={<Button size="sm" variant="ghost" title={tr('home.workoutsMine')} icon="right" onPress={() => router.push('/workouts')} />} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -GUTTER }} contentContainerStyle={{ paddingHorizontal: GUTTER, gap: 10 }}>
-        <ActionCard icon="plus" title={tr('home.workoutNew')} sub={tr('home.workoutNewSub')} onPress={() => router.push({ pathname: '/workouts/[id]', params: { id: 'new' } })} />
         {list.map(w => {
           const today = w.id === t.workout
           const days = L.plannedDays(t.ix, w.id).map(d => L.WEEKDAY_SHORT[d]).join(' · ')
@@ -42,9 +40,9 @@ export function WorkoutStrip({ mode }: { mode: 'home' | 'plan' }) {
             </Pressable>
           )
         })}
-        {all.length > list.length && <ActionCard icon="list" title={tr('home.workoutsAllN', { n: all.length })} sub={tr('home.workoutsMine')} onPress={() => router.push('/workouts')} />}
         {mode === 'home' && <ActionCard icon="grid" title={tr('home.workoutsMore')} sub={tr('home.workoutsMoreSub')}
           onPress={() => router.push({ pathname: '/templates', params: { kind: 'workout' } })} />}
+        <ActionCard icon="plus" title={tr('home.workoutNew')} sub={tr('home.workoutNewSub')} onPress={() => router.push({ pathname: '/workouts/[id]', params: { id: 'new' } })} />
       </ScrollView>
     </View>
   )

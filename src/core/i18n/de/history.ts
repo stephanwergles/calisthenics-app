@@ -21,6 +21,7 @@ export const history = {
   reps: '{n} Wdh.',
   addCardio: 'Cardio eintragen',
   emptyDay: 'An diesem Tag ist nichts eingetragen.',
+  showMonth: 'Ganzer Monat',
   deleteActivityTitle: '{name} löschen?',
   deleteActivityMessage: 'Eintrag vom {date}.',
   deleteActivity: 'Eintrag löschen',

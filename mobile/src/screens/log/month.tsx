@@ -1,7 +1,8 @@
 /* Log → Monat: Kalender mit Markierungen und Monatswechsel, Monatsbilanz, darunter alle Einheiten
-   und Cardio-Einträge des Monats als Feed (neueste zuerst). Tag antippen öffnet den Tag im Verlauf;
-   Feed-Einträge haben ein Kontextmenü (lange drücken) mit Löschen. (Web: Month in HistoryView) */
-import { useMemo } from 'react'
+   und Cardio-Einträge des Monats als Feed (neueste zuerst). Tag antippen wählt ihn aus: Der Feed zeigt
+   dann nur diesen Tag (oder dass nichts eingetragen ist), Cardio nachtragen gilt für ihn; nochmal
+   antippen zeigt wieder den Monat. Feed-Einträge haben ein Kontextmenü (lange drücken) mit Löschen. */
+import { useEffect, useMemo, useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { Link, router } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
@@ -9,7 +10,7 @@ import { getLocale, intl, t as tr, tn } from '@lever/core/i18n/index.ts'
 import type { Activity, Session } from '@lever/domain/model.ts'
 import { platform } from '@lever/core/platform.ts'
 import type { Training } from '@lever/core/useTraining.ts'
-import { ask, Button, color, font, Icon, radius, Text } from '@/ui'
+import { Button, color, font, Icon, radius, Text } from '@/ui'
 import { dayHref, type DayItem } from './params'
 import { confirmRemoveActivity, confirmRemoveSession } from './actions'
 
@@ -27,13 +28,10 @@ export function Month({ t, month, setMonth }: { t: Training; month: string; setM
   ].sort((x, y) => (x.date < y.date ? 1 : x.date > y.date ? -1 : x.kind === 'session' ? -1 : 1)), [t.sessions, t.activities, month])
   const thisMonth = t.today.slice(0, 7)
   const addCardio = (date: string) => router.push({ pathname: '/activity', params: { date } })
-
-  const pickDay = async (d: string) => {
-    const hit = feed.find(f => f.date === d)
-    if (hit) { router.push(dayHref({ kind: hit.kind, id: hit.id })); return }
-    // Tag ohne Eintrag: zeigen statt gleich ein Formular zu öffnen – Cardio nachtragen ist eine Option
-    if (await ask({ title: L.fmtDate(d), message: tr('history.emptyDay'), ok: tr('history.addCardio') })) addCardio(d)
-  }
+  const [selected, setSelected] = useState<string | null>(null)
+  useEffect(() => setSelected(null), [month])
+  const shown = selected ? feed.filter(f => f.date === selected) : feed
+  const pickDay = (d: string) => setSelected(cur => (cur === d ? null : d))
 
   return (
     <View style={{ gap: 14 }}>
@@ -63,22 +61,30 @@ export function Month({ t, month, setMonth }: { t: Training; month: string; setM
           {Array.from({ length: grid.lead }, (_, i) => <View key={`l${i}`} style={{ width: `${100 / 7}%` }} />)}
           {grid.days.map(d => (
             <DayCell key={d} date={d} today={d === t.today} future={d > t.today}
-              trained={marks.trained.has(d)} cardio={marks.cardio.has(d)} onPress={() => void pickDay(d)} />
+              trained={marks.trained.has(d)} cardio={marks.cardio.has(d)} selected={d === selected} onPress={() => pickDay(d)} />
           ))}
         </View>
       </View>
 
-      {feed.length === 0 && (
+      {selected && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingLeft: 4 }}>
+          <Text variant="title" accessibilityRole="header" style={{ fontSize: 19, flexShrink: 1 }}>{L.fmtDate(selected)}</Text>
+          <Button variant="ghost" size="sm" title={tr('history.showMonth')} onPress={() => setSelected(null)} />
+        </View>
+      )}
+
+      {shown.length === 0 && (
         <Text variant="muted" style={{ textAlign: 'center', paddingVertical: 16, paddingHorizontal: 12 }}>
-          {tr('history.emptyMonth', { month: L.fmtMonth(month) })}{'\n'}{tr('history.emptyMonthHint')}
+          {selected ? tr('history.emptyDay') : <>{tr('history.emptyMonth', { month: L.fmtMonth(month) })}{'\n'}{tr('history.emptyMonthHint')}</>}
         </Text>
       )}
 
       <View style={{ gap: 8 }}>
-        {feed.map(f => <FeedRow key={`${f.kind}-${f.id}`} t={t} f={f} />)}
+        {shown.map(f => <FeedRow key={`${f.kind}-${f.id}`} t={t} f={f} />)}
       </View>
 
-      <Button variant="ghost" icon="plus" block title={tr('history.addCardio')} onPress={() => addCardio(month === thisMonth ? t.today : `${month}-01`)} />
+      <Button variant="ghost" icon="plus" block title={tr('history.addCardio')}
+        onPress={() => addCardio(selected ?? (month === thisMonth ? t.today : `${month}-01`))} />
     </View>
   )
 }
@@ -92,20 +98,21 @@ function MonthStat({ value, label, accent }: { value: string; label: string; acc
   )
 }
 
-function DayCell({ date, today, future, trained, cardio, onPress }: {
-  date: string; today: boolean; future: boolean; trained: boolean; cardio: boolean; onPress: () => void
+function DayCell({ date, today, future, trained, cardio, selected, onPress }: {
+  date: string; today: boolean; future: boolean; trained: boolean; cardio: boolean; selected: boolean; onPress: () => void
 }) {
   const label = [L.fmtDate(date), trained && tr('history.training'), cardio && tr('history.cardio')].filter(Boolean).join(', ')
   return (
     <View style={{ width: `${100 / 7}%`, padding: 2.5 }}>
-      <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: future, selected: today }} disabled={future}
+      <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: future, selected }} disabled={future}
         onPress={() => { platform().signals.haptic('tap'); onPress() }}
         style={({ pressed }) => ({
           aspectRatio: 1, borderRadius: radius.md, borderCurve: 'continuous', alignItems: 'center', justifyContent: 'center',
           backgroundColor: future ? 'transparent' : trained ? color.accent : 'rgba(255,255,255,0.04)',
           borderWidth: today ? 2 : future ? 0 : 1,
           borderColor: today ? (trained ? color.onAccent : color.text) : trained ? 'transparent' : 'rgba(255,255,255,0.06)',
-          boxShadow: today && trained ? `0 0 0 2px ${color.accent}` : trained ? '0 4px 12px rgba(212, 255, 58, 0.18)' : undefined,
+          // ausgewählter Tag: Volt-Ring außen (auch auf Trainingstagen sichtbar)
+          boxShadow: selected ? `0 0 0 2px ${color.bg}, 0 0 0 4px ${color.accent}` : today && trained ? `0 0 0 2px ${color.accent}` : trained ? '0 4px 12px rgba(212, 255, 58, 0.18)' : undefined,
           opacity: future ? 0.35 : 1,
           transform: [{ scale: pressed ? 0.94 : 1 }],
         })}>
