@@ -27,7 +27,7 @@ export const openList = () => router.push({ pathname: '/exercises', params: { fr
 
 /** Kopf: Minimieren, Uhr (Dauer oder Pause), Übungsliste, Fortschritt je Übung */
 export function FocusTop() {
-  const { t, rest, slots, focusSlot, pick, setRestView, askEnd } = useApp()
+  const { t, rest, restView, slots, focusSlot, pick, setRestView, askEnd } = useApp()
   const now = useNow(!!t.active)
   const insets = useSafeAreaInsets()
   const resting = rest.running || rest.ringing
@@ -40,8 +40,10 @@ export function FocusTop() {
   })
   const duration = t.active ? L.fmtDuration(Math.max(0, now - t.active.start) / 1000) : ''
 
-  // Uhr als nativer Titel: Dauer bzw. laufende Pause (antippen öffnet den Pausen-Screen)
-  const clock = () => resting ? (
+  // Uhr unter der Toolbar (nicht als nativer Titel – der wurde nicht zuverlässig neu gezeichnet):
+  // Trainingsdauer immer sichtbar, laufende Pause daneben (antippen öffnet den Pausen-Screen)
+  const restShown = restView !== null && resting
+  const restPill = resting ? (
     <Pressable onPress={() => { haptic(); setRestView('') }} accessibilityRole="button" accessibilityLabel={tr('training.focus.openRest')}
       style={({ pressed }) => ({
         flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 14, borderRadius: 999,
@@ -52,16 +54,14 @@ export function FocusTop() {
         {rest.ringing ? '0:00' : L.fmtClock(rest.remaining)}
       </Text>
     </Pressable>
-  ) : duration ? (
-    <Text accessibilityLabel={tr('training.focus.duration', { time: duration })}
-      style={{ fontFamily: font.display, fontSize: 20, color: color.text, fontVariant: ['tabular-nums'] }}>{duration}</Text>
   ) : null
 
   return (
     <GestureDetector gesture={pan}>
       {/* Kopf als native iOS-Toolbar (Glas): links minimieren, rechts Übungen | Stopp als Kapsel */}
       <View style={{ paddingTop: insets.top + NAV_BAR, paddingHorizontal: GUTTER, gap: 4 }}>
-        <Stack.Screen options={{ headerShown: true, headerTransparent: true, headerShadowVisible: false, title: '', headerTitle: clock, headerBackVisible: false }} />
+        {/* Pausen-Screen offen: native Toolbar ausblenden, sonst liegt sie darüber */}
+        <Stack.Screen options={{ headerShown: !restShown, headerTransparent: true, headerShadowVisible: false, title: '', headerBackVisible: false }} />
         <Stack.Toolbar placement="left">
           <Stack.Toolbar.Button icon={sf('down') as never} onPress={minimize} accessibilityLabel={tr('training.focus.minimize')} />
         </Stack.Toolbar>
@@ -69,6 +69,13 @@ export function FocusTop() {
           <Stack.Toolbar.Button icon={sf('list') as never} onPress={openList} accessibilityLabel={tr('training.focus.allExercises')} />
           {t.active ? <Stack.Toolbar.Button icon={sf('stop') as never} onPress={() => void askEnd()} accessibilityLabel={tr('training.bar.stop')} /> : null}
         </Stack.Toolbar>
+        {(duration || restPill) && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, minHeight: 36 }}>
+            {duration ? <Text accessibilityLabel={tr('training.focus.duration', { time: duration })}
+              style={{ fontFamily: font.display, fontSize: 20, color: color.text, fontVariant: ['tabular-nums'] }}>{duration}</Text> : null}
+            {restPill}
+          </View>
+        )}
         {/* Fortschritt je Übung – antippbar; VoiceOver: wischen hoch/runter wechselt die Übung */}
         <View accessible accessibilityRole="adjustable" accessibilityLabel={tr('training.focus.exercises')}
           accessibilityValue={{ text: focusSlot ? tr('training.focus.position', { i: index + 1, n: slots.length, name: focusSlot.step.exercise.name }) : tr('training.strong') }}
