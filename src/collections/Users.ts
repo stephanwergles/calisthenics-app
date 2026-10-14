@@ -53,6 +53,7 @@ export const Users: CollectionConfig = {
         },
         { name: 'paused', type: 'relationship', relationTo: 'progressions', hasMany: true, label: 'Pausiert' },
         { name: 'phases', type: 'json', label: 'Phasen', admin: { description: 'Pause, Urlaub, Verletzung, Equipment – geprüft beim Sync (isPhase)' } },
+        { name: 'challenges', type: 'json', label: 'Eigene Challenges', admin: { description: 'Selbst angelegte Challenges – geprüft beim Sync (isChallenge)' } },
         { name: 'profile', type: 'json', label: 'Profil', admin: { description: 'Ziele, Ausrüstung, Trainingstage, Dauer – geprüft beim Sync (isProfile)' } },
         { name: 'clientUpdatedAt', type: 'number', admin: { readOnly: true } },
       ],

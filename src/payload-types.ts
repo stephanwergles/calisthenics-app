@@ -238,6 +238,18 @@ export interface User {
       | boolean
       | null;
     /**
+     * Selbst angelegte Challenges – geprüft beim Sync (isChallenge)
+     */
+    challenges?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    /**
      * Ziele, Ausrüstung, Trainingstage, Dauer – geprüft beim Sync (isProfile)
      */
     profile?:
@@ -1002,6 +1014,7 @@ export interface UsersSelect<T extends boolean = true> {
         current?: T;
         paused?: T;
         phases?: T;
+        challenges?: T;
         profile?: T;
         clientUpdatedAt?: T;
       };

@@ -443,6 +443,23 @@ export const fmtActivity = (a: Activity) => a.kind === 'challenge' ? fmtChalleng
 
 /* ── Challenges ──────────────────────────────────────────────────────────── */
 
+/** Vorlagen plus eigene Challenges (eigene zuerst) */
+export const allChallenges = (templates: Challenge[], user: UserState): Challenge[] => [...(user.challenges ?? []), ...templates]
+/** eigene Challenge anlegen/ersetzen (ID aus dem Namen + Zeitstempel, stabil nach dem Anlegen) */
+export function withChallenge(user: UserState, c: Omit<Challenge, 'id' | 'custom'> & { id?: ChallengeId }): UserState {
+  const id = c.id ?? `my-${c.name.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'challenge'}-${Date.now().toString(36)}`
+  const clean: Challenge = {
+    id, name: c.name.trim().slice(0, 80), kind: c.kind, unit: c.kind === 'max' ? c.unit : 'reps', custom: true,
+    ...(c.exercise ? { exercise: c.exercise } : {}),
+    ...(c.kind === 'amrap' ? { seconds: Math.round(c.seconds ?? 60) } : {}),
+    ...(c.kind === 'fortime' ? { target: Math.round(c.target ?? 50) } : {}),
+  }
+  const rest = (user.challenges ?? []).filter(x => x.id !== id)
+  return { ...user, challenges: [clean, ...rest] }
+}
+export const withoutChallenge = (user: UserState, id: ChallengeId): UserState =>
+  ({ ...user, challenges: (user.challenges ?? []).filter(x => x.id !== id) })
+
 /** Was ein Versuch misst: Wiederholungen (so viele wie möglich, Maximum) oder Zeit (auf Zeit, Halten) */
 export const challengeMeasuresTime = (c: Challenge) => c.kind === 'fortime' || c.unit === 'seconds'
 /** Ergebnis als Text: „42 Wdh.“ oder „3:05“ */

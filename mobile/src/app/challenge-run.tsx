@@ -27,7 +27,7 @@ const signals = () => platform().signals
 export default function ChallengeRun() {
   const { t } = useApp()
   const { id } = useLocalSearchParams<{ id: string }>()
-  const c = catalogData(t.ix.catalog).challenges.find(x => x.id === id)
+  const c = L.allChallenges(catalogData(t.ix.catalog).challenges, t.state).find(x => x.id === id)
   if (!c) return null
   return <Run c={c} />
 }

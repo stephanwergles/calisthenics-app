@@ -453,6 +453,25 @@ test('Challenges: Vorgabe, Bestwert (mehr bzw. schneller), Formatierung, Cardio 
   assert.equal(C.isActivity({ ...a1, value: undefined }), false, 'Challenge ohne Ergebnis ungültig')
 })
 
+test('Eigene Challenges: anlegen, bereinigen, mit Vorlagen zusammenführen, löschen', async () => {
+  const { challenges } = JSON.parse(readFileSync(new URL('../src/seed/challenges.json', import.meta.url), 'utf8'))
+  let st = L.withChallenge(state, { name: '  50 Burpees  ', kind: 'fortime', unit: 'seconds', target: 50 })
+  const mine = st.challenges![0]
+  assert.equal(mine.name, '50 Burpees')
+  assert.equal(mine.unit, 'reps', 'auf Zeit zählt Wiederholungen')
+  assert.equal(mine.custom, true)
+  assert.match(mine.id, /^my-50-burpees-/)
+  assert.equal(L.allChallenges(challenges, st)[0].id, mine.id, 'eigene zuerst')
+  st = L.withChallenge(st, { ...mine, target: 60 })
+  assert.equal(st.challenges!.length, 1, 'gleiche ID ersetzt')
+  assert.equal(st.challenges![0].target, 60)
+  const C = await import('../src/sync/convert.ts')
+  assert.ok(C.isState(st), 'eigene Challenge besteht die Sync-Prüfung')
+  assert.equal(C.isState({ ...st, challenges: [{ ...mine, kind: 'amrap', seconds: 2 }] }), false, 'zu kurze Zeit ungültig')
+  assert.deepEqual(C.docToState({ current: {}, paused: [], challenges: st.challenges }).challenges, st.challenges)
+  assert.equal(L.withoutChallenge(st, mine.id).challenges!.length, 0)
+})
+
 test('Kann ich schon: Ziel-Leitern auf die letzte Stufe, Skill erreicht', () => {
   const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
   const wd = skills.find((s: { id: string }) => s.id === 'weighted-dip')

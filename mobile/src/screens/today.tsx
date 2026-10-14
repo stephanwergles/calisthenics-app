@@ -154,7 +154,7 @@ function Chip({ text, muted }: { text: string; muted?: boolean }) {
 
 function ChallengeCard() {
   const { t } = useApp()
-  const { challenges } = catalogData(t.ix.catalog)
+  const challenges = L.allChallenges(catalogData(t.ix.catalog).challenges, t.state)
   const last = t.activities.filter(a => a.kind === 'challenge').sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.updatedAt ?? 0) - (a.updatedAt ?? 0)))[0]
   const lastC = last && challenges.find(c => c.id === last.challenge)
   return (

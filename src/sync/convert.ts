@@ -4,7 +4,7 @@
    Payload liefert leere Felder als null, Relationen je nach depth als ID oder
    Objekt und Array-Zeilen mit eigener `id`. Das App-Modell kennt nichts davon. */
 import { MAX_GOALS, MUSCLE_AREAS, NOTE_MAX, TENDONS } from '../domain/model.ts'
-import type { Activity, AssessmentData, Catalog, Equipment, Exercise, ExerciseMeta, Phase, Plan, Profile, Skill, SplitTemplate, Template, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
+import type { Activity, AssessmentData, Catalog, Challenge, Equipment, Exercise, ExerciseMeta, Phase, Plan, Profile, Skill, SplitTemplate, Template, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
 
 type Doc = Record<string, any>
 const idOf = (v: any): string => (v && typeof v === 'object' ? v.id : v)
@@ -86,6 +86,7 @@ export function docToState(state: Doc | null | undefined): UserState {
     paused: (state?.paused ?? []).map(idOf),
     profile: opt(state?.profile) as UserState['profile'],
     phases: (state?.phases as UserState['phases'])?.length ? state!.phases : undefined,
+    challenges: (state?.challenges as UserState['challenges'])?.length ? state!.challenges : undefined,
     updatedAt: opt<number>(state?.clientUpdatedAt),
   })
 }
@@ -136,6 +137,15 @@ export function isState(s: any): s is UserState {
     && Array.isArray(s.paused) && s.paused.every(isId)
     && (s.profile === undefined || isProfile(s.profile))
     && (s.phases === undefined || (Array.isArray(s.phases) && s.phases.length <= 50 && s.phases.every(isPhase)))
+    && (s.challenges === undefined || (Array.isArray(s.challenges) && s.challenges.length <= 50 && s.challenges.every(isChallenge)))
+}
+/** eigene Challenge: Name, Art, Einheit, je nach Art Zeit oder Zielzahl, optional Übung */
+export function isChallenge(c: any): c is Challenge {
+  return !!c && isId(c.id) && typeof c.name === 'string' && c.name.trim().length > 0 && c.name.length <= 80
+    && ['amrap', 'fortime', 'max'].includes(c.kind) && ['reps', 'seconds'].includes(c.unit)
+    && (c.exercise === undefined || isId(c.exercise))
+    && (c.kind !== 'amrap' || (Number.isInteger(c.seconds) && c.seconds >= 10 && c.seconds <= 3600))
+    && (c.kind !== 'fortime' || (Number.isInteger(c.target) && c.target >= 1 && c.target <= 10000))
 }
 export function isPhase(p: any): p is Phase {
   return !!p && isId(p.id) && ['pause', 'vacation', 'injury', 'equipment'].includes(p.kind) && isDate(p.from)

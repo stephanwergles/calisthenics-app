@@ -12,17 +12,25 @@ export default function ChallengeScreen() {
   const { t } = useApp()
   const first = useIsFirst()
   const { id } = useLocalSearchParams<{ id: string }>()
-  const c = catalogData(t.ix.catalog).challenges.find(x => x.id === id)
+  const c = L.allChallenges(catalogData(t.ix.catalog).challenges, t.state).find(x => x.id === id)
   if (!c) return <SheetScreen title={tr('skills.notFound')} />
   const ex = c.exercise ? t.ix.exercises.get(c.exercise) : undefined
   const attempts = L.challengeAttempts(t.activities, c.id)
   const best = L.challengeBest(c, t.activities)
+  const removeChallenge = async () => {
+    if (!await ask({ title: tr('challenge.deleteChallengeTitle', { name: c.name }), message: tr('challenge.deleteChallengeMessage'), ok: tr('challenge.deleteChallenge'), destructive: true })) return
+    router.back()
+    t.setState(st => L.withoutChallenge(st, c.id))
+  }
   const remove = async (aid: string) => {
     if (await ask({ title: tr('challenge.deleteTitle'), message: tr('challenge.deleteMessage'), ok: tr('challenge.delete'), destructive: true })) t.removeActivity(aid)
   }
   return (
     <>
-      <ModalToolbar close={first} />
+      <ModalToolbar close={first} menuLabel={tr('editor.more')} menu={c.custom ? [
+        { title: tr('challenge.editTitle'), icon: 'edit', onPress: () => router.push({ pathname: '/challenges/edit', params: { id: c.id } }) },
+        { title: tr('challenge.deleteChallenge'), icon: 'trash', destructive: true, onPress: () => void removeChallenge() },
+      ] : undefined} />
       <SheetScreen title={c.name} sub={L.fmtChallengeRule(c)}
         footer={<Button variant="primary" size="lg" icon="play" title={tr('challenge.start')} onPress={() => router.push({ pathname: '/challenge-run', params: { id: c.id } })} />}>
         {ex && <ExerciseMedia exercise={ex} style={{ width: '100%', aspectRatio: 1.3 }} />}

@@ -199,6 +199,8 @@ export interface Challenge {
   exercise?: ExerciseId;
   seconds?: number;
   target?: number;
+  /** selbst angelegt (Nutzerstand, synchronisiert) */
+  custom?: boolean;
 }
 
 /** Profil: Eingaben für Skill- und Planvorschläge. Fehlt es, gibt es noch keine Ziele. */
@@ -230,6 +232,8 @@ export interface UserState {
   paused: ProgressionId[];
   profile?: Profile;
   phases?: Phase[];
+  /** eigene Challenges (zusätzlich zu den Vorlagen) */
+  challenges?: Challenge[];
   /** letzte Änderung in ms – Grundlage für den Sync */
   updatedAt?: number;
 }
