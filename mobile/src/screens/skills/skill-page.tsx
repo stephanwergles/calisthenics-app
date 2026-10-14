@@ -106,8 +106,9 @@ export function SkillPage({ id }: { id: string }) {
                 accessibilityLabel={`${tr(x.done ? 'skills.prereqDone' : 'skills.prereqMissing', { name: x.name })}${x.done ? '' : `, ${tr('skills.prereqNow', { name: x.now })}`}`}
                 onPress={() => openLadder(x.pid)}
                 style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingLeft: 16, paddingRight: 14, minHeight: 56, backgroundColor: pressed ? 'rgba(255,255,255,0.06)' : 'transparent' })}>
-                <View style={{ width: 22, alignItems: 'center' }}>
-                  <Icon name={x.done ? 'checkCircle' : 'circle'} size={20} color={x.done ? color.accent : color.muted} />
+                {/* Status, kein Bedienelement: erfüllt = Haken, offen = Schloss (wie in der Skill-Liste) */}
+                <View style={{ width: 22, alignItems: 'center' }} accessibilityElementsHidden>
+                  <Icon name={x.done ? 'checkCircle' : 'lock'} size={x.done ? 20 : 15} color={x.done ? color.accent : color.muted} />
                 </View>
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text variant="label">{x.name}</Text>

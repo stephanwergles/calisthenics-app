@@ -55,6 +55,7 @@ function Root({ fonts }: { fonts: boolean }) {
         <Stack.Screen name="exercise" options={formSheet([0.6, 1])} />
         <Stack.Screen name="activity" options={formSheet([0.7, 1])} />
         <Stack.Screen name="phase" options={formSheet([0.62, 1])} />
+        <Stack.Screen name="swap" options={formSheet([0.55, 1])} />
         <Stack.Screen name="exercises" options={modalWithHeader()} />
         <Stack.Screen name="progression/[pid]" options={modalWithHeader()} />
         <Stack.Screen name="day/[id]" options={modalWithHeader()} />

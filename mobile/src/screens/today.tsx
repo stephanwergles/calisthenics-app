@@ -1,7 +1,7 @@
 /* Heute: die Woche auf einen Blick, das Workout des Tages als große Karte, darunter die Skills
    mit dem kürzesten Weg zur nächsten Stufe. (Web: src/client/components/HomeView.tsx) */
-import { useMemo, useState } from 'react'
-import { Pressable, ScrollView, View } from 'react-native'
+import { useMemo } from 'react'
+import { ScrollView, View } from 'react-native'
 import { router } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
 import { getLocale, intl, t as tr, tn } from '@lever/core/i18n/index.ts'
@@ -12,7 +12,6 @@ import { Button, Card, color, ExerciseStill, font, GUTTER, hasClip, Icon, Ring, 
 export function Today() {
   const { t, slots, started, doneToday: done, start, openTraining } = useApp()
   const w = t.ix.workouts.get(t.workout)!
-  const [picking, setPicking] = useState(false)
   const locale = getLocale()
   const week = useMemo(() => L.weekStrip(t.ix, t.sessions, t.activities, t.today), [t.ix, t.sessions, t.activities, t.today, locale])
   const streak = useMemo(() => L.streakWeeks(t.sessions, t.today, t.state.phases), [t.sessions, t.today, t.state.phases])
@@ -99,28 +98,9 @@ export function Today() {
               {done && <Button icon="play" title={cta} onPress={onStart} />}
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <Button style={{ flex: 1 }} variant="secondary" icon="list" title={tr('home.exercises')} onPress={() => router.push('/exercises')} />
-                <Button style={{ flex: 1 }} variant="secondary" icon="down" title={tr('home.swap')} onPress={() => setPicking(p => !p)} />
+                <Button style={{ flex: 1 }} variant="secondary" icon="swap" title={tr('home.swap')} onPress={() => router.push('/swap')} />
               </View>
             </View>
-            {picking && (
-              <View style={{ gap: 8, marginTop: 4 }} accessibilityLabel={tr('home.pickAria')}>
-                {L.workoutsInWeekOrder(t.ix).map(x => {
-                  const on = x.id === t.workout
-                  return (
-                    <Pressable key={x.id} accessibilityRole="button" accessibilityState={{ selected: on }}
-                      onPress={() => { t.chooseWorkout(x.id); setPicking(false) }}
-                      style={({ pressed }) => ({ padding: 14, borderRadius: 16, borderWidth: 1, borderColor: on ? color.accentLine : color.line, backgroundColor: on ? color.accentDim : color.card2, opacity: pressed ? 0.8 : 1, gap: 2 })}>
-                      <Text variant="title" style={{ fontSize: 19 }}>{x.name}</Text>
-                      <Text variant="small">{x.focus}</Text>
-                      <Text variant="small" style={{ color: x.id === t.recommended ? color.accent : color.muted, fontFamily: font.bodySemi }}>
-                        {L.plannedDays(t.ix, x.id).map(d => L.WEEKDAY_SHORT[d]).join(' · ') || '—'}
-                      </Text>
-                    </Pressable>
-                  )
-                })}
-                <Button variant="ghost" icon="right" title={tr('home.manage')} onPress={() => { setPicking(false); router.navigate('/plan') }} />
-              </View>
-            )}
           </View>
         </Card>
 

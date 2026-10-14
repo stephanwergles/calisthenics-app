@@ -31,6 +31,8 @@ export const editor: Shape<typeof de> = {
   stage: 'Stage {stage}/{total}',
   weekdays: 'Weekdays',
   instead: 'instead of {name}',
+  takenHint: 'Already taken – tapping replaces: {list}',
+  weekdaysHint: 'Tap the days this workout is on.',
   slotSub: 'Stage {stage}/{total} · target {target}',
   sets: 'Sets',
   earlier: 'Earlier',

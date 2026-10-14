@@ -28,6 +28,8 @@ export const editor = {
   stage: 'Stufe {stage}/{total}',
   weekdays: 'Wochentage',
   instead: 'statt {name}',
+  takenHint: 'Schon belegt – antippen ersetzt dort: {list}',
+  weekdaysHint: 'Tippe die Tage an, an denen dieses Workout dran ist.',
   slotSub: 'Stufe {stage}/{total} · Ziel {target}',
   sets: 'Sätze',
   earlier: 'Früher',
