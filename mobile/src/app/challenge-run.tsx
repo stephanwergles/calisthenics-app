@@ -38,6 +38,10 @@ function Run({ c }: { c: Challenge }) {
   const [prepEnd] = useState(() => Date.now() + PREP * 1000)
   const startRef = useRef(0)
   const [count, setCount] = useState(0)
+  // Sätze: Satzgröße einmal einstellen, dann je Satz ein Tipp; Einzeltipps zählen in den laufenden Satz
+  const [chunk, setChunk] = useState(() => Math.min(10, c.target ?? 10))
+  const [parts, setParts] = useState<number[]>([])
+  const partsSum = parts.reduce((a, b) => a + b, 0)
   const [result, setResult] = useState<number | null>(null)
   const [note, setNote] = useState('')
   const timed = L.challengeMeasuresTime(c)
@@ -56,25 +60,43 @@ function Run({ c }: { c: Challenge }) {
   }, [now]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const elapsed = startRef.current ? (now - startRef.current) / 1000 : 0
-  const finish = (reps: number) => {
+  const finish = (reps: number, done = parts) => {
     if (phase !== 'run') return
     signals().alarm(); signals().haptic('warning')
+    // Rest aus Einzeltipps als letzter Satz
+    const rest = reps - done.reduce((a, b) => a + b, 0)
+    setParts(rest > 0 ? [...done, rest] : done)
     setResult(timed ? (Date.now() - startRef.current) / 1000 : reps)
     setPhase('result')
   }
   const add = (n: number) => {
     if (phase !== 'run') return
-    const next = Math.max(0, count + n)
+    // −1 ohne offene Einzeltipps: eine Wiederholung aus dem letzten eingetragenen Satz nehmen
+    if (n < 0 && count === partsSum && parts.length) {
+      const last = parts[parts.length - 1] - 1
+      setParts(last > 0 ? [...parts.slice(0, -1), last] : parts.slice(0, -1)); setCount(count - 1); signals().haptic('tap')
+      return
+    }
+    const next = Math.max(partsSum, count + n)
     signals().haptic('tap'); setCount(next)
     if (c.kind === 'fortime' && next >= (c.target ?? 0)) finish(next)
+  }
+  /** ganzen Satz eintragen (inkl. der Einzeltipps seit dem letzten Satz) */
+  const addSet = () => {
+    if (phase !== 'run') return
+    const n = Math.max(chunk, count - partsSum)
+    const next = partsSum + n
+    const done = [...parts, n]
+    signals().haptic('success'); setParts(done); setCount(next)
+    if (c.kind === 'fortime' && next >= (c.target ?? 0)) finish(next, done)
   }
   const close = async () => {
     if (phase === 'result' || await ask({ title: tr('challenge.cancelTitle'), message: tr('challenge.cancelMessage'), ok: tr('challenge.cancelOk'), cancel: tr('challenge.keepGoing'), destructive: true })) router.back()
   }
 
   if (phase === 'result' && result !== null) {
-    return <Result c={c} value={result} note={note} setNote={setNote} onSave={() => {
-      t.addActivity(L.challengeAttempt(c, t.today, result, { note }))
+    return <Result c={c} value={result} parts={parts.length > 1 ? parts : []} note={note} setNote={setNote} onSave={() => {
+      t.addActivity(L.challengeAttempt(c, t.today, result, { note, ...(parts.length > 1 ? { parts } : {}) }))
       toast(tr('challenge.saved'), 'success'); router.back()
     }} onDiscard={() => router.back()} />
   }
@@ -109,10 +131,22 @@ function Run({ c }: { c: Challenge }) {
         <Text variant="muted" style={{ fontSize: 19, marginTop: 12, fontVariant: ['tabular-nums'] }}>{sub}</Text>
       </Pressable>
 
+      {/* Sätze statt Einzeltipps: Satzgröße einstellen, Satz eintragen (nicht beim Maximum – ein Satz) */}
+      {phase === 'run' && c.kind !== 'max' && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Button icon="minus" label={tr('challenge.smaller')} onPress={() => setChunk(n => Math.max(1, n - 1))} />
+          <Text accessibilityLabel={`${tr('challenge.setSize')}: ${chunk}`}
+            style={{ minWidth: 44, textAlign: 'center', fontFamily: font.display, fontSize: 28, color: color.text, fontVariant: ['tabular-nums'] }}>{chunk}</Text>
+          <Button icon="plus" label={tr('challenge.bigger')} onPress={() => setChunk(n => n + 1)} />
+          <Button variant="primary" size="lg" icon="plus" title={tr('challenge.addSet', { n: Math.max(chunk, count - partsSum) })} onPress={addSet} style={{ flex: 1 }} />
+        </View>
+      )}
+      {phase === 'run' && parts.length > 0 && (
+        <Text variant="small" style={{ textAlign: 'center', fontVariant: ['tabular-nums'] }}>{tr('challenge.sets', { list: parts.join(' · ') })}</Text>
+      )}
       {phase === 'run' && (
         <ButtonRow>
           {counting && <Button size="lg" icon="minus" label={tr('challenge.undo')} onPress={() => add(-1)} style={{ width: 64 }} />}
-          {c.kind === 'fortime' && <Button size="lg" title="+5" onPress={() => add(5)} style={{ width: 80 }} />}
           {c.kind === 'max' && <Button variant="primary" size="lg" icon={c.unit === 'seconds' ? 'stop' : 'check'}
             title={c.unit === 'seconds' ? tr('challenge.stopHold') : tr('challenge.done')} onPress={() => finish(count)} style={{ flex: 1 }} />}
           {c.kind !== 'max' && <Button size="lg" icon="check" title={tr('challenge.done')} onPress={() => finish(count)} style={{ flex: 1 }} />}
@@ -127,8 +161,8 @@ function BigNumber({ text, accent }: { text: string; accent?: boolean }) {
 }
 
 /** Ergebnis: Wert, neuer Bestwert oder Vergleich, Notiz, Speichern/Verwerfen */
-function Result({ c, value, note, setNote, onSave, onDiscard }: {
-  c: Challenge; value: number; note: string; setNote: (v: string) => void; onSave: () => void; onDiscard: () => void
+function Result({ c, value, parts, note, setNote, onSave, onDiscard }: {
+  c: Challenge; value: number; parts: number[]; note: string; setNote: (v: string) => void; onSave: () => void; onDiscard: () => void
 }) {
   const { t } = useApp()
   const insets = useSafeAreaInsets()
@@ -149,6 +183,7 @@ function Result({ c, value, note, setNote, onSave, onDiscard }: {
         )}
         {!isBest && best && <Text variant="muted">{tr('challenge.vsBest', { value: L.fmtChallengeValue(c, best.value!) })}</Text>}
         {last && <Text variant="muted">{tr('challenge.vsLast', { value: L.fmtChallengeValue(c, last.value!) })}</Text>}
+        {parts.length > 0 && <Text variant="muted">{tr('challenge.sets', { list: parts.join(' · ') })}</Text>}
         <NoteInput label={tr('challenge.note')} value={note} onChangeText={setNote} placeholder={tr('challenge.notePlaceholder')} />
       </View>
       <View style={{ gap: 10 }}>
