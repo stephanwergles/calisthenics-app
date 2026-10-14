@@ -61,7 +61,7 @@ export function FocusTop() {
       {/* Kopf als native iOS-Toolbar (Glas): links minimieren, rechts Übungen | Stopp als Kapsel */}
       <View style={{ paddingTop: insets.top + NAV_BAR, paddingHorizontal: GUTTER, gap: 4 }}>
         {/* Pausen-Screen offen: native Toolbar ausblenden, sonst liegt sie darüber */}
-        <Stack.Screen options={{ headerShown: !restShown, headerTransparent: true, headerShadowVisible: false, title: '', headerTitle: () => null, headerBackVisible: false }} />
+        <Stack.Screen options={{ headerShown: !restShown }} />
         <Stack.Toolbar placement="left">
           <Stack.Toolbar.Button icon={sf('down') as never} onPress={minimize} accessibilityLabel={tr('training.focus.minimize')} />
         </Stack.Toolbar>

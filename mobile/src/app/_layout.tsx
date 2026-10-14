@@ -49,7 +49,10 @@ function Root({ fonts }: { fonts: boolean }) {
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.bg } }}>
         <Stack.Screen name="(tabs)" />
         {/* Training: Vollbild, nach unten wegwischbar (minimieren); Session-Leiste bleibt als Mini-Player */}
-        <Stack.Screen name="training" options={{ presentation: 'fullScreenModal', gestureEnabled: true, gestureDirection: 'vertical' }} />
+        {/* Kopf-Optionen fest hier, nicht erst in der Ansicht – sonst steht beim Start kurz der
+            Routenname im undurchsichtigen Kopf und alles springt */}
+        <Stack.Screen name="training" options={{ presentation: 'fullScreenModal', gestureEnabled: true, gestureDirection: 'vertical',
+          headerShown: true, headerTransparent: true, headerShadowVisible: false, title: '', headerTitle: () => null, headerBackVisible: false }} />
         {/* Aufgaben-Sheets */}
         <Stack.Screen name="set" options={formSheet([0.62, 1])} />
         <Stack.Screen name="exercise" options={formSheet([0.6, 1])} />
