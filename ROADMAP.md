@@ -231,7 +231,7 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 - [ ] Impressum/Anbieter, AGB/EULA
 - [ ] Datenschutzfreundliche Nutzungsstatistik (ohne Tracking-SDK) für Onboarding-Abbrüche
 - [ ] Review-Vorbereitung: Demo-Account, Guideline 4.2 (native Funktionen: Tab-Leiste, Benachrichtigungen, HealthKit, Haptik)
-- [ ] In-App-Purchase technisch (StoreKit und Google Play Billing, serverseitige Prüfung, Freischaltung im Profil) — Modell wird außerhalb des Repos entschieden
+- [ ] In-App-Purchase technisch (StoreKit und Google Play Billing, serverseitige Prüfung, Freischaltung im Profil, offline zwischengespeichert) — Modell entschieden 14.10.2026, Details privat (nicht im Repo). Technisch nötig: Freischaltung „Pro“ am Nutzer, Grenzen für die freie Version an einer Stelle (Anzahl Skill-Ziele, Workouts, Vorlagen), Feld „frei/Pro“ an Vorlagen im Admin; Sync und Export bleiben immer frei
 
 ### Phase 3.4 — Ausbau nach dem Release
 
