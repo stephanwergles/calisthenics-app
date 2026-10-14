@@ -2487,6 +2487,292 @@
         "Rumpf",
         "Hüftbeuger"
       ]
+    },
+    {
+      "id": "ring-support-hold",
+      "name": "Ringstütz",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Stütz auf den Ringen, Arme gestreckt, Ringe eng am Körper.",
+        "execution": "Schultern nach unten drücken, Ellenbogen gestreckt, Körper gerade halten. Die Ringe wollen nach außen – mit Spannung in Brust und Lat eng am Körper halten.",
+        "faults": "Schultern zu den Ohren · Ringe driften nach außen · Ellenbogen gebeugt",
+        "scaling": "Leichter: Füße am Boden zur Entlastung. Schwerer: Ringe nach außen drehen (RTO-Stütz)."
+      },
+      "media": {
+        "videoQuery": "ring support hold tutorial"
+      },
+      "cues": [
+        "Schultern weg von den Ohren",
+        "Ringe eng an die Hüfte",
+        "Ellenbogen ganz gestreckt"
+      ],
+      "muscles": [
+        "Brust",
+        "Trizeps",
+        "vordere Schulter"
+      ]
+    },
+    {
+      "id": "rto-support-hold",
+      "name": "RTO-Stütz",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Ringstütz wie gewohnt, dann die Handflächen nach vorn bzw. außen drehen.",
+        "execution": "Aus dem stabilen Ringstütz die Ringe nach außen drehen (Rings Turned Out), Arme bleiben gestreckt, Schultern tief. Halten, ohne dass die Ringe zurückdrehen.",
+        "faults": "Ringe drehen zurück · Ellenbogen beugen sich · Hohlkreuz",
+        "scaling": "Leichter: nur leicht ausdrehen. Schwerer: volle 45° Ausdrehung, länger halten."
+      },
+      "media": {
+        "videoQuery": "rings turned out support hold"
+      },
+      "cues": [
+        "Handflächen nach vorn drehen",
+        "Ellenbogenbeuge zeigt nach vorn",
+        "Schultern tief halten"
+      ],
+      "muscles": [
+        "Bizeps-Sehne",
+        "Brust",
+        "vordere Schulter"
+      ]
+    },
+    {
+      "id": "ring-dip",
+      "name": "Ring-Dips",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Ringstütz, Arme gestreckt, Ringe eng am Körper.",
+        "execution": "Kontrolliert absenken, bis die Schultern unter den Ellenbogen sind, Ringe bleiben eng. Aus dem tiefsten Punkt wieder in den gestreckten Stütz drücken.",
+        "faults": "Ringe wackeln nach außen · zu flach · Schultern rollen nach vorn",
+        "scaling": "Leichter: Negative oder Band-Unterstützung. Schwerer: RTO-Dips oder Zusatzgewicht."
+      },
+      "media": {
+        "videoQuery": "ring dips tutorial"
+      },
+      "cues": [
+        "Ringe eng an den Körper",
+        "Schultern unter Ellenbogenhöhe",
+        "Oben ganz ausdrücken"
+      ],
+      "muscles": [
+        "Trizeps",
+        "Brust",
+        "vordere Schulter"
+      ]
+    },
+    {
+      "id": "rto-dip",
+      "name": "RTO-Dips",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im RTO-Stütz, Ringe nach außen gedreht.",
+        "execution": "Wie Ring-Dips absenken und hochdrücken, oben jeweils die Ringe wieder nach außen drehen. Die Ausdrehung ist die Vorbereitung auf Ring-Muscle-up und Kreuz.",
+        "faults": "Ringe bleiben oben parallel · Tempo zu hoch · Schultern verlieren Spannung",
+        "scaling": "Leichter: Ring-Dips mit kurzer RTO-Pause oben. Schwerer: langsame Exzentrik, Zusatzgewicht."
+      },
+      "media": {
+        "videoQuery": "rto ring dips"
+      },
+      "cues": [
+        "Oben Ringe nach außen",
+        "Kontrolliert absenken",
+        "Schultern tief"
+      ],
+      "muscles": [
+        "Trizeps",
+        "Brust",
+        "Bizeps-Sehne"
+      ]
+    },
+    {
+      "id": "tuck-l-sit",
+      "name": "Tuck L-Sit",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Stütz auf Parallettes oder Boden, Hände neben der Hüfte.",
+        "execution": "Schultern nach unten drücken, Hüfte anheben und die Knie eng zur Brust ziehen. Füße vom Boden lösen und halten, Arme bleiben gestreckt.",
+        "faults": "Schultern zu den Ohren · Arme gebeugt · Hüfte sinkt nach hinten",
+        "scaling": "Leichter: Füße leicht am Boden lassen. Schwerer: ein Bein strecken (einbeiniger L-Sit)."
+      },
+      "media": {
+        "videoQuery": "tuck l sit tutorial"
+      },
+      "cues": [
+        "Schultern runter drücken",
+        "Knie zur Brust",
+        "Arme gestreckt"
+      ],
+      "muscles": [
+        "Hüftbeuger",
+        "Bauch",
+        "Trizeps"
+      ]
+    },
+    {
+      "id": "one-leg-l-sit",
+      "name": "Einbeiniger L-Sit",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Im Tuck L-Sit auf Parallettes oder Boden.",
+        "execution": "Aus dem Tuck ein Bein nach vorn strecken, das andere bleibt angezogen. Bein waagerecht, Knie durchgedrückt. Seiten pro Satz abwechseln.",
+        "faults": "Gestrecktes Bein sinkt · Rücken rund · Schultern hoch",
+        "scaling": "Leichter: kürzer halten. Schwerer: beide Beine gestreckt (L-Sit)."
+      },
+      "media": {
+        "videoQuery": "one leg l sit progression"
+      },
+      "cues": [
+        "Bein gestreckt und waagerecht",
+        "Hüfte nach vorn schieben",
+        "Schultern tief"
+      ],
+      "muscles": [
+        "Hüftbeuger",
+        "Bauch",
+        "Quadrizeps"
+      ]
+    },
+    {
+      "id": "wall-walk",
+      "name": "Wall Walks",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "In der Liegestützposition, Füße an der Wand.",
+        "execution": "Mit den Füßen die Wand hochlaufen und die Hände zur Wand setzen, bis der Körper fast senkrecht steht (Bauch zur Wand). Kurz halten und kontrolliert zurücklaufen.",
+        "faults": "Hohlkreuz · Hände zu weit von der Wand · Kopf im Nacken",
+        "scaling": "Leichter: nur halbe Höhe. Schwerer: Nase bis fast an die Wand, oben 5 s halten."
+      },
+      "media": {
+        "videoQuery": "wall walk handstand"
+      },
+      "cues": [
+        "Körper als Linie",
+        "Hände Schritt für Schritt zur Wand",
+        "Blick zwischen die Hände"
+      ],
+      "muscles": [
+        "Schultern",
+        "Trizeps",
+        "Bauch"
+      ]
+    },
+    {
+      "id": "wall-shoulder-tap",
+      "name": "Wand-Handstand Shoulder Taps",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Im Handstand mit Bauch zur Wand, Körper gerade.",
+        "execution": "Gewicht auf eine Hand verlagern und mit der anderen kurz die Schulter antippen. Abwechseln, Hüfte und Beine bleiben ruhig.",
+        "faults": "Hüfte pendelt · Körper knickt ein · Tippen zu hastig",
+        "scaling": "Leichter: Hand nur kurz anheben. Schwerer: länger einarmig halten."
+      },
+      "media": {
+        "videoQuery": "wall handstand shoulder taps"
+      },
+      "cues": [
+        "Gewicht langsam verlagern",
+        "Hüfte ruhig halten",
+        "Stützarm gestreckt"
+      ],
+      "muscles": [
+        "Schultern",
+        "Bauch",
+        "Handgelenke"
+      ]
+    },
+    {
+      "id": "handstand-kick-up",
+      "name": "Handstand Kick-ups (frei)",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Stand, Arme über dem Kopf, ein Bein vorn.",
+        "execution": "Mit kontrolliertem Schwung in den Handstand ohne Wand und die Balance über die Finger halten. Gezählt wird die längste saubere Haltezeit je Satz.",
+        "faults": "Zu viel Schwung · Arme gebeugt · Balance nur über die Schultern",
+        "scaling": "Leichter: Kick-ups an der Wand mit Abstand. Schwerer: länger frei halten (freier Handstand)."
+      },
+      "media": {
+        "videoQuery": "handstand kick up balance"
+      },
+      "cues": [
+        "Mit Gefühl abspringen",
+        "Finger drücken in den Boden",
+        "Körper fest wie eine Linie"
+      ],
+      "muscles": [
+        "Schultern",
+        "Handgelenke",
+        "Bauch"
+      ]
+    },
+    {
+      "id": "wall-hspu-negative",
+      "name": "Wand-HSPU negativ",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Handstand mit Rücken zur Wand, Hände schulterbreit.",
+        "execution": "Langsam (3–5 s) bis der Kopf den Boden berührt absenken, Ellenbogen leicht nach vorn. Unten abrollen oder abstellen und wieder hochlaufen.",
+        "faults": "Absacken statt kontrolliert · Ellenbogen weit nach außen · Hohlkreuz",
+        "scaling": "Leichter: auf ein Kissen absenken. Schwerer: Teilbewegung hochdrücken, dann ganze HSPU."
+      },
+      "media": {
+        "videoQuery": "wall handstand push up negative"
+      },
+      "cues": [
+        "Langsam absenken",
+        "Ellenbogen schräg nach vorn",
+        "Körperspannung halten"
+      ],
+      "muscles": [
+        "Schultern",
+        "Trizeps",
+        "oberer Rücken"
+      ]
+    },
+    {
+      "id": "jumping-muscle-up",
+      "name": "Muscle-up mit Absprung (niedrige Stange)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "An einer Stange etwa auf Brusthöhe, Füße am Boden, falscher Griff möglich.",
+        "execution": "Mit Absprung explosiv zur Stange ziehen, die Ellenbogen schnell über die Stange kippen und in den Stütz drücken. Der Sprung ersetzt das Band – der Übergang wird gelernt.",
+        "faults": "Zu viel Sprung, kaum Zug · Ellenbogen nacheinander · Brust bleibt unter der Stange",
+        "scaling": "Leichter: höher abspringen. Schwerer: weniger Sprung, dann Muscle-up mit Band oder Negative."
+      },
+      "media": {
+        "videoQuery": "jumping muscle up low bar"
+      },
+      "cues": [
+        "Zug zur Hüfte, nicht zum Kinn",
+        "Ellenbogen gleichzeitig kippen",
+        "Oben ganz ausdrücken"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Trizeps",
+        "Brust"
+      ]
     }
   ],
   "progressions": [
@@ -2564,6 +2850,17 @@
       "name": "Muscle-up · Übergang",
       "region": "pull",
       "steps": [
+        {
+          "exercise": "jumping-muscle-up",
+          "target": {
+            "label": "4 × 3–6",
+            "sets": 4,
+            "restSec": 120,
+            "unlockAt": 6,
+            "min": 3,
+            "max": 6
+          }
+        },
         {
           "exercise": "muscle-up-band",
           "target": {
@@ -2728,6 +3025,28 @@
       "region": "core",
       "steps": [
         {
+          "exercise": "tuck-l-sit",
+          "target": {
+            "label": "3 × 10–20 s",
+            "sets": 3,
+            "restSec": 90,
+            "unlockAt": 20,
+            "min": 10,
+            "max": 20
+          }
+        },
+        {
+          "exercise": "one-leg-l-sit",
+          "target": {
+            "label": "3 × 8–15 s",
+            "sets": 3,
+            "restSec": 90,
+            "unlockAt": 15,
+            "min": 8,
+            "max": 15
+          }
+        },
+        {
           "exercise": "l-sit-floor",
           "target": {
             "label": "6 × max — Σ 45–60 s",
@@ -2857,6 +3176,17 @@
           }
         },
         {
+          "exercise": "wall-hspu-negative",
+          "target": {
+            "label": "4 × 3–5",
+            "sets": 4,
+            "restSec": 120,
+            "unlockAt": 5,
+            "min": 3,
+            "max": 5
+          }
+        },
+        {
           "exercise": "handstand-push-up-wall",
           "target": {
             "label": "4 × 3–6",
@@ -2940,6 +3270,17 @@
       "region": "push",
       "steps": [
         {
+          "exercise": "wall-walk",
+          "target": {
+            "label": "3 × 3–5",
+            "sets": 3,
+            "restSec": 90,
+            "unlockAt": 5,
+            "min": 3,
+            "max": 5
+          }
+        },
+        {
           "exercise": "handstand-wall",
           "target": {
             "label": "5 × 20–40 s",
@@ -2951,6 +3292,17 @@
           }
         },
         {
+          "exercise": "wall-shoulder-tap",
+          "target": {
+            "label": "3 × 10–20",
+            "sets": 3,
+            "restSec": 90,
+            "unlockAt": 20,
+            "min": 10,
+            "max": 20
+          }
+        },
+        {
           "exercise": "handstand-heel-pull",
           "target": {
             "label": "5 × 3–5",
@@ -2959,6 +3311,17 @@
             "max": 5,
             "restSec": 90,
             "unlockAt": 5
+          }
+        },
+        {
+          "exercise": "handstand-kick-up",
+          "target": {
+            "label": "5 × 5–15 s",
+            "sets": 5,
+            "restSec": 60,
+            "unlockAt": 15,
+            "min": 5,
+            "max": 15
           }
         },
         {
@@ -3773,6 +4136,57 @@
             "unlockAt": null,
             "min": 1,
             "max": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "ring-dip",
+      "name": "Ring-Dips",
+      "region": "push",
+      "steps": [
+        {
+          "exercise": "ring-support-hold",
+          "target": {
+            "label": "3 × 20–30 s",
+            "sets": 3,
+            "restSec": 90,
+            "unlockAt": 30,
+            "min": 20,
+            "max": 30
+          }
+        },
+        {
+          "exercise": "rto-support-hold",
+          "target": {
+            "label": "3 × 15–30 s",
+            "sets": 3,
+            "restSec": 90,
+            "unlockAt": 30,
+            "min": 15,
+            "max": 30
+          }
+        },
+        {
+          "exercise": "ring-dip",
+          "target": {
+            "label": "4 × 5–10",
+            "sets": 4,
+            "restSec": 150,
+            "unlockAt": 10,
+            "min": 5,
+            "max": 10
+          }
+        },
+        {
+          "exercise": "rto-dip",
+          "target": {
+            "label": "4 × 4–8",
+            "sets": 4,
+            "restSec": 150,
+            "unlockAt": 8,
+            "min": 4,
+            "max": 8
           }
         }
       ]

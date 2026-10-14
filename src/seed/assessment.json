@@ -113,6 +113,7 @@
    "test": "handstand",
    "thresholds": [
     30,
+    45,
     60
    ]
   },
@@ -120,6 +121,8 @@
    "progression": "handstand",
    "test": "handstand",
    "thresholds": [
+    15,
+    30,
     45,
     60
    ]
@@ -135,6 +138,8 @@
    "progression": "l-sit",
    "test": "l-sit",
    "thresholds": [
+    5,
+    10,
     20,
     30
    ]

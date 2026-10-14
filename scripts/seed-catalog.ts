@@ -55,6 +55,49 @@ const createMissing = async (collection: 'skills' | 'splits' | 'templates', id: 
 for (const s of skills) await createMissing('skills', s.id, skillToDoc(s))
 for (const t of splits) await createMissing('splits', t.id, splitToDoc(t))
 for (const t of (seed('templates.json').templates as Template[])) await createMissing('templates', t.id, templateToDoc(t))
+/* Katalog-Ausbau 14.10.2026: neue Stufen vorn/mittig in l-sit, handstand, vertical-push verschieben die
+   Indizes. Nur Werte, die noch genau dem alten Stand entsprechen, werden umgestellt – im Admin gepflegte
+   Werte bleiben. Idempotent: nach der Umstellung passt der alte Wert nicht mehr. */
+const idOf = (v: unknown) => (typeof v === 'object' && v ? (v as { id: string }).id : v as string)
+const STEP_MOVES: { skill: string; progression: string; from: number; to: number }[] = [
+  { skill: 'handstand-push-up', progression: 'handstand', from: 1, to: 3 },
+  { skill: 'human-flag', progression: 'handstand', from: 0, to: 1 },
+  { skill: 'freestanding-hspu', progression: 'handstand', from: 2, to: 5 },
+  { skill: 'freestanding-hspu', progression: 'vertical-push', from: 2, to: 3 },
+  { skill: 'press-handstand', progression: 'handstand', from: 2, to: 5 },
+  { skill: 'v-sit', progression: 'l-sit', from: 1, to: 3 },
+]
+let fixed = 0
+for (const sid of [...new Set(STEP_MOVES.map(m => m.skill))]) {
+  const doc = (await payload.find({ collection: 'skills', where: { id: { equals: sid } }, limit: 1, depth: 0 })).docs[0] as { prerequisites?: { progression: unknown; minStep: number }[] } | undefined
+  if (!doc?.prerequisites) continue
+  let changed = false
+  const prerequisites = doc.prerequisites.map(p => {
+    const m = STEP_MOVES.find(x => x.skill === sid && x.progression === idOf(p.progression) && x.from === p.minStep)
+    if (!m) return { progression: idOf(p.progression), minStep: p.minStep }
+    changed = true
+    return { progression: idOf(p.progression), minStep: m.to }
+  })
+  if (changed) { await payload.update({ collection: 'skills', id: sid, data: { prerequisites } as never, depth: 0 }); fixed++ }
+}
+const THRESHOLD_MOVES: Record<string, { from: number[]; to: number[] }> = {
+  'l-sit': { from: [20, 30], to: [5, 10, 20, 30] },
+  handstand: { from: [45, 60], to: [15, 30, 45, 60] },
+  'vertical-push': { from: [30, 60], to: [30, 45, 60] },
+}
+for (const [pid, m] of Object.entries(THRESHOLD_MOVES)) {
+  const p = (await payload.find({ collection: 'progressions', where: { id: { equals: pid } }, limit: 1, depth: 0 })).docs[0] as { assessment?: { test?: string; thresholds?: number[] } } | undefined
+  if (p?.assessment?.test && JSON.stringify(p.assessment.thresholds ?? []) === JSON.stringify(m.from)) {
+    await payload.update({ collection: 'progressions', id: pid, data: { assessment: { test: p.assessment.test, thresholds: m.to } } as never, depth: 0 }); fixed++
+  }
+}
+// neue Leiter als Unterstützung des Ring-Muscle-ups
+const rmu = (await payload.find({ collection: 'skills', where: { id: { equals: 'ring-muscle-up' } }, limit: 1, depth: 0 })).docs[0] as { support?: unknown[] } | undefined
+if (rmu && !(rmu.support ?? []).map(idOf).includes('ring-dip')) {
+  await payload.update({ collection: 'skills', id: 'ring-muscle-up', data: { support: [...(rmu.support ?? []).map(idOf), 'ring-dip'] } as never, depth: 0 }); fixed++
+}
+if (fixed) console.log(`Katalog-Ausbau: ${fixed} Verweise auf neue Stufen umgestellt`)
+
 const g = await payload.findGlobal({ slug: 'assessment', depth: 0 }) as { tests?: unknown[] }
 if (!g.tests?.length) {
   await payload.updateGlobal({ slug: 'assessment', data: { tests: assessment.tests.map(t => ({ key: t.id, name: t.name, unit: t.unit, levels: t.levels ?? [] })) } as never, depth: 0 })

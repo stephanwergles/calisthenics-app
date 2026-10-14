@@ -168,7 +168,10 @@ Object.entries(WEEKPLAN).forEach(([wd, di]) => { weekplan[WEEKDAYS[+wd]] = WORKO
 
 /* Inhalte, die nicht aus v1 stammen (neue Skills): src/seed/catalog-extra.json */
 const extraFile = new URL("src/seed/catalog-extra.json", root);
-const extra: Pick<Catalog, "exercises" | "progressions"> = existsSync(extraFile) ? JSON.parse(readFileSync(extraFile, "utf8")) : { exercises: [], progressions: [] };
+/* inserts: Stufen in bestehende Leitern einschieben (vor der Übung `before`) – Verweise über den Index
+   (Einstufungs-Schwellen in assessment.json, minStep der Skills in skills.json) müssen mit umgerechnet werden */
+type Insert = { progression: string; before: string; steps: Progression["steps"] };
+const extra: Pick<Catalog, "exercises" | "progressions"> & { inserts?: Insert[] } = existsSync(extraFile) ? JSON.parse(readFileSync(extraFile, "utf8")) : { exercises: [], progressions: [] };
 for (const e of extra.exercises) {
   if (exercises.has(e.id)) throw new Error(`Übung ${e.id} gibt es schon in v1`);
   exercises.set(e.id, e);
@@ -177,6 +180,17 @@ for (const p of extra.progressions) {
   if (progressions.some(x => x.id === p.id)) throw new Error(`Progression ${p.id} gibt es schon in v1`);
   for (const st of p.steps) if (!exercises.has(st.exercise)) throw new Error(`${p.id}: Übung ${st.exercise} fehlt`);
   progressions.push(p);
+}
+for (const ins of extra.inserts ?? []) {
+  const p = progressions.find(x => x.id === ins.progression);
+  if (!p) throw new Error(`Einfügen: Progression ${ins.progression} fehlt`);
+  const at = p.steps.findIndex(s => s.exercise === ins.before);
+  if (at < 0) throw new Error(`Einfügen: ${ins.before} nicht in ${p.id}`);
+  for (const st of ins.steps) {
+    if (!exercises.has(st.exercise)) throw new Error(`${p.id}: Übung ${st.exercise} fehlt`);
+    if (p.steps.some(s => s.exercise === st.exercise)) throw new Error(`${p.id}: ${st.exercise} doppelt`);
+  }
+  p.steps.splice(at, 0, ...ins.steps);
 }
 
 const catalog: Catalog = { schema: 1, exercises: [...exercises.values()], progressions, workouts, weekplan };

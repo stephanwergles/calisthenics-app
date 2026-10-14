@@ -170,6 +170,13 @@ export function useTraining() {
 
   /* ── Laden ────────────────────────────────────────────────────────────── */
 
+  // Bestehende Nutzer behalten ihre Stufe, wenn vorne neue Stufen dazukommen (auch nach dem Abgleich
+  // auf einem neuen Gerät) – neue Nutzer ohne Training beginnen an der echten ersten Stufe
+  const hasHistory = sessions.size > 0
+  useEffect(() => {
+    if (loaded && hasHistory && L.needsStepPins(stateRef.current)) setState(L.withStepPins)
+  }, [loaded, hasHistory, state]) // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     void (async () => {
       const [ss, as, st, ac, ch, ok, cat, ob, m, acct, cons, pl] = await Promise.all([

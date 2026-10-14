@@ -1013,6 +1013,16 @@ export function withSkillReached(ix: Index, user: UserState, skill: Skill): User
   }
   return { ...user, current }
 }
+/** Stufen, die vorne in bestehende Leitern eingefügt wurden (Katalog-Ausbau 14.10.2026): wer schon
+    trainiert und dort keine Stufe gewählt hat, stand bisher auf der alten ersten Stufe – dabei bleibt es */
+export const STEP_PINS: Record<ProgressionId, ExerciseId> = {
+  'l-sit': 'l-sit-floor', handstand: 'handstand-wall', 'muscle-up-transition': 'muscle-up-band',
+}
+export const needsStepPins = (user: UserState) => Object.keys(STEP_PINS).some(pid => !user.current[pid])
+export function withStepPins(user: UserState): UserState {
+  const add = Object.fromEntries(Object.entries(STEP_PINS).filter(([pid]) => !user.current[pid]))
+  return Object.keys(add).length ? { ...user, current: { ...add, ...user.current } } : user
+}
 /** Einstufung übernehmen: aktuelle Stufe je Leiter setzen */
 export function withPlacement(ix: Index, user: UserState, changes: PlacementChange[]): UserState {
   const current = { ...user.current }

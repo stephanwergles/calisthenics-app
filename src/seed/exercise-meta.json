@@ -1451,6 +1451,161 @@
     "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
+  },
+  "ring-support-hold": {
+   "equipment": [
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 2,
+   "stress": {
+    "shoulder": 1,
+    "elbow": 1,
+    "wrist": 1
+   }
+  },
+  "rto-support-hold": {
+   "equipment": [
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 3,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 2,
+    "wrist": 1
+   }
+  },
+  "ring-dip": {
+   "equipment": [
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 3,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 2,
+    "wrist": 1
+   }
+  },
+  "rto-dip": {
+   "equipment": [
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 2,
+    "wrist": 1
+   }
+  },
+  "tuck-l-sit": {
+   "equipment": [
+    [
+     "parallettes"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 2,
+   "stress": {
+    "wrist": 1,
+    "hip": 1
+   }
+  },
+  "one-leg-l-sit": {
+   "equipment": [
+    [
+     "parallettes"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 2,
+   "stress": {
+    "wrist": 1,
+    "hip": 1
+   }
+  },
+  "wall-walk": {
+   "equipment": [
+    [
+     "wall"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 2,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1
+   }
+  },
+  "wall-shoulder-tap": {
+   "equipment": [
+    [
+     "wall"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 2,
+    "shoulder": 1
+   }
+  },
+  "handstand-kick-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 2,
+    "shoulder": 1
+   }
+  },
+  "wall-hspu-negative": {
+   "equipment": [
+    [
+     "wall"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 2,
+    "elbow": 1,
+    "shoulder": 2
+   }
+  },
+  "jumping-muscle-up": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 1,
+    "elbow": 1,
+    "shoulder": 1
+   }
   }
  }
 }

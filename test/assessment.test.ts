@@ -24,7 +24,7 @@ test('Einstufung: heutiges Level ergibt plausible Startstufen', () => {
   assert.equal(cur['pull-up'], 0, 'unter 10 Klimmzügen noch ohne Gewicht')
   assert.equal(cur.dip, 1, '20 Dips → mit Zusatzgewicht')
   assert.equal(cur['muscle-up-pull'], 0)
-  assert.equal(cur['l-sit'], 0)
+  assert.equal(catalog.progressions.find(p => p.id === 'l-sit')!.steps[cur['l-sit']].exercise, 'l-sit-floor', 'kurzer L-Sit → Boden-L-Sit (Tuck und einbeinig davor)')
   assert.equal(cur.pistol, 0, 'Pistol nur mit Hilfe → assistiert')
   assert.equal(placement(assessment, catalog, { pistol: 3 }).pistol, 2, 'nie über die letzte Stufe')
 })

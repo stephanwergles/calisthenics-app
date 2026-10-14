@@ -472,6 +472,27 @@ test('Eigene Challenges: anlegen, bereinigen, mit Vorlagen zusammenführen, lös
   assert.equal(L.withoutChallenge(st, mine.id).challenges!.length, 0)
 })
 
+test('Katalog-Ausbau: neue Stufen, Verweise per Übung, bestehende Nutzer behalten ihre Stufe', () => {
+  const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
+  const steps = (pid: string) => ix.progressions.get(pid)!.steps.map(s => s.exercise)
+  assert.deepEqual(steps('l-sit').slice(0, 3), ['tuck-l-sit', 'one-leg-l-sit', 'l-sit-floor'])
+  assert.deepEqual(steps('ring-dip'), ['ring-support-hold', 'rto-support-hold', 'ring-dip', 'rto-dip'])
+  // minStep zeigt weiter auf dieselbe Übung wie vor dem Einfügen
+  const pre = (sid: string, pid: string) => skills.find((s: { id: string }) => s.id === sid).prerequisites.find((p: { progression: string }) => p.progression === pid).minStep
+  assert.equal(steps('handstand')[pre('freestanding-hspu', 'handstand')], 'handstand-free')
+  assert.equal(steps('handstand')[pre('handstand-push-up', 'handstand')], 'handstand-heel-pull')
+  assert.equal(steps('l-sit')[pre('v-sit', 'l-sit')], 'l-sit-parallettes')
+  assert.equal(steps('vertical-push')[pre('freestanding-hspu', 'vertical-push')], 'handstand-push-up-wall')
+  // ohne gewählte Stufe: bisher erste Stufe – bestehende Nutzer bleiben dort, eigene Wahl bleibt
+  const st: UserState = { current: { 'l-sit': 'tuck-l-sit' }, paused: [] }
+  const pinned = L.withStepPins(st)
+  assert.equal(pinned.current['l-sit'], 'tuck-l-sit', 'eigene Wahl bleibt')
+  assert.equal(pinned.current.handstand, 'handstand-wall')
+  assert.equal(L.currentStep(ix, pinned, 'muscle-up-transition').exercise.id, 'muscle-up-band')
+  assert.equal(L.needsStepPins(pinned), false)
+  for (const p of ix.progressions.values()) for (const s of p.steps) assert.ok(ix.exercises.has(s.exercise), s.exercise)
+})
+
 test('Kann ich schon: Ziel-Leitern auf die letzte Stufe, Skill erreicht', () => {
   const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
   const wd = skills.find((s: { id: string }) => s.id === 'weighted-dip')
