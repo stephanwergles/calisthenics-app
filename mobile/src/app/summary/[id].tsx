@@ -57,7 +57,7 @@ function Summary({ session }: { session: Session }) {
       }>
       <View style={{ gap: 6 }}>
         <Text variant="small" style={{ fontFamily: font.bodySemi, textTransform: 'uppercase', letterSpacing: 1.4 }}>
-          {L.fmtDate(session.date)} · {w ? `${w.name} · ${w.focus}` : session.workout}
+          {L.fmtDate(session.date)} · {w ? `${w.name} · ${L.workoutFocus(t.ix, w)}` : session.workout}
         </Text>
         <Text variant="hero" style={{ fontSize: 72, lineHeight: 68 }} accessibilityRole="header">
           {tr('training.strong')}<Text variant="hero" style={{ fontSize: 72, lineHeight: 68, color: color.accent }}>.</Text>
@@ -75,6 +75,24 @@ function Summary({ session }: { session: Session }) {
           </View>
         ))}
       </View>
+
+      {/* Runden-Blöcke: Ergebnis je Block */}
+      {(session.circuits?.length ?? 0) > 0 && (
+        <View style={{ gap: 8 }}>
+          <SectionTitle title={tr('circuit.section')} />
+          {L.sessionCircuits(t.ix, session).map(c => (
+            <View key={c.id} accessible accessibilityLabel={`${c.name}, ${c.result}`}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: radius.card, borderCurve: 'continuous', backgroundColor: color.card, borderWidth: 1, borderColor: color.line }}>
+              <Icon name="sync" size={20} color={color.accent} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text variant="label">{c.name}</Text>
+                {c.items ? <Text variant="small">{c.items}</Text> : null}
+              </View>
+              <Text variant="num" style={{ fontSize: 24, color: color.accent }}>{c.result}</Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       {sum.records.length > 0 && (
         <View>

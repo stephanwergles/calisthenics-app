@@ -694,8 +694,13 @@ export interface SessionSummary {
     Vergleich je Übung mit deren letzter Einheit */
 export function sessionSummary(ix: Index, sessions: Session[], s: Session): SessionSummary {
   const earlier = sessions.filter(x => x.date < s.date)
-  const repsOf = (x: Session) => x.sets.reduce((n, set) => n + (ix.exercises.get(set.exercise)?.unit === 'reps' ? set.value : 0), 0)
-  const prev = earlier.filter(x => x.workout === s.workout && x.sets.length).sort((a, b) => (a.date < b.date ? 1 : -1))[0]
+  // Wiederholungen aus Sätzen plus aus Runden-Blöcken (volle Runden × Zahl je Runde + angefangene Runde)
+  const circuitReps = (x: Session) => (x.circuits ?? []).reduce((n, r) => {
+    const c = circuitsOf(ix.workouts.get(x.workout)).find(y => y.id === r.id)
+    return n + (c ? circuitVolume(c, r).reduce((m, v) => m + (ix.exercises.get(v.exercise)?.unit === 'reps' ? v.reps : 0), 0) : 0)
+  }, 0)
+  const repsOf = (x: Session) => x.sets.reduce((n, set) => n + (ix.exercises.get(set.exercise)?.unit === 'reps' ? set.value : 0), 0) + circuitReps(x)
+  const prev = earlier.filter(x => x.workout === s.workout && (x.sets.length || x.circuits?.length)).sort((a, b) => (a.date < b.date ? 1 : -1))[0]
   const rows = sessionExercises(ix, s)
   const records: SessionSummary['records'] = []
   const compare: SessionSummary['compare'] = []
@@ -1149,6 +1154,7 @@ export const fmtCircuitItems = (ix: Index, c: Circuit) => c.items.map(x => {
 export const circuitResultOf = (s: Session | undefined, id: CircuitId): CircuitResult | undefined => s?.circuits?.find(r => r.id === id)
 export const withCircuitResult = (s: Session, r: CircuitResult): Session =>
   ({ ...s, circuits: [...(s.circuits ?? []).filter(x => x.id !== r.id), r] })
+export const withoutCircuitResult = (s: Session, id: CircuitId): Session => ({ ...s, circuits: (s.circuits ?? []).filter(x => x.id !== id) })
 /** „14 Runden + 7“ bzw. Zeit „12:30“ */
 export const fmtCircuitResult = (c: Pick<Circuit, 'mode'>, r: CircuitResult) => c.mode === 'rounds'
   ? fmtClock(Math.round(r.durationSec ?? 0))

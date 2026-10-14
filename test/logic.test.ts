@@ -697,3 +697,12 @@ test('Feste Übung im Workout: andere Stufe als die eigene, wächst nicht mit, s
   assert.equal(L.slotStep(ix, state, { progression: 'horizontal-push', exercise: 'gibt-es-nicht' }).fixed, undefined, 'unbekannte Übung → mitwachsend')
   assert.equal(L.withSlotExercise(ix, fixed, 'horizontal-push', undefined).slots.find(s => s.progression === 'horizontal-push')!.exercise, undefined)
 })
+
+test('Zusammenfassung: Wiederholungen aus Runden-Blöcken zählen mit', () => {
+  const c = { id: 'c-cindy', name: 'Runden', mode: 'amrap' as const, minutes: 20, items: [{ exercise: 'pull-up', reps: 5 }, { exercise: 'push-up', reps: 10 }, { exercise: 'air-squat', reps: 15 }] }
+  const w = L.withCircuit({ ...ix.workouts.get('pull')!, slots: [] }, c)
+  const ix2 = { ...ix, workouts: new Map(ix.workouts).set(w.id, w) }
+  const s = L.withCircuitResult(L.emptySession('2026-10-15', w.id), { id: c.id, rounds: 5 })
+  assert.equal(L.sessionSummary(ix2, [s], s).reps, 150, '5 Runden × 30')
+  assert.deepEqual(L.withoutCircuitResult(s, c.id).circuits, [])
+})

@@ -19,7 +19,7 @@ export const circuit: Shape<typeof de> = {
   extraReps: 'Reps of the unfinished round',
   better: 'Better than last time!',
   last: 'Last time: {value}',
-  save: 'Add to session',
+  save: 'Done',
   saved: 'Rounds saved',
   section: 'Rounds',
   tapHint: 'Tap = round done',

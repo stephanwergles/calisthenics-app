@@ -4,7 +4,7 @@
    – feste Runden: Stoppuhr, endet mit der letzten Runde
    Die Übungen der Runde stehen immer sichtbar darunter. Ergebnis landet in der heutigen Einheit
    (zählt als Training, nicht für die Leiter-Freischaltung). Params: cid (Block im heutigen Workout). */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router, useLocalSearchParams } from 'expo-router'
@@ -58,6 +58,17 @@ function Run({ c }: { c: Circuit }) {
   }, [now]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const elapsed = start ? (now - start) / 1000 : 0
+  // Ergebnis sofort in die Einheit schreiben (nichts geht verloren, auch ohne „Fertig“);
+  // „Verwerfen“ stellt den Stand von vorher wieder her
+  const before = useRef(L.circuitResultOf(t.todaySession, c.id))
+  const resultOf = (): CircuitResult => amrap ? { id: c.id, rounds, ...(reps ? { reps } : {}) } : { id: c.id, rounds, durationSec: time }
+  useEffect(() => {
+    if (phase === 'result') t.updateToday(s => L.withCircuitResult(s, resultOf()))
+  }, [phase, reps]) // eslint-disable-line react-hooks/exhaustive-deps
+  const discard = () => {
+    t.updateToday(s => (before.current ? L.withCircuitResult(s, before.current) : L.withoutCircuitResult(s, c.id)))
+    router.back()
+  }
   const finish = () => {
     if (phase !== 'run') return
     signals().alarm(); signals().haptic('warning')
@@ -76,7 +87,7 @@ function Run({ c }: { c: Circuit }) {
   }
 
   if (phase === 'result') {
-    const r: CircuitResult = amrap ? { id: c.id, rounds, ...(reps ? { reps } : {}) } : { id: c.id, rounds, durationSec: time }
+    const r = resultOf()
     const last = L.lastCircuitResult(t.sessions, c.id, t.today)
     // angefangene Runde: höchstens alle Wiederholungen einer Runde minus eine
     const perRound = c.items.reduce((n, x) => n + x.reps, 0)
@@ -92,11 +103,8 @@ function Run({ c }: { c: Circuit }) {
             onMinus={() => setReps(Math.max(0, reps - 1))} onPlus={() => setReps(Math.min(perRound - 1, reps + 1))} />}
         </View>
         <View style={{ gap: 10 }}>
-          <Button variant="primary" size="lg" icon="check" title={tr('circuit.save')} onPress={() => {
-            t.updateToday(s => L.withCircuitResult(s, r))
-            toast(tr('circuit.saved'), 'success'); router.back()
-          }} />
-          <Button variant="ghost" title={tr('challenge.discard')} onPress={() => router.back()} />
+          <Button variant="primary" size="lg" icon="check" title={tr('circuit.save')} onPress={() => { toast(tr('circuit.saved'), 'success'); router.back() }} />
+          <Button variant="ghost" title={tr('challenge.discard')} onPress={discard} />
         </View>
       </View>
     )

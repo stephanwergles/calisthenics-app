@@ -16,7 +16,7 @@ export const circuit = {
   extraReps: 'Wdh. der angefangenen Runde',
   better: 'Besser als beim letzten Mal!',
   last: 'Letztes Mal: {value}',
-  save: 'In die Einheit übernehmen',
+  save: 'Fertig',
   saved: 'Runden gespeichert',
   section: 'Runden',
   tapHint: 'Tippen = Runde geschafft',
