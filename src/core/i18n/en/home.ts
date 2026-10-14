@@ -67,4 +67,5 @@ export const home: Shape<typeof de> = {
   restChallenge: 'Challenge',
   backToRest: 'Rest day after all',
   bannerFree: 'Nothing planned',
+  restPick: 'Train anyway – pick a workout',
 }

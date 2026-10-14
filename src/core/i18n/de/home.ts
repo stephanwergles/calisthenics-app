@@ -64,4 +64,5 @@ export const home = {
   restChallenge: 'Challenge',
   backToRest: 'Doch Ruhetag',
   bannerFree: 'Nichts geplant',
+  restPick: 'Doch trainieren – Workout wählen',
 }

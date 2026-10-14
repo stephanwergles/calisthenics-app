@@ -91,12 +91,11 @@ export function Today() {
             )
           })}
         </View>
-        {sel && <DayBanner date={sel} onClose={() => setSel(null)} />}
-
         {notice && <Text variant="muted" accessibilityLiveRegion="polite" style={{ color: color.text, backgroundColor: color.accentDim, padding: 12, borderRadius: 14, overflow: 'hidden' }}>{notice}</Text>}
 
         {/* Workout des Tages – an Ruhetagen stattdessen die Einladung zur Bewegung */}
-        {t.restDay ? <RestCard /> : <Card style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
+        {/* gewählter Tag ersetzt die Karte von heute an derselben Stelle; Tipp auf heute (oder ✕) zurück */}
+        {sel ? <DayBanner date={sel} onClose={() => setSel(null)} /> : t.restDay ? <RestCard /> : <Card style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
           {hero && <ExerciseStill exercise={hero} style={{ position: 'absolute', right: -10, top: 0, bottom: 0, width: '55%', opacity: 0.55 }} />}
           <View style={{ padding: 22, gap: 12 }}>
             <Text variant="eyebrow">{tr('home.heroLabel', { name: w.name })}{started ? tr('home.heroSets', { done: doneSets, total: sets }) : ''}</Text>
@@ -253,7 +252,6 @@ function DayBanner({ date, onClose }: { date: string; onClose: () => void }) {
     Challenge oder doch trainieren (dann wird daraus die normale Trainingskarte) */
 function RestCard() {
   const { t } = useApp()
-  const rec = t.ix.workouts.get(t.recommended)
   return (
     <Card style={{ gap: 12, padding: 22 }}>
       <Text variant="eyebrow">{tr('home.restLabel')}</Text>
@@ -264,7 +262,8 @@ function RestCard() {
           <Button style={{ flex: 1 }} icon="walk" title={tr('home.restCardio')} onPress={() => router.push({ pathname: '/activity', params: { date: t.today } })} />
           <Button style={{ flex: 1 }} icon="flame" title={tr('home.restChallenge')} onPress={() => router.push('/challenges')} />
         </View>
-        {rec && <Button icon="play" title={tr('home.restAnyway', { name: rec.name })} onPress={() => t.chooseWorkout(rec.id)} />}
+        {/* frei wählen: Liste der Workouts, gestartet wird in der Übersicht */}
+        <Button icon="play" title={tr('home.restPick')} onPress={() => router.push('/workouts')} />
       </View>
     </Card>
   )
