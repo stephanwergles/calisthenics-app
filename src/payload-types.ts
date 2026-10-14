@@ -433,12 +433,24 @@ export interface Activity {
   user: number | User;
   key: string;
   date: string;
-  kind: 'run' | 'ride' | 'workout';
+  kind: 'run' | 'ride' | 'workout' | 'challenge';
   name?: string | null;
   durationMin?: number | null;
   distanceKm?: number | null;
   elevationM?: number | null;
   rounds?: number | null;
+  challenge?: string | null;
+  value?: number | null;
+  durationSec?: number | null;
+  parts?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   note?: string | null;
   /**
    * Letzte Änderung auf dem Gerät (ms) – für den Sync
@@ -754,6 +766,10 @@ export interface ActivitiesSelect<T extends boolean = true> {
   distanceKm?: T;
   elevationM?: T;
   rounds?: T;
+  challenge?: T;
+  value?: T;
+  durationSec?: T;
+  parts?: T;
   note?: T;
   clientUpdatedAt?: T;
   updatedAt?: T;

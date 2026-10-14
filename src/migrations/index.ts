@@ -17,6 +17,7 @@ import * as migration_20261013_224654_templates from './20261013_224654_template
 import * as migration_20261013_225541_equipment_pole from './20261013_225541_equipment_pole';
 import * as migration_20261014_101706_stress_hip_back_ankle from './20261014_101706_stress_hip_back_ankle';
 import * as migration_20261014_120000_one_arm_pull_name from './20261014_120000_one_arm_pull_name';
+import * as migration_20261014_120602_activity_challenge from './20261014_120602_activity_challenge';
 
 export const migrations = [
   {
@@ -112,6 +113,11 @@ export const migrations = [
   {
     up: migration_20261014_120000_one_arm_pull_name.up,
     down: migration_20261014_120000_one_arm_pull_name.down,
-    name: '20261014_120000_one_arm_pull_name'
+    name: '20261014_120000_one_arm_pull_name',
+  },
+  {
+    up: migration_20261014_120602_activity_challenge.up,
+    down: migration_20261014_120602_activity_challenge.down,
+    name: '20261014_120602_activity_challenge'
   },
 ];

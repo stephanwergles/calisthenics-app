@@ -1,7 +1,7 @@
 /* Trainingslogik der v2-App – rein funktional, ohne React, DOM oder Speicher.
    Die Oberfläche ruft diese Funktionen auf; getestet wird direkt mit node --test. */
 import type {
-  Activity, Catalog, Equipment, Exercise, ExerciseId, Plan, Profile, Progression, ProgressionId, Region, Session, SetLog,
+  Activity, Catalog, Challenge, ChallengeId, Equipment, Exercise, ExerciseId, Plan, Profile, Progression, ProgressionId, Region, Session, SetLog,
   Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId, GeneratedPlan, GeneratorInput, SplitTemplate, Phase, PhaseKind, Tendon, ExerciseMeta, Template, MuscleArea, BodyArea,
 } from '../domain/model.ts'
 import { assignThemes, restDays, usable } from '../domain/generator.ts'
@@ -301,7 +301,9 @@ export function firstOpen(states: { pid: ProgressionId; state: SlotState }[]): P
   return states.find(x => x.state === 'open')?.pid
 }
 
-export const hasActivity = (activities: Activity[], date: string) => activities.some(a => a.date === date)
+export const hasActivity = (activities: Activity[], date: string) => activities.some(a => a.date === date && a.kind !== 'challenge')
+/** Cardio-Einheiten (Lauf, Rad, Workout) – ohne Challenges */
+export const cardioOnly = (activities: Activity[]) => activities.filter(a => a.kind !== 'challenge')
 
 /* ── Formatierung ────────────────────────────────────────────────────────── */
 
@@ -394,7 +396,8 @@ export const isTrained = (s: Session) => s.sets.length > 0 || (s.durationSec ?? 
 export function calendarMarks(sessions: Session[], activities: Activity[]) {
   return {
     trained: new Set(sessions.filter(isTrained).map(s => s.date)),
-    cardio: new Set(activities.map(a => a.date)),
+    cardio: new Set(cardioOnly(activities).map(a => a.date)),
+    challenge: new Set(activities.filter(a => a.kind === 'challenge').map(a => a.date)),
   }
 }
 
@@ -429,14 +432,53 @@ export function sessionExercises(ix: Index, s: Session): { exercise: Exercise; s
   })
 }
 
-const ACTIVITY_LABEL = labels(['run', 'ride', 'workout'] as const, k => `logic.activity.${k}`)
+const ACTIVITY_LABEL = labels(['run', 'ride', 'workout', 'challenge'] as const, k => `logic.activity.${k}`)
 export const activityTitle = (a: Activity) => a.name || ACTIVITY_LABEL[a.kind]
-export const fmtActivity = (a: Activity) => [
+export const fmtActivity = (a: Activity) => a.kind === 'challenge' ? fmtChallengeActivity(a) : [
   a.durationMin ? `${a.durationMin} min` : null,
   a.distanceKm ? `${fmtNum(a.distanceKm)} km` : null,
   a.elevationM ? t('logic.elevation', { n: a.elevationM }) : null,
   a.rounds ? t('logic.rounds', { n: a.rounds }) : null,
 ].filter(Boolean).join(' · ')
+
+/* ── Challenges ──────────────────────────────────────────────────────────── */
+
+/** Was ein Versuch misst: Wiederholungen (so viele wie möglich, Maximum) oder Zeit (auf Zeit, Halten) */
+export const challengeMeasuresTime = (c: Challenge) => c.kind === 'fortime' || c.unit === 'seconds'
+/** Ergebnis als Text: „42 Wdh.“ oder „3:05“ */
+export const fmtChallengeValue = (c: Challenge, value: number) =>
+  challengeMeasuresTime(c) ? fmtClock(Math.round(value)) : t('logic.challenge.reps', { n: value })
+/** Versuch im Verlauf: durationSec gesetzt ⇔ das Ergebnis ist eine Zeit (auf Zeit, Halten) */
+const fmtChallengeActivity = (a: Activity) =>
+  a.value === undefined ? '' : a.durationSec !== undefined ? fmtClock(Math.round(a.value)) : t('logic.challenge.reps', { n: a.value })
+/** Vorgabe als Text: „2 min“, „100 Wdh. auf Zeit“, „so lange wie möglich“ */
+export function fmtChallengeRule(c: Challenge): string {
+  if (c.kind === 'amrap') return t('logic.challenge.amrap', { time: c.seconds! >= 60 && c.seconds! % 60 === 0 ? `${c.seconds! / 60} min` : `${c.seconds} s` })
+  if (c.kind === 'fortime') return t('logic.challenge.fortime', { n: c.target ?? 0 })
+  return c.unit === 'seconds' ? t('logic.challenge.maxHold') : t('logic.challenge.maxReps')
+}
+/** besser = mehr Wiederholungen bzw. länger gehalten; auf Zeit = schneller */
+export const challengeBetter = (c: Challenge, a: number, b: number) => (c.kind === 'fortime' ? a < b : a > b)
+/** Versuche einer Challenge, neueste zuerst */
+export const challengeAttempts = (activities: Activity[], id: ChallengeId) =>
+  activities.filter(a => a.kind === 'challenge' && a.challenge === id && a.value !== undefined)
+    .sort((x, y) => (x.date < y.date ? 1 : x.date > y.date ? -1 : (y.updatedAt ?? 0) - (x.updatedAt ?? 0)))
+/** Bestwert (oder undefined) */
+export function challengeBest(c: Challenge, activities: Activity[]): Activity | undefined {
+  return challengeAttempts(activities, c.id).reduce<Activity | undefined>((best, a) => (!best || challengeBetter(c, a.value!, best.value!) ? a : best), undefined)
+}
+/** neuer Versuch als Aktivität (Sync wie Cardio); bei „auf Zeit“ ist value die Zeit in Sekunden */
+export function challengeAttempt(c: Challenge, date: string, value: number, extra: { parts?: number[]; note?: string } = {}): Activity {
+  const note = cleanNote(extra.note ?? '')
+  const v = challengeMeasuresTime(c) ? Math.round(value) : value
+  return {
+    id: `${date}-${c.id}-${Date.now().toString(36)}`.slice(0, 80), date, kind: 'challenge', name: c.name, challenge: c.id, value: v,
+    ...(challengeMeasuresTime(c) ? { durationSec: v } : {}),
+    ...(extra.parts?.length ? { parts: extra.parts } : {}),
+    ...(note ? { note } : {}),
+    updatedAt: Date.now(),
+  }
+}
 
 /* ── Verlauf: Fortschritt ────────────────────────────────────────────────── */
 
@@ -685,7 +727,7 @@ export function monthStats(sessions: Session[], activities: Activity[], month: s
     sessions: s.length,
     durationSec: s.reduce((n, x) => n + (x.durationSec ?? 0), 0),
     sets: s.reduce((n, x) => n + x.sets.length, 0),
-    cardio: activities.filter(a => a.date.startsWith(month)).length,
+    cardio: cardioOnly(activities).filter(a => a.date.startsWith(month)).length,
   }
 }
 

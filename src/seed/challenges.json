@@ -1,0 +1,14 @@
+{
+ "_info": "Challenge-Vorlagen (Selbsttests). kind: amrap (so viele wie möglich in seconds), fortime (target auf Zeit), max (ein Satz bis zum Ende; unit reps oder seconds).",
+ "challenges": [
+  { "id": "push-ups-2min", "name": "Liegestütze in 2 Minuten", "kind": "amrap", "unit": "reps", "seconds": 120 },
+  { "id": "max-pull-ups", "name": "Klimmzüge am Stück", "kind": "max", "unit": "reps", "exercise": "pull-up" },
+  { "id": "100-pull-ups", "name": "100 Klimmzüge auf Zeit", "kind": "fortime", "unit": "reps", "target": 100, "exercise": "pull-up" },
+  { "id": "max-dips", "name": "Dips am Stück", "kind": "max", "unit": "reps", "exercise": "dip" },
+  { "id": "dips-1min", "name": "Dips in 1 Minute", "kind": "amrap", "unit": "reps", "seconds": 60, "exercise": "dip" },
+  { "id": "dead-hang", "name": "Dead Hang", "kind": "max", "unit": "seconds", "exercise": "dead-hang" },
+  { "id": "l-sit", "name": "L-Sit halten", "kind": "max", "unit": "seconds", "exercise": "l-sit-floor" },
+  { "id": "plank", "name": "Unterarmstütz halten", "kind": "max", "unit": "seconds" },
+  { "id": "50-pistols", "name": "50 Pistols auf Zeit", "kind": "fortime", "unit": "reps", "target": 50, "exercise": "pistol-squat" }
+ ]
+}

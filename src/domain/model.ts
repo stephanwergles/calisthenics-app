@@ -170,15 +170,35 @@ export interface Session {
 export interface Activity {
   id: string;
   date: string;
-  kind: "run" | "ride" | "workout";
-  name?: string;                // z. B. „Cindy“
+  kind: "run" | "ride" | "workout" | "challenge";
+  name?: string;                // z. B. „Cindy“, bei Challenges der Name der Vorlage
   durationMin?: number;
   distanceKm?: number;
   elevationM?: number;
   rounds?: number;
+  /** Challenge: Vorlage, Ergebnis (Wiederholungen oder Sekunden), gestoppte Zeit, Teilsätze */
+  challenge?: ChallengeId;
+  value?: number;
+  durationSec?: number;
+  parts?: number[];
   note?: string;
   /** letzte Änderung in ms – Grundlage für den Sync */
   updatedAt?: number;
+}
+
+export type ChallengeId = string;
+/** Challenge-Vorlage: Selbsttest neben dem Plan (zählt nicht ins Plan-Volumen, nicht in die Serie).
+    amrap = so viele wie möglich in `seconds`; fortime = `target` Wiederholungen auf Zeit;
+    max = ein Satz bis zum Ende (Wiederholungen oder Haltezeit, je nach `unit`). */
+export interface Challenge {
+  id: ChallengeId;
+  name: string;
+  kind: "amrap" | "fortime" | "max";
+  unit: "reps" | "seconds";
+  /** Übung für Clip und Technik (optional – nicht jede Challenge hat eine Katalog-Übung) */
+  exercise?: ExerciseId;
+  seconds?: number;
+  target?: number;
 }
 
 /** Profil: Eingaben für Skill- und Planvorschläge. Fehlt es, gibt es noch keine Ziele. */

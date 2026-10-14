@@ -73,6 +73,9 @@ test('Gelöschte Einheit kommt als Markierung an und überschreibt die alte Fass
 test('Aktivität und Trainingsstand', () => {
   const a = { id: '2026-09-27-run-1', date: '2026-09-27', kind: 'run' as const, durationMin: 45, distanceKm: 8, updatedAt: 5 }
   assert.deepEqual(C.docToActivity(asPayload({ id: 7, ...C.activityToDoc(a) })), a)
+  const ch = { id: '2026-10-14-100-pull-ups-x', date: '2026-10-14', kind: 'challenge' as const, name: '100 Klimmzüge auf Zeit',
+    challenge: '100-pull-ups', value: 540, durationSec: 540, parts: [15, 12, 10], note: 'zäh', updatedAt: 6 }
+  assert.deepEqual(C.docToActivity(asPayload({ id: 8, ...C.activityToDoc(ch) })), ch, 'Challenge-Versuch übersteht den Sync')
   assert.deepEqual(C.docToState({ current: { 'l-sit': 'l-sit-parallettes' }, paused: [{ id: 'one-arm-pull' }], clientUpdatedAt: 9 }),
     { current: { 'l-sit': 'l-sit-parallettes' }, paused: ['one-arm-pull'], updatedAt: 9 })
   assert.deepEqual(C.docToState(null), { current: {}, paused: [] })

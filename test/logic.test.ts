@@ -430,6 +430,29 @@ test('Training abbrechen: Stand vor dem Start zurück, sonst Einheit gelöscht',
   assert.equal(L.discardedSession(undefined, undefined), undefined)
 })
 
+test('Challenges: Vorgabe, Bestwert (mehr bzw. schneller), Formatierung, Cardio getrennt', async () => {
+  const { challenges } = JSON.parse(readFileSync(new URL('../src/seed/challenges.json', import.meta.url), 'utf8'))
+  const amrap = challenges.find((c: { id: string }) => c.id === 'push-ups-2min'), timed = challenges.find((c: { id: string }) => c.id === '100-pull-ups')
+  const hold = challenges.find((c: { id: string }) => c.id === 'dead-hang')
+  assert.equal(L.fmtChallengeRule(amrap), 'So viele wie möglich in 2 min')
+  const a1 = L.challengeAttempt(amrap, '2026-10-01', 40), a2 = L.challengeAttempt(amrap, '2026-10-08', 46)
+  assert.equal(L.challengeBest(amrap, [a1, a2])!.value, 46, 'mehr ist besser')
+  const t1 = L.challengeAttempt(timed, '2026-10-01', 600.4, { parts: [12, 10] }), t2 = L.challengeAttempt(timed, '2026-10-08', 540)
+  assert.equal(L.challengeBest(timed, [t1, t2])!.value, 540, 'auf Zeit: schneller ist besser')
+  assert.equal(t1.value, 600)
+  assert.equal(L.fmtActivity(t1), '10:00')
+  assert.equal(L.fmtActivity(a2), '46 Wdh.')
+  assert.equal(L.fmtChallengeValue(hold, 75), '1:15')
+  const run = { id: 'r', date: '2026-10-08', kind: 'run' as const, durationMin: 30 }
+  assert.deepEqual(L.cardioOnly([a1, run]), [run])
+  assert.equal(L.calendarMarks([], [a1]).cardio.size, 0, 'Challenge ist kein Cardio')
+  assert.equal(L.challengeAttempts([a1, a2, t1], amrap.id)[0].date, '2026-10-08', 'neueste zuerst')
+  const C = await import('../src/sync/convert.ts')
+  assert.ok(C.isActivity(t1))
+  assert.deepEqual(C.docToActivity({ ...C.activityToDoc(t1) }).parts, [12, 10], 'Teilsätze überstehen den Sync')
+  assert.equal(C.isActivity({ ...a1, value: undefined }), false, 'Challenge ohne Ergebnis ungültig')
+})
+
 test('Kann ich schon: Ziel-Leitern auf die letzte Stufe, Skill erreicht', () => {
   const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
   const wd = skills.find((s: { id: string }) => s.id === 'weighted-dip')

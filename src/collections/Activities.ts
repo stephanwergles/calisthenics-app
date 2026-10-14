@@ -16,7 +16,7 @@ export const Activities: CollectionConfig = {
       localDate,
       {
         name: 'kind', type: 'select', required: true, label: 'Art',
-        options: [{ label: 'Lauf', value: 'run' }, { label: 'Rad', value: 'ride' }, { label: 'Workout (z. B. Cindy)', value: 'workout' }],
+        options: [{ label: 'Lauf', value: 'run' }, { label: 'Rad', value: 'ride' }, { label: 'Workout (z. B. Cindy)', value: 'workout' }, { label: 'Challenge', value: 'challenge' }],
       },
       { name: 'name', type: 'text' },
     ] },
@@ -26,6 +26,12 @@ export const Activities: CollectionConfig = {
       { name: 'elevationM', type: 'number', label: 'Höhenmeter' },
       { name: 'rounds', type: 'number', label: 'Runden' },
     ] },
+    { type: 'row', fields: [
+      { name: 'challenge', type: 'text', label: 'Challenge (Vorlage)' },
+      { name: 'value', type: 'number', label: 'Ergebnis (Wdh. oder s)' },
+      { name: 'durationSec', type: 'number', label: 'Zeit (s)' },
+    ] },
+    { name: 'parts', type: 'json', label: 'Teilsätze' },
     { name: 'note', type: 'textarea', label: 'Notiz' },
     clientUpdatedAt,
   ],

@@ -54,6 +54,8 @@ export function docToActivity(d: Doc): Activity {
     id: d.key as string, date: d.date as string, kind: d.kind,
     name: opt<string>(d.name), durationMin: opt<number>(d.durationMin), distanceKm: opt<number>(d.distanceKm),
     elevationM: opt<number>(d.elevationM), rounds: opt<number>(d.rounds), note: opt<string>(d.note),
+    challenge: opt<string>(d.challenge), value: opt<number>(d.value), durationSec: opt<number>(d.durationSec),
+    parts: Array.isArray(d.parts) && d.parts.length ? (d.parts as number[]) : undefined,
     updatedAt: opt<number>(d.clientUpdatedAt),
   })
 }
@@ -61,6 +63,7 @@ export function docToActivity(d: Doc): Activity {
 export const activityToDoc = (a: Activity) => ({
   key: a.id, date: a.date, kind: a.kind, name: a.name ?? null, durationMin: a.durationMin ?? null,
   distanceKm: a.distanceKm ?? null, elevationM: a.elevationM ?? null, rounds: a.rounds ?? null,
+  challenge: a.challenge ?? null, value: a.value ?? null, durationSec: a.durationSec ?? null, parts: a.parts ?? null,
   note: a.note ?? null, clientUpdatedAt: a.updatedAt ?? 0,
 })
 
@@ -123,7 +126,10 @@ export function isPlan(p: any): p is Plan {
     && Object.entries(p.weekplan).every(([d, w]) => WEEKDAYS.includes(d as Weekday) && p.workouts.some((x: any) => x.id === w && !x.archived))
 }
 export function isActivity(a: any): a is Activity {
-  return !!a && isId(a.id) && isDate(a.date) && ['run', 'ride', 'workout'].includes(a.kind)
+  return !!a && isId(a.id) && isDate(a.date) && ['run', 'ride', 'workout', 'challenge'].includes(a.kind)
+    && (a.kind !== 'challenge' || (isId(a.challenge) && isNum(a.value) && a.value >= 0 && a.value <= 100000))
+    && (a.parts === undefined || (Array.isArray(a.parts) && a.parts.length <= 500 && a.parts.every(isNum)))
+    && (a.durationSec === undefined || (isNum(a.durationSec) && a.durationSec >= 0 && a.durationSec <= 86400))
 }
 export function isState(s: any): s is UserState {
   return !!s && typeof s.current === 'object' && Object.entries(s.current).every(([k, v]) => isId(k) && isId(v))
