@@ -197,9 +197,9 @@ export function FocusExercise({ slot, index, total }: { slot: L.SlotView; index:
   )
 }
 
-/** Erfassung als Sheet mit zwei Zuständen: eingeklappt nur Satz-Zeile, Zähler und Aktionen; hochgezogen
-    (Griff ziehen oder antippen, Notiz-Knopf) zusätzlich Satz-Kacheln und Notiz. Der Zusatzbereich folgt
-    beim Ziehen dem Finger und rastet beim Loslassen ein (Schwung oder halber Weg). */
+/** Erfassung als Sheet mit zwei Zuständen: Satz-Kacheln, Zähler und Aktionen immer sichtbar; hochgezogen
+    (Griff ziehen oder antippen, Notiz-Knopf) zusätzlich die Werte vom letzten Mal und die Satz-Notiz.
+    Der Zusatzbereich folgt beim Ziehen dem Finger und rastet beim Loslassen ein. */
 function SetPanel({ slot }: { slot: L.SlotView }) {
   const { t } = useApp()
   const insets = useSafeAreaInsets()
@@ -208,10 +208,13 @@ function SetPanel({ slot }: { slot: L.SlotView }) {
   // ohne offenen Satz (erledigt, übersprungen, pausiert) gibt es nichts einzuklappen
   const fixed = setNo === null
   const [expanded, setExpanded] = useState(false)
+  const [note, setNote] = useState('')
+  useEffect(() => { setNote('') }, [setNo, slot.pid])
+  const last = slot.last?.sets.length ? slot.last.sets.slice().sort((a, b) => a.set - b.set).map(x => L.fmtSet(x, ex)).join(' · ') : null
   const [full, setFull] = useState(0)
   const open = useSharedValue(0)
   const startOpen = useSharedValue(0)
-  const shown = fixed || expanded
+  const shown = !fixed && expanded
   useEffect(() => { open.set(withSpring(shown ? 1 : 0, { damping: 22, stiffness: 240 })) }, [shown, open])
   const moreStyle = useAnimatedStyle(() => ({ height: full * open.get(), opacity: Math.min(1, open.get() * 1.6) }))
   const toggle = (on?: boolean) => { if (fixed) return; haptic(); setExpanded(x => on ?? !x) }
@@ -245,10 +248,15 @@ function SetPanel({ slot }: { slot: L.SlotView }) {
             style={{ height: 24, alignItems: 'center', justifyContent: 'center' }}>
             {!fixed && <View style={{ width: 36, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.22)' }} />}
           </Pressable>
+          <SetTiles slot={slot} setNo={setNo} />
           <Animated.View style={[{ overflow: 'hidden' }, moreStyle]} accessibilityElementsHidden={!shown} importantForAccessibility={shown ? 'auto' : 'no-hide-descendants'}>
             {/* gemessen in voller Höhe, sichtbar je nach Aufzug */}
-            <View onLayout={onMore} style={{ position: 'absolute', left: 0, right: 0, gap: 12, paddingBottom: 12 }}>
-              <SetTiles slot={slot} setNo={setNo} />
+            <View onLayout={onMore} style={{ position: 'absolute', left: 0, right: 0, gap: 10, paddingTop: 12 }}>
+              {last && <Text variant="small">{tr('training.focus.lastTime', { sets: last })}</Text>}
+              {setNo !== null && (
+                <NoteInput label={tr('training.focus.noteSet', { set: setNo })} value={note} onChangeText={setNote}
+                  placeholder={tr('training.focus.noteSetPlaceholder')} />
+              )}
             </View>
           </Animated.View>
         </View>
@@ -264,22 +272,20 @@ function SetPanel({ slot }: { slot: L.SlotView }) {
           <Text variant="label" style={{ flex: 1 }}>{tn('training.focus.allLogged', slot.planned, { sets: slot.sets.map(x => L.fmtSet(x, ex)).join(' · ') })}</Text>
         </View>
       ) : (
-        <SetInput key={`${slot.pid}-${setNo}`} slot={slot} setNo={setNo} onNote={() => toggle(true)} />
+        <SetInput key={`${slot.pid}-${setNo}`} slot={slot} setNo={setNo} note={note} onNote={() => toggle()} />
       )}
     </View>
   )
 }
 
 /** Erfassung des nächsten Satzes – Vorbelegung wie im Satz-Sheet; Halteübungen mit Timer */
-function SetInput({ slot, setNo, onNote }: { slot: L.SlotView; setNo: number; onNote: () => void }) {
+function SetInput({ slot, setNo, note, onNote }: { slot: L.SlotView; setNo: number; note: string; onNote: () => void }) {
   const { t, rest, pick, setRestView } = useApp()
   const ex = slot.step.exercise, target = slot.step.target
   const seconds = ex.unit === 'seconds'
   const init = L.prefill(slot.sets, slot.last?.sets ?? [], setNo, target, ex)
   const [value, setValue] = useState(init.value)
   const [weight, setWeight] = useState(init.weightKg)
-  const [note, setNote] = useState('')
-  const [noteOpen, setNoteOpen] = useState(false)
   const stepBy = seconds ? 5 : 1
   // Halteübungen: Timer mit Vorlauf; bis er durch ist, ist „Timer starten“ die Hauptaktion
   const hold = useHoldTimer()
@@ -311,7 +317,7 @@ function SetInput({ slot, setNo, onNote }: { slot: L.SlotView; setNo: number; on
     <View style={{ gap: 10 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Text variant="small" numberOfLines={1} style={{ flex: 1, fontFamily: font.bodySemi }}>{caption}</Text>
-        <Button icon="note" size="sm" variant={note.trim() ? 'outline' : 'ghost'} label={tr('training.focus.noteThisSet')} onPress={() => { setNoteOpen(o => !o); onNote() }} />
+        <Button icon="note" size="sm" variant={note.trim() ? 'outline' : 'ghost'} label={tr('training.focus.noteThisSet')} onPress={onNote} />
       </View>
       {timing ? <HoldRing hold={hold} /> : (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -339,10 +345,6 @@ function SetInput({ slot, setNo, onNote }: { slot: L.SlotView; setNo: number; on
           <Icon name="check" size={15} color={color.accent} />
           <Text variant="small" style={{ color: color.accent, fontFamily: font.bodySemi }}>{tr('training.focus.held', { n: value })}</Text>
         </View>
-      )}
-      {noteOpen && (
-        <NoteInput label={tr('training.focus.noteSet', { set: setNo })} value={note} onChangeText={setNote} autoFocus
-          placeholder={tr('training.focus.noteSetPlaceholder')} />
       )}
       <ButtonRow>
         {seconds && (timing

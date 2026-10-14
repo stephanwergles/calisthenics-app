@@ -26,6 +26,7 @@ export const training = {
     muscles: 'Muskeln',
     cues: 'Worauf es ankommt',
     lastNote: 'Letztes Mal, Satz {set}: „{note}“',
+    lastTime: 'Letztes Mal: {sets}',
     readyFor: 'Bereit für: {name}',
     logSet: 'Satz erfassen',
     collapse: 'Erfassung einklappen',

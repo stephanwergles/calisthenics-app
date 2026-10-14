@@ -28,6 +28,7 @@ export const training: Shape<typeof de> = {
     muscles: 'Muscles',
     cues: 'Key points',
     lastNote: 'Last time, set {set}: “{note}”',
+    lastTime: 'Last time: {sets}',
     readyFor: 'Ready for: {name}',
     logSet: 'Log set',
     collapse: 'Collapse',
