@@ -89,7 +89,7 @@ def uneven_pull_up():
     for y, ln in ((-0.021, 0.78), (0.021, 0.2)):          # Handtuch über der Stange, vorn lang
         box((tx, y, PULL_H + 0.02 - ln / 2), (0.12, 0.008, ln), CLOTH, coll=None, bevel=0.003)
     box((tx, 0, PULL_H + 0.021), (0.12, 0.05, 0.008), CLOTH, coll=None, bevel=0.003)
-    towel = dict(k=(tx + 0.01, -0.03, tz), hint=(-0.6, -0.4, -1), palm=(1, 0, 0), curl=(1, -0.6, -0.2))
+    towel = dict(k=(tx + 0.01, -0.03, tz), hint=(-1, 0.3, -0.2), palm=(0.4, -1, 0), flex=100)   # Ellbogen seitlich
     def hands(hint): return {"L": bar_hands(PULL_H, 0.14, hint=hint)["L"], "R": towel}
     k0 = dict(pose=ACTIVE, hang=dict(ext=STRAIGHT, sx=0.1), hands=hands((0.6, -0.3, -1)))
     k1 = dict(pose=TOP, hang=dict(ext=0.42, dy=0.2, sx=0.1), hands=hands((0.3, -0.6, -1)))
@@ -140,6 +140,42 @@ def tuck_front_lever_row():
     return hang_ex([dict(rot=(-90, 0, 0), pose=TUCK, hang=dict(ext=STRAIGHT), hint=(0.5, -0.4, -1)),
                     dict(rot=(-90, 0, 0), pose=TUCK, hang=dict(ext=0.6, dy=0.24), hint=(0.4, -0.6, -1))],
                    view=(-25, 6))
+
+# ── Hebel an der Stange: Front Lever (rücklings waagerecht), Back Lever (bäuchlings) ──
+# Wurzel-Drehung um X: 0 Hang · −90 rücklings waagerecht · −180 kopfüber · −270 bäuchlings · −330 German Hang.
+# Die Schultern sitzen so weit neben der Stange, dass der Körperschwerpunkt genau unter ihr liegt.
+LEVER_SH = sym({"clavicle.L": (1, 0.15, -0.2)})
+ADV_TUCK = sym({**LEVER_SH, "thigh.L": (0.08, -1, 0.02), "shin.L": (0.02, 0.05, -1), "foot.L": (0, 0.3, -1)})
+TUCKED = sym({**TUCK, **LEVER_SH})
+STRADDLE = sym({**LEVER_SH, "thigh.L": (0.5, 0, -1), "shin.L": (0.5, 0, -1), "foot.L": (0.45, -0.35, -1)})
+STRAIGHT_LEGS = sym({**LEVER_SH, "thigh.L": (-0.03, 0, -1), "shin.L": (-0.02, 0, -1), "foot.L": (0, -0.35, -1)})
+def one_leg(pose):                          # linkes Bein gestreckt, rechtes im Advanced Tuck
+    return {**pose, **{k: v for k, v in STRAIGHT_LEGS.items() if k.endswith(".L") and k.split(".")[0] in ("thigh", "shin", "foot")}}
+def com_hang(pitch, pose):
+    """Hebel-Schlüssel: Arme gestreckt, Schwerpunkt (Hautpunkte-Mittel) senkrecht unter den Händen."""
+    k = dict(rot=(pitch, 0, 0), pose=pose, place=("hang", dict(ext=STRAIGHT, dy=0.0)), hands=bar_hands(PULL_H))
+    solve(k, set_place(1, "dy"), -0.6, 0.6, lambda k: mesh_np()[:, 1].mean() - 0.025, 0.0)
+    return hang_sz(k)
+def lever_ex(keys, timing="hold", view=VIEW_PULL):
+    bar(PULL_H); FRAME.extend([Vector((s * 0.55, 0, PULL_H)) for s in (1, -1)])
+    return dict(keys=keys, timing=timing, view=view)
+def hang0(): return hang_sz(dict(pose=ACTIVE, place=("hang", dict(ext=STRAIGHT)), hands=bar_hands(PULL_H)))
+def front_lever_ex(pose): return lever_ex([hang0(), com_hang(-90, pose)])
+def tuck_front_lever(): return front_lever_ex(TUCKED)
+def adv_tuck_front_lever(): return front_lever_ex(ADV_TUCK)
+def one_leg_front_lever(): return front_lever_ex(one_leg(ADV_TUCK))
+def straddle_front_lever(): return front_lever_ex(STRADDLE)
+def front_lever(): return front_lever_ex(STRAIGHT_LEGS)
+GERMAN = sym({**STRAIGHT_LEGS, "clavicle.L": (1, -0.1, 0.3), "neck": (0, -0.15, 1), "thigh.L": (0, -0.15, -1)})
+def skin_keys():                            # Hang → kopfüber gehockt → German Hang
+    return [hang0(), com_hang(-180, TUCKED), com_hang(-330, GERMAN)]
+def german_hang(): return lever_ex(skin_keys()[1:])          # aus der Umkehr langsam hinein und zurück
+def skin_the_cat(): return lever_ex(skin_keys(), timing="pp")
+def back_lever_ex(pose): return lever_ex([com_hang(-180, TUCKED), com_hang(-270, pose)])   # aus der Umkehr
+def tuck_back_lever(): return back_lever_ex(TUCKED)
+def adv_tuck_back_lever(): return back_lever_ex(ADV_TUCK)
+def straddle_back_lever(): return back_lever_ex(STRADDLE)
+def back_lever(): return back_lever_ex(STRAIGHT_LEGS)
 
 # ── Rudern unter einer tiefen Stange (Fersen am Boden) ──────────────────────
 def row_ex(top=40, grip=0.27, contact=(0, -0.2, 1.25), hint0=(0.5, -0.3, -1), hint1=(0.5, -0.45, -1),
@@ -379,6 +415,286 @@ def side_plank_rotation():
         return k
     return dict(keys=[key((-1, 0, 0.15), 0, 0), key((0.9, 0.25, -0.2), -38, 0)], view=(-90, 12))
 
+# ── Einarmiger Liegestütz ───────────────────────────────────────────────────
+def archer_push_up():
+    """Sehr weiter Griff, zur linken Hand absenken: links beugt, rechts bleibt gestreckt (eine Seite gezeigt)."""
+    T = Vector((0, 0.75, 0.035))
+    k = dict(rot=(70, 0, 0), pose=PUSH, place=("pin", "toe", T)); pose_key(k, limbs=False); S = pt("shoulder")
+    top = dict(k, hands=floor_hands(0.5, S.y, (0.55, -0.85, 0), hint=(0.15, 1, 0.5)))
+    solve(top, 0, 40, 100, m_arm(), STRAIGHT)
+    chest = skin("chest", (0, -0.15, 1.24), (0, -1, 0))
+    low = dict(top, rot=(top["rot"][0], -6, 11))                      # Körper dreht über den Zehen zur linken Hand
+    solve(low, 0, top["rot"][0], top["rot"][0] + 40, lambda k: chest().z, 0.17)
+    return dict(keys=[top, low], view=(-55, 24))
+OAP = {**PUSH, **sym({"thigh.L": (0.3, 0, -1), "shin.L": (0.3, 0, -1)})}   # Füße weit
+def back_hand(k):
+    """Rechte Hand liegt auf dem unteren Rücken (Ziel aus der Pose des Schlüssels)."""
+    pose_key(k, limbs=False); P = skin("spine", (-0.02, 0.13, 1.02), (0, 1, 0))()
+    n = rig.matrix_world.to_3x3() @ Vector((0, 1, 0)); side = rig.matrix_world.to_3x3() @ Vector((1, 0, 0))
+    return dict(k=tuple(P + n * 0.035 + side * 0.06), hdir=tuple(side), palm=tuple(-n), curl=tuple(side), hint=tuple(-side + n))
+def one_arm_push_ex(h=0.0):
+    T = Vector((0, 0.8, 0.035))
+    k = dict(rot=(62 if h else 70, 8, 0), pose=OAP, place=("pin", "toe", T)); pose_key(k, limbs=False)
+    S = pt("shoulder"); y = S.y + 0.1
+    if h: box((0.05, y - 0.05, h / 2), (0.42, 0.36, h))
+    hands = {"L": dict(k=(0.07, y, h + 0.042), hdir=(0.35, -1, 0), palm=(0, 0, -1), curl=(0.35, -1, -0.12), hint=(0.25, 1, 0.45))}
+    top = dict(k, hands=hands); solve(top, 0, 20, 100, m_arm(), STRAIGHT)
+    low = dict(top, hands=dict(hands)); chest = skin("chest", (0.05, -0.15, 1.24), (0, -1, 0))
+    solve(low, 0, top["rot"][0], top["rot"][0] + 40, lambda k: chest().z, h + 0.1)
+    for k in (top, low): k["hands"] = {**k["hands"], "R": back_hand(k)}
+    return dict(keys=[top, low], view=(-35, 14))
+def one_arm_push_up_elevated(): return one_arm_push_ex(0.45)
+def one_arm_push_up(): return one_arm_push_ex()
+
+# ── Shrimp Squat: Standbein links, hinteres Knie zum Boden ───────────────────
+REAR = sym({"thigh.L": (0, 0, -1)})
+def shrimp_ex(variant):
+    A = Vector((0.1, 0.0, 0.085))
+    legs = {"L": dict(a=A, hint=(0.1, -1, 0.25), fdir=(0, -1, -0.42))}
+    arms = sym({"arm.L": (0.12, -1, 0.05), "forearm.L": (0.08, -1, 0.08)}) if variant != "adv" else {}
+    rear = lambda bend: {"thigh.R": (-0.03, 0.12 + 0.2 * (1 - bend), -1), "shin.R": (0, 1, 0.1 - 0.6 * (1 - bend)),
+                         "foot.R": (0, 0.85, -0.5)}
+    top = dict(rot=(4, 0, 0), pose=arms, wpose=rear(0.7), legs=legs,
+               place=("pin", "hip.L", (0.1, 0.03, A.z + 0.97 * (LEN["thigh.L"] + LEN["shin.L"]))))
+    low = dict(top, rot=(32, 0, 0), wpose=rear(1.0), place=("pin", "hip.L", (0.1, 0.25, 0.5)))
+    knee = skin("shin.R", (-0.13, -0.05, 0.47), (0, -1, -0.3))
+    solve(low, set_place(2, 2), 0.2, 0.9, lambda k: knee().z, 0.012)
+    if variant == "assisted":                                       # linke Hand am Pfosten seitlich vorn
+        P = Vector((0.5, -0.3, 0)); cyl(P, P + Vector((0, 0, 2.0)), 0.03, coll="pfosten")
+        g = dict(k=(P.x - 0.02, P.y + 0.035, 1.0), palm=(1, 0.3, 0), curl=(0.5, 0.8, -0.2), hint=(0.6, 0.3, -1))
+        for k in (top, low): k["hands"] = {"L": g}
+    if variant == "adv":                                            # rechte Hand hält den hinteren Fuß
+        for k in (top, low):
+            k["wpose"] = {**k["wpose"], "shin.R": (0, 0.6, 0.8), "foot.R": (0, 0.2, 1)}
+            pose_key(k, limbs=False)
+            k["hands"] = {"R": dict(k=tuple(pt("ankle.R") + Vector((0, 0.02, 0.06))), palm=(1, 0, 0),
+                                    curl=(0.6, 0, -1), hint=(-0.4, 0.5, -0.6))}
+    return dict(keys=[top, low], view=(-35, 8))
+def shrimp_squat_assisted(): return shrimp_ex("assisted")
+def shrimp_squat(): return shrimp_ex("free")
+def shrimp_squat_advanced(): return shrimp_ex("adv")
+
+# ── Dragon Flag: rücklings auf der Bank, Hände halten hinter dem Kopf ────────
+def dragon_ex(tuck, timing):
+    BH = 0.42                                                        # Bank: Kopfende bei y = +0.42
+    box((0, -0.25, BH / 2), (0.36, 1.34, BH))
+    pose = sym({"spine": (0, 0.02, 1), "foot.L": (0, -0.35, -1),
+                **({"thigh.L": (0.02, 0.1, -1), "shin.L": (0, 0.85, -0.5), "foot.L": (0, 0.6, -0.8)} if tuck else {})})
+    hands = symh(dict(k=(0.15, 0.41, BH + 0.03), hdir=(0, 1, -0.4), palm=(0, 0.3, -1), curl=(0, 0.2, -1), hint=(0.7, -0.1, 0.7)))
+    key = lambda pitch: dict(rot=(pitch, 0, 0), pose=pose, wpose={"neck": (0, 1, 0.12), "head": (0, 1, 0.08)},
+                             place=("pin", "shoulder", (0, 0.12, BH + 0.075)), hands=hands)
+    low, top = key(-100), key(-158)                                  # knapp über der Bank · fast senkrecht auf den Schultern
+    return dict(keys=[low, top], timing=timing, view=(-30, 10))
+def dragon_flag_tuck_negative(): return dragon_ex(True, "fast")
+def dragon_flag_negative(): return dragon_ex(False, "fast")
+def dragon_flag(): return dragon_ex(False, "pp")
+
+# ── Crow Pose, Elbow Lever ──────────────────────────────────────────────────
+CROW = sym({"spine": (0, -0.3, 1), "chest": (0, -0.2, 1), "neck": (0, 0.35, 1), "head": (0, 0.45, 1),
+            "clavicle.L": (1, -0.2, -0.05)})
+CROW_LEGS = sym({"thigh.L": (0.42, -0.72, -0.55), "shin.L": (-0.25, 0.95, 0.2), "foot.L": (-0.2, 0.75, 0.6)})   # Knie an die Oberarme
+def crow_pose():
+    """Knie an den Oberarmen, Gewicht nach vorn, bis die Füße abheben; Blick nach vorn."""
+    H = floor_hands(0.24, 0.0, (0.25, -1, 0), (0.55, 0.7, 0.4))
+    up = dict(rot=(100, 0, 0), pose=CROW, wpose=CROW_LEGS, place=("hang", dict(sz=0.4, dy=-0.1)), hands=H)
+    down = dict(up, place=("hang", dict(sz=0.4, dy=-0.02)),             # Hocke: Füße noch am Boden
+                wpose=sym({"thigh.L": (0.42, -0.6, -0.68), "shin.L": (-0.2, 0.75, -0.62), "foot.L": (-0.1, 0.2, -1)}))
+    solve(down, 0, 30, 100, lambda k: mesh_np()[FOOTV][:, 2].min(), 0.0)
+    return dict(keys=[down, up], timing="hold", view=(-35, 12))
+def elbow_lever_ex(one):
+    """Ellbogen in die Hüfte, Körper waagerecht über den Händen."""
+    hd = (0.35, 1, 0)
+    H = floor_hands(0.15, 0.0, hd, (0.15, 0.3, 1)) if not one else \
+        {"L": floor_hands(0.06, 0.0, hd, (0.15, 0.3, 1))["L"]}
+    pose = sym({"spine": (0, -0.05, 1), "neck": (0, -0.3, 1), "head": (0, -0.4, 1), "foot.L": (0, -0.4, -1)})
+    if one: pose.update({"arm.R": (1, -0.1, -0.15), "forearm.R": (1, -0.1, -0.1), "hand.R": (1, -0.1, -0.1)})
+    roll = 10 if one else 0
+    up = dict(rot=(92, roll, 0), pose=pose, place=("pin", "waist", (0, 0.13, 0.4)), hands=H)
+    down = dict(up); solve(down, 0, 40, 92, lambda k: pt("toe").z, 0.03)
+    return dict(keys=[down, up], timing="hold", view=(-35, 14))
+def elbow_lever(): return elbow_lever_ex(False)
+def one_arm_elbow_lever(): return elbow_lever_ex(True)
+
+# ── Ringe: False Grip, Transition, Ring-Muscle-up ───────────────────────────
+RING_H = 2.3
+def ring_hands(H, w, hint, g=0.22, y=0.0):
+    """Neutralgriff im Ring; w: 0 normaler Hang · ~0.4 False Grip (Handgelenk über dem Ring) · 1 Stütz."""
+    return symh(dict(k=Vector((g, y, H + 0.02)).lerp(Vector((g, y - 0.03, H + 0.005)), w), hdir=(0, -0.45, -1), hw=w,
+                     palm=Vector((-1, -0.2, 0)).lerp(Vector((-0.5, 0.1, -1)), w),
+                     flex=110, hint=hint))
+def ring_ex(keys, H=RING_H, timing="pp", view=VIEW_PULL, g=0.22, **extra):
+    for n, x in (("L", g + 0.08), ("R", -g - 0.08)): ring(n, (x, 0.0, H + 1.6))
+    FRAME.extend([Vector((s * (g + 0.2), 0, H)) for s in (1, -1)])
+    for k in keys: k["place"] = ("hang", k.pop("hang"))
+    return dict(keys=[hang_sz(k) for k in keys], timing=timing, view=view, **extra)
+FG = 0.4                                                            # False Grip
+def false_grip_hang():
+    return ring_ex([dict(pose=HANG, hang=dict(ext=STRAIGHT), hands=ring_hands(RING_H, FG, (0.5, 0, -1))),
+                    dict(pose=ACTIVE, hang=dict(ext=STRAIGHT), hands=ring_hands(RING_H, FG, (0.5, 0, -1)))], timing="hold")
+def false_grip_pull_up():
+    return ring_ex([dict(pose=ACTIVE, hang=dict(ext=STRAIGHT), hands=ring_hands(RING_H, FG, (0.5, 0.2, -1))),
+                    dict(pose=ARCH, hang=dict(ext=0.42, dy=0.17), hands=ring_hands(RING_H, FG, (0.3, 0.5, -1)))])
+def ring_muscle_up():
+    H = RING_H
+    return ring_ex([dict(pose=ACTIVE, hang=dict(ext=STRAIGHT), hands=ring_hands(H, FG, (0.5, 0, -1))),
+                    dict(rot=(-8, 0, 0), pose=sym({**ARCH, "thigh.L": (0.02, -0.4, -1), "shin.L": (0, 0.15, -1)}),
+                         hang=dict(ext=0.4, dy=0.17), hands=ring_hands(H, FG, (0.3, 0.4, -1))),
+                    dict(rot=(10, 0, 0), pose=OVER_BAR, hang=dict(sz=0.06, dy=0.25),           # Schultern hinter den Ringen hoch,
+                         hands=ring_hands(H, 0.5, (0.15, 1, -0.4))),                            # Ellbogen weit nach hinten
+                    dict(rot=(22, 0, 0), pose=OVER_BAR, hang=dict(sz=0.27, dy=0.1), hands=ring_hands(H, 0.7, (0.1, 1, -0.5))),
+                    dict(rot=(22, 0, 0), pose=OVER_BAR, hang=dict(sz=0.38, dy=0.0), hands=ring_hands(H, 1, (0.1, 1, -0.2))),
+                    dict(rot=(8, 0, 0), pose=SUPPORT, hang=dict(ext=STRAIGHT, up=True, dy=-0.04), hands=ring_hands(H, 1, (0.1, 1, -0.2)))],
+                   follow=True, fit=0.9)
+def ring_transition():
+    """Ringe tief, Füße am Boden: aus dem Sitz über die Ringe kippen und in den Stütz hochdrücken; die Füße
+    rutschen dabei unter den Körper."""
+    H = 0.62                                                        # Ringe auf Brusthöhe im Sitzen
+    def k(rot, pose, hang, w, hint, fy):
+        legs = {n: dict(a=(x, fy, 0.075), hint=(0, -0.3, 1), fdir=(0, -0.5, 0.85 if fy < -0.55 else -0.4)) for n, x in (("L", 0.11), ("R", -0.11))}
+        return dict(rot=(rot, 0, 0), pose=pose, hang=hang, hands=ring_hands(H, w, hint), legs=legs)
+    return ring_ex([k(-12, ACTIVE, dict(sz=-0.04, dy=0.22), FG, (0.3, 0.6, -1), -0.62),
+                    k(8, OVER_BAR, dict(sz=0.08, dy=0.26), 0.5, (0.15, 1, -0.4), -0.58),
+                    k(24, OVER_BAR, dict(sz=0.3, dy=0.06), 0.8, (0.1, 1, -0.4), -0.5),
+                    k(10, SUPPORT, dict(ext=STRAIGHT, up=True, dy=-0.03), 1, (0.1, 1, -0.2), -0.4)], H=H, view=(-30, 12))
+
+# ── Planche auf Parallettes: Schwerpunkt über den Händen ────────────────────
+PL_SH = sym({"clavicle.L": (1, -0.28, -0.1), "neck": (0, -0.05, 1), "head": (0, 0.1, 1)})
+def planche_key(pitch, pose, h, H):
+    k = dict(rot=(pitch, 0, 0), pose={**pose, **PL_SH}, place=("hang", dict(ext=STRAIGHT, up=True, dy=-0.2)), hands=H)
+    solve(k, set_place(1, "dy"), -0.75, 0.25, lambda k: mesh_np()[:, 1].mean(), 0.0)
+    return hang_sz(k)
+def planche_ex(pose):
+    h = 0.17; parallettes(0.25, 0.0, h); H = pbar_grip(h, 0.25, (0.15, 1, 0))
+    return dict(keys=[planche_key(68, TPL, h, H), planche_key(88, pose, h, H)], timing="hold", view=(-30, 10))
+def adv_tuck_planche(): return planche_ex(ADV_TUCK)
+def straddle_planche(): return planche_ex(STRADDLE)
+def full_planche(): return planche_ex(STRAIGHT_LEGS)
+
+# ── Einarmiger Klimmzug ─────────────────────────────────────────────────────
+FREE_R = {"arm.R": (-0.3, -0.55, -0.78), "forearm.R": (0.85, -0.35, 0.4), "hand.R": (0.85, -0.3, 0.3)}   # Hand an der Brust
+def one_arm_keys():
+    L = {"L": bar_hands(PULL_H, 0.12)["L"]}
+    return [dict(pose={**ACTIVE, **FREE_R}, hang=dict(ext=STRAIGHT), hands={"L": dict(L["L"], hint=(0.6, -0.3, -1))}),
+            dict(rot=(0, 0, 14), pose={**TOP, **FREE_R}, hang=dict(ext=0.42, dy=0.2), hands={"L": dict(L["L"], hint=(0.3, -0.6, -1))})]
+def one_arm_pull_up(): return hang_ex(one_arm_keys(), grip=0.12, view=VIEW_PULL, sz=True)
+def one_arm_negative(): return hang_ex(one_arm_keys(), grip=0.12, view=VIEW_PULL, sz=True, timing="fast")
+def one_arm_pull_up_assisted():
+    """Wie Handtuch-Klimmzüge, aber die Hilfshand greift deutlich tiefer."""
+    tx, tz = -0.3, PULL_H - 0.68
+    for y, ln in ((-0.021, 1.0), (0.021, 0.2)):
+        box((tx, y, PULL_H + 0.02 - ln / 2), (0.12, 0.008, ln), CLOTH, coll=None, bevel=0.003)
+    box((tx, 0, PULL_H + 0.021), (0.12, 0.05, 0.008), CLOTH, coll=None, bevel=0.003)
+    towel = dict(k=(tx + 0.01, -0.03, tz), hint=(-1, 0.3, -0.2), palm=(0.4, -1, 0), flex=100)   # Ellbogen seitlich
+    hands = lambda hint: {"L": bar_hands(PULL_H, 0.14, hint=hint)["L"], "R": towel}
+    k0 = dict(pose=ACTIVE, hang=dict(ext=STRAIGHT, sx=0.1), hands=hands((0.6, -0.3, -1)))
+    k1 = dict(rot=(0, 0, 10), pose=TOP, hang=dict(ext=0.42, dy=0.2, sx=0.12), hands=hands((0.3, -0.6, -1)))
+    return hang_ex([k0, k1], grip=0.14, view=VIEW_PULL)
+
+# ── Handstand-Push-up mit Defizit und frei ──────────────────────────────────
+def com_over_hands(k, lo=-12, hi=12):
+    solve(k, 0, lo, hi, lambda k: mesh_np()[:, 1].mean() - 0.0, 0.0)
+def hspu_ex(free, deficit=False, timing="pp"):
+    h = 0.17 if deficit else 0.0
+    if deficit: parallettes(0.26, 0.0, h); H = pbar_grip(h, 0.26, (0.35, -1, 0.05))
+    else: H = handstand_hands(0.0, hint=(0.35, -1, 0.05))
+    crown = skin("head", (0, -0.02, 1.69), (0, 0, 1))
+    top = inv_key(0, H, pose=sym({**INV, "thigh.L": (-0.035, 0, -1), "shin.L": (-0.01, 0, -1)}))   # Beine geschlossen
+    if free: com_over_hands(top)
+    else:
+        yw = 0.28; wall(yw, 1); heel = lambda k: pt("ankle").y - (yw - 0.07); solve(top, 0, -25, 25, heel, 0)
+    top = hang_sz(top); low = dict(top); set_place(1, "dy")(low, -0.08)
+    solve(low, set_place(1, "sz"), top["place"][1]["sz"], -0.3, lambda k: crown().z, 0.05)
+    if free: com_over_hands(low)
+    else: solve(low, 0, -25, 25, heel, 0)
+    return dict(keys=[low, top], timing=timing, view=(-40, 6))
+def deficit_wall_hspu(): return hspu_ex(False, deficit=True)
+def freestanding_hspu_negative(): return hspu_ex(True, timing="fast")
+def freestanding_hspu(): return hspu_ex(True)
+
+# ── V-Sit, Tuck Manna ───────────────────────────────────────────────────────
+VSIT = sym({**LSIT, "thigh.L": (0.03, -0.55, 0.84), "shin.L": (0, -0.55, 0.84), "foot.L": (0, -0.75, 0.6)})
+def v_sit_parallettes():
+    ex = lsit_ex(par=True); up = ex["keys"][1]
+    vk = dict(up, rot=(-22, 0, 0), pose=VSIT)
+    solve(vk, set_place(2, 2), up["place"][2][2] - 0.25, up["place"][2][2] + 0.2, m_arm(), STRAIGHT)
+    return dict(ex, keys=[up, vk])
+def v_sit_floor():
+    ex = lsit_ex(); down, up = ex["keys"]
+    vk = dict(up, rot=(-24, 0, 0), pose=VSIT, wpose={})
+    solve(vk, set_place(2, 2), 0.05, 0.5, m_arm(), STRAIGHT)
+    return dict(ex, keys=[down, vk])
+MANNA = sym({"spine": (0, -0.25, 1), "chest": (0, -0.15, 1), "neck": (0, -0.3, 1), "head": (0, -0.35, 1),
+             "clavicle.L": (1, -0.1, -0.25), "thigh.L": (0.08, -0.55, 0.83), "shin.L": (0, 0.85, -0.5), "foot.L": (0, 0.6, -0.8)})
+def tuck_manna():
+    """Hände hinter der Hüfte (Finger nach hinten), Hüfte hinter die Hände, Knie zur Brust."""
+    h = 0.17; parallettes(0.25, 0.0, h)
+    H = symh(dict(k=(0.25 + 0.03, 0.0, h + 0.024), hdir=(1, 0.3, -0.5), palm=(0.25, 0, -1), curl=(0.45, 0.2, -1), hint=(0.1, -1, 0.1)))
+    tuck = dict(pose=sym({**LSIT, "thigh.L": (0.08, -0.6, 0.8), "shin.L": (0, 0.85, -0.5), "foot.L": (0, 0.6, -0.8)}),
+                place=("pin", "hip", (0, -0.02, 0.3)), hands=H)
+    solve(tuck, set_place(2, 2), 0.1, 0.6, m_arm(), STRAIGHT)
+    manna = dict(tuck, rot=(-38, 0, 0), pose=MANNA, place=("pin", "hip", (0, 0.2, 0.3)))
+    solve(manna, set_place(2, 2), 0.1, 0.7, m_arm(), STRAIGHT)
+    return dict(keys=[tuck, manna], timing="hold", view=(-25, 10))
+
+# ── Press zum Handstand: Körper kippt über die Hände, Schwerpunkt über den Händen ─
+def to_hang(k):
+    """Beliebige Platzierung in hang (sz/dy relativ zur Knöchelmitte) umrechnen – damit sie mischbar wird."""
+    pose_key(k, limbs=False); K = [Vector(s["k"]) for s in k["hands"].values()]; M = sum(K, Vector()) / len(K); S = pt("shoulder")
+    k["place"] = ("hang", dict(sx=rig.location.x, sz=S.z - M.z, dy=S.y - M.y)); return k
+def press_key(pitch, legs, H, feet=None):
+    """Schultern über den Händen; feet: Füße auf Höhe feet (Stand), sonst Schwerpunkt über den Händen."""
+    k = dict(rot=(pitch, 0, 0), pose={**PIKE, **legs, **sym({"clavicle.L": (1, 0.05, 0.35), "neck": (0, -0.1, 1)})},
+             place=("hang", dict(ext=STRAIGHT, up=True, dy=0.0)), hands=H)
+    if feet is None: solve(k, set_place(1, "dy"), -0.6, 0.6, lambda k: mesh_np()[:, 1].mean(), 0.0)
+    else: solve(k, 0, pitch - 60, pitch + 40, lambda k: mesh_np()[FOOTV][:, 2].min(), feet)
+    return hang_sz(k)
+def pike_legs(hip, spread=0.0):
+    a = math.radians(hip)                    # Hüftbeugung in Grad (0 = gestreckt)
+    return sym({"thigh.L": (spread, -math.sin(a), -math.cos(a)), "shin.L": (spread, -math.sin(a), -math.cos(a)),
+                "foot.L": (spread * 0.5, -math.sin(a) - 0.35, -math.cos(a))})
+def press_ex(spread, wall_y=None, timing="pp"):
+    H = floor_hands(0.26, 0.0, (0, -1, 0), (0.4, 0.6, 0.2))
+    if wall_y is not None: wall(wall_y, 1)
+    keys = [press_key(118, pike_legs(130, spread), H, feet=0.0),            # gegrätschter Stand, Hände vor den Füßen
+            press_key(132, pike_legs(125, spread), H),                      # Schultern vor, Füße lösen sich
+            press_key(155, pike_legs(95, spread), H),                       # Beine waagerecht gegrätscht
+            press_key(180, pike_legs(0, 0.0), H)]                           # Handstand, Beine geschlossen
+    return dict(keys=keys, timing=timing, view=(-35, 8))
+def straddle_press(): return press_ex(0.55)
+def wall_straddle_press(): return press_ex(0.55, wall_y=0.32)
+def elevated_pike_press():
+    """Füße auf der Box, Hüfte über die Hände schieben, bis die Füße abheben."""
+    ex = pike_ex(feet_h=0.5, a_top=150); top = to_hang(ex["keys"][0])
+    lift = press_key(165, pike_legs(100), top["hands"])
+    return dict(ex, keys=[top, lift], timing="hold")
+def pike_compression():
+    """Langsitz, Hände neben den Knien, gestreckte Beine kurz vom Boden heben."""
+    hands = floor_hands(0.2, -0.38, (0, -1, 0), (0.6, 0.3, 0.6))
+    def key(lift, lean):
+        k = dict(rot=(lean, 0, 0), pose=sym({"spine": (0, -0.35, 1), "chest": (0, -0.25, 1), "neck": (0, -0.2, 1)}),
+                 wpose=sym({"thigh.L": (0.03, -1, lift), "shin.L": (0, -1, lift), "foot.L": (0, -0.8, 0.6)}),
+                 place=("ground", "hip", (0, 0.03)), hands=hands)
+        return grounded(k, "hip")
+    return dict(keys=[key(-0.03, 22), key(0.16, 28)], timing="hold", view=(-35, 10))
+
+# ── Human Flag an der senkrechten Stange ────────────────────────────────────
+def flag_ex(stages):
+    """Stange bei x = 0, Figur rechts davon (+X); obere Hand (links) zieht über dem Kopf, untere (rechts) drückt.
+    Wurzel-Drehung um Y: 0 Stand · −90 waagerecht (Füße weg von der Stange) · −180 senkrecht kopfüber."""
+    cyl((0, 0, 0), (0, 0, 2.7), 0.025, coll="stange")
+    top, low = (0.03, -0.0, 1.88), (0.03, 0.0, 0.95)
+    hands = {"L": dict(k=top, palm=(-1, 0, 0.2), flex=105, hint=(0.3, -0.4, 1)),
+             "R": dict(k=low, palm=(-1, 0, -0.2), flex=105, hint=(0.3, -0.4, -1))}
+    keys = [dict(rot=(0, roll, 0), pose={**LEVER_SH, **pose}, place=("pin", "shoulder", (x, 0, 1.42)), hands=hands)
+            for roll, pose, x in stages]
+    FRAME.extend([Vector((0, 0, 0.9)), Vector((0, 0, 1.95))])
+    return dict(keys=keys, timing="hold", view=(-72, 8))
+STAND_FLAG = sym({"thigh.L": (-0.03, 0, -1), "shin.L": (-0.02, 0, -1)})
+def vertical_flag(): return flag_ex([(0, STAND_FLAG, 0.3), (-180, STRAIGHT_LEGS, 0.42)])
+def tuck_flag(): return flag_ex([(-180, TUCKED, 0.42), (-90, TUCKED, 0.5)])
+def straddle_flag(): return flag_ex([(-180, STRADDLE, 0.42), (-90, STRADDLE, 0.5)])
+def human_flag(): return flag_ex([(-180, STRAIGHT_LEGS, 0.42), (-90, STRAIGHT_LEGS, 0.5)])
+
 # ── Pistol (alte Gelenkwinkel-Posen, Fuß verankert) ─────────────────────────
 PISTOL = [("spine", X, 24), ("chest", X, 12), ("neck", X, -16), ("arm.L", X, -122), ("arm.R", X, -122),
           ("thigh.L", X, -112), ("shin.L", X, 148), ("foot.L", X, -36),
@@ -449,6 +765,23 @@ def nordic_curl_negative(): return nordic_ex()
 def nordic_curl_band(): return nordic_ex(band=True)
 
 EXERCISES = {
+    "v-sit-parallettes": v_sit_parallettes, "v-sit-floor": v_sit_floor, "tuck-manna": tuck_manna,
+    "pike-compression": pike_compression, "elevated-pike-press": elevated_pike_press,
+    "wall-straddle-press": wall_straddle_press, "straddle-press": straddle_press,
+    "vertical-flag": vertical_flag, "tuck-flag": tuck_flag, "straddle-flag": straddle_flag, "human-flag": human_flag,
+    "false-grip-hang": false_grip_hang, "false-grip-pull-up": false_grip_pull_up, "ring-transition": ring_transition,
+    "ring-muscle-up": ring_muscle_up, "adv-tuck-planche": adv_tuck_planche, "straddle-planche": straddle_planche,
+    "full-planche": full_planche, "one-arm-negative": one_arm_negative, "one-arm-pull-up-assisted": one_arm_pull_up_assisted,
+    "one-arm-pull-up": one_arm_pull_up, "deficit-wall-hspu": deficit_wall_hspu,
+    "freestanding-hspu-negative": freestanding_hspu_negative, "freestanding-hspu": freestanding_hspu,
+    "dragon-flag-tuck-negative": dragon_flag_tuck_negative, "dragon-flag-negative": dragon_flag_negative,
+    "dragon-flag": dragon_flag, "crow-pose": crow_pose, "elbow-lever": elbow_lever, "one-arm-elbow-lever": one_arm_elbow_lever,
+    "archer-push-up": archer_push_up, "one-arm-push-up-elevated": one_arm_push_up_elevated, "one-arm-push-up": one_arm_push_up,
+    "shrimp-squat-assisted": shrimp_squat_assisted, "shrimp-squat": shrimp_squat, "shrimp-squat-advanced": shrimp_squat_advanced,
+    "tuck-front-lever": tuck_front_lever, "adv-tuck-front-lever": adv_tuck_front_lever,
+    "one-leg-front-lever": one_leg_front_lever, "straddle-front-lever": straddle_front_lever, "front-lever": front_lever,
+    "german-hang": german_hang, "skin-the-cat": skin_the_cat, "tuck-back-lever": tuck_back_lever,
+    "adv-tuck-back-lever": adv_tuck_back_lever, "straddle-back-lever": straddle_back_lever, "back-lever": back_lever,
     "dead-hang": dead_hang, "scapula-shrug": scapula_shrug, "pull-up": pull_up, "pull-up-weighted": pull_up_weighted,
     "explosive-pull-up": explosive_pull_up, "chest-to-bar-pull-up": chest_to_bar_pull_up,
     "archer-pull-up": archer_pull_up, "typewriter-pull-up": typewriter_pull_up, "uneven-pull-up": uneven_pull_up,

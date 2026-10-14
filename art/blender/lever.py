@@ -41,7 +41,7 @@ J = {
     "pelvis": (0, 0.0, 0.93), "spine": (0, 0.0, 1.05), "chest": (0, 0.0, 1.22), "neck": (0, -0.01, 1.43),
     "head": (0, -0.03, 1.53), "head_top": (0, -0.03, 1.69),
     "clav": (0.02, -0.02, 1.42), "shoulder": (0.18, 0.0, 1.38), "elbow": (0.30, -0.01, 1.07),
-    "wrist": (0.365, -0.06, 0.86), "knuckle": (0.395, -0.085, 0.78), "hand_tip": (0.42, -0.11, 0.71),
+    "wrist": (0.372, -0.066, 0.837), "knuckle": (0.395, -0.085, 0.78), "hand_tip": (0.42, -0.11, 0.71),
     "hip": (0.095, -0.01, 0.90), "knee": (0.13, 0.01, 0.47), "ankle": (0.17, 0.05, 0.09), "toe": (0.19, -0.10, 0.02),
 }
 def j(name, side=1):
@@ -176,11 +176,24 @@ def rot(b, axis, deg):
     pb = PB[b]; h = pb.head.copy()
     pb.matrix = Matrix.Translation(h) @ Matrix.Rotation(math.radians(deg), 4, axis) @ Matrix.Translation(-h) @ pb.matrix
     upd()
-def aim(b, d, local=False):
-    """Knochen um seinen Kopf drehen, bis er in Richtung d zeigt (Welt, oder Körperraum mit local)."""
+HINGE = {}            # Scharniergelenke: Beugeachse im Knochenraum (gefüllt nach dem Skelettbau)
+def aim(b, d, local=False, hinge=None, prefer=None):
+    """Knochen um seinen Kopf drehen, bis er in Richtung d zeigt (Welt, oder Körperraum mit local).
+    Scharniere (Knie, Sprunggelenk, Ellbogen) beugen zuerst um ihre Achse – sonst kippt die Drehung
+    um die Knochenachse, sobald die kürzeste Drehung nahe 180° liegt."""
     pb = PB[b]; h = pb.head.copy(); cur = (pb.tail - pb.head).normalized()
-    d = Vector(d) if local else to_pose(d)
-    q = cur.rotation_difference(d.normalized())
+    d = (Vector(d) if local else to_pose(d)).normalized()
+    if hinge is not None or b in HINGE:
+        ax = to_pose(hinge).normalized() if hinge is not None else (pb.matrix.to_3x3() @ HINGE[b]).normalized()
+        c1 = cur - ax * cur.dot(ax); t1 = d - ax * d.dot(ax)
+        if c1.length > 1e-4 and t1.length > 1e-4:
+            ang = math.atan2(ax.dot(c1.cross(t1)), c1.dot(t1))
+            if prefer is not None:         # Beugerichtung bevorzugen: höchstens ~100° Streckung, sonst der lange Weg
+                sg = 1 if ax.dot(cur.cross(to_pose(prefer))) >= 0 else -1
+                if ang * sg < -math.radians(100): ang += sg * 2 * math.pi
+            pb.matrix = Matrix.Translation(h) @ Matrix.Rotation(ang, 4, ax) @ Matrix.Translation(-h) @ pb.matrix
+            upd(); cur = (pb.tail - pb.head).normalized()
+    q = cur.rotation_difference(d)
     pb.matrix = Matrix.Translation(h) @ q.to_matrix().to_4x4() @ Matrix.Translation(-h) @ pb.matrix
     upd()
 def V(*a): return Vector(a).normalized()
@@ -200,6 +213,9 @@ ORDER = (["pelvis", "spine", "chest", "neck", "head"]
          + [f"{b}.{n}" for b in ("clavicle", "arm", "forearm", "hand", "fingers", "thigh", "shin", "foot") for n in "LR"])
 reset()
 REST = {b: (PB[b].tail - PB[b].head).normalized() for b in ORDER}
+for n in "LR":                         # Beugeachse = seitliche Achse (X) in Ruhelage
+    for b in (f"shin.{n}", f"foot.{n}", f"forearm.{n}"):
+        HINGE[b] = PB[b].bone.matrix_local.to_3x3().inverted() @ X
 LEN = {b: (pb.tail - pb.head).length for b, pb in PB.items()}
 REACH = LEN["arm.L"] + LEN["forearm.L"]
 STRAIGHT = 0.985
@@ -230,9 +246,24 @@ def hand(n, s):
     if s.get("hdir") is not None: u = u.lerp(Vector(s["hdir"]).normalized(), s.get("hw", 1.0)).normalized()   # hw: Übergang Hängen → Stütz
     W = K - u * LEN[f"hand.{n}"]
     two_bone(f"arm.{n}", f"forearm.{n}", W, s["hint"])
-    spin(f"forearm.{n}", f"hand.{n}", PALM[n], s.get("palm", (0, -1, 0)))   # erst Unterarm drehen, sonst schwenkt die Hand weg
-    aim(f"hand.{n}", K - world(PB[f"hand.{n}"].head))
-    aim(f"fingers.{n}", s.get("curl", u))
+    # Unterarm-Drehung: die gewünschte Handflächen-Normale um dieselbe Drehung zurückführen, die die Hand aus
+    # der Unterarm-Verlängerung in ihre Richtung u bringt. Das ist eindeutig, auch wenn die Handfläche entlang
+    # des Unterarms zeigt (flache Hand am Boden, False Grip) – dort kippte die frühere Projektion.
+    fa = PB[f"forearm.{n}"]; ax = rig.matrix_world.to_3x3() @ (fa.tail - fa.head).normalized()
+    pw = Vector(s.get("palm", (0, -1, 0))).normalized(); pw = pw - u * pw.dot(u)
+    pw = pw.normalized() if pw.length > 0.15 else u.orthogonal().normalized()   # Handfläche fast entlang der Hand: ersatzweise
+    spin(f"forearm.{n}", f"hand.{n}", PALM[n], u.rotation_difference(ax) @ pw)   # erst Unterarm drehen, sonst schwenkt die Hand weg
+    # Handgelenk und Finger beugen um die Querachse der Hand (Unterarm × Handfläche) – ohne Drehung um die
+    # eigene Achse, sonst kippt die Hand, sobald die kürzeste Drehung die Seite wechselt.
+    def flex_axis(bone):
+        pb = PB[bone]; d = rig.matrix_world.to_3x3() @ (pb.tail - pb.head).normalized()
+        return d.cross(palm_normal(n))
+    aim(f"hand.{n}", K - world(PB[f"hand.{n}"].head), hinge=flex_axis(f"forearm.{n}"), prefer=palm_normal(n))
+    curl = s.get("curl", u)
+    if s.get("flex") is not None:          # Finger um festen Winkel zur Handfläche gebeugt (Griff, der mitdreht)
+        hb = PB[f"hand.{n}"]; hd = rig.matrix_world.to_3x3() @ (hb.tail - hb.head).normalized(); a = math.radians(s["flex"])
+        curl = hd * math.cos(a) + palm_normal(n) * math.sin(a)
+    aim(f"fingers.{n}", curl, hinge=flex_axis(f"hand.{n}"), prefer=palm_normal(n))
 def leg(n, s):
     """Bein an Weltpunkt: a = Sprunggelenk, hint = Knie, fdir = Fußrichtung (Welt)."""
     two_bone(f"thigh.{n}", f"shin.{n}", Vector(s["a"]), s["hint"])
@@ -407,7 +438,7 @@ def place(k):
             dx = W.x - S.x; dz = math.sqrt(max(e * e - dx * dx - dy * dy, 0))
             ty, tz = W.y + dy, W.z + (dz if o.get("up") else -dz)
         else:                              # sz = Schultermitte über (+) / unter (−) der Knöchelmitte
-            S = pt("shoulder"); M = (K["L"] + K["R"]) / 2; ty, tz = M.y + dy, M.z + o["sz"]
+            S = pt("shoulder"); M = sum(K.values(), Vector()) / len(K); ty, tz = M.y + dy, M.z + o["sz"]
         rig.location += Vector((0, ty - S.y, tz - S.z)); upd()
     elif p[0] == "anchor":                 # alte Pistol-Posen: Fuß auf ANCHOR
         low = min((world(PB[f"foot.{p[1]}"].head), world(PB[f"foot.{p[1]}"].tail)), key=lambda q: q.z)
