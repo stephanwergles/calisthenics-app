@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
-import { Button, ButtonRow, Stepper } from '@/ui'
+import { Button, ButtonRow, Stepper, Text } from '@/ui'
 import { FormSheet } from '@/screens/training/parts'
 
 export default function SlotScreen() {
@@ -25,6 +25,7 @@ export default function SlotScreen() {
       sub={tr('editor.slotSub', { stage: step.index + 1, total: step.total, target: step.target.label })}>
       <Stepper label={tr('editor.sets')} value={String(sets)} minusLabel={tr('editor.setsLess')} plusLabel={tr('editor.setsMore')}
         onMinus={() => setSets(sets - 1)} onPlus={() => setSets(sets + 1)} />
+      <Text variant="small">{tr('editor.slotSetsHint')}</Text>
       <ButtonRow>
         <Button style={{ flex: 1 }} icon="up" title={tr('editor.earlier')} disabled={i <= 0} onPress={() => move(-1)} />
         <Button style={{ flex: 1 }} icon="lower" title={tr('editor.later')} disabled={i >= w.slots.length - 1} onPress={() => move(1)} />

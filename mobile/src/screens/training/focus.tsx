@@ -396,8 +396,8 @@ export function CircuitCard({ id }: { id: string }) {
   return (
     <View style={{ backgroundColor: color.card, borderRadius: radius.card, borderCurve: 'continuous', borderWidth: 1, borderColor: done ? color.line : color.accentLine, padding: 16, gap: 10 }}>
       <View style={{ gap: 3 }}>
-        <Text variant="eyebrow" style={{ fontSize: 11 }}>{L.fmtCircuitRule(c)}</Text>
-        <Text variant="title" style={{ fontSize: 22 }}>{c.name}</Text>
+        <Text variant="eyebrow" style={{ fontSize: 11 }}>{tr('circuit.section')}</Text>
+        <Text variant="title" style={{ fontSize: 22 }}>{L.fmtCircuitRule(c)}</Text>
         <Text variant="small">{L.fmtCircuitItems(t.ix, c)}</Text>
         {done ? <Text variant="label" style={{ color: color.accent }}>{L.fmtCircuitResult(c, done)}</Text>
           : last ? <Text variant="small">{tr('circuit.last', { value: L.fmtCircuitResult(c, last.r) })}</Text> : null}

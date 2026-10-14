@@ -1,13 +1,13 @@
-/* Runden-Block bearbeiten (Push-Seite im Workout-Editor): Name, Modus (AMRAP in Minuten oder
+/* Runden-Block bearbeiten (Push-Seite im Workout-Editor): Modus (AMRAP in Minuten oder
    feste Runden auf Zeit), Übungen mit fester Zahl je Runde. Params: id (Workout), cid (Block oder „new“). */
 import { useEffect } from 'react'
-import { TextInput, View } from 'react-native'
+import { View } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
 import { circuitDraft, useCircuitDraft } from '@/state/circuit-draft'
-import { ask, Button, color, font, Icon, radius, Segmented, SheetScreen, Stepper, Text } from '@/ui'
+import { ask, Button, color, Icon, radius, Segmented, SheetScreen, Stepper, Text } from '@/ui'
 import { Section } from '@/screens/plan/parts'
 
 export default function CircuitScreen() {
@@ -29,26 +29,18 @@ export default function CircuitScreen() {
   const remove = (i: number) => set({ items: c.items.filter((_, j) => j !== i) })
   const save = () => {
     if (!c.items.length) return
-    t.editPlan(p => L.withWorkout(p, L.withCircuit(w, { ...c, name: c.name || tr('editor.circuitDefault') })))
+    t.editPlan(p => L.withWorkout(p, L.withCircuit(w, { ...c, name: tr('editor.circuitDefault') })))
     router.back()
   }
   const del = async () => {
-    if (!existing || !await ask({ title: tr('editor.circuitDeleteTitle', { name: existing.name }), ok: tr('editor.delete'), destructive: true })) return
+    if (!existing || !await ask({ title: tr('editor.circuitDeleteTitle'), ok: tr('editor.delete'), destructive: true })) return
     router.back()
     t.editPlan(p => L.withWorkout(p, L.withoutCircuit(w, existing.id)))
   }
 
   return (
-    <SheetScreen title={existing ? existing.name : tr('editor.circuitNew')} sub={tr('editor.circuitHint')}
+    <SheetScreen title={tr('editor.circuitNew')} sub={tr('editor.circuitHint')}
       footer={<Button variant="primary" size="lg" icon="check" title={tr('editor.save')} disabled={!c.items.length} onPress={save} />}>
-      <View style={{ gap: 6 }}>
-        <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', letterSpacing: 1.2 }}>{tr('editor.name')}</Text>
-        <TextInput value={c.name} onChangeText={name => set({ name })} maxLength={80} placeholder={tr('editor.circuitNamePlaceholder')}
-          placeholderTextColor={color.muted} returnKeyType="done" accessibilityLabel={tr('editor.name')} selectionColor={color.accent}
-          keyboardAppearance="dark" autoCapitalize="sentences"
-          style={{ minHeight: 52, paddingHorizontal: 16, borderRadius: radius.lg, borderCurve: 'continuous', borderWidth: 1, borderColor: color.line, backgroundColor: color.card, color: color.text, fontFamily: font.bodyMedium, fontSize: 17 }} />
-      </View>
-
       <Segmented<'amrap' | 'rounds'> label={tr('editor.circuitMode')} value={c.mode}
         options={[{ id: 'amrap', title: tr('editor.circuitAmrap') }, { id: 'rounds', title: tr('editor.circuitRounds') }]}
         onChange={mode => set(mode === 'amrap' ? { mode, minutes: c.minutes ?? 10, rounds: undefined } : { mode, rounds: c.rounds ?? 5, minutes: undefined })} />

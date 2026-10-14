@@ -5,7 +5,7 @@ import { View } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import type { Weekday, Workout } from '@lever/domain/model.ts'
 import * as L from '@lever/core/logic.ts'
-import { t as tr } from '@lever/core/i18n/index.ts'
+import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
 import { useApp } from '@/state/app'
 import { ask, Button, ButtonRow, DayPicker, SheetScreen, Text } from '@/ui'
@@ -80,19 +80,21 @@ function Editor({ w, first }: { w: Workout; first: boolean }) {
         footer={slots.length > 0 || L.circuitsOf(w).length > 0 ? <Button variant="primary" size="lg" icon="play" disabled={busy}
           title={t.active?.workout === w.id ? tr('home.ctaActive') : tr('editor.startNow')} onPress={start} /> : undefined}>
         <Section title={tr('editor.exercisesHead')} />
+        <Text variant="small">{tr('editor.exercisesHint')}</Text>
         {!slots.length && <Text variant="muted">{tr('editor.empty')}</Text>}
         {slots.length > 0 && <Rows rows={slots.map(({ sl, step, sets }) => ({
           key: sl.progression, title: step.exercise.name, exercise: step.exercise,
-          subtitle: `${tr('editor.stage', { stage: step.index + 1, total: step.total })} · ${step.target.label.replace(/^\d+\s*×/, `${sets} ×`)}`,
+          subtitle: `${tn('editor.setsN', sets)} à ${step.target.label.replace(/^\d+\s*×\s*/, '')} · ${tr('editor.stage', { stage: step.index + 1, total: step.total })}`,
           onPress: () => router.push({ pathname: '/workouts/slot', params: { id: w.id, pid: sl.progression } }),
         }))} />}
         <Button icon="plus" title={tr('editor.addExercise')} onPress={() => router.push({ pathname: '/workouts/add', params: { id: w.id } })} />
 
         {/* Runden-Blöcke (z. B. Cindy): feste Übungen, unabhängig von den Leiterstufen */}
         <Section title={tr('editor.circuits')} />
+        <Text variant="small">{tr('editor.circuitsHint')}</Text>
         {L.circuitsOf(w).length > 0 && <Rows rows={L.circuitsOf(w).map(c => ({
-          key: c.id, title: c.name, icon: 'sync' as const, iconTile: true,
-          subtitle: `${L.fmtCircuitRule(c)} · ${L.fmtCircuitItems(t.ix, c)}`,
+          key: c.id, title: L.fmtCircuitRule(c), icon: 'sync' as const, iconTile: true,
+          subtitle: L.fmtCircuitItems(t.ix, c),
           onPress: () => router.push({ pathname: '/workouts/circuit', params: { id: w.id, cid: c.id } }),
         }))} />}
         <Button icon="plus" title={tr('editor.addCircuit')} onPress={() => router.push({ pathname: '/workouts/circuit', params: { id: w.id, cid: 'new' } })} />

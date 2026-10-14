@@ -43,7 +43,7 @@ function Run({ c }: { c: Circuit }) {
   const end = amrap && start ? start + (c.minutes ?? 10) * 60_000 : null
   const target = c.rounds ?? 0
   // Sperrbildschirm/Dynamic Island: gleiche Activity wie bei Challenges
-  useChallengeActivity({ id: c.id, name: c.name, kind: amrap ? 'amrap' : 'fortime', unit: 'reps', seconds: (c.minutes ?? 10) * 60, target },
+  useChallengeActivity({ id: c.id, name: L.fmtCircuitRule(c), kind: amrap ? 'amrap' : 'fortime', unit: 'reps', seconds: (c.minutes ?? 10) * 60, target },
     phase === 'run' ? start : null, rounds, amrap ? tn('logic.circuit.roundsN', rounds) : `${tr('circuit.round')} ${Math.min(rounds + 1, target)} / ${target}`)
 
   useEffect(() => { signals().prime(); void signals().keepAwake(true); return () => { void signals().keepAwake(false) } }, [])
@@ -83,7 +83,7 @@ function Run({ c }: { c: Circuit }) {
     return (
       <View style={{ flex: 1, backgroundColor: color.bg, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 12, paddingHorizontal: GUTTER, gap: 18, justifyContent: 'space-between' }}>
         <View style={{ gap: 10 }}>
-          <Text variant="eyebrow">{tr('circuit.result')} · {c.name}</Text>
+          <Text variant="eyebrow">{tr('circuit.result')} · {L.fmtCircuitRule(c)}</Text>
           <Text style={{ fontFamily: font.displayBlack, fontSize: 72, lineHeight: 76, color: color.text, fontVariant: ['tabular-nums'] }}>{L.fmtCircuitResult(c, r)}</Text>
           {last && (L.circuitBetter(c, r, last.r)
             ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name="trophy" size={20} color={color.accent} /><Text variant="title" style={{ color: color.accent }}>{tr('circuit.better')}</Text></View>
@@ -113,8 +113,8 @@ function Run({ c }: { c: Circuit }) {
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <Button icon="close" label={tr('circuit.cancel')} onPress={() => void close()} />
         <View style={{ flex: 1 }}>
-          <Text variant="eyebrow" numberOfLines={1}>{L.fmtCircuitRule(c)}</Text>
-          <Text variant="title" numberOfLines={1}>{c.name}</Text>
+          <Text variant="eyebrow" numberOfLines={1}>{tr('circuit.section')}</Text>
+          <Text variant="title" numberOfLines={1}>{L.fmtCircuitRule(c)}</Text>
         </View>
       </View>
 

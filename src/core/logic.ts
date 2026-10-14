@@ -1152,6 +1152,7 @@ export function sessionCircuits(ix: Index, s: Session) {
   return (s.circuits ?? []).map(r => {
     const c = defs.find(x => x.id === r.id)
     const mode = c?.mode ?? (r.durationSec !== undefined ? 'rounds' : 'amrap')
-    return { id: r.id, name: c?.name ?? t('logic.circuit.defaultName'), result: fmtCircuitResult({ mode }, r), items: c ? fmtCircuitItems(ix, c) : '' }
+    // angezeigt wird die Regel („AMRAP 20 min“) – Runden-Blöcke haben keinen eigenen Namen
+    return { id: r.id, name: c ? fmtCircuitRule(c) : t('logic.circuit.defaultName'), result: fmtCircuitResult({ mode }, r), items: c ? fmtCircuitItems(ix, c) : '' }
   })
 }
