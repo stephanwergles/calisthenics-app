@@ -28,7 +28,9 @@ export function SheetScreen({ title, sub, children, footer, scroll = true, conte
   return (
     <View style={{ flex: 1, backgroundColor: color.bg }}>
       {scroll ? (
-        <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={[pad, contentStyle]}>
+        // automaticallyAdjustKeyboardInsets: Textfelder (Notiz in der Zusammenfassung …) rutschen über die Tastatur
+        <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive" contentContainerStyle={[pad, contentStyle]}>
           {head}
           {children}
         </ScrollView>

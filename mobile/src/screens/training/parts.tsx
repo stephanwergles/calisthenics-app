@@ -21,7 +21,7 @@ export function FormSheet({ title, sub, children, footer }: {
 }) {
   const insets = useSafeAreaInsets()
   return (
-    <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} keyboardShouldPersistTaps="handled"
+    <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive"
       contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: 28, paddingBottom: Math.max(insets.bottom, 12) + 8, gap: space.md }}>
       <View style={{ gap: 4, marginBottom: space.xs }}>
         <Text variant="display" accessibilityRole="header">{title}</Text>
