@@ -9,7 +9,7 @@ import * as L from '@lever/core/logic.ts'
 import { platform } from '@lever/core/platform.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
-import { Button, color, ExerciseStill, font, GUTTER, Icon, radius, Ring, Text } from '@/ui'
+import { Button, color, CountdownRing, ExerciseStill, font, GUTTER, Icon, radius, Text } from '@/ui'
 
 export function RestScreen() {
   const { rest, restView, setRestView, slots, focus } = useApp()
@@ -18,8 +18,6 @@ export function RestScreen() {
   const next = L.upNext(slots, focus)
   const close = () => setRestView(null)
   const left = rest.ringing ? 0 : rest.remaining
-  // aus dem exakten Rest, nicht aus ganzen Sekunden – der Ring läuft so flüssig statt in Stufen
-  const share = rest.total && !rest.ringing ? Math.min(1, rest.remainingMs / (rest.total * 1000)) : 0
   const size = Math.min(width - 2 * GUTTER - 40, height * 0.36, 300)
 
   // Klingeln: Ring pulsiert (optisches Signal, falls der Ton stumm ist)
@@ -51,7 +49,7 @@ export function RestScreen() {
       </View>
 
       <Animated.View style={[{ alignItems: 'center' }, pulseStyle]}>
-        <Ring size={size} stroke={12} progress={rest.ringing ? 1 : share}>
+        <CountdownRing size={size} stroke={12} end={rest.ringing ? null : rest.end} totalMs={rest.total * 1000}>
           <View style={{ alignItems: 'center' }} accessible accessibilityRole="timer"
             accessibilityLabel={rest.ringing ? tr('training.rest.goNow') : tr('training.rest.remaining', { time: L.fmtClock(left) })}>
             <Text style={{ fontFamily: font.displayBlack, fontSize: size * 0.3, lineHeight: size * 0.31, color: rest.ringing ? color.accent : color.text, fontVariant: ['tabular-nums'] }}>
@@ -59,7 +57,7 @@ export function RestScreen() {
             </Text>
             <Text variant="muted">{tr('training.rest.of', { time: L.fmtClock(rest.total) })}</Text>
           </View>
-        </Ring>
+        </CountdownRing>
       </Animated.View>
 
       <View style={{ gap: 12 }}>

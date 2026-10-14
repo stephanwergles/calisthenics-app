@@ -41,6 +41,8 @@ export function useHoldTimer() {
   const span = phase === 'prep' ? PREP_SEC * 1000 : total * 1000
   return {
     phase, total, start, cancel,
+    /** Ende der laufenden Phase (ms) und ihre Länge – für einen nativ animierten Ring */
+    end: phase === 'prep' || phase === 'hold' ? end : null, spanMs: span,
     /** ganze Sekunden für die Anzeige */
     left: Math.ceil(leftMs / 1000),
     /** Anteil 0–1 für den Ring (läuft flüssig, nicht in Sekundenschritten) */

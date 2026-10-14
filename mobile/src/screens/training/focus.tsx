@@ -2,9 +2,10 @@
    das Erfassungs-Panel mit Satz-Kacheln, großem Zähler und Speichern. Oben: minimieren (auch per
    Wischen nach unten), Dauer bzw. laufende Pause, Übungsliste, Fortschritt je Übung. Wischen nach
    links/rechts wechselt die Übung. Technik, Stufe, Überspringen, Pausieren: Technik-Sheet. */
-import { useState } from 'react'
-import { KeyboardAvoidingView, Pressable, ScrollView, View } from 'react-native'
-import Animated, { FadeIn } from 'react-native-reanimated'
+import { useEffect, useState } from 'react'
+import { KeyboardAvoidingView, Pressable, ScrollView, View, type LayoutChangeEvent } from 'react-native'
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg'
+import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler'
 import { router } from 'expo-router'
@@ -14,7 +15,7 @@ import { useHoldTimer, type HoldTimer } from '@lever/core/useHoldTimer.ts'
 import { platform } from '@lever/core/platform.ts'
 import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
-import { Button, ButtonRow, color, ExerciseMedia, font, GUTTER, Icon, radius, Ring, space, Text } from '@/ui'
+import { Button, ButtonRow, color, CountdownRing, ExerciseMedia, font, GUTTER, Icon, radius, space, Text } from '@/ui'
 import { NoteInput, SetTiles } from './parts'
 
 const haptic = (k: 'tap' | 'success' = 'tap') => platform().signals.haptic(k)
@@ -127,23 +128,40 @@ export function FocusExercise({ slot, index, total }: { slot: L.SlotView; index:
         <View style={{ flex: 1 }}>
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: space.sm, paddingBottom: space.xl, gap: space.lg }}>
             <Animated.View entering={FadeIn.duration(180)} style={{ gap: space.lg }}>
-              <ExerciseMedia exercise={ex} label={tr('training.focus.movement', { name: ex.name })} style={{ width: '100%', aspectRatio: 1.3 }} />
-
-              <View style={{ gap: 8 }}>
-                <Text variant="eyebrow">{label}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
-                  <Text variant="display" style={{ flex: 1, fontSize: 36, lineHeight: 35 }} accessibilityRole="header">{ex.name}</Text>
+              {/* Bild mit allem, was zur Übung gehört: Einordnung und Technik oben, Name und Muskeln unten
+                  über einem Verlauf – so bleibt es auch über dem Erfassungs-Sheet sichtbar */}
+              <View style={{ width: '100%', aspectRatio: 1, borderRadius: radius.card, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: color.card }}>
+                <ExerciseMedia exercise={ex} label={tr('training.focus.movement', { name: ex.name })} style={{ width: '100%', height: '100%', borderRadius: 0 }} />
+                <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '55%' }}>
+                  <Svg width="100%" height="100%" style={{ position: 'absolute' }}>
+                    <Defs>
+                      <LinearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+                        <Stop offset="0" stopColor={color.bg} stopOpacity="0" />
+                        <Stop offset="0.55" stopColor={color.bg} stopOpacity="0.7" />
+                        <Stop offset="1" stopColor={color.bg} stopOpacity="0.95" />
+                      </LinearGradient>
+                    </Defs>
+                    <Rect width="100%" height="100%" fill="url(#fade)" />
+                  </Svg>
+                </View>
+                <View pointerEvents="box-none" style={{ position: 'absolute', top: 12, left: 12, right: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <View style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999, backgroundColor: 'rgba(16,16,16,0.72)' }}>
+                    <Text variant="eyebrow" style={{ fontSize: 12 }}>{label}</Text>
+                  </View>
                   <Button size="sm" icon="info" title={tr('training.focus.technique')} onPress={() => router.push({ pathname: '/exercise', params: { pid: slot.pid } })} />
                 </View>
-                {muscles.length > 0 && (
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }} accessible accessibilityLabel={`${tr('training.focus.muscles')}: ${muscles.join(', ')}`}>
-                    {muscles.map((m, i) => (
-                      <View key={m} style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: i < 2 ? color.accentDim : 'rgba(255,255,255,0.06)' }}>
-                        <Text style={{ fontFamily: font.bodySemi, fontSize: 13, color: i < 2 ? color.accent : color.muted }}>{m}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
+                <View pointerEvents="none" style={{ position: 'absolute', left: 16, right: 16, bottom: 14, gap: 8 }}>
+                  <Text variant="display" style={{ fontSize: 34, lineHeight: 33 }} accessibilityRole="header">{ex.name}</Text>
+                  {muscles.length > 0 && (
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }} accessible accessibilityLabel={`${tr('training.focus.muscles')}: ${muscles.join(', ')}`}>
+                      {muscles.map((m, i) => (
+                        <View key={m} style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: i < 2 ? 'rgba(212,255,58,0.16)' : 'rgba(255,255,255,0.10)' }}>
+                          <Text style={{ fontFamily: font.bodySemi, fontSize: 13, color: i < 2 ? color.accent : color.text }}>{m}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
               </View>
 
               {ex.cues?.length ? (
@@ -179,23 +197,62 @@ export function FocusExercise({ slot, index, total }: { slot: L.SlotView; index:
   )
 }
 
-/** Erfassungs-Panel unten: Satz-Kacheln, dann Zähler/Timer oder der Zustand der Übung */
+/** Erfassung als Sheet mit zwei Zuständen: eingeklappt nur Satz-Zeile, Zähler und Aktionen; hochgezogen
+    (Griff ziehen oder antippen, Notiz-Knopf) zusätzlich Satz-Kacheln und Notiz. Der Zusatzbereich folgt
+    beim Ziehen dem Finger und rastet beim Loslassen ein (Schwung oder halber Weg). */
 function SetPanel({ slot }: { slot: L.SlotView }) {
   const { t } = useApp()
   const insets = useSafeAreaInsets()
   const ex = slot.step.exercise
   const setNo = slot.state === 'open' ? L.nextSetNo(slot) : null
+  // ohne offenen Satz (erledigt, übersprungen, pausiert) gibt es nichts einzuklappen
+  const fixed = setNo === null
+  const [expanded, setExpanded] = useState(false)
+  const [full, setFull] = useState(0)
+  const open = useSharedValue(0)
+  const startOpen = useSharedValue(0)
+  const shown = fixed || expanded
+  useEffect(() => { open.set(withSpring(shown ? 1 : 0, { damping: 22, stiffness: 240 })) }, [shown, open])
+  const moreStyle = useAnimatedStyle(() => ({ height: full * open.get(), opacity: Math.min(1, open.get() * 1.6) }))
+  const toggle = (on?: boolean) => { if (fixed) return; haptic(); setExpanded(x => on ?? !x) }
+  const drag = usePanGesture({
+    activeOffsetY: [-6, 6], runOnJS: true, enabled: !fixed && full > 0,
+    onActivate: () => { startOpen.set(open.get()) },
+    onUpdate: e => { open.set(Math.max(0, Math.min(1, startOpen.get() - e.translationY / full))) },
+    onDeactivate: e => {
+      const next = e.velocityY < -350 ? true : e.velocityY > 350 ? false : open.get() > 0.5
+      if (next === expanded) open.set(withSpring(next ? 1 : 0, { damping: 22, stiffness: 240 }))
+      else toggle(next)
+    },
+  })
   const undo = () => slot.state === 'skipped'
     ? t.updateToday(x => L.withSkip(x, ex.id, false))
     : t.setState(st => ({ ...st, paused: st.paused.filter(p => p !== slot.pid) }))
+  const onMore = (e: LayoutChangeEvent) => { const h = e.nativeEvent.layout.height; if (h && Math.abs(h - full) > 1) setFull(h) }
+
   return (
     <View accessibilityLabel={tr('training.focus.logSet')}
       style={{
         backgroundColor: color.card, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, borderCurve: 'continuous',
-        paddingHorizontal: GUTTER, paddingTop: 16, paddingBottom: insets.bottom + 8, gap: 14,
+        paddingHorizontal: GUTTER, paddingBottom: insets.bottom + 8, gap: 12,
         boxShadow: '0 -10px 30px rgba(0, 0, 0, 0.45)',
       }}>
-      <SetTiles slot={slot} setNo={setNo} />
+      <GestureDetector gesture={drag}>
+        <View>
+          {/* Griff: ziehen oder antippen */}
+          <Pressable onPress={() => toggle()} disabled={fixed} accessibilityRole="button" accessibilityState={{ expanded: shown }}
+            accessibilityLabel={shown ? tr('training.focus.collapse') : tr('training.focus.expand')}
+            style={{ height: 24, alignItems: 'center', justifyContent: 'center' }}>
+            {!fixed && <View style={{ width: 36, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.22)' }} />}
+          </Pressable>
+          <Animated.View style={[{ overflow: 'hidden' }, moreStyle]} accessibilityElementsHidden={!shown} importantForAccessibility={shown ? 'auto' : 'no-hide-descendants'}>
+            {/* gemessen in voller Höhe, sichtbar je nach Aufzug */}
+            <View onLayout={onMore} style={{ position: 'absolute', left: 0, right: 0, gap: 12, paddingBottom: 12 }}>
+              <SetTiles slot={slot} setNo={setNo} />
+            </View>
+          </Animated.View>
+        </View>
+      </GestureDetector>
       {slot.state === 'skipped' || slot.state === 'paused' ? (
         <View style={{ gap: 10, paddingBottom: 6 }}>
           <Text variant="muted">{slot.state === 'skipped' ? tr('training.skippedToday') : tr('training.pausedUntil')}</Text>
@@ -207,14 +264,14 @@ function SetPanel({ slot }: { slot: L.SlotView }) {
           <Text variant="label" style={{ flex: 1 }}>{tn('training.focus.allLogged', slot.planned, { sets: slot.sets.map(x => L.fmtSet(x, ex)).join(' · ') })}</Text>
         </View>
       ) : (
-        <SetInput key={`${slot.pid}-${setNo}`} slot={slot} setNo={setNo} />
+        <SetInput key={`${slot.pid}-${setNo}`} slot={slot} setNo={setNo} onNote={() => toggle(true)} />
       )}
     </View>
   )
 }
 
 /** Erfassung des nächsten Satzes – Vorbelegung wie im Satz-Sheet; Halteübungen mit Timer */
-function SetInput({ slot, setNo }: { slot: L.SlotView; setNo: number }) {
+function SetInput({ slot, setNo, onNote }: { slot: L.SlotView; setNo: number; onNote: () => void }) {
   const { t, rest, pick, setRestView } = useApp()
   const ex = slot.step.exercise, target = slot.step.target
   const seconds = ex.unit === 'seconds'
@@ -254,7 +311,7 @@ function SetInput({ slot, setNo }: { slot: L.SlotView; setNo: number }) {
     <View style={{ gap: 10 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Text variant="small" numberOfLines={1} style={{ flex: 1, fontFamily: font.bodySemi }}>{caption}</Text>
-        <Button icon="note" size="sm" variant={note.trim() ? 'outline' : 'ghost'} label={tr('training.focus.noteThisSet')} onPress={() => setNoteOpen(o => !o)} />
+        <Button icon="note" size="sm" variant={note.trim() ? 'outline' : 'ghost'} label={tr('training.focus.noteThisSet')} onPress={() => { setNoteOpen(o => !o); onNote() }} />
       </View>
       {timing ? <HoldRing hold={hold} /> : (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -305,12 +362,12 @@ function HoldRing({ hold }: { hold: HoldTimer }) {
   return (
     <View style={{ alignItems: 'center' }} accessible accessibilityRole="timer"
       accessibilityLabel={`${hold.left} s, ${prep ? tr('training.focus.inPosition') : tr('training.focus.hold')}`}>
-      <Ring size={170} stroke={10} progress={hold.share} tint={prep ? color.muted : color.accent}>
+      <CountdownRing size={170} stroke={10} end={hold.end} totalMs={hold.spanMs} tint={prep ? color.muted : color.accent}>
         <Text style={{ fontFamily: font.displayBlack, fontSize: 64, lineHeight: 66, color: prep ? color.text : color.accent, fontVariant: ['tabular-nums'] }}>{hold.left}</Text>
         <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', letterSpacing: 1 }}>
           {prep ? tr('training.focus.inPosition') : tr('training.focus.hold')}
         </Text>
-      </Ring>
+      </CountdownRing>
     </View>
   )
 }
