@@ -30,4 +30,11 @@ export const logic: Shape<typeof de> = {
   standingNone: 'no complete session at this stage yet',
   standingSets: { one: 'still missing: {n} set with {target}', other: 'still missing: {n} sets with {target}' },
   standingOneMore: 'still missing: 1 more session, all sets done',
+  circuit: {
+    defaultName: 'Rounds',
+    amrap: 'AMRAP {min} min',
+    forTime: '{n} rounds for time',
+    roundsN: { one: '{n} round', other: '{n} rounds' },
+    roundsPlus: '{n} rounds + {reps}',
+  },
 }

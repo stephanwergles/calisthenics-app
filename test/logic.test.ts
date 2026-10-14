@@ -511,6 +511,29 @@ test('Katalog-Ausbau: neue Stufen, Verweise per Übung, bestehende Nutzer behalt
   for (const p of ix.progressions.values()) for (const s of p.steps) assert.ok(ix.exercises.has(s.exercise), s.exercise)
 })
 
+test('Runden-Blöcke: anlegen, Regeln, Ergebnis, Vergleich, Volumen', () => {
+  const w = ix.workouts.get('pull')!
+  const c = { id: 'c-cindy-1', name: ' Cindy ', mode: 'amrap' as const, minutes: 20, items: [{ exercise: 'pull-up', reps: 5 }, { exercise: 'push-up', reps: 10 }, { exercise: 'air-squat', reps: 15 }] }
+  const w1 = L.withCircuit(w, c)
+  assert.equal(w1.circuits![0].name, 'Cindy', 'Name getrimmt')
+  assert.equal(L.withCircuit(w1, { ...c, minutes: 25 }).circuits!.length, 1, 'ersetzt statt doppelt')
+  assert.equal(L.withoutCircuit(w1, c.id).circuits!.length, 0)
+  assert.equal(L.fmtCircuitRule(c), 'AMRAP 20 min')
+  assert.equal(L.fmtCircuitRule({ ...c, mode: 'rounds', rounds: 5 }), '5 Runden auf Zeit')
+  assert.match(L.fmtCircuitItems(ix, c), /^5 .+ · 10 .+ · 15 /)
+  const r = { id: c.id, rounds: 14, reps: 7 }
+  assert.equal(L.fmtCircuitResult(c, r), '14 Runden + 7')
+  assert.equal(L.fmtCircuitResult(c, { id: c.id, rounds: 1 }), '1 Runde')
+  assert.equal(L.fmtCircuitResult({ mode: 'rounds' }, { id: c.id, rounds: 5, durationSec: 754 }), '12:34')
+  assert.ok(L.circuitBetter(c, { id: c.id, rounds: 14, reps: 8 }, r))
+  assert.ok(L.circuitBetter({ mode: 'rounds' }, { id: 'x', rounds: 5, durationSec: 600 }, { id: 'x', rounds: 5, durationSec: 700 }), 'schneller ist besser')
+  assert.deepEqual(L.circuitVolume(c, r).map(x => x.reps), [75, 142, 210], 'volle Runden + 5 Klimmzüge + 2 Liegestütze')
+  const s = L.withCircuitResult(L.emptySession('2026-10-14', 'pull'), r)
+  assert.ok(L.isTrained(s), 'nur Runden zählt als Training')
+  assert.deepEqual(L.lastCircuitResult([s], c.id, '2026-10-15'), { date: '2026-10-14', r })
+  assert.equal(L.lastCircuitResult([s], c.id, '2026-10-14'), null, 'nur frühere Tage')
+})
+
 test('Schnellauswahl Workouts: heutiges zuerst, dann zuletzt trainierte, höchstens n', () => {
   const ss = [sess('2026-10-01', 'legs', [['pistol-squat', [5]]]), sess('2026-10-05', 'pull', [['pull-up', [8]]])]
   assert.deepEqual(L.recentWorkouts(ix, ss, 'push').map(w => w.id), ['push', 'pull', 'legs'])

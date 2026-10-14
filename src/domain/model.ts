@@ -83,7 +83,25 @@ export interface Workout {
   custom?: boolean;
   /** nur im eigenen Plan: gelöscht – bleibt für Namen und Reihenfolge im Verlauf erhalten */
   archived?: boolean;
+  /** Runden-Blöcke nach den Leiter-Übungen (nur im eigenen Plan) */
+  circuits?: Circuit[];
 }
+
+export type CircuitId = string;
+/** Runden-Block, z. B. Cindy: feste Übungen mit fester Zahl je Runde – bewusst unabhängig von den
+    Leiterstufen. amrap = so viele Runden wie möglich in `minutes`; rounds = `rounds` Runden auf Zeit.
+    `reps` gilt bei Halteübungen (unit seconds) als Sekunden. */
+export interface Circuit {
+  id: CircuitId;
+  name: string;
+  mode: "amrap" | "rounds";
+  minutes?: number;
+  rounds?: number;
+  items: { exercise: ExerciseId; reps: number }[];
+}
+/** Ergebnis eines Runden-Blocks in der Einheit: AMRAP = Runden + angefangene Wiederholungen,
+    feste Runden = Zeit in Sekunden */
+export interface CircuitResult { id: CircuitId; rounds: number; reps?: number; durationSec?: number }
 
 export interface Catalog {
   schema: 1;
@@ -161,6 +179,8 @@ export interface Session {
   setPlan?: Record<ProgressionId, number>;
   /** Freitext zur ganzen Einheit, z. B. „schlecht geschlafen, Schulter links zwickt“ */
   note?: string;
+  /** Ergebnisse der Runden-Blöcke */
+  circuits?: CircuitResult[];
   /** letzte Änderung in ms – Grundlage für den Sync */
   updatedAt?: number;
   /** gelöscht: bleibt als leere Markierung erhalten, damit das Löschen per Sync auf allen Geräten ankommt */

@@ -12,5 +12,6 @@ import { sheets } from './sheets.ts'
 import { onboarding } from './onboarding.ts'
 import { logic } from './logic.ts'
 import { challenge } from './challenge.ts'
+import { circuit } from './circuit.ts'
 
-export const messages = { app, common, home, plan, editor, profile, history, skills, training, sheets, onboarding, logic, challenge }
+export const messages = { app, common, home, plan, editor, profile, history, skills, training, sheets, onboarding, logic, challenge, circuit }

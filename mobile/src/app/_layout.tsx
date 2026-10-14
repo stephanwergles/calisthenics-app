@@ -68,6 +68,7 @@ function Root({ fonts }: { fonts: boolean }) {
         <Stack.Screen name="challenges" options={modal()} />
         {/* Challenge im Vollbild – kein Wegwischen mitten im Versuch */}
         <Stack.Screen name="challenge-run" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
+        <Stack.Screen name="circuit-run" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
         <Stack.Screen name="onboarding" options={{ ...modal(), gestureEnabled: false }} />
         <Stack.Screen name="consent" options={{ ...modal(), gestureEnabled: false }} />
       </Stack>

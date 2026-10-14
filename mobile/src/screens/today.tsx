@@ -105,6 +105,7 @@ export function Today() {
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {active.slice(0, 3).map(s => <Chip key={s.pid} text={s.step.exercise.name} />)}
               {active.length > 3 && <Chip text={`+${active.length - 3}`} muted />}
+              {L.circuitsOf(w).map(c => <Chip key={c.id} text={`${c.name} · ${L.fmtCircuitRule(c)}`} />)}
             </View>
             <View style={{ gap: 10, marginTop: 6 }}>
               {done && t.todaySession
@@ -206,8 +207,8 @@ function DayBanner({ date, onClose }: { date: string; onClose: () => void }) {
   if (session) {
     const w = t.ix.workouts.get(session.workout)
     label = tr('home.bannerDone'); title = w?.focus ?? session.workout
-    text = [w?.name, session.durationSec ? L.fmtDuration(session.durationSec) : null, tn('history.sets', session.sets.length),
-      ...cardio.map(a => L.activityTitle(a))].filter(Boolean).join(' · ')
+    text = [w?.name, session.durationSec ? L.fmtDuration(session.durationSec) : null, session.sets.length ? tn('history.sets', session.sets.length) : null,
+      ...L.sessionCircuits(t.ix, session).map(c => `${c.name} ${c.result}`), ...cardio.map(a => L.activityTitle(a))].filter(Boolean).join(' · ')
     actions = [{ icon: 'right', title: tr('home.bannerView'), onPress: () => router.push(dayHref({ kind: 'session', id: session.id })) }]
   } else if (cardio.length) {
     label = tr('home.bannerCardio'); title = cardio.map(a => L.activityTitle(a)).join(' · ')

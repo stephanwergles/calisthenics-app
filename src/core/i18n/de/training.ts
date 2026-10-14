@@ -19,6 +19,7 @@ export const training = {
     openRest: 'Pause öffnen',
     allExercises: 'Alle Übungen',
     allDone: 'Alle Übungen erledigt oder übersprungen. In der Übersicht warten Cool-down und deine Notiz zur Einheit.',
+    roundsNow: 'Jetzt Runden',
     finish: 'Training beenden',
     allLogged: { one: '{n} Satz erfasst: {sets}', other: 'Alle {n} Sätze erfasst: {sets}' },
     technique: 'Technik',

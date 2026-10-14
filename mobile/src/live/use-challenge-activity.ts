@@ -12,15 +12,15 @@ import SessionActivity, { type SessionActivityProps } from './session-activity'
 const ios = process.env.EXPO_OS === 'ios'
 
 /** start = Beginn des Versuchs (ms) oder null (Vorlauf/Ergebnis → keine Activity) */
-export function useChallengeActivity(c: Challenge, start: number | null, count: number) {
+export function useChallengeActivity(c: Challenge, start: number | null, count: number, line?: string) {
   const instance = useRef<LiveActivity<SessionActivityProps> | null>(null)
   const props: SessionActivityProps | null = start ? {
     start,
     ...(c.kind === 'amrap' ? { restStart: start, restEnd: start + (c.seconds ?? 60) * 1000 } : {}),
     label: tr('challenge.title').toUpperCase(),
     title: c.name,
-    line: L.challengeMeasuresTime(c) && c.kind === 'max' ? L.fmtChallengeRule(c)
-      : c.kind === 'fortime' ? `${count} / ${c.target ?? 0}` : L.fmtChallengeValue(c, count),
+    line: line ?? (L.challengeMeasuresTime(c) && c.kind === 'max' ? L.fmtChallengeRule(c)
+      : c.kind === 'fortime' ? `${count} / ${c.target ?? 0}` : L.fmtChallengeValue(c, count)),
     done: c.kind === 'fortime' ? count : 0,
     total: c.kind === 'fortime' ? c.target ?? 0 : 0,
   } : null

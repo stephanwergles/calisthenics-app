@@ -189,6 +189,15 @@ export interface Session {
     | number
     | boolean
     | null;
+  circuits?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * In der App gelöscht – bleibt als Markierung, damit der Sync es an alle Geräte weitergibt
    */
@@ -759,6 +768,7 @@ export interface SessionsSelect<T extends boolean = true> {
   note?: T;
   setPlan?: T;
   adjust?: T;
+  circuits?: T;
   deleted?: T;
   clientUpdatedAt?: T;
   updatedAt?: T;

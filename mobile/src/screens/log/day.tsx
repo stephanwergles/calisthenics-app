@@ -114,6 +114,23 @@ function SessionDetail({ t, s }: { t: Training; s: Session }) {
       ]} />
       {s.note ? <NoteLine text={s.note} /> : null}
 
+      {(s.circuits?.length ?? 0) > 0 && (
+        <View style={{ gap: 8, marginTop: 6 }}>
+          <Text variant="title" accessibilityRole="header">{tr('circuit.section')}</Text>
+          {L.sessionCircuits(t.ix, s).map(c => (
+            <View key={c.id} accessible accessibilityLabel={`${c.name}, ${c.result}`}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 16, borderCurve: 'continuous', backgroundColor: color.card, borderWidth: 1, borderColor: color.line }}>
+              <Icon name="sync" size={20} color={color.accent} />
+              <View style={{ flex: 1, gap: 1 }}>
+                <Text variant="label">{c.name}</Text>
+                {c.items ? <Text variant="small">{c.items}</Text> : null}
+              </View>
+              <Text variant="num" style={{ fontSize: 22, color: color.accent }}>{c.result}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
       {sum.records.length > 0 && (
         <View style={{ gap: 8, marginTop: 6 }}>
           <Text variant="title" accessibilityRole="header">{tr('history.records')}</Text>

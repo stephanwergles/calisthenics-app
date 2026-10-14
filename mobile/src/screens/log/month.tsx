@@ -165,7 +165,8 @@ function FeedRow({ t, f }: { t: Training; f: FeedItem }) {
     const w = t.ix.workouts.get(f.s.workout)
     const reps = f.s.sets.reduce((n, x) => n + (t.ix.exercises.get(x.exercise)?.unit === 'reps' ? x.value : 0), 0)
     title = w ? w.focus : f.s.workout
-    meta = [w?.name, f.s.durationSec ? L.fmtDuration(f.s.durationSec) : null, tn('history.sets', f.s.sets.length), reps ? tr('history.reps', { n: reps }) : null].filter(Boolean).join(' · ')
+    meta = [w?.name, f.s.durationSec ? L.fmtDuration(f.s.durationSec) : null, f.s.sets.length ? tn('history.sets', f.s.sets.length) : null, reps ? tr('history.reps', { n: reps }) : null,
+      ...L.sessionCircuits(t.ix, f.s).map(c => `${c.name} ${c.result}`)].filter(Boolean).join(' · ')
     note = !!f.s.note
   }
   const label = [L.fmtDate(f.date), title, meta, note ? tr('history.withNote') : null].filter(Boolean).join(', ')

@@ -27,4 +27,11 @@ export const logic = {
   standingNone: 'noch keine vollständige Einheit auf dieser Stufe',
   standingSets: { one: 'fehlt noch: {n} Satz mit {target}', other: 'fehlt noch: {n} Sätze mit {target}' },
   standingOneMore: 'fehlt noch: 1 weitere Einheit, alle Sätze geschafft',
+  circuit: {
+    defaultName: 'Runden',
+    amrap: 'AMRAP {min} min',
+    forTime: '{n} Runden auf Zeit',
+    roundsN: { one: '{n} Runde', other: '{n} Runden' },
+    roundsPlus: '{n} Runden + {reps}',
+  },
 }

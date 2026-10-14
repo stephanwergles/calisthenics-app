@@ -20,6 +20,7 @@ import * as migration_20261014_120000_one_arm_pull_name from './20261014_120000_
 import * as migration_20261014_120602_activity_challenge from './20261014_120602_activity_challenge';
 import * as migration_20261014_130949_user_challenges from './20261014_130949_user_challenges';
 import * as migration_20261014_165128_activity_cardio_kinds from './20261014_165128_activity_cardio_kinds';
+import * as migration_20261014_172238_session_circuits from './20261014_172238_session_circuits';
 
 export const migrations = [
   {
@@ -130,6 +131,11 @@ export const migrations = [
   {
     up: migration_20261014_165128_activity_cardio_kinds.up,
     down: migration_20261014_165128_activity_cardio_kinds.down,
-    name: '20261014_165128_activity_cardio_kinds'
+    name: '20261014_165128_activity_cardio_kinds',
+  },
+  {
+    up: migration_20261014_172238_session_circuits.up,
+    down: migration_20261014_172238_session_circuits.down,
+    name: '20261014_172238_session_circuits'
   },
 ];

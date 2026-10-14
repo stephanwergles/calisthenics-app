@@ -33,6 +33,7 @@ export function docToSession(d: Doc): Session {
     added: d.adjust?.added?.length ? d.adjust.added as string[] : undefined,
     removed: d.adjust?.removed?.length ? d.adjust.removed as string[] : undefined,
     note: opt<string>(d.note),
+    circuits: Array.isArray(d.circuits) && d.circuits.length ? (d.circuits as Session['circuits']) : undefined,
     updatedAt: opt<number>(d.clientUpdatedAt),
     deleted: d.deleted === true ? true : undefined,
   })
@@ -45,6 +46,7 @@ export const sessionToDoc = (s: Session) => ({
     weightKg: x.weightKg ?? null, attempts: x.attempts ?? null, note: x.note ?? null,
   })),
   skipped: s.skipped, routineDone: s.routineDone, setPlan: s.setPlan ?? null, note: s.note ?? null,
+  circuits: s.circuits?.length ? s.circuits : null,
   adjust: s.added?.length || s.removed?.length ? tidy({ added: s.added?.length ? s.added : undefined, removed: s.removed?.length ? s.removed : undefined }) : null,
   clientUpdatedAt: s.updatedAt ?? 0, deleted: s.deleted === true,
 })
@@ -108,7 +110,16 @@ export function isSession(s: any): s is Session {
     && Array.isArray(s.skipped) && s.skipped.every(isId)
     && Array.isArray(s.routineDone) && s.routineDone.every(isId)
     && isIds(s.added) && isIds(s.removed)
+    && (s.circuits === undefined || (Array.isArray(s.circuits) && s.circuits.length <= 10 && s.circuits.every(isCircuitResult)))
 }
+const isCircuitResult = (r: any) => !!r && isId(r.id) && Number.isInteger(r.rounds) && r.rounds >= 0 && r.rounds <= 1000
+  && (r.reps === undefined || (Number.isInteger(r.reps) && r.reps >= 0 && r.reps <= 10000))
+  && (r.durationSec === undefined || (isNum(r.durationSec) && r.durationSec >= 0 && r.durationSec <= 86400))
+const isCircuit = (c: any) => !!c && isId(c.id) && typeof c.name === 'string' && c.name.length <= 80
+  && (c.mode === 'amrap' ? Number.isInteger(c.minutes) && c.minutes >= 1 && c.minutes <= 120
+    : c.mode === 'rounds' && Number.isInteger(c.rounds) && c.rounds >= 1 && c.rounds <= 100)
+  && Array.isArray(c.items) && c.items.length >= 1 && c.items.length <= 12
+  && c.items.every((x: any) => x && isId(x.exercise) && Number.isInteger(x.reps) && x.reps >= 1 && x.reps <= 1000)
 /** optionale Liste von IDs (Tagesanpassung) */
 const isIds = (v: any) => v === undefined || (Array.isArray(v) && v.length <= 30 && v.every(isId))
 const isFlag = (v: any) => v === undefined || typeof v === 'boolean'
@@ -122,6 +133,7 @@ export function isPlan(p: any): p is Plan {
     && Array.isArray(p.workouts) && p.workouts.length <= 14
     && p.workouts.every((w: any) => w && isId(w.id) && typeof w.name === 'string' && w.name.length <= 80 && typeof w.focus === 'string'
       && Array.isArray(w.slots) && w.slots.length <= 30 && w.slots.every(isSlot) && isFlag(w.custom) && isFlag(w.archived)
+      && (w.circuits === undefined || (Array.isArray(w.circuits) && w.circuits.length <= 5 && w.circuits.every(isCircuit)))
       && Array.isArray(w.warmup) && w.warmup.every(isRoutine) && Array.isArray(w.cooldown) && w.cooldown.every(isRoutine))
     && !!p.weekplan && typeof p.weekplan === 'object'
     && Object.entries(p.weekplan).every(([d, w]) => WEEKDAYS.includes(d as Weekday) && p.workouts.some((x: any) => x.id === w && !x.archived))

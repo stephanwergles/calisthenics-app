@@ -14,6 +14,7 @@ import { useApp } from '@/state/app'
 import { CloseButton } from '@/navigation'
 import { Button, color, font, Icon, radius, SectionTitle, SheetScreen, space, Text } from '@/ui'
 import { ChecklistGroup, ExerciseRow, NoteInput, ProgressBar } from './parts'
+import { CircuitCard } from './focus'
 
 type Mode = 'list' | 'edit' | 'add' | 'save'
 
@@ -110,6 +111,12 @@ function Overview({ focus, onOpen, onAdjust }: { focus: string | undefined; onOp
           )
         })}
       </View>
+      {L.circuitsOf(w).length > 0 && (
+        <View style={{ gap: 8 }}>
+          <SectionTitle title={tr('circuit.section')} />
+          {L.circuitsOf(w).map(c => <CircuitCard key={c.id} id={c.id} />)}
+        </View>
+      )}
       <Button variant="ghost" icon="adjust" block title={tr('training.plan.adjust')} onPress={onAdjust} />
       {adjustNote && <Text variant="small" style={{ textAlign: 'center' }}>{adjustNote}</Text>}
       <Routine title={cool} items={w.cooldown} />

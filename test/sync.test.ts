@@ -215,3 +215,20 @@ test('Vorlagen überstehen Payload und zurück', () => {
     docs.workouts.map(w => ({ id: w.id, ...w.data })) as never, null, { templates: tpls.map((t: { id: string }) => ({ id: t.id, ...C.templateToDoc(t as never) })) })
   assert.deepEqual(out.templates, tpls)
 })
+
+test('Runden-Blöcke: Ergebnisse in der Einheit und Blöcke im Plan überstehen den Sync und werden geprüft', () => {
+  const withRounds: Session = { ...session, circuits: [{ id: 'c-cindy-1', rounds: 14, reps: 7 }, { id: 'c-five-1', rounds: 5, durationSec: 754 }] }
+  const doc = C.sessionToDoc(withRounds)
+  // circuits ist ein JSON-Feld: Payload gibt es unverändert zurück
+  assert.deepEqual(C.docToSession({ ...asPayload({ ...doc, circuits: undefined }), circuits: doc.circuits }), withRounds)
+  assert.equal(C.sessionToDoc(session).circuits, null)
+  assert.ok(C.isSession(withRounds))
+  assert.equal(C.isSession({ ...withRounds, circuits: [{ id: 'c', rounds: -1 }] }), false)
+  assert.equal(C.isSession({ ...withRounds, circuits: [{ id: '<x>', rounds: 1 }] }), false)
+  const w0 = plan.workouts[0]
+  const cindy = { id: 'c-cindy-1', name: 'Cindy', mode: 'amrap', minutes: 20, items: [{ exercise: 'pull-up', reps: 5 }, { exercise: 'push-up', reps: 10 }, { exercise: 'air-squat', reps: 15 }] }
+  assert.ok(C.isPlan({ ...plan, workouts: [{ ...w0, circuits: [cindy] }, ...plan.workouts.slice(1)] }))
+  assert.equal(C.isPlan({ ...plan, workouts: [{ ...w0, circuits: [{ ...cindy, minutes: 0 }] }, ...plan.workouts.slice(1)] }), false, 'AMRAP ohne Zeit')
+  assert.equal(C.isPlan({ ...plan, workouts: [{ ...w0, circuits: [{ ...cindy, mode: 'rounds' }] }, ...plan.workouts.slice(1)] }), false, 'feste Runden ohne Zahl')
+  assert.equal(C.isPlan({ ...plan, workouts: [{ ...w0, circuits: [{ ...cindy, items: [] }] }, ...plan.workouts.slice(1)] }), false, 'ohne Übungen')
+})

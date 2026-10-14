@@ -21,6 +21,7 @@ export const training: Shape<typeof de> = {
     openRest: 'Open rest',
     allExercises: 'All exercises',
     allDone: 'All exercises done or skipped. Your cool-down and session note are waiting in the overview.',
+    roundsNow: 'Now the rounds',
     finish: 'Finish workout',
     allLogged: { one: '{n} set logged: {sets}', other: 'All {n} sets logged: {sets}' },
     technique: 'Technique',

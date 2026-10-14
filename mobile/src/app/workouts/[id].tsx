@@ -77,7 +77,7 @@ function Editor({ w, first }: { w: Workout; first: boolean }) {
         { title: tr('editor.delete'), icon: 'trash', destructive: true, onPress: () => void remove() },
       ]} />
       <SheetScreen title={w.name} sub={`${w.focus} · ${exerciseCount(slots.length)}`}
-        footer={slots.length > 0 ? <Button variant="primary" size="lg" icon="play" disabled={busy}
+        footer={slots.length > 0 || L.circuitsOf(w).length > 0 ? <Button variant="primary" size="lg" icon="play" disabled={busy}
           title={t.active?.workout === w.id ? tr('home.ctaActive') : tr('editor.startNow')} onPress={start} /> : undefined}>
         <Section title={tr('editor.exercisesHead')} />
         {!slots.length && <Text variant="muted">{tr('editor.empty')}</Text>}
@@ -87,6 +87,15 @@ function Editor({ w, first }: { w: Workout; first: boolean }) {
           onPress: () => router.push({ pathname: '/workouts/slot', params: { id: w.id, pid: sl.progression } }),
         }))} />}
         <Button icon="plus" title={tr('editor.addExercise')} onPress={() => router.push({ pathname: '/workouts/add', params: { id: w.id } })} />
+
+        {/* Runden-Blöcke (z. B. Cindy): feste Übungen, unabhängig von den Leiterstufen */}
+        <Section title={tr('editor.circuits')} />
+        {L.circuitsOf(w).length > 0 && <Rows rows={L.circuitsOf(w).map(c => ({
+          key: c.id, title: c.name, icon: 'sync' as const, iconTile: true,
+          subtitle: `${L.fmtCircuitRule(c)} · ${L.fmtCircuitItems(t.ix, c)}`,
+          onPress: () => router.push({ pathname: '/workouts/circuit', params: { id: w.id, cid: c.id } }),
+        }))} />}
+        <Button icon="plus" title={tr('editor.addCircuit')} onPress={() => router.push({ pathname: '/workouts/circuit', params: { id: w.id, cid: 'new' } })} />
 
         <Section title={tr('editor.weekdays')} />
         <DayPicker onToggle={(d, on) => void setDay(d as Weekday, on)} items={L.WEEK_ORDER.map(d => ({

@@ -2,7 +2,7 @@
    Die Oberfläche ruft diese Funktionen auf; getestet wird direkt mit node --test. */
 import type {
   Activity, Catalog, Challenge, ChallengeId, Equipment, Exercise, ExerciseId, Plan, Profile, Progression, ProgressionId, Region, Session, SetLog,
-  Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId, GeneratedPlan, GeneratorInput, SplitTemplate, Phase, PhaseKind, Tendon, ExerciseMeta, Template, MuscleArea, BodyArea,
+  Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId, Circuit, CircuitId, CircuitResult, GeneratedPlan, GeneratorInput, SplitTemplate, Phase, PhaseKind, Tendon, ExerciseMeta, Template, MuscleArea, BodyArea,
 } from '../domain/model.ts'
 import { assignThemes, restDays, usable } from '../domain/generator.ts'
 import { suggestSkills, suggestSplits, type SkillSuggestion } from '../domain/assessment.ts'
@@ -169,7 +169,7 @@ export function workoutsInWeekOrder(ix: Index): Workout[] {
   return [...ix.workouts.values()].filter(w => !w.archived).sort((a, b) => first(a) - first(b))
 }
 
-const trained = (s: Session) => s.sets.length > 0 || s.durationSec !== undefined
+const trained = (s: Session) => s.sets.length > 0 || s.durationSec !== undefined || !!s.circuits?.length
 
 /** Workouts für die Schnellauswahl: das heutige zuerst, dann nach letzter Einheit (neueste zuerst),
     nie trainierte in Wochenreihenfolge – höchstens n */
@@ -402,7 +402,7 @@ export function substituteFor(ix: Index, user: UserState, phases: Phase[], meta:
 /* ── Verlauf: Kalender ───────────────────────────────────────────────────── */
 
 /** Einheit zählt als trainiert, sobald ein Satz oder eine Dauer drinsteht */
-export const isTrained = (s: Session) => s.sets.length > 0 || (s.durationSec ?? 0) > 0
+export const isTrained = (s: Session) => s.sets.length > 0 || (s.durationSec ?? 0) > 0 || !!s.circuits?.length
 
 /** Tage mit Einheit bzw. Aktivität, für die Markierungen im Kalender */
 export function calendarMarks(sessions: Session[], activities: Activity[]) {
@@ -1093,4 +1093,65 @@ export function skillOverview(ix: Index, user: UserState, sessions: Session[], s
   })
   const rank = (c: SkillCard) => (c.goal ? 0 : c.reached ? 3 : c.started ? 1 : 2)
   return cards.sort((a, b) => rank(a) - rank(b) || (rank(a) === 1 ? b.share - a.share : b.score - a.score))
+}
+
+/* ── Runden-Blöcke (z. B. Cindy) ─────────────────────────────────────────── */
+
+export const circuitsOf = (w: Workout | undefined): Circuit[] => w?.circuits ?? []
+/** neue ID aus dem Namen + Zeitstempel (stabil nach dem Anlegen) */
+export const newCircuitId = (name: string): CircuitId =>
+  `c-${name.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) || 'runden'}-${Date.now().toString(36)}`
+/** Block anlegen oder ersetzen (Reihenfolge bleibt), Werte in sinnvolle Grenzen */
+export function withCircuit(w: Workout, c: Circuit): Workout {
+  const clean: Circuit = {
+    id: c.id, name: c.name.trim().slice(0, 80) || t('logic.circuit.defaultName'), mode: c.mode,
+    ...(c.mode === 'amrap' ? { minutes: Math.min(120, Math.max(1, Math.round(c.minutes ?? 10))) } : { rounds: Math.min(100, Math.max(1, Math.round(c.rounds ?? 3))) }),
+    items: c.items.slice(0, 12).map(x => ({ exercise: x.exercise, reps: Math.min(1000, Math.max(1, Math.round(x.reps))) })),
+  }
+  const list = circuitsOf(w)
+  return { ...w, circuits: list.some(x => x.id === c.id) ? list.map(x => (x.id === c.id ? clean : x)) : [...list, clean] }
+}
+export const withoutCircuit = (w: Workout, id: CircuitId): Workout => ({ ...w, circuits: circuitsOf(w).filter(x => x.id !== id) })
+/** „AMRAP 20 min“ bzw. „5 Runden auf Zeit“ */
+export const fmtCircuitRule = (c: Circuit) => c.mode === 'amrap' ? t('logic.circuit.amrap', { min: c.minutes ?? 0 }) : t('logic.circuit.forTime', { n: c.rounds ?? 0 })
+/** „5 Klimmzüge · 10 Liegestütze · 15 Kniebeugen“ (Halteübungen in Sekunden) */
+export const fmtCircuitItems = (ix: Index, c: Circuit) => c.items.map(x => {
+  const e = ix.exercises.get(x.exercise)
+  return e?.unit === 'seconds' ? `${x.reps} s ${e.name}` : `${x.reps} ${e?.name ?? x.exercise}`
+}).join(' · ')
+export const circuitResultOf = (s: Session | undefined, id: CircuitId): CircuitResult | undefined => s?.circuits?.find(r => r.id === id)
+export const withCircuitResult = (s: Session, r: CircuitResult): Session =>
+  ({ ...s, circuits: [...(s.circuits ?? []).filter(x => x.id !== r.id), r] })
+/** „14 Runden + 7“ bzw. Zeit „12:30“ */
+export const fmtCircuitResult = (c: Pick<Circuit, 'mode'>, r: CircuitResult) => c.mode === 'rounds'
+  ? fmtClock(Math.round(r.durationSec ?? 0))
+  : r.reps ? t('logic.circuit.roundsPlus', { n: r.rounds, reps: r.reps }) : tn('logic.circuit.roundsN', r.rounds)
+/** besser als vorher? AMRAP: mehr Runden/Wdh.; feste Runden: schneller */
+export function circuitBetter(c: Pick<Circuit, 'mode'>, a: CircuitResult, b: CircuitResult): boolean {
+  if (c.mode === 'rounds') return (a.durationSec ?? Infinity) < (b.durationSec ?? Infinity)
+  return a.rounds > b.rounds || (a.rounds === b.rounds && (a.reps ?? 0) > (b.reps ?? 0))
+}
+/** letztes Ergebnis desselben Blocks vor `before` (für „Zuletzt“) */
+export function lastCircuitResult(sessions: Session[], id: CircuitId, before: string): { date: string; r: CircuitResult } | null {
+  const hit = sessions.filter(s => s.date < before && !s.deleted).map(s => ({ date: s.date, r: circuitResultOf(s, id) }))
+    .filter((x): x is { date: string; r: CircuitResult } => !!x.r).sort((a, b) => (a.date < b.date ? 1 : -1))[0]
+  return hit ?? null
+}
+/** gesamte Wiederholungen je Übung eines Ergebnisses (AMRAP: volle Runden + angefangene Runde) */
+export function circuitVolume(c: Circuit, r: CircuitResult): { exercise: ExerciseId; reps: number }[] {
+  let rest = r.reps ?? 0
+  return c.items.map(x => {
+    const partial = Math.min(rest, x.reps); rest -= partial
+    return { exercise: x.exercise, reps: x.reps * r.rounds + (c.mode === 'amrap' ? partial : 0) }
+  })
+}
+/** Runden-Ergebnisse einer Einheit zum Anzeigen (Name, Ergebnis, Übungen) – auch wenn der Block
+    inzwischen gelöscht ist (dann Standardname, Art aus dem Ergebnis) */
+export function sessionCircuits(ix: Index, s: Session) {
+  const defs = circuitsOf(ix.workouts.get(s.workout))
+  return (s.circuits ?? []).map(r => {
+    const c = defs.find(x => x.id === r.id)
+    const mode = c?.mode ?? (r.durationSec !== undefined ? 'rounds' : 'amrap')
+    return { id: r.id, name: c?.name ?? t('logic.circuit.defaultName'), result: fmtCircuitResult({ mode }, r), items: c ? fmtCircuitItems(ix, c) : '' }
+  })
 }

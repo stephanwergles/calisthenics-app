@@ -1,0 +1,22 @@
+/* Deutsch: circuit (Runden-Blöcke im Training) */
+export const circuit = {
+  start: 'Starten',
+  round: 'Runde',
+  roundOf: 'Runde {n} von {total}',
+  roundsDone: { one: '{n} Runde geschafft', other: '{n} Runden geschafft' },
+  roundDone: 'Runde geschafft',
+  undo: 'Letzte Runde zurücknehmen',
+  stop: 'Vorzeitig beenden',
+  perRound: 'Pro Runde',
+  cancel: 'Abbrechen',
+  cancelTitle: 'Runden abbrechen?',
+  cancelMessage: 'Das Ergebnis wird nicht gespeichert.',
+  cancelOk: 'Abbrechen',
+  result: 'Ergebnis',
+  extraReps: 'Wdh. der angefangenen Runde',
+  better: 'Besser als beim letzten Mal!',
+  last: 'Letztes Mal: {value}',
+  save: 'In die Einheit übernehmen',
+  saved: 'Runden gespeichert',
+  section: 'Runden',
+}

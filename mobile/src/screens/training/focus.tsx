@@ -96,12 +96,17 @@ export function FocusTop() {
 export function AllDone() {
   const { t, finish } = useApp()
   const insets = useSafeAreaInsets()
+  // Runden-Blöcke kommen nach den Leiter-Übungen: offene zuerst anbieten
+  const circuits = L.circuitsOf(t.ix.workouts.get(t.workout))
+  const open = circuits.filter(c => !L.circuitResultOf(t.todaySession, c.id))
   return (
     <Animated.View entering={FadeIn.duration(200)} style={{ flex: 1, justifyContent: 'center', paddingHorizontal: GUTTER, paddingBottom: insets.bottom + 16, gap: space.lg }}>
       <Text variant="hero" style={{ fontSize: 72, lineHeight: 68 }} accessibilityRole="header">
-        {tr('training.strong')}<Text variant="hero" style={{ fontSize: 72, lineHeight: 68, color: color.accent }}>.</Text>
+        {open.length ? tr('training.focus.roundsNow') : tr('training.strong')}<Text variant="hero" style={{ fontSize: 72, lineHeight: 68, color: color.accent }}>.</Text>
       </Text>
-      <Text variant="muted" style={{ fontSize: 17, lineHeight: 24 }}>{tr('training.focus.allDone')}</Text>
+      {open.length
+        ? open.map(c => <CircuitCard key={c.id} id={c.id} />)
+        : <Text variant="muted" style={{ fontSize: 17, lineHeight: 24 }}>{tr('training.focus.allDone')}</Text>}
       <View style={{ gap: 10, marginTop: space.md }}>
         {t.active && <Button variant="primary" size="lg" icon="check" title={tr('training.focus.finish')} onPress={finish} />}
         <Button variant={t.active ? 'secondary' : 'primary'} size={t.active ? 'md' : 'lg'} icon="list" title={tr('training.focus.allExercises')} onPress={openList} />
@@ -374,6 +379,29 @@ function HoldRing({ hold }: { hold: HoldTimer }) {
           {prep ? tr('training.focus.inPosition') : tr('training.focus.hold')}
         </Text>
       </CountdownRing>
+    </View>
+  )
+}
+
+/** Runden-Block im Training: Regel, Übungen, letztes Ergebnis; „Starten“ öffnet den Runden-Timer
+    (startet die Einheit mit, falls sie noch nicht läuft) */
+export function CircuitCard({ id }: { id: string }) {
+  const { t } = useApp()
+  const c = L.circuitsOf(t.ix.workouts.get(t.workout)).find(x => x.id === id)
+  if (!c) return null
+  const done = L.circuitResultOf(t.todaySession, c.id)
+  const last = L.lastCircuitResult(t.sessions, c.id, t.today)
+  const go = () => { if (!t.active) t.startSession(t.workout); router.push({ pathname: '/circuit-run', params: { cid: c.id } }) }
+  return (
+    <View style={{ backgroundColor: color.card, borderRadius: radius.card, borderCurve: 'continuous', borderWidth: 1, borderColor: done ? color.line : color.accentLine, padding: 16, gap: 10 }}>
+      <View style={{ gap: 3 }}>
+        <Text variant="eyebrow" style={{ fontSize: 11 }}>{L.fmtCircuitRule(c)}</Text>
+        <Text variant="title" style={{ fontSize: 22 }}>{c.name}</Text>
+        <Text variant="small">{L.fmtCircuitItems(t.ix, c)}</Text>
+        {done ? <Text variant="label" style={{ color: color.accent }}>{L.fmtCircuitResult(c, done)}</Text>
+          : last ? <Text variant="small">{tr('circuit.last', { value: L.fmtCircuitResult(c, last.r) })}</Text> : null}
+      </View>
+      {!done && <Button variant="primary" icon="play" title={tr('circuit.start')} onPress={go} />}
     </View>
   )
 }
