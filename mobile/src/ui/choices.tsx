@@ -42,7 +42,7 @@ export function Choices({ items, onToggle, mode = 'select' }: {
 }
 
 /** Mehrfachauswahl als Chips im Umbruch – kompakt für kurze Begriffe (Gelenke, Geräte), passt auch in
-    ein halbhohes Sheet. An = Volt mit Haken, aus = Rand. */
+    ein halbhohes Sheet. An = Volt mit Haken, aus = helle Fläche. */
 export function ChipChoices({ items, onToggle }: { items: Choice[]; onToggle: (id: string, on: boolean) => void }) {
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -50,8 +50,9 @@ export function ChipChoices({ items, onToggle }: { items: Choice[]; onToggle: (i
         <Pressable key={x.id} accessibilityRole="checkbox" accessibilityState={{ checked: x.on }} accessibilityLabel={x.title}
           onPress={() => { platform().signals.haptic('tap'); onToggle(x.id, !x.on) }}
           style={({ pressed }) => ({
-            flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, paddingHorizontal: 16, borderRadius: 22,
-            borderWidth: 1, borderColor: x.on ? color.accent : color.line, backgroundColor: x.on ? color.accent : 'transparent',
+            // Fläche statt Rand: auf dem Glas-Hintergrund der Sheets wirkt ein dünner Rahmen unruhig
+            flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, paddingHorizontal: 16, borderRadius: 22, borderCurve: 'continuous',
+            backgroundColor: x.on ? color.accent : 'rgba(255,255,255,0.10)',
             opacity: pressed ? 0.75 : 1,
           })}>
           {x.on && <Icon name="check" size={14} color={color.onAccent} weight="bold" />}
