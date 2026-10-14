@@ -9,6 +9,7 @@
    und rendert danach neu. Datum/Zahl: intl() liefert das passende Locale für toLocale*String. */
 import { messages as de } from './de/index.ts'
 import { messages as en } from './en/index.ts'
+import { platform } from '../platform.ts'
 
 export type Locale = 'de' | 'en'
 type Tree = { [k: string]: string | Tree }
@@ -46,9 +47,9 @@ export function tn(key: string, n: number, vars?: Record<string, string | number
 const STORE = 'lever-locale'
 export const EN_BETA = true
 export type LocaleChoice = Locale | 'system'
-const systemLocale = (): Locale => (typeof navigator !== 'undefined' && !navigator.language.toLowerCase().startsWith('de') ? 'en' : 'de')
+const systemLocale = (): Locale => (platform().systemLanguage().toLowerCase().startsWith('de') ? 'de' : 'en')
 function savedChoice(): LocaleChoice | null {
-  try { const v = localStorage.getItem(STORE); if (v === 'de' || v === 'en' || v === 'system') return v } catch { /* ohne Speicher */ }
+  const v = platform().prefs.get(STORE); if (v === 'de' || v === 'en' || v === 'system') return v
   return null
 }
 /** was die Sprachwahl anzeigt: ohne gespeicherte Wahl in der Beta „Deutsch“, sonst „Systemsprache“ */
@@ -59,5 +60,5 @@ export function initialLocale(): Locale {
   return c === 'system' || !EN_BETA ? systemLocale() : 'de'
 }
 export function saveLocale(c: LocaleChoice) {
-  try { localStorage.setItem(STORE, c) } catch { /* ohne Speicher */ }
+  platform().prefs.set(STORE, c)
 }

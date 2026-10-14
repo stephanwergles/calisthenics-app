@@ -2,8 +2,9 @@
 /* Timer für Halteübungen (L-Sit, Hollow Hold, Handstand …): erst ein kurzer Countdown zum
    Positionieren, dann der eigentliche Halte-Countdown. Zeitstempelbasiert wie der Pausen-Timer. */
 import { useCallback, useEffect, useState } from 'react'
-import { alarm, primeAudio } from './signals'
-import { buzz, tap } from './native'
+import { platform } from './platform.ts'
+
+const signals = () => platform().signals
 
 export const PREP_SEC = 5
 
@@ -21,16 +22,16 @@ export function useHoldTimer() {
       const t = Date.now()
       setNow(t)
       if (t < end) return
-      if (phase === 'prep') { tap(); setPhase('hold'); setEnd(t + total * 1000) }
-      else { alarm(); buzz(); setPhase('done') }
+      if (phase === 'prep') { signals().haptic('tap'); setPhase('hold'); setEnd(t + total * 1000) }
+      else { signals().alarm(); signals().haptic('warning'); setPhase('done') }
     }
     const id = setInterval(tick, 100)
-    document.addEventListener('visibilitychange', tick)
-    return () => { clearInterval(id); document.removeEventListener('visibilitychange', tick) }
+    const off = platform().onForeground(tick)
+    return () => { clearInterval(id); off() }
   }, [phase, end, total])
 
   const start = useCallback((sec: number) => {
-    primeAudio(); tap()
+    signals().prime(); signals().haptic('tap')
     const t = Date.now()
     setTotal(sec); setNow(t); setEnd(t + PREP_SEC * 1000); setPhase('prep')
   }, [])

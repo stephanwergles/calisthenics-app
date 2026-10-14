@@ -1,11 +1,11 @@
 'use client'
 /* Pause als eigener Screen: großer Ring, Feinjustierung, was als Nächstes kommt.
    „Los“ schließt nur die Ansicht – der Timer läuft weiter und klingelt trotzdem. */
-import * as L from '../logic'
-import type { RestTimer } from '../useRestTimer'
+import * as L from '@/core/logic'
+import type { RestTimer } from '@/core/useRestTimer'
 import { Icon } from './Icon'
 import { ExerciseStill } from './ExerciseMedia'
-import { t } from '../i18n'
+import { t } from '@/core/i18n'
 
 const R = 132, C = 2 * Math.PI * R
 

@@ -1,13 +1,13 @@
 'use client'
 import { useMemo, useState } from 'react'
-import * as L from '../logic'
-import type { Training } from '../useTraining'
+import * as L from '@/core/logic'
+import type { Training } from '@/core/useTraining'
 import type { RoutineItem, Session, SetLog } from '@/domain/model'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
 import { ask, type NBlock } from '../native'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
-import { intl, t as tr, tn, getLocale } from '../i18n'
+import { intl, t as tr, tn, getLocale } from '@/core/i18n'
 
 type Sub = 'cal' | 'prog'
 

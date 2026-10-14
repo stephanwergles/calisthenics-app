@@ -1,13 +1,13 @@
 'use client'
 import { useState } from 'react'
-import type { Training } from '../useTraining'
+import type { Training } from '@/core/useTraining'
 import { APP_VERSION } from '../version'
 import { Icon } from './Icon'
 import { ask } from '../native'
-import { HEALTH_CONSENT, PRIVACY_URL } from '../consent'
+import { HEALTH_CONSENT, PRIVACY_URL } from '@/core/consent'
 import { Wordmark } from './LeverMark'
-import { intl, t as tr, tn } from '../i18n'
-import { toast } from '../toast'
+import { intl, t as tr, tn } from '@/core/i18n'
+import { toast } from '@/core/toast'
 
 const fmtSync = (iso: string | null) => {
   if (!iso) return tr('profile.sync.never')

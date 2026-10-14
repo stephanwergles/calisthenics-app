@@ -1,15 +1,15 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import type { RoutineItem } from '@/domain/model'
-import * as L from '../logic'
-import type { Training } from '../useTraining'
+import * as L from '@/core/logic'
+import type { Training } from '@/core/useTraining'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
 import { ExerciseStill, hasClip } from './ExerciseMedia'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import type { NBlock } from '../native'
 import { LadderPicker, NameSheet } from './PlanEditor'
-import { t as tr, tn } from '../i18n'
+import { t as tr, tn } from '@/core/i18n'
 
 interface Props {
   t: Training

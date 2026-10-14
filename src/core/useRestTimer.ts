@@ -2,8 +2,9 @@
 /* Pausen-Timer: zeitstempelbasiert (übersteht App-Wechsel und Display-aus),
    am Ende Ton + Vibration + 6 s „ringing“ für das optische Signal. */
 import { useCallback, useEffect, useState } from 'react'
-import { alarm, primeAudio } from './signals'
-import { buzz, scheduleRestEnd } from './native'
+import { platform } from './platform.ts'
+
+const signals = () => platform().signals
 
 export function useRestTimer() {
   const [end, setEnd] = useState<number | null>(null)
@@ -16,11 +17,11 @@ export function useRestTimer() {
     const tick = () => {
       const t = Date.now()
       setNow(t)
-      if (t >= end) { setEnd(null); setRinging(true); alarm(); buzz() }
+      if (t >= end) { setEnd(null); setRinging(true); signals().alarm(); signals().haptic('warning') }
     }
     const id = setInterval(tick, 250)
-    document.addEventListener('visibilitychange', tick)
-    return () => { clearInterval(id); document.removeEventListener('visibilitychange', tick) }
+    const off = platform().onForeground(tick)
+    return () => { clearInterval(id); off() }
   }, [end])
 
   useEffect(() => {
@@ -30,9 +31,9 @@ export function useRestTimer() {
   }, [ringing])
 
   // In der App zusätzlich eine lokale Benachrichtigung – klingelt auch bei gesperrtem Display
-  useEffect(() => { void scheduleRestEnd(end) }, [end])
+  useEffect(() => { void signals().restEnd(end) }, [end])
 
-  const start = useCallback((sec: number) => { primeAudio(); setRinging(false); setNow(Date.now()); setTotal(sec); setEnd(Date.now() + sec * 1000) }, [])
+  const start = useCallback((sec: number) => { signals().prime(); setRinging(false); setNow(Date.now()); setTotal(sec); setEnd(Date.now() + sec * 1000) }, [])
   const stop = useCallback(() => { setEnd(null); setRinging(false) }, [])
   /** laufende Pause verlängern/verkürzen (±15 s, +30 s); nie unter 0 */
   const shift = useCallback((sec: number) => {

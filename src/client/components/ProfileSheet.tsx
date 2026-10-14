@@ -2,17 +2,17 @@
 /* Profil: Konto, Sync, Einwilligung, Daten – erreichbar über den Avatar rechts oben auf jeder
    Hauptseite (ersetzt den früheren Tab „Daten“). In der iOS-App als natives Sheet. */
 import { useRef, useState } from 'react'
-import type { Training } from '../useTraining'
+import type { Training } from '@/core/useTraining'
 import { APP_VERSION } from '../version'
 import { ask, nativeFiles, type NBlock } from '../native'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
-import { HEALTH_CONSENT, PRIVACY_URL } from '../consent'
+import { HEALTH_CONSENT, PRIVACY_URL } from '@/core/consent'
 import { DataView, manualSync, syncStatus } from './DataView'
-import { toast } from '../toast'
+import { toast } from '@/core/toast'
 import { Sheet } from './Sheets'
 import { AssessmentPage, FeedbackPage, DaysSheet, EquipmentSheet, GoalPicker, LanguagePage, profileSummary, type LocaleChoice } from './ProfileParts'
 import { Icon } from './Icon'
-import { t as tr } from '../i18n'
+import { t as tr } from '@/core/i18n'
 
 type Part = 'goals' | 'equipment' | 'days' | 'assessment' | 'feedback' | 'language' | null
 

@@ -6,15 +6,17 @@
    - der erste Sync nach der Anmeldung lädt alles hoch
    Der Katalog kommt vom Server, sobald er einmal geladen wurde; bis dahin aus dem Build. */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import catalogJson from '@/seed/catalog.json'
-import positionsJson from '@/migrate/v1-positions.json'
-import type { Activity, Catalog, Dataset, Plan, Session, UserState, WorkoutId } from '@/domain/model'
-import { migrate, type V1Positions } from '@/migrate/core'
-import { catalogUsable } from '@/sync/convert'
-import * as db from './db'
-import * as L from './logic'
-import * as api from './sync'
-import { DISCLAIMER_VERSION, HEALTH_CONSENT_VERSION } from './consent'
+import catalogJson from '../seed/catalog.json'
+import positionsJson from '../migrate/v1-positions.json'
+import type { Activity, Catalog, Dataset, Plan, Session, UserState, WorkoutId } from '../domain/model.ts'
+import { migrate, type V1Positions } from '../migrate/core.ts'
+import { catalogUsable } from '../sync/convert.ts'
+import * as L from './logic.ts'
+import * as api from './api.ts'
+import { DISCLAIMER_VERSION, HEALTH_CONSENT_VERSION } from './consent.ts'
+import { platform } from './platform.ts'
+
+const db = { get: () => platform().db }
 
 /** Katalog aus dem Build – Fallback und Grundlage für den v1-Import (dessen Positionen auf diese IDs zeigen) */
 export const bundledCatalog = catalogJson as unknown as Catalog
@@ -58,21 +60,21 @@ export function useTraining() {
   // Einwilligungen (lokal): Gesundheitsdaten-Version für den Abgleich, Hinweis beim ersten Start
   const [consent, setConsentRaw] = useState<{ health: string | null; disclaimer: string | null }>({ health: null, disclaimer: null })
   const consentRef = useRef(consent); consentRef.current = consent
-  const setConsent = (c: { health: string | null; disclaimer: string | null }) => { consentRef.current = c; setConsentRaw(c); void db.kvSet('consent', c) }
+  const setConsent = (c: { health: string | null; disclaimer: string | null }) => { consentRef.current = c; setConsentRaw(c); void db.get().kvSet('consent', c) }
   const running = useRef(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   /* ── Sync ─────────────────────────────────────────────────────────────── */
 
   const saveOutbox = () => {
-    void db.kvSet('outbox', outbox.current)
+    void db.get().kvSet('outbox', outbox.current)
     setSync(s => ({ ...s, pending: api.pendingCount(outbox.current) }))
   }
 
   /** Ergebnis für Rückmeldungen beim manuellen Abgleich (Toast); automatische Läufe ignorieren es */
   const runSync = useCallback(async (): Promise<'ok' | 'error' | 'skipped'> => {
     if (running.current) return 'skipped'
-    if (typeof navigator !== 'undefined' && !navigator.onLine) { setSync(s => ({ ...s, phase: 'offline' })); return 'error' }
+    if (!platform().online()) { setSync(s => ({ ...s, phase: 'offline' })); return 'error' }
     if (!meta.current.account) return 'skipped'
     // ohne Einwilligung keine Gesundheitsdaten auf den Server (Art. 9 DSGVO)
     if (consentRef.current.health !== HEALTH_CONSENT_VERSION) { setSync(s => ({ ...s, phase: 'idle', consentMissing: true })); return 'skipped' }
@@ -110,36 +112,36 @@ export function useTraining() {
       const dirtyS = new Set(outbox.current.sessions), dirtyA = new Set(outbox.current.activities)
       const takeS = res.sessions.filter(r => api.takeRemote(sessionsRef.current.get(r.id), r, dirtyS.has(r.id)))
       if (takeS.length) {
-        for (const s of takeS) await db.put('sessions', s)
+        for (const s of takeS) await db.get().put('sessions', s)
         setSessions(prev => { const m = new Map(prev); takeS.forEach(s => m.set(s.id, s)); return m })
       }
       const takeA = res.activities.filter(r => !outbox.current.deletedActivities.includes(r.id)
         && api.takeRemote(activitiesRef.current.find(a => a.id === r.id), r, dirtyA.has(r.id)))
       if (takeA.length) {
-        for (const a of takeA) await db.put('activities', a)
+        for (const a of takeA) await db.get().put('activities', a)
         setActivities(prev => [...prev.filter(a => !takeA.some(b => b.id === a.id)), ...takeA])
       }
       if (api.takeRemote(stateRef.current, res.state, outbox.current.state) && (res.state.updatedAt ?? 0) > 0) {
-        setStateRaw(res.state); void db.kvSet('state', res.state)
+        setStateRaw(res.state); void db.get().kvSet('state', res.state)
       }
       if (res.plan && api.takeRemote(planRef.current ?? undefined, res.plan, !!outbox.current.plan)) {
-        planRef.current = res.plan; setPlanRaw(res.plan); void db.kvSet('plan', res.plan)
+        planRef.current = res.plan; setPlanRaw(res.plan); void db.get().kvSet('plan', res.plan)
       }
       if (res.catalog && catalogUsable(res.catalog)) {
-        setCatalog(res.catalog); void db.kvSet('catalog', res.catalog)
+        setCatalog(res.catalog); void db.get().kvSet('catalog', res.catalog)
       }
       meta.current.catalogVersion = res.catalogVersion
       meta.current.lastSync = res.serverTime
-      void db.kvSet('meta', { lastSync: res.serverTime, catalogVersion: res.catalogVersion })
+      void db.get().kvSet('meta', { lastSync: res.serverTime, catalogVersion: res.catalogVersion })
       saveOutbox()
       setSync(s => ({ ...s, phase: 'idle', lastSync: res.serverTime, error: res.rejected.length ? res.rejected.join(' · ') : undefined }))
       return res.rejected.length ? 'error' : 'ok'
     } catch (e) {
       if (e instanceof api.AuthError) {
-        meta.current.account = null; void db.kvSet('account', null)
+        meta.current.account = null; void db.get().kvSet('account', null)
         setSync(s => ({ ...s, account: null, phase: 'idle' }))
       } else {
-        setSync(s => ({ ...s, phase: navigator.onLine ? 'error' : 'offline', error: (e as Error).message }))
+        setSync(s => ({ ...s, phase: platform().online() ? 'error' : 'offline', error: (e as Error).message }))
       }
       return 'error'
     } finally {
@@ -169,14 +171,14 @@ export function useTraining() {
   useEffect(() => {
     void (async () => {
       const [ss, as, st, ac, ch, ok, cat, ob, m, acct, cons, pl] = await Promise.all([
-        db.getAll<Session>('sessions'), db.getAll<Activity>('activities'),
-        db.kvGet<UserState>('state'), db.kvGet<ActiveSession>('active'),
-        db.kvGet<{ date: string; workout: WorkoutId }>('choice'), db.persistent(),
-        db.kvGet<Catalog>('catalog'), db.kvGet<api.Outbox>('outbox'),
-        db.kvGet<{ lastSync: string | null; catalogVersion: string | null }>('meta'),
-        db.kvGet<api.Who | null>('account'),
-        db.kvGet<{ health: string | null; disclaimer: string | null }>('consent'),
-        db.kvGet<Plan | null>('plan'),
+        db.get().getAll<Session>('sessions'), db.get().getAll<Activity>('activities'),
+        db.get().kvGet<UserState>('state'), db.get().kvGet<ActiveSession>('active'),
+        db.get().kvGet<{ date: string; workout: WorkoutId }>('choice'), db.get().persistent(),
+        db.get().kvGet<Catalog>('catalog'), db.get().kvGet<api.Outbox>('outbox'),
+        db.get().kvGet<{ lastSync: string | null; catalogVersion: string | null }>('meta'),
+        db.get().kvGet<api.Who | null>('account'),
+        db.get().kvGet<{ health: string | null; disclaimer: string | null }>('consent'),
+        db.get().kvGet<Plan | null>('plan'),
       ])
       setSessions(new Map(ss.map(s => [s.id, s])))
       setActivities(as)
@@ -189,14 +191,14 @@ export function useTraining() {
       if (catalogUsable(cat)) setCatalog(cat)
       outbox.current = { ...api.EMPTY_OUTBOX, ...ob }
       meta.current = { lastSync: m?.lastSync ?? null, catalogVersion: m?.catalogVersion ?? null, account: acct ?? undefined }
-      setSync({ account: acct ?? undefined, phase: navigator.onLine ? 'idle' : 'offline', lastSync: m?.lastSync ?? null, pending: api.pendingCount(outbox.current) })
+      setSync({ account: acct ?? undefined, phase: platform().online() ? 'idle' : 'offline', lastSync: m?.lastSync ?? null, pending: api.pendingCount(outbox.current) })
       setLoaded(true)
 
       // Anmeldung prüfen und Sitzung verlängern, dann abgleichen
-      if (navigator.onLine) {
+      if (platform().online()) {
         try {
           const who = await api.me()
-          meta.current.account = who; void db.kvSet('account', who)
+          meta.current.account = who; void db.get().kvSet('account', who)
           // auf einem anderen Gerät schon eingewilligt → hier übernehmen
           if (who?.healthConsent === HEALTH_CONSENT_VERSION && consentRef.current.health !== HEALTH_CONSENT_VERSION)
             setConsent({ ...consentRef.current, health: HEALTH_CONSENT_VERSION })
@@ -208,18 +210,12 @@ export function useTraining() {
 
     const tick = () => setToday(L.localDate())
     const id = setInterval(tick, 60_000)
-    const onVisible = () => { tick(); if (!document.hidden && meta.current.account) schedule(500) }
-    const onOnline = () => { setSync(s => ({ ...s, phase: 'idle' })); if (meta.current.account) schedule(500) }
-    const onOffline = () => setSync(s => ({ ...s, phase: 'offline' }))
-    document.addEventListener('visibilitychange', onVisible)
-    window.addEventListener('online', onOnline)
-    window.addEventListener('offline', onOffline)
-    return () => {
-      clearInterval(id)
-      document.removeEventListener('visibilitychange', onVisible)
-      window.removeEventListener('online', onOnline)
-      window.removeEventListener('offline', onOffline)
-    }
+    const offForeground = platform().onForeground(() => { tick(); if (meta.current.account) schedule(500) })
+    const offOnline = platform().onOnlineChange(online => {
+      setSync(s => ({ ...s, phase: online ? 'idle' : 'offline' }))
+      if (online && meta.current.account) schedule(500)
+    })
+    return () => { clearInterval(id); offForeground(); offOnline() }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Abgeleitet ───────────────────────────────────────────────────────── */
@@ -240,7 +236,7 @@ export function useTraining() {
 
   const putSession = useCallback((s: Session) => {
     setSessions(prev => new Map(prev).set(s.id, s))
-    void db.put('sessions', s)
+    void db.get().put('sessions', s)
     markDirty('sessions', s.id)
   }, [markDirty])
 
@@ -251,19 +247,19 @@ export function useTraining() {
 
   const setState = useCallback((fn: (s: UserState) => UserState) => {
     const next = { ...fn(stateRef.current), updatedAt: Date.now() }
-    setStateRaw(next); void db.kvSet('state', next)
+    setStateRaw(next); void db.get().kvSet('state', next)
     markDirty('state')
   }, [markDirty])
 
   const chooseWorkout = useCallback((w: WorkoutId) => {
     const c = { date: today, workout: w }
-    setChoice(c); void db.kvSet('choice', c)
+    setChoice(c); void db.get().kvSet('choice', c)
   }, [today])
 
   const startSession = useCallback(() => {
     if (active) return
     const a = { start: Date.now(), workout }
-    setActive(a); void db.kvSet('active', a)
+    setActive(a); void db.get().kvSet('active', a)
   }, [active, workout])
 
   /** Beenden: Dauer ab 60 s wird der Einheit gutgeschrieben (mehrere pro Tag summieren sich) */
@@ -274,7 +270,7 @@ export function useTraining() {
       const date = L.localDate(new Date(active.start)), id = L.sessionId(date, active.workout)
       putSession(L.withDuration(L.live(sessionsRef.current.get(id)) ?? L.emptySession(date, active.workout), seconds))
     }
-    setActive(null); void db.kvSet('active', undefined)
+    setActive(null); void db.get().kvSet('active', undefined)
   }, [active, putSession])
 
   /** Einheit löschen – läuft sie gerade, endet die Session ohne Zeitgutschrift */
@@ -282,16 +278,16 @@ export function useTraining() {
     const s = sessionsRef.current.get(id)
     if (!s || s.deleted) return
     putSession(L.deletedSession(s))
-    if (active && L.sessionId(L.localDate(new Date(active.start)), active.workout) === id) { setActive(null); void db.kvSet('active', undefined) }
+    if (active && L.sessionId(L.localDate(new Date(active.start)), active.workout) === id) { setActive(null); void db.get().kvSet('active', undefined) }
   }, [active, putSession])
 
   const addActivity = useCallback((a: Activity) => {
     const next = { ...a, updatedAt: Date.now() }
-    setActivities(prev => [...prev.filter(x => x.id !== next.id), next]); void db.put('activities', next)
+    setActivities(prev => [...prev.filter(x => x.id !== next.id), next]); void db.get().put('activities', next)
     markDirty('activities', next.id)
   }, [markDirty])
   const removeActivity = useCallback((id: string) => {
-    setActivities(prev => prev.filter(x => x.id !== id)); void db.remove('activities', id)
+    setActivities(prev => prev.filter(x => x.id !== id)); void db.get().remove('activities', id)
     markDirty('deletedActivities', id)
   }, [markDirty])
 
@@ -302,9 +298,9 @@ export function useTraining() {
     const sessionsIn = data.sessions.map(s => ({ ...s, updatedAt: now }))
     const activitiesIn = data.activities.map(a => ({ ...a, updatedAt: now }))
     const stateIn = { ...data.state, updatedAt: now }
-    for (const s of sessionsIn) await db.put('sessions', s)
-    for (const a of activitiesIn) await db.put('activities', a)
-    await db.kvSet('state', stateIn)
+    for (const s of sessionsIn) await db.get().put('sessions', s)
+    for (const a of activitiesIn) await db.get().put('activities', a)
+    await db.get().kvSet('state', stateIn)
     setSessions(prev => { const m = new Map(prev); sessionsIn.forEach(s => m.set(s.id, s)); return m })
     setActivities(prev => [...prev.filter(a => !activitiesIn.some(b => b.id === a.id)), ...activitiesIn])
     setStateRaw(stateIn)
@@ -332,7 +328,7 @@ export function useTraining() {
   /** Anmelden; mit Einwilligung (Häkchen im Formular) wird sie am Konto gespeichert und sofort abgeglichen */
   const signIn = useCallback(async (email: string, password: string, healthConsent = false) => {
     const who = await api.login(email, password)
-    meta.current.account = who; void db.kvSet('account', who)
+    meta.current.account = who; void db.get().kvSet('account', who)
     if (healthConsent && who.id != null) {
       await api.saveConsent(who.id, HEALTH_CONSENT_VERSION)
       setConsent({ ...consentRef.current, health: HEALTH_CONSENT_VERSION })
@@ -356,8 +352,8 @@ export function useTraining() {
     await api.logout()
     // nächste Anmeldung (evtl. anderes Konto) lädt wieder alles hoch
     meta.current = { ...meta.current, account: null, lastSync: null }
-    void db.kvSet('account', null)
-    void db.kvSet('meta', { lastSync: null, catalogVersion: meta.current.catalogVersion })
+    void db.get().kvSet('account', null)
+    void db.get().kvSet('meta', { lastSync: null, catalogVersion: meta.current.catalogVersion })
     setConsent({ ...consentRef.current, health: null })   // gilt pro Konto
     setSync(s => ({ ...s, account: null, consentMissing: false }))
   }, [])
@@ -365,7 +361,7 @@ export function useTraining() {
   /** Plan speichern (eigene Workouts, Wochenplan) – neue Version, wird abgeglichen */
   const savePlan = useCallback((next: Plan) => {
     const p = { ...next, version: (planRef.current?.version ?? 0) + 1, updatedAt: Date.now() }
-    planRef.current = p; setPlanRaw(p); void db.kvSet('plan', p)
+    planRef.current = p; setPlanRaw(p); void db.get().kvSet('plan', p)
     markDirty('plan')
   }, [markDirty])
   /** Plan ändern; ohne eigenen Plan entsteht er hier aus dem Katalog-Plan (erst die erste Änderung legt ihn an) */
@@ -377,8 +373,8 @@ export function useTraining() {
   const deleteAccount = useCallback(async () => {
     await api.deleteAccount()
     meta.current = { ...meta.current, account: null, lastSync: null }
-    void db.kvSet('account', null)
-    void db.kvSet('meta', { lastSync: null, catalogVersion: meta.current.catalogVersion })
+    void db.get().kvSet('account', null)
+    void db.get().kvSet('meta', { lastSync: null, catalogVersion: meta.current.catalogVersion })
     setConsent({ ...consentRef.current, health: null })
     setSync(s => ({ ...s, account: null, error: undefined, consentMissing: false }))
   }, [])

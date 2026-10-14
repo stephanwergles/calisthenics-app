@@ -4,14 +4,14 @@
    ersten Änderung aus dem Katalog-Plan. Alles als Sheets, in der iOS-App nativ. */
 import { useRef, useState } from 'react'
 import type { ProgressionId, Weekday, Workout, WorkoutId } from '@/domain/model'
-import * as L from '../logic'
-import type { Training } from '../useTraining'
+import * as L from '@/core/logic'
+import type { Training } from '@/core/useTraining'
 import { ask, type NBlock } from '../native'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { hasClip, ExerciseStill } from './ExerciseMedia'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
-import { t as tr, tn } from '../i18n'
+import { t as tr, tn } from '@/core/i18n'
 
 /** Alias auf L.WEEKDAY_LONG (übersetzt) – andere Dateien importieren DAY_NAME */
 export const DAY_NAME: Record<Weekday, string> = L.WEEKDAY_LONG

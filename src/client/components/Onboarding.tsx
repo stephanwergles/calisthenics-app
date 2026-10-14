@@ -3,17 +3,17 @@
    → Planvorschlag. Ein Sheet, die Schritte als Push-Seiten (Zurück-Wischen geht einen Schritt
    zurück). Jeder Schritt ist überspringbar; ohne Ziele bleibt der Standardplan. */
 import { useState } from 'react'
-import type { Training } from '../useTraining'
-import type { PlanSuggestion } from '../usePlanSuggestion'
+import type { Training } from '@/core/useTraining'
+import type { PlanSuggestion } from '@/core/usePlanSuggestion'
 import type { NBlock } from '../native'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
-import { DISCLAIMER_VERSION } from '../consent'
+import { DISCLAIMER_VERSION } from '@/core/consent'
 import { AssessmentPage, DaysSheet, EquipmentSheet, GoalPicker } from './ProfileParts'
 import { SuggestionSheet } from './SuggestionSheet'
 import { TemplatesSheet } from './TemplatesSheet'
 import { Sheet } from './Sheets'
 import { Icon } from './Icon'
-import { t as tr } from '../i18n'
+import { t as tr } from '@/core/i18n'
 
 const DONE = 'lever-onboarded'
 const done = () => { try { return localStorage.getItem(DONE) === '1' } catch { return false } }

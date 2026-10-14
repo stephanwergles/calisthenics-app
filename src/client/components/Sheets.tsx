@@ -1,15 +1,15 @@
 'use client'
 import { useEffect, useState, type ReactNode } from 'react'
 import type { Activity } from '@/domain/model'
-import * as L from '../logic'
-import type { Training } from '../useTraining'
-import type { RestTimer } from '../useRestTimer'
+import * as L from '@/core/logic'
+import type { Training } from '@/core/useTraining'
+import type { RestTimer } from '@/core/useRestTimer'
 import { Icon } from './Icon'
 import type { SheetSpec } from '../native'
 import { useDrag } from '../useSheet'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import type { NBlock } from '../native'
-import { t as tr } from '../i18n'
+import { t as tr } from '@/core/i18n'
 
 /** Bottom-Sheet: Griff und Kopf lassen sich nach unten wegziehen. `large` = fast volle Höhe mit
     scrollendem Inhalt und fester Fußzeile (z. B. Start-Button). */

@@ -3,18 +3,19 @@
    sich ohne Bestätigung. „Später“ blendet genau diesen Vorschlag aus (pro Gerät); ändern sich
    Ziele, Tage, Ausrüstung oder Stufen, entsteht ein neuer. Rückgängig = vorherige Fassung. */
 import { useMemo, useState } from 'react'
-import type { Plan } from '@/domain/model'
-import { generatePlan } from '@/domain/generator'
-import { catalogData } from './data'
-import * as L from './logic'
-import type { Training } from './useTraining'
-import { toast } from './toast'
-import { getLocale, t as tr } from './i18n'
+import type { Plan } from '../domain/model.ts'
+import { generatePlan } from '../domain/generator.ts'
+import { catalogData } from './data.ts'
+import * as L from './logic.ts'
+import type { Training } from './useTraining.ts'
+import { toast } from './toast.ts'
+import { getLocale, t as tr } from './i18n/index.ts'
+import { platform } from './platform.ts'
 
 const DISMISSED = 'lever-suggestion-dismissed'
 const PREVIOUS = 'lever-plan-previous'
-const read = (k: string) => { try { return localStorage.getItem(k) } catch { return null } }
-const write = (k: string, v: string | null) => { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v) } catch { /* ohne Speicher */ } }
+const read = (k: string) => platform().prefs.get(k)
+const write = (k: string, v: string | null) => platform().prefs.set(k, v)
 
 export interface Suggestion { plan: Plan; diff: L.DayDiff[]; warnings: string[]; changes: number }
 

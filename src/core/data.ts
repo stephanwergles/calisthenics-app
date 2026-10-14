@@ -1,11 +1,11 @@
 /* Daten für Ziele, Planvorschläge, Phasen und Einstufung: aus dem Katalog vom Server (im
    Admin-Panel gepflegt), solange keiner da ist (offline, ältere Server) die mitgelieferten Seed-Daten. */
-import type { AssessmentData, Catalog, ExerciseMeta, Skill, SplitTemplate, Template } from '@/domain/model'
-import metaJson from '@/seed/exercise-meta.json'
-import skillsJson from '@/seed/skills.json'
-import splitsJson from '@/seed/splits.json'
-import assessmentJson from '@/seed/assessment.json'
-import templatesJson from '@/seed/templates.json'
+import type { AssessmentData, Catalog, ExerciseMeta, Skill, SplitTemplate, Template } from '../domain/model.ts'
+import metaJson from '../seed/exercise-meta.json'
+import skillsJson from '../seed/skills.json'
+import splitsJson from '../seed/splits.json'
+import assessmentJson from '../seed/assessment.json'
+import templatesJson from '../seed/templates.json'
 
 const BUNDLED = {
   meta: (metaJson as unknown as { exercises: Record<string, ExerciseMeta> }).exercises,

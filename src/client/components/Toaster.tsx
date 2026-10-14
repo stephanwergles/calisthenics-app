@@ -2,7 +2,7 @@
 /* Web-Toast: Glas-Kapsel oben, verschwindet nach 2,6 s (Fehler 4 s), Tipp schließt sofort.
    In der App zeichnet iOS den Toast selbst (toast.ts → nativeToast). */
 import { useEffect, useState } from 'react'
-import { onToast, type ToastMsg } from '../toast'
+import { onToast, type ToastMsg } from '@/core/toast'
 import { Icon } from './Icon'
 
 export function Toaster() {

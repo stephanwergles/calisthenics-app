@@ -2,12 +2,12 @@
 /* Abschluss nach „Training beenden“: Kennzahlen, neue Bestwerte, Vergleich je Übung mit dem letzten Mal. */
 import { useMemo, useState } from 'react'
 import type { Session } from '@/domain/model'
-import * as L from '../logic'
-import type { Training } from '../useTraining'
+import * as L from '@/core/logic'
+import type { Training } from '@/core/useTraining'
 import { Icon } from './Icon'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import type { NBlock } from '../native'
-import { t as tr, tn, getLocale } from '../i18n'
+import { t as tr, tn, getLocale } from '@/core/i18n'
 
 export function SummaryOverlay({ t, session, onClose }: { t: Training; session: Session; onClose: () => void }) {
   const sum = useMemo(() => L.sessionSummary(t.ix, t.sessions, session), [t.ix, t.sessions, session, getLocale()])

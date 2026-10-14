@@ -2,12 +2,12 @@
 /* Startseite „Heute“: die Woche auf einen Blick, das Workout des Tages als große Karte,
    darunter die Skills mit dem kürzesten Weg zur nächsten Stufe. */
 import { useMemo, useState } from 'react'
-import * as L from '../logic'
-import type { Training } from '../useTraining'
+import * as L from '@/core/logic'
+import type { Training } from '@/core/useTraining'
 import { Icon } from './Icon'
 import { Wordmark } from './LeverMark'
 import { ExerciseStill, hasClip } from './ExerciseMedia'
-import { intl, t as tr, tn, getLocale } from '../i18n'
+import { intl, t as tr, tn, getLocale } from '@/core/i18n'
 
 const R = 22, C = 2 * Math.PI * R
 

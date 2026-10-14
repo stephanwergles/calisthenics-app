@@ -3,19 +3,19 @@
    eigenen Workouts. Bearbeitet wird in Sheets (PlanEditor.tsx, SuggestionSheet.tsx). */
 import { useMemo, useState } from 'react'
 import type { Weekday, WorkoutId } from '@/domain/model'
-import * as L from '../logic'
-import type { Training } from '../useTraining'
+import * as L from '@/core/logic'
+import type { Training } from '@/core/useTraining'
 import { DAY_NAME, DayAssign, WorkoutsHost } from './PlanEditor'
 import { Icon } from './Icon'
-import type { PlanSuggestion } from '../usePlanSuggestion'
+import type { PlanSuggestion } from '@/core/usePlanSuggestion'
 import { SuggestionSheet } from './SuggestionSheet'
 import { GoalPicker } from './ProfileParts'
 import { ask } from '../native'
 import { PhaseSheet } from './PhaseSheet'
 import { TemplatesSheet } from './TemplatesSheet'
 import type { PhaseKind } from '@/domain/model'
-import { t as tr, tn } from '../i18n'
-import { toast } from '../toast'
+import { t as tr, tn } from '@/core/i18n'
+import { toast } from '@/core/toast'
 
 const count = (n: number) => tn('plan.exercises', n)
 

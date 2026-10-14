@@ -4,20 +4,20 @@
    für Vorschläge, die erst nach Bestätigung gelten. */
 import type { Equipment, Exercise, Profile, Region, Weekday } from '@/domain/model'
 import { placement } from '@/domain/assessment'
-import { catalogData } from '../data'
+import { catalogData } from '@/core/data'
 import { useState } from 'react'
 import { ask, isNative } from '../native'
-import { sendFeedback } from '../sync'
+import { sendFeedback } from '@/core/api'
 import { APP_VERSION } from '../version'
-import * as L from '../logic'
-import type { Training } from '../useTraining'
+import * as L from '@/core/logic'
+import type { Training } from '@/core/useTraining'
 import type { NBlock } from '../native'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
 import { ExerciseStill, hasClip } from './ExerciseMedia'
-import { t as tr, tn, type Key, type LocaleChoice } from '../i18n'
-import { toast } from '../toast'
+import { t as tr, tn, type Key, type LocaleChoice } from '@/core/i18n'
+import { toast } from '@/core/toast'
 
 
 /** Profil lesen und ändern (legt es beim ersten Ändern mit Standardwerten an) */

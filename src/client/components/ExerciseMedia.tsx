@@ -7,7 +7,7 @@ import type { Exercise } from '@/domain/model'
 import clips from '@/seed/clips.json'
 import { Sketch } from './Sketch'
 import { Icon } from './Icon'
-import { t } from '../i18n'
+import { t } from '@/core/i18n'
 
 const CLIPS = new Set((clips as { clips: string[] }).clips)
 const STILLS = new Set((clips as { stills: string[] }).stills)

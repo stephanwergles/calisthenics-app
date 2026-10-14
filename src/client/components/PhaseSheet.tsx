@@ -3,14 +3,14 @@
    Dauer als Auswahl; „offen“ = bis auf Weiteres, endet mit „Beenden“ im Plan-Tab. */
 import { useState } from 'react'
 import type { Equipment, PhaseKind, Tendon } from '@/domain/model'
-import * as L from '../logic'
-import type { Training } from '../useTraining'
+import * as L from '@/core/logic'
+import type { Training } from '@/core/useTraining'
 import type { NBlock } from '../native'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
-import { t as tr, type Key } from '../i18n'
-import { toast } from '../toast'
+import { t as tr, type Key } from '@/core/i18n'
+import { toast } from '@/core/toast'
 
 /* Titel als Getter: lesen in der aktuellen Sprache */
 const DURATIONS: { id: string; readonly title: string; days: number | null }[] = [

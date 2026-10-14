@@ -2,7 +2,7 @@
    dann fragt die App erneut. Texte: ENTWURF – vor dem Store-Release rechtlich prüfen lassen.
    Die Texte selbst stehen im Wörterbuch (i18n/<sprache>/profile.ts: disclaimer, health);
    die Getter lesen immer in der aktuellen Sprache. */
-import { t } from './i18n'
+import { t } from './i18n/index.ts'
 
 export const HEALTH_CONSENT_VERSION = '2026-10-13'
 export const DISCLAIMER_VERSION = '2026-10-13'

@@ -2,11 +2,11 @@
 /* Hinweis beim ersten Start und Einwilligung in die Gesundheitsdaten (Art. 9 DSGVO).
    Ohne Einwilligung bleibt alles auf dem Gerät – der Abgleich pausiert, die App läuft weiter. */
 import { useState } from 'react'
-import type { Training } from '../useTraining'
-import { DISCLAIMER, DISCLAIMER_VERSION, HEALTH_CONSENT, HEALTH_CONSENT_VERSION, PRIVACY_URL } from '../consent'
+import type { Training } from '@/core/useTraining'
+import { DISCLAIMER, DISCLAIMER_VERSION, HEALTH_CONSENT, HEALTH_CONSENT_VERSION, PRIVACY_URL } from '@/core/consent'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { Sheet } from './Sheets'
-import { t as tr } from '../i18n'
+import { t as tr } from '@/core/i18n'
 
 export function ConsentGate({ t }: { t: Training }) {
   const native = useNativeShell()

@@ -2,17 +2,17 @@
 /* Skills-Tab: Ziele, nächster realistischer Skill, alle Skills kompakt (Filter nach Region),
    Skill-Seite mit Progressionen, Stufen-Ansicht als Push-Seite; Grundlagen ganz unten. */
 import { useMemo, useState } from 'react'
-import * as L from '../logic'
+import * as L from '@/core/logic'
 import type { Session } from '@/domain/model'
-import type { Training } from '../useTraining'
+import type { Training } from '@/core/useTraining'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
 import { ExerciseStill, hasClip } from './ExerciseMedia'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { ask, type NBlock } from '../native'
 import { GoalPicker, useProfile } from './ProfileParts'
-import { catalogData } from '../data'
-import { t as tr, tn, getLocale } from '../i18n'
+import { catalogData } from '@/core/data'
+import { t as tr, tn, getLocale } from '@/core/i18n'
 
 type Filter = 'all' | 'pull' | 'push' | 'core' | 'legs'
 const FILTERS: Filter[] = ['all', 'pull', 'push', 'core', 'legs']

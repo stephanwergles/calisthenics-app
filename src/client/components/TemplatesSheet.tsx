@@ -4,17 +4,17 @@
    Workout = Kopie unter „Meine Workouts“, auf Wunsch gleich für heute. */
 import { useState } from 'react'
 import type { Template } from '@/domain/model'
-import * as L from '../logic'
-import type { Training } from '../useTraining'
-import type { PlanSuggestion } from '../usePlanSuggestion'
+import * as L from '@/core/logic'
+import type { Training } from '@/core/useTraining'
+import type { PlanSuggestion } from '@/core/usePlanSuggestion'
 import { ask, type NBlock } from '../native'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
-import { catalogData } from '../data'
+import { catalogData } from '@/core/data'
 import { DAY_NAME } from './PlanEditor'
 import { Icon } from './Icon'
 import { Sheet } from './Sheets'
-import { t as tr, tn } from '../i18n'
-import { toast } from '../toast'
+import { t as tr, tn } from '@/core/i18n'
+import { toast } from '@/core/toast'
 
 const meta = (tp: Template) => [L.LEVEL_LABEL[tp.level], tp.days ? tr('plan.templates.perWeek', { n: tp.days }) : null, tr('plan.templates.minutes', { n: tp.minutes })]
   .filter(Boolean).join(' · ')

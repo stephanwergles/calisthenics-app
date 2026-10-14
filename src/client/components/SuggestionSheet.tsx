@@ -1,15 +1,15 @@
 'use client'
 /* Planvorschlag ansehen: je Wochentag vorher → nachher, was dazukommt, wegfällt, sich ändert.
    Erst „Übernehmen“ schreibt eine neue Planversion. */
-import type { Training } from '../useTraining'
-import type { PlanSuggestion, Suggestion } from '../usePlanSuggestion'
+import type { Training } from '@/core/useTraining'
+import type { PlanSuggestion, Suggestion } from '@/core/usePlanSuggestion'
 import type { NBlock } from '../native'
 import { useNativeShell, useNativeSheet } from '../useNativeSheet'
 import { DAY_NAME } from './PlanEditor'
-import { catalogData } from '../data'
+import { catalogData } from '@/core/data'
 import { Sheet } from './Sheets'
-import * as L from '../logic'
-import { t as tr, tn, type Key } from '../i18n'
+import * as L from '@/core/logic'
+import { t as tr, tn, type Key } from '@/core/i18n'
 
 const KIND: Record<string, Key> = { neu: 'plan.suggestion.kind.new', raus: 'plan.suggestion.kind.out', sätze: 'plan.suggestion.kind.sets' }
 

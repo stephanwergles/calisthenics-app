@@ -61,7 +61,7 @@ test('Einheit übersteht den Weg zum Server und zurück', () => {
 })
 
 test('Gelöschte Einheit kommt als Markierung an und überschreibt die alte Fassung', async () => {
-  const { takeRemote } = await import('../src/client/sync.ts')
+  const { takeRemote } = await import('../src/core/api.ts')
   const tomb: Session = { id: session.id, date: session.date, workout: session.workout, sets: [], skipped: [], routineDone: [], deleted: true, updatedAt: 1790000009999 }
   assert.deepEqual(C.docToSession(asPayload({ id: 42, ...C.sessionToDoc(tomb) })), tomb)
   assert.equal('deleted' in C.docToSession(asPayload({ ...C.sessionToDoc(session) })), false, 'nicht gelöscht = kein Feld')
@@ -94,7 +94,7 @@ test('Eingaben vom Gerät werden geprüft', () => {
 })
 
 test('Konfliktregel: wann ersetzt die Server-Fassung die lokale?', async () => {
-  const { takeRemote } = await import('../src/client/sync.ts')
+  const { takeRemote } = await import('../src/core/api.ts')
   assert.equal(takeRemote(undefined, { updatedAt: 1 }, false), true, 'lokal unbekannt')
   assert.equal(takeRemote({ updatedAt: 9 }, { updatedAt: 1 }, false), true, 'lokal sauber: Server ist maßgeblich')
   assert.equal(takeRemote({ updatedAt: 9 }, { updatedAt: 1 }, true), false, 'lokal ungesendet und jünger: bleibt')

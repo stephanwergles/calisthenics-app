@@ -1,11 +1,11 @@
 'use client'
 import { useEffect, useState } from 'react'
-import * as L from '../logic'
-import type { Training } from '../useTraining'
-import type { RestTimer } from '../useRestTimer'
+import * as L from '@/core/logic'
+import type { Training } from '@/core/useTraining'
+import type { RestTimer } from '@/core/useRestTimer'
 import { Icon } from './Icon'
 import { ask } from '../native'
-import { t as tr } from '../i18n'
+import { t as tr } from '@/core/i18n'
 
 /** Eine Zeile: ohne Session nur „Workout starten“. Mit Session links Dauer + Workout (Tipp öffnet
     das Training), rechts außen Beenden. Während einer Pause stattdessen Timer + drei Längen zum Umschalten. */

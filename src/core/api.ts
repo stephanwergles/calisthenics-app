@@ -1,16 +1,19 @@
 /* Sync-Client: Anmeldung und Abgleich mit /api/sync. Die App liest und schreibt
    ausschließlich lokal; das hier läuft im Hintergrund.
    Browser: Cookie (payload-token) setzt Payload selbst, gleiche Domain – kein Token im JavaScript.
-   iOS-App: anderer Ursprung, deshalb Token aus dem Login im Header (native.ts). */
+   Apps: anderer Ursprung, deshalb Token aus dem Login im Header (Plattform-Adapter). */
 import type { SyncRequest, SyncResponse } from '../sync/convert.ts'
-import { apiBase, getToken, isNative, setToken } from './native.ts'
+import { platform } from './platform.ts'
+
+const getToken = () => platform().api.getToken()
+const setToken = (t: string | null) => platform().api.setToken(t)
 
 export class AuthError extends Error {}
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const token = await getToken()
-  const res = await fetch(apiBase() + path, {
-    credentials: isNative() ? 'omit' : 'same-origin',
+  const res = await fetch(platform().api.base() + path, {
+    credentials: platform().api.credentials,
     ...init,
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `JWT ${token}` } : {}), ...(init?.headers ?? {}) },
   })
@@ -25,7 +28,7 @@ type ServerUser = { email: string; id: number | string; consent?: { healthVersio
 const who = (u: ServerUser): Who => ({ email: u.email, id: u.id, healthConsent: u.consent?.healthVersion ?? null })
 
 export async function me(): Promise<Who | null> {
-  if (isNative() && !(await getToken())) return null
+  if (platform().api.tokenAuth && !(await getToken())) return null
   const r = await call<{ user: ServerUser | null }>('/api/users/me')
   return r.user ? who(r.user) : null
 }
@@ -55,7 +58,7 @@ export const refresh = () => call<{ refreshedToken?: string }>('/api/users/refre
 export const deleteAccount = () => call('/api/account/delete', { method: 'POST' }).finally(() => setToken(null))
 
 /** Feedback aus der App (nur angemeldet; lesen können es nur Admins) */
-export const sendFeedback = (f: { category: 'bug' | 'idea' | 'other'; message: string; appVersion: string; platform: 'ios' | 'web'; screen?: string }) =>
+export const sendFeedback = (f: { category: 'bug' | 'idea' | 'other'; message: string; appVersion: string; platform: 'ios' | 'android' | 'web'; screen?: string }) =>
   call('/api/feedback?depth=0', { method: 'POST', body: JSON.stringify(f) })
 
 export const postSync = (req: SyncRequest) => call<SyncResponse>('/api/sync', { method: 'POST', body: JSON.stringify(req) })

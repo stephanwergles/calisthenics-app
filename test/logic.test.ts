@@ -3,7 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import type { Catalog, Session, UserState } from '../src/domain/model.ts'
-import * as L from '../src/client/logic.ts'
+import * as L from '../src/core/logic.ts'
 
 const catalog: Catalog = JSON.parse(readFileSync(new URL('../src/seed/catalog.json', import.meta.url), 'utf8'))
 const ix = L.indexCatalog(catalog)
