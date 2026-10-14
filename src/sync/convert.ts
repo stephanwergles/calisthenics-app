@@ -3,7 +3,7 @@
 
    Payload liefert leere Felder als null, Relationen je nach depth als ID oder
    Objekt und Array-Zeilen mit eigener `id`. Das App-Modell kennt nichts davon. */
-import { MAX_GOALS, NOTE_MAX } from '../domain/model.ts'
+import { MAX_GOALS, NOTE_MAX, TENDONS } from '../domain/model.ts'
 import type { Activity, AssessmentData, Catalog, Equipment, Exercise, ExerciseMeta, Phase, Plan, Profile, Skill, SplitTemplate, Template, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
 
 type Doc = Record<string, any>
@@ -131,11 +131,10 @@ export function isState(s: any): s is UserState {
     && (s.profile === undefined || isProfile(s.profile))
     && (s.phases === undefined || (Array.isArray(s.phases) && s.phases.length <= 50 && s.phases.every(isPhase)))
 }
-const TENDONS = ['wrist', 'elbow', 'shoulder', 'knee']
 export function isPhase(p: any): p is Phase {
   return !!p && isId(p.id) && ['pause', 'vacation', 'injury', 'equipment'].includes(p.kind) && isDate(p.from)
     && (p.to === undefined || (isDate(p.to) && p.to >= p.from))
-    && (p.tendons === undefined || (Array.isArray(p.tendons) && p.tendons.every((t: any) => TENDONS.includes(t))))
+    && (p.tendons === undefined || (Array.isArray(p.tendons) && p.tendons.every((t: any) => (TENDONS as string[]).includes(t))))
     && (p.equipment === undefined || (Array.isArray(p.equipment) && p.equipment.every((e: any) => EQUIPMENT.includes(e))))
     && isNote(p.note)
 }
@@ -212,7 +211,7 @@ function v3Catalog(exs: Doc[], progs: Doc[], extra: { skills?: Doc[]; splits?: D
   for (const e of exs) {
     const m = e.meta
     if (!m?.pattern) continue
-    const stress = Object.fromEntries(['wrist', 'elbow', 'shoulder', 'knee'].map(t => [t, m.stress?.[t]]).filter(([, v]) => typeof v === 'number' && v > 0))
+    const stress = Object.fromEntries(TENDONS.map(t => [t, m.stress?.[t]]).filter(([, v]) => typeof v === 'number' && v > 0))
     meta[e.id] = tidy({
       equipment: (m.alternatives ?? []).map((a: Doc) => (a.items ?? []) as Equipment[]).filter((a: Equipment[]) => a.length),
       pattern: m.pattern, difficulty: m.difficulty ?? 3, stress, unsure: opt<string>(m.unsure),
@@ -245,7 +244,7 @@ function v3Catalog(exs: Doc[], progs: Doc[], extra: { skills?: Doc[]; splits?: D
 /** Seed-Daten → Payload-Felder (für das Seed-Skript) */
 export const metaToDoc = (m: ExerciseMeta) => ({
   alternatives: m.equipment.map(items => ({ items })), pattern: m.pattern, difficulty: m.difficulty,
-  stress: { wrist: m.stress.wrist ?? 0, elbow: m.stress.elbow ?? 0, shoulder: m.stress.shoulder ?? 0, knee: m.stress.knee ?? 0 },
+  stress: Object.fromEntries(TENDONS.map(t => [t, m.stress[t] ?? 0])),
   unsure: m.unsure ?? null,
 })
 export const skillToDoc = (s: Skill) => ({ name: s.name, targets: s.targets, support: s.support, prerequisites: s.prerequisites })

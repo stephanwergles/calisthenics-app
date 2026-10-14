@@ -35,8 +35,14 @@ const splits = seed('splits.json').splits as SplitTemplate[]
 const assessment = seed('assessment.json') as AssessmentData
 let added = 0
 for (const [id, m] of Object.entries(meta)) {
-  const e = (await payload.find({ collection: 'exercises', where: { id: { equals: id } }, limit: 1, depth: 0 })).docs[0] as { meta?: { pattern?: string } } | undefined
+  const e = (await payload.find({ collection: 'exercises', where: { id: { equals: id } }, limit: 1, depth: 0 })).docs[0] as { meta?: { pattern?: string; stress?: Record<string, number | null> } } | undefined
   if (e && !e.meta?.pattern) { await payload.update({ collection: 'exercises', id, data: { meta: metaToDoc(m) } as never, depth: 0 }); added++ }
+  else if (e?.meta) {
+    // neu hinzugekommene Gelenke (leer = nie gepflegt) aus dem Seed nachtragen – gepflegte Werte bleiben
+    const stress = metaToDoc(m).stress
+    const fill = Object.fromEntries(Object.entries(stress).filter(([k]) => e.meta!.stress?.[k] == null))
+    if (Object.keys(fill).length) { await payload.update({ collection: 'exercises', id, data: { meta: { ...e.meta, stress: { ...e.meta.stress, ...fill } } } as never, depth: 0 }); added++ }
+  }
 }
 for (const r of assessment.rules) {
   const p = (await payload.find({ collection: 'progressions', where: { id: { equals: r.progression } }, limit: 1, depth: 0 })).docs[0] as { assessment?: { test?: string } } | undefined

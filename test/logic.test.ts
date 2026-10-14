@@ -401,6 +401,15 @@ test('Profil und Ziele: Standardwerte, höchstens fünf Ziele, Vorschläge, Fort
   assert.ok(mu.pid)
 })
 
+test('Verletzung: neue Bereiche (Hüfte, Rücken, Sprunggelenk) sperren passende Übungen', () => {
+  const meta = JSON.parse(readFileSync(new URL('../src/seed/exercise-meta.json', import.meta.url), 'utf8')).exercises
+  const ankle = [{ id: 'x', kind: 'injury' as const, from: '2026-10-14', tendons: ['ankle' as const] }]
+  assert.ok(L.phaseBlock(ankle, meta['pistol-squat']), 'Pistol belastet das Sprunggelenk')
+  assert.equal(L.phaseBlock(ankle, meta['pull-up']), null, 'Klimmzug nicht')
+  assert.match(L.phaseBlock([{ ...ankle[0], tendons: ['back'] }], meta['dragon-flag'])!, /Rücken/)
+  assert.equal(Object.keys(L.TENDON_LABEL).length, 7)
+})
+
 test('Kann ich schon: Ziel-Leitern auf die letzte Stufe, Skill erreicht', () => {
   const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
   const wd = skills.find((s: { id: string }) => s.id === 'weighted-dip')

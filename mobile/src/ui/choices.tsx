@@ -40,3 +40,24 @@ export function Choices({ items, onToggle, mode = 'select' }: {
     </View>
   )
 }
+
+/** Mehrfachauswahl als Chips im Umbruch – kompakt für kurze Begriffe (Gelenke, Geräte), passt auch in
+    ein halbhohes Sheet. An = Volt mit Haken, aus = Rand. */
+export function ChipChoices({ items, onToggle }: { items: Choice[]; onToggle: (id: string, on: boolean) => void }) {
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      {items.map(x => (
+        <Pressable key={x.id} accessibilityRole="checkbox" accessibilityState={{ checked: x.on }} accessibilityLabel={x.title}
+          onPress={() => { platform().signals.haptic('tap'); onToggle(x.id, !x.on) }}
+          style={({ pressed }) => ({
+            flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, paddingHorizontal: 16, borderRadius: 22,
+            borderWidth: 1, borderColor: x.on ? color.accent : color.line, backgroundColor: x.on ? color.accent : 'transparent',
+            opacity: pressed ? 0.75 : 1,
+          })}>
+          {x.on && <Icon name="check" size={14} color={color.onAccent} weight="bold" />}
+          <Text variant="label" style={{ color: x.on ? color.onAccent : color.text }}>{x.title}</Text>
+        </Pressable>
+      ))}
+    </View>
+  )
+}

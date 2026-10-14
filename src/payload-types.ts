@@ -366,6 +366,9 @@ export interface Exercise {
       elbow?: number | null;
       shoulder?: number | null;
       knee?: number | null;
+      hip?: number | null;
+      back?: number | null;
+      ankle?: number | null;
     };
     /**
      * Offene Frage für die Coach-Prüfung
@@ -826,6 +829,9 @@ export interface ExercisesSelect<T extends boolean = true> {
               elbow?: T;
               shoulder?: T;
               knee?: T;
+              hip?: T;
+              back?: T;
+              ankle?: T;
             };
         unsure?: T;
       };

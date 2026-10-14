@@ -227,7 +227,9 @@ export interface Dataset {
 export type Equipment = "bar" | "rings" | "parallettes" | "dip-bars" | "band" | "box" | "weight" | "pole" | "floor" | "wall";
 /** kleines, festes Set an Bewegungsmustern – Grundlage für ausgeglichene Pläne */
 export type Pattern = "vertical-pull" | "horizontal-pull" | "vertical-push" | "horizontal-push" | "squat" | "hinge" | "core" | "isolation";
-export type Tendon = "wrist" | "elbow" | "shoulder" | "knee";
+export type Tendon = "wrist" | "elbow" | "shoulder" | "knee" | "hip" | "back" | "ankle";
+/** alle Gelenke/Bereiche mit Belastungsangabe – Reihenfolge von oben nach unten (Auswahl bei Verletzung) */
+export const TENDONS: Tendon[] = ["shoulder", "elbow", "wrist", "back", "hip", "knee", "ankle"];
 
 export interface ExerciseMeta {
   /** Alternativen – jede eine Liste nötiger Geräte; floor und wall gelten als immer vorhanden */

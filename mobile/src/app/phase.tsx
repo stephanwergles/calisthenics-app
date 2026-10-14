@@ -7,7 +7,7 @@ import * as L from '@lever/core/logic.ts'
 import { t as tr, type Key } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
 import { useApp } from '@/state/app'
-import { Button, Choices, Segmented } from '@/ui'
+import { Button, ChipChoices, Segmented } from '@/ui'
 import { Section } from '@/screens/plan/parts'
 import { FormSheet } from '@/screens/training/parts'
 
@@ -55,7 +55,7 @@ export default function PhaseScreen() {
         options={DURATIONS.map(d => ({ id: d.id, title: tr(d.key) }))} />
       {choices.length > 0 && <>
         <Section title={kind === 'injury' ? tr('plan.phase.affected') : tr('plan.phase.available')} />
-        <Choices items={choices} onToggle={onToggle} />
+        <ChipChoices items={choices} onToggle={onToggle} />
       </>}
     </FormSheet>
   )

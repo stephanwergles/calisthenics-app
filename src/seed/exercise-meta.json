@@ -38,7 +38,8 @@
    "stress": {
     "wrist": 1,
     "elbow": 2,
-    "shoulder": 2
+    "shoulder": 2,
+    "back": 1
    }
   },
   "straight-bar-dip": {
@@ -247,7 +248,8 @@
    "pattern": "core",
    "difficulty": 3,
    "stress": {
-    "wrist": 2
+    "wrist": 2,
+    "hip": 1
    },
    "unsure": "Handgelenk-Belastung am Boden hoch, auf Parallettes geringer"
   },
@@ -260,7 +262,8 @@
    "pattern": "core",
    "difficulty": 3,
    "stress": {
-    "wrist": 1
+    "wrist": 1,
+    "hip": 1
    }
   },
   "v-sit-prep": {
@@ -276,7 +279,8 @@
    "difficulty": 4,
    "stress": {
     "wrist": 1,
-    "shoulder": 1
+    "shoulder": 1,
+    "hip": 2
    }
   },
   "pseudo-planche-push-up": {
@@ -495,7 +499,8 @@
    "difficulty": 5,
    "stress": {
     "wrist": 2,
-    "shoulder": 1
+    "shoulder": 1,
+    "back": 1
    }
   },
   "pistol-squat-assisted": {
@@ -516,7 +521,9 @@
    "pattern": "squat",
    "difficulty": 2,
    "stress": {
-    "knee": 1
+    "knee": 1,
+    "hip": 1,
+    "ankle": 1
    }
   },
   "pistol-squat": {
@@ -528,7 +535,9 @@
    "pattern": "squat",
    "difficulty": 3,
    "stress": {
-    "knee": 2
+    "knee": 2,
+    "hip": 2,
+    "ankle": 2
    }
   },
   "pistol-squat-weighted": {
@@ -540,7 +549,10 @@
    "pattern": "squat",
    "difficulty": 4,
    "stress": {
-    "knee": 2
+    "knee": 2,
+    "hip": 2,
+    "back": 1,
+    "ankle": 2
    }
   },
   "bulgarian-split-squat": {
@@ -552,7 +564,9 @@
    "pattern": "squat",
    "difficulty": 2,
    "stress": {
-    "knee": 1
+    "knee": 1,
+    "hip": 1,
+    "ankle": 1
    },
    "unsure": "braucht Bank/Stuhl (box)"
   },
@@ -565,7 +579,10 @@
    "pattern": "hinge",
    "difficulty": 3,
    "stress": {
-    "knee": 2
+    "knee": 2,
+    "hip": 1,
+    "back": 1,
+    "ankle": 1
    },
    "unsure": "braucht Fußverankerung (Sprossenwand, Partner, Sofa) – als floor gezählt"
   },
@@ -578,7 +595,10 @@
    "pattern": "hinge",
    "difficulty": 4,
    "stress": {
-    "knee": 2
+    "knee": 2,
+    "hip": 1,
+    "back": 1,
+    "ankle": 1
    },
    "unsure": "Band als Hilfe – Verankerung wie oben"
   },
@@ -590,7 +610,9 @@
    ],
    "pattern": "isolation",
    "difficulty": 1,
-   "stress": {}
+   "stress": {
+    "ankle": 2
+   }
   },
   "hanging-leg-raise": {
    "equipment": [
@@ -604,7 +626,8 @@
    "pattern": "core",
    "difficulty": 2,
    "stress": {
-    "shoulder": 1
+    "shoulder": 1,
+    "hip": 1
    }
   },
   "toes-to-bar": {
@@ -616,7 +639,9 @@
    "pattern": "core",
    "difficulty": 3,
    "stress": {
-    "shoulder": 1
+    "shoulder": 1,
+    "hip": 2,
+    "back": 1
    }
   },
   "hollow-hold": {
@@ -713,7 +738,8 @@
    "difficulty": 4,
    "stress": {
     "shoulder": 2,
-    "elbow": 1
+    "elbow": 1,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -730,7 +756,9 @@
    "difficulty": 5,
    "stress": {
     "shoulder": 2,
-    "elbow": 2
+    "elbow": 2,
+    "hip": 1,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -747,7 +775,8 @@
    "difficulty": 5,
    "stress": {
     "shoulder": 2,
-    "elbow": 2
+    "elbow": 2,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -764,7 +793,8 @@
    "difficulty": 2,
    "stress": {
     "shoulder": 2,
-    "elbow": 1
+    "elbow": 1,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -781,7 +811,8 @@
    "difficulty": 3,
    "stress": {
     "shoulder": 2,
-    "elbow": 1
+    "elbow": 1,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -798,7 +829,8 @@
    "difficulty": 3,
    "stress": {
     "shoulder": 2,
-    "elbow": 2
+    "elbow": 2,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -815,7 +847,8 @@
    "difficulty": 4,
    "stress": {
     "shoulder": 2,
-    "elbow": 2
+    "elbow": 2,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -832,7 +865,9 @@
    "difficulty": 4,
    "stress": {
     "shoulder": 2,
-    "elbow": 2
+    "elbow": 2,
+    "hip": 1,
+    "back": 2
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -849,7 +884,8 @@
    "difficulty": 5,
    "stress": {
     "shoulder": 2,
-    "elbow": 2
+    "elbow": 2,
+    "back": 2
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -862,7 +898,8 @@
    "pattern": "core",
    "difficulty": 3,
    "stress": {
-    "shoulder": 1
+    "shoulder": 1,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -875,7 +912,8 @@
    "pattern": "core",
    "difficulty": 4,
    "stress": {
-    "shoulder": 1
+    "shoulder": 1,
+    "back": 2
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -888,7 +926,8 @@
    "pattern": "core",
    "difficulty": 5,
    "stress": {
-    "shoulder": 1
+    "shoulder": 1,
+    "back": 2
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -992,7 +1031,9 @@
    "pattern": "squat",
    "difficulty": 3,
    "stress": {
-    "knee": 2
+    "knee": 2,
+    "hip": 1,
+    "ankle": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1005,7 +1046,9 @@
    "pattern": "squat",
    "difficulty": 4,
    "stress": {
-    "knee": 2
+    "knee": 2,
+    "hip": 1,
+    "ankle": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1018,7 +1061,9 @@
    "pattern": "squat",
    "difficulty": 5,
    "stress": {
-    "knee": 2
+    "knee": 2,
+    "hip": 1,
+    "ankle": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1032,7 +1077,8 @@
    "difficulty": 3,
    "stress": {
     "shoulder": 2,
-    "wrist": 1
+    "wrist": 1,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1047,7 +1093,8 @@
    "stress": {
     "shoulder": 2,
     "wrist": 1,
-    "elbow": 1
+    "elbow": 1,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1062,7 +1109,9 @@
    "stress": {
     "shoulder": 2,
     "wrist": 1,
-    "elbow": 1
+    "elbow": 1,
+    "hip": 1,
+    "back": 2
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1077,7 +1126,8 @@
    "stress": {
     "shoulder": 2,
     "wrist": 1,
-    "elbow": 2
+    "elbow": 2,
+    "back": 2
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1113,7 +1163,9 @@
    "stress": {
     "wrist": 2,
     "elbow": 2,
-    "shoulder": 2
+    "shoulder": 2,
+    "hip": 1,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1131,7 +1183,8 @@
    "stress": {
     "wrist": 2,
     "elbow": 2,
-    "shoulder": 2
+    "shoulder": 2,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1212,7 +1265,8 @@
    "stress": {
     "wrist": 2,
     "elbow": 2,
-    "shoulder": 2
+    "shoulder": 2,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1227,7 +1281,8 @@
    "stress": {
     "wrist": 2,
     "elbow": 2,
-    "shoulder": 2
+    "shoulder": 2,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1241,7 +1296,8 @@
    "difficulty": 4,
    "stress": {
     "wrist": 1,
-    "shoulder": 1
+    "shoulder": 1,
+    "hip": 2
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1255,7 +1311,8 @@
    "difficulty": 4,
    "stress": {
     "wrist": 2,
-    "shoulder": 1
+    "shoulder": 1,
+    "hip": 2
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1272,7 +1329,8 @@
    "difficulty": 5,
    "stress": {
     "wrist": 2,
-    "shoulder": 2
+    "shoulder": 2,
+    "hip": 2
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1330,7 +1388,8 @@
    "stress": {
     "wrist": 2,
     "elbow": 2,
-    "shoulder": 2
+    "shoulder": 2,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1342,7 +1401,9 @@
    ],
    "pattern": "core",
    "difficulty": 2,
-   "stress": {},
+   "stress": {
+    "hip": 2
+   },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
   "elevated-pike-press": {
@@ -1355,7 +1416,8 @@
    "difficulty": 3,
    "stress": {
     "wrist": 2,
-    "shoulder": 2
+    "shoulder": 2,
+    "hip": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1369,7 +1431,8 @@
    "difficulty": 4,
    "stress": {
     "wrist": 2,
-    "shoulder": 2
+    "shoulder": 2,
+    "hip": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   },
@@ -1383,7 +1446,9 @@
    "difficulty": 5,
    "stress": {
     "wrist": 2,
-    "shoulder": 2
+    "shoulder": 2,
+    "hip": 2,
+    "back": 1
    },
    "unsure": "Neu – Coach-Prüfung ausstehend"
   }

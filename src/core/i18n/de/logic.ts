@@ -7,7 +7,7 @@ export const logic = {
   block: { skill: 'Skill', strength: 'Kraft', core: 'Core', accessory: 'Zubehör', extra: 'Extra' },
   equipment: { bar: 'Stange', rings: 'Ringe', parallettes: 'Parallettes', 'dip-bars': 'Barren', band: 'Band', box: 'Box', weight: 'Zusatzgewicht', pole: 'Senkrechte Stange' },
   phase: { pause: 'Pause / krank', vacation: 'Urlaub', injury: 'Verletzung', equipment: 'Equipment fehlt' },
-  tendon: { shoulder: 'Schulter', elbow: 'Ellenbogen', wrist: 'Handgelenk', knee: 'Knie' },
+  tendon: { shoulder: 'Schulter', elbow: 'Ellenbogen', wrist: 'Handgelenk', back: 'Unterer Rücken', hip: 'Hüfte', knee: 'Knie', ankle: 'Sprunggelenk' },
   level: { beginner: 'Einsteiger', intermediate: 'Fortgeschritten', advanced: 'Erfahren' },
   activity: { run: 'Lauf', ride: 'Rad', workout: 'Workout' },
   customWorkout: 'Eigenes Workout',

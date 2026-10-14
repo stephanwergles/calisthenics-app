@@ -6,7 +6,7 @@ import type {
 } from '../domain/model.ts'
 import { assignThemes, restDays, usable } from '../domain/generator.ts'
 import { suggestSkills, suggestSplits, type SkillSuggestion } from '../domain/assessment.ts'
-import { MAX_GOALS, NOTE_MAX, REGIONS } from '../domain/model.ts'
+import { MAX_GOALS, NOTE_MAX, REGIONS, TENDONS } from '../domain/model.ts'
 import { intl, t, tn, type Key } from './i18n/index.ts'
 
 export { NOTE_MAX }
@@ -850,7 +850,7 @@ export function planDiff(ix: Index, user: UserState, next: Plan): DayDiff[] {
 /* ── Phasen: Pause/krank, Urlaub, Verletzung, Equipment ──────────────────── */
 
 export const PHASE_LABEL: Record<PhaseKind, string> = labels(['pause', 'vacation', 'injury', 'equipment'] as const, k => `logic.phase.${k}`)
-export const TENDON_LABEL: Record<Tendon, string> = labels(['shoulder', 'elbow', 'wrist', 'knee'] as const, k => `logic.tendon.${k}`)
+export const TENDON_LABEL: Record<Tendon, string> = labels(TENDONS, k => `logic.tendon.${k}`)
 /** ab dieser Sehnenbelastung (0–3) ruht eine Übung bei Verletzung – jede Belastung des Gelenks */
 const INJURY_STRESS = 1
 

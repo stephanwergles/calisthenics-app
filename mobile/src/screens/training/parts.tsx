@@ -20,7 +20,8 @@ export function FormSheet({ title, sub, children, footer }: {
   const insets = useSafeAreaInsets()
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: 28, paddingBottom: 16, gap: space.md }}>
+      {/* flex: 1 – sonst wächst die Liste unter die Fußzeile (z. B. sieben Gelenke im Verletzungs-Sheet) */}
+      <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: 28, paddingBottom: 16, gap: space.md }}>
         <View style={{ gap: 4, marginBottom: space.xs }}>
           <Text variant="display" accessibilityRole="header">{title}</Text>
           {sub ? <Text variant="muted">{sub}</Text> : null}

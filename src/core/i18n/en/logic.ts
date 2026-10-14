@@ -10,7 +10,7 @@ export const logic: Shape<typeof de> = {
   block: { skill: 'Skill', strength: 'Strength', core: 'Core', accessory: 'Accessory', extra: 'Extra' },
   equipment: { bar: 'Bar', rings: 'Rings', parallettes: 'Parallettes', 'dip-bars': 'Dip bars', band: 'Band', box: 'Box', weight: 'Weights', pole: 'Vertical pole' },
   phase: { pause: 'Break / sick', vacation: 'Vacation', injury: 'Injury', equipment: 'Missing equipment' },
-  tendon: { shoulder: 'Shoulder', elbow: 'Elbow', wrist: 'Wrist', knee: 'Knee' },
+  tendon: { shoulder: 'Shoulder', elbow: 'Elbow', wrist: 'Wrist', back: 'Lower back', hip: 'Hip', knee: 'Knee', ankle: 'Ankle' },
   level: { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' },
   activity: { run: 'Run', ride: 'Ride', workout: 'Workout' },
   customWorkout: 'Custom workout',
