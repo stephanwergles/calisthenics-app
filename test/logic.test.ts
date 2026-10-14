@@ -477,6 +477,9 @@ test('Katalog-Ausbau: neue Stufen, Verweise per Übung, bestehende Nutzer behalt
   const steps = (pid: string) => ix.progressions.get(pid)!.steps.map(s => s.exercise)
   assert.deepEqual(steps('l-sit').slice(0, 3), ['tuck-l-sit', 'one-leg-l-sit', 'l-sit-floor'])
   assert.deepEqual(steps('ring-dip'), ['ring-support-hold', 'rto-support-hold', 'ring-dip', 'rto-dip'])
+  assert.deepEqual(steps('row').slice(-2), ['tuck-front-lever-raise', 'ice-cream-maker'], 'angehängt')
+  assert.equal(steps('planche-advanced')[0], 'tuck-planche-push-up')
+  for (const pid of ['wrists', 'shoulder-prehab', 'hip-hinge', 'rollout', 'anti-rotation']) assert.ok(ix.progressions.has(pid), pid)
   // minStep zeigt weiter auf dieselbe Übung wie vor dem Einfügen
   const pre = (sid: string, pid: string) => skills.find((s: { id: string }) => s.id === sid).prerequisites.find((p: { progression: string }) => p.progression === pid).minStep
   assert.equal(steps('handstand')[pre('freestanding-hspu', 'handstand')], 'handstand-free')
@@ -489,6 +492,8 @@ test('Katalog-Ausbau: neue Stufen, Verweise per Übung, bestehende Nutzer behalt
   assert.equal(pinned.current['l-sit'], 'tuck-l-sit', 'eigene Wahl bleibt')
   assert.equal(pinned.current.handstand, 'handstand-wall')
   assert.equal(L.currentStep(ix, pinned, 'muscle-up-transition').exercise.id, 'muscle-up-band')
+  assert.equal(L.currentStep(ix, pinned, 'planche-advanced').exercise.id, 'adv-tuck-planche')
+  assert.equal(L.currentStep(ix, pinned, 'scapula').exercise.id, 'scapula-shrug')
   assert.equal(L.needsStepPins(pinned), false)
   for (const p of ix.progressions.values()) for (const s of p.steps) assert.ok(ix.exercises.has(s.exercise), s.exercise)
 })

@@ -2773,6 +2773,415 @@
         "Trizeps",
         "Brust"
       ]
+    },
+    {
+      "id": "tuck-planche-push-up",
+      "name": "Tuck-Planche-Liegestütz",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Tuck Planche auf Parallettes oder Boden, Knie eng an der Brust, Arme gestreckt.",
+        "execution": "Aus dem Tuck Planche kontrolliert die Arme beugen, bis die Brust tief ist, und wieder in den gestreckten Tuck drücken. Schultern bleiben vor den Händen, die Hüfte auf Höhe.",
+        "faults": "Hüfte sinkt ab · Schultern wandern zurück · Füße setzen auf",
+        "scaling": "Leichter: Füße leicht am Boden (Pseudo-Planche-Liegestütz). Schwerer: Advanced Tuck, langsame Exzentrik."
+      },
+      "media": {
+        "videoQuery": "tuck planche push up"
+      },
+      "cues": [
+        "Schultern vor die Hände",
+        "Hüfte auf Schulterhöhe",
+        "Kontrolliert tief, explosiv hoch"
+      ],
+      "muscles": [
+        "vordere Schulter",
+        "Brust",
+        "Trizeps"
+      ]
+    },
+    {
+      "id": "tuck-front-lever-raise",
+      "name": "Tuck Front Lever Raises",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Umkehrhang (Inverted Hang) an der Stange, Knie eng zur Brust.",
+        "execution": "Mit gestreckten Armen aus dem Umkehrhang langsam bis in den Tuck Front Lever absenken, kurz halten und wieder hochziehen. Die Bewegung kommt aus den Schultern, nicht aus dem Bizeps.",
+        "faults": "Arme beugen · Rücken rund ohne Spannung · zu schnell absenken",
+        "scaling": "Leichter: nur halber Weg. Schwerer: Advanced Tuck oder einbeinig."
+      },
+      "media": {
+        "videoQuery": "tuck front lever raises"
+      },
+      "cues": [
+        "Arme bleiben gestreckt",
+        "Stange nach unten drücken",
+        "Langsam absenken"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Rumpf",
+        "hintere Schulter"
+      ]
+    },
+    {
+      "id": "ice-cream-maker",
+      "name": "Ice Cream Makers",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Hang an der Stange, Körper gestreckt, Griff schulterbreit.",
+        "execution": "Klimmzug bis zur Brust, dann mit gestreckten Armen den Körper waagerecht nach vorn in den (Tuck) Front Lever kippen und zurück in den Klimmzug. Wieder ablassen.",
+        "faults": "Hüfte knickt · Arme beim Kippen gebeugt · Schwung statt Kraft",
+        "scaling": "Leichter: Knie angezogen. Schwerer: Beine gestreckt, langsamer."
+      },
+      "media": {
+        "videoQuery": "ice cream maker front lever"
+      },
+      "cues": [
+        "Oben Ellenbogen gestreckt kippen",
+        "Körper fest wie ein Brett",
+        "Kontrolliert zurück"
+      ],
+      "muscles": [
+        "Latissimus",
+        "Rumpf",
+        "Bizeps"
+      ]
+    },
+    {
+      "id": "scapula-push-up",
+      "name": "Scapula-Liegestütz",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "In der Liegestützposition, Arme gestreckt.",
+        "execution": "Nur die Schulterblätter bewegen: zwischen den Schultern einsinken lassen, dann den oberen Rücken rund nach oben drücken. Arme bleiben gestreckt.",
+        "faults": "Arme beugen · Hohlkreuz · zu schnell",
+        "scaling": "Leichter: auf den Knien. Schwerer: Füße erhöht, oben 2 s halten."
+      },
+      "media": {
+        "videoQuery": "scapula push up serratus"
+      },
+      "cues": [
+        "Arme gestreckt lassen",
+        "Oben Rücken rund drücken",
+        "Unten Schulterblätter zusammen"
+      ],
+      "muscles": [
+        "Serratus",
+        "Schulterblatt-Muskulatur"
+      ]
+    },
+    {
+      "id": "wrist-prep",
+      "name": "Handgelenk-Vorbereitung",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Vierfüßlerstand, Hände schulterbreit, Finger zuerst nach vorn.",
+        "execution": "Handgelenke in alle Richtungen vorsichtig belasten: vor- und zurückwiegen, Finger nach außen und hinten drehen, Handrücken auf den Boden. Langsam und ohne Schmerz, Wiederholungen je Richtung.",
+        "faults": "Zu viel Gewicht zu früh · ruckartig · Schmerz ignorieren",
+        "scaling": "Leichter: weniger Gewicht auf den Händen. Schwerer: Handgelenk-Liegestütz."
+      },
+      "media": {
+        "videoQuery": "wrist prep calisthenics"
+      },
+      "cues": [
+        "Langsam und schmerzfrei",
+        "Alle Fingerrichtungen",
+        "Gewicht schrittweise verlagern"
+      ],
+      "muscles": [
+        "Handgelenke",
+        "Unterarme"
+      ]
+    },
+    {
+      "id": "wrist-push-up",
+      "name": "Handgelenk-Liegestütz",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Auf den Knien, Handrücken auf dem Boden, Finger zeigen zu den Knien.",
+        "execution": "Mit dem Gewicht auf den Handrücken leicht vor und zurück schieben bzw. kleine Liegestütze ausführen. Stärkt die Strecker – Vorbereitung für Handstand und Planche.",
+        "faults": "Zu viel Last · Schmerz · Ellenbogen weit nach außen",
+        "scaling": "Leichter: weniger Gewicht nach vorn. Schwerer: aus der Liegestützposition."
+      },
+      "media": {
+        "videoQuery": "wrist push ups back of hand"
+      },
+      "cues": [
+        "Gewicht dosieren",
+        "Langsam bewegen",
+        "Bei Schmerz sofort stoppen"
+      ],
+      "muscles": [
+        "Handgelenk-Strecker",
+        "Unterarme"
+      ]
+    },
+    {
+      "id": "band-dislocate",
+      "name": "Schulter-Dislocates (Band)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Stehend, Band oder Stab weit vor dem Körper, Arme gestreckt.",
+        "execution": "Das Band mit gestreckten Armen über den Kopf nach hinten bis zur Hüfte führen und zurück. Griff so weit, dass es ohne Ausweichen geht; mit der Zeit enger greifen.",
+        "faults": "Arme beugen · Hohlkreuz · zu enger Griff",
+        "scaling": "Leichter: Griff weiter. Schwerer: Griff enger, langsamer."
+      },
+      "media": {
+        "videoQuery": "shoulder dislocates band"
+      },
+      "cues": [
+        "Arme gestreckt",
+        "Rippen unten halten",
+        "Griff nur so eng wie es geht"
+      ],
+      "muscles": [
+        "Schultern",
+        "Brust",
+        "oberer Rücken"
+      ]
+    },
+    {
+      "id": "band-external-rotation",
+      "name": "Außenrotation mit Band",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Seitlich zur Befestigung, Ellenbogen 90° gebeugt am Körper, Band in der äußeren Hand.",
+        "execution": "Den Unterarm nach außen drehen, Ellenbogen bleibt am Körper. Langsam zurück. Leichte Spannung, viele saubere Wiederholungen.",
+        "faults": "Ellenbogen löst sich vom Körper · Schwung · zu starkes Band",
+        "scaling": "Leichter: dünneres Band. Schwerer: im 90°-Armheben (Arm auf Schulterhöhe)."
+      },
+      "media": {
+        "videoQuery": "band external rotation rotator cuff"
+      },
+      "cues": [
+        "Ellenbogen am Körper",
+        "Langsam nach außen drehen",
+        "Schulter tief"
+      ],
+      "muscles": [
+        "Rotatorenmanschette",
+        "hintere Schulter"
+      ]
+    },
+    {
+      "id": "face-pull",
+      "name": "Face Pulls",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Band oder Ringe auf Kopfhöhe, Griff mit Daumen nach hinten, leicht zurückgelehnt.",
+        "execution": "Zum Gesicht ziehen, Ellenbogen hoch und weit, am Ende die Hände nach außen drehen. Kurz halten, kontrolliert zurück.",
+        "faults": "Ellenbogen zu tief · Schultern zu den Ohren · Schwung",
+        "scaling": "Leichter: aufrechter stehen bzw. dünneres Band. Schwerer: flacher lehnen, Pause am Ende."
+      },
+      "media": {
+        "videoQuery": "face pull band rings"
+      },
+      "cues": [
+        "Ellenbogen hoch",
+        "Am Ende nach außen drehen",
+        "Schulterblätter zusammen"
+      ],
+      "muscles": [
+        "hintere Schulter",
+        "Rotatorenmanschette",
+        "oberer Rücken"
+      ]
+    },
+    {
+      "id": "single-leg-glute-bridge",
+      "name": "Hüftheben einbeinig",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "In Rückenlage, ein Fuß aufgestellt, das andere Bein gestreckt in der Luft.",
+        "execution": "Über die Ferse die Hüfte hochdrücken, bis Knie, Hüfte und Schulter eine Linie bilden. Oben kurz halten, Becken bleibt gerade.",
+        "faults": "Becken kippt zur Seite · Hohlkreuz statt Gesäß · zu schnell",
+        "scaling": "Leichter: beidbeinig. Schwerer: Schultern erhöht, oben 3 s halten."
+      },
+      "media": {
+        "videoQuery": "single leg glute bridge"
+      },
+      "cues": [
+        "Über die Ferse drücken",
+        "Becken gerade halten",
+        "Oben Gesäß anspannen"
+      ],
+      "muscles": [
+        "Gesäß",
+        "Beinbeuger"
+      ]
+    },
+    {
+      "id": "single-leg-rdl",
+      "name": "Einbeiniges Kreuzheben (ohne Gewicht)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Auf einem Bein stehend, Knie leicht gebeugt.",
+        "execution": "Aus der Hüfte nach vorn kippen, das freie Bein gestreckt nach hinten, Rücken gerade, bis der Oberkörper fast waagerecht ist. Über das Gesäß wieder aufrichten.",
+        "faults": "Rücken rund · Hüfte dreht auf · Standknie durchgedrückt",
+        "scaling": "Leichter: Fingerspitzen an der Wand. Schwerer: langsamer, mit Gewicht in der Hand."
+      },
+      "media": {
+        "videoQuery": "single leg romanian deadlift bodyweight"
+      },
+      "cues": [
+        "Aus der Hüfte kippen",
+        "Rücken lang",
+        "Hüfte bleibt gerade"
+      ],
+      "muscles": [
+        "Beinbeuger",
+        "Gesäß",
+        "Rumpf"
+      ]
+    },
+    {
+      "id": "sliding-leg-curl",
+      "name": "Leg Curl mit Handtuch",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "In Rückenlage auf glattem Boden, Fersen auf einem Handtuch, Hüfte angehoben.",
+        "execution": "Hüfte oben halten und die Fersen zum Gesäß ziehen, dann langsam wieder strecken, ohne die Hüfte abzusetzen.",
+        "faults": "Hüfte sinkt · Ruckartig · zu weit strecken ohne Kontrolle",
+        "scaling": "Leichter: Hüfte am Boden, nur ziehen. Schwerer: einbeinig."
+      },
+      "media": {
+        "videoQuery": "sliding hamstring curl towel"
+      },
+      "cues": [
+        "Hüfte oben halten",
+        "Fersen zum Gesäß",
+        "Langsam strecken"
+      ],
+      "muscles": [
+        "Beinbeuger",
+        "Gesäß"
+      ]
+    },
+    {
+      "id": "kneeling-rollout",
+      "name": "Rollout kniend (Ringe/Handtuch)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Kniestand, Hände auf Ringen auf Hüfthöhe oder auf einem Handtuch am glatten Boden.",
+        "execution": "Den Körper nach vorn ausrollen, bis die Arme über dem Kopf sind, der Rücken bleibt flach (kein Hohlkreuz). Aus dem Bauch zurückziehen.",
+        "faults": "Hohlkreuz · Hüfte bleibt hinten · zu weit ohne Kontrolle",
+        "scaling": "Leichter: kürzerer Weg. Schwerer: Ringe tiefer, stehender Rollout."
+      },
+      "media": {
+        "videoQuery": "ring rollout kneeling"
+      },
+      "cues": [
+        "Rippen nach unten",
+        "Becken leicht einrollen",
+        "Nur so weit wie flach geht"
+      ],
+      "muscles": [
+        "Bauch",
+        "Latissimus",
+        "Schultern"
+      ]
+    },
+    {
+      "id": "ring-rollout",
+      "name": "Ring-Rollout (tief)",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Ringe knapp über dem Boden, im Kniestand oder aus dem Stand.",
+        "execution": "Wie der kniende Rollout, aber mit tieferen Ringen und längerem Hebel bis fast in die Streckung. Hollow-Position halten.",
+        "faults": "Hohlkreuz · Schultern sacken ein · Ringe weichen nach außen",
+        "scaling": "Leichter: Ringe höher. Schwerer: aus dem Stand."
+      },
+      "media": {
+        "videoQuery": "ring rollout ab"
+      },
+      "cues": [
+        "Hollow-Position halten",
+        "Arme gestreckt",
+        "Aus dem Bauch zurück"
+      ],
+      "muscles": [
+        "Bauch",
+        "Latissimus",
+        "Serratus"
+      ]
+    },
+    {
+      "id": "pallof-press",
+      "name": "Pallof Press",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Seitlich zur Bandbefestigung, Band mit beiden Händen vor der Brust.",
+        "execution": "Die Arme gerade nach vorn strecken, ohne dass der Oberkörper zur Befestigung dreht. Kurz halten, zurück. Rumpf hält gegen die Drehung.",
+        "faults": "Oberkörper dreht mit · Hüfte weicht aus · Schultern hoch",
+        "scaling": "Leichter: näher an die Befestigung. Schwerer: weiter weg, Halbkniestand."
+      },
+      "media": {
+        "videoQuery": "pallof press band"
+      },
+      "cues": [
+        "Rumpf gegen die Drehung",
+        "Hüfte bleibt gerade",
+        "Arme ganz strecken"
+      ],
+      "muscles": [
+        "seitlicher Bauch",
+        "Bauch",
+        "Gesäß"
+      ]
+    },
+    {
+      "id": "copenhagen-plank",
+      "name": "Copenhagen Plank",
+      "unit": "seconds",
+      "weighted": false,
+      "perSide": true,
+      "technique": {
+        "setup": "Seitstütz auf dem Unterarm, oberes Bein auf einer Bank oder Box, unteres Bein frei.",
+        "execution": "Die Hüfte anheben, bis der Körper eine Linie bildet; das obere Bein trägt über die Innenseite. Halten.",
+        "faults": "Hüfte sinkt · Körper dreht nach vorn · Schulter sackt ein",
+        "scaling": "Leichter: Knie statt Fuß auf der Bank. Schwerer: Fuß auf der Bank, unteres Bein angehoben."
+      },
+      "media": {
+        "videoQuery": "copenhagen plank adductors"
+      },
+      "cues": [
+        "Hüfte hoch",
+        "Körper als Linie",
+        "Innenseite oberes Bein arbeitet"
+      ],
+      "muscles": [
+        "Adduktoren",
+        "seitlicher Bauch"
+      ]
     }
   ],
   "progressions": [
@@ -2940,6 +3349,28 @@
             "restSec": 120,
             "unlockAt": 8
           }
+        },
+        {
+          "exercise": "tuck-front-lever-raise",
+          "target": {
+            "label": "4 × 4–8",
+            "sets": 4,
+            "restSec": 120,
+            "unlockAt": 8,
+            "min": 4,
+            "max": 8
+          }
+        },
+        {
+          "exercise": "ice-cream-maker",
+          "target": {
+            "label": "4 × 3–6",
+            "sets": 4,
+            "restSec": 150,
+            "unlockAt": 6,
+            "min": 3,
+            "max": 6
+          }
         }
       ]
     },
@@ -2988,6 +3419,17 @@
       "name": "Schulterblätter",
       "region": "pull",
       "steps": [
+        {
+          "exercise": "scapula-push-up",
+          "target": {
+            "label": "2 × 10–15",
+            "sets": 2,
+            "restSec": 45,
+            "unlockAt": 15,
+            "min": 10,
+            "max": 15
+          }
+        },
         {
           "exercise": "scapula-shrug",
           "target": {
@@ -3884,6 +4326,17 @@
       "region": "push",
       "steps": [
         {
+          "exercise": "tuck-planche-push-up",
+          "target": {
+            "label": "4 × 3–6",
+            "sets": 4,
+            "restSec": 150,
+            "unlockAt": 6,
+            "min": 3,
+            "max": 6
+          }
+        },
+        {
           "exercise": "adv-tuck-planche",
           "target": {
             "label": "4 × 6–10 s",
@@ -4187,6 +4640,173 @@
             "unlockAt": 8,
             "min": 4,
             "max": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "wrists",
+      "name": "Handgelenke stärken",
+      "region": "push",
+      "steps": [
+        {
+          "exercise": "wrist-prep",
+          "target": {
+            "label": "2 × 10 je Richtung",
+            "sets": 2,
+            "restSec": 30,
+            "unlockAt": 10,
+            "min": 8,
+            "max": 10
+          }
+        },
+        {
+          "exercise": "wrist-push-up",
+          "target": {
+            "label": "2 × 10–15",
+            "sets": 2,
+            "restSec": 45,
+            "unlockAt": 15,
+            "min": 10,
+            "max": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": "shoulder-prehab",
+      "name": "Schultern schützen",
+      "region": "pull",
+      "steps": [
+        {
+          "exercise": "band-dislocate",
+          "target": {
+            "label": "2 × 10–15",
+            "sets": 2,
+            "restSec": 45,
+            "unlockAt": 15,
+            "min": 10,
+            "max": 15
+          }
+        },
+        {
+          "exercise": "band-external-rotation",
+          "target": {
+            "label": "3 × 12–15",
+            "sets": 3,
+            "restSec": 45,
+            "unlockAt": 15,
+            "min": 12,
+            "max": 15
+          }
+        },
+        {
+          "exercise": "face-pull",
+          "target": {
+            "label": "3 × 12–15",
+            "sets": 3,
+            "restSec": 60,
+            "unlockAt": 15,
+            "min": 12,
+            "max": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": "hip-hinge",
+      "name": "Hüftstreckung",
+      "region": "legs",
+      "steps": [
+        {
+          "exercise": "single-leg-glute-bridge",
+          "target": {
+            "label": "3 × 10–15",
+            "sets": 3,
+            "restSec": 60,
+            "unlockAt": 15,
+            "min": 10,
+            "max": 15
+          }
+        },
+        {
+          "exercise": "single-leg-rdl",
+          "target": {
+            "label": "3 × 8–12",
+            "sets": 3,
+            "restSec": 60,
+            "unlockAt": 12,
+            "min": 8,
+            "max": 12
+          }
+        },
+        {
+          "exercise": "sliding-leg-curl",
+          "target": {
+            "label": "3 × 8–12",
+            "sets": 3,
+            "restSec": 90,
+            "unlockAt": 12,
+            "min": 8,
+            "max": 12
+          }
+        }
+      ]
+    },
+    {
+      "id": "rollout",
+      "name": "Rollout",
+      "region": "core",
+      "steps": [
+        {
+          "exercise": "kneeling-rollout",
+          "target": {
+            "label": "3 × 6–10",
+            "sets": 3,
+            "restSec": 90,
+            "unlockAt": 10,
+            "min": 6,
+            "max": 10
+          }
+        },
+        {
+          "exercise": "ring-rollout",
+          "target": {
+            "label": "3 × 5–8",
+            "sets": 3,
+            "restSec": 90,
+            "unlockAt": 8,
+            "min": 5,
+            "max": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "anti-rotation",
+      "name": "Anti-Rotation",
+      "region": "core",
+      "steps": [
+        {
+          "exercise": "pallof-press",
+          "target": {
+            "label": "3 × 10–12",
+            "sets": 3,
+            "restSec": 45,
+            "unlockAt": 12,
+            "min": 10,
+            "max": 12
+          }
+        },
+        {
+          "exercise": "copenhagen-plank",
+          "target": {
+            "label": "3 × 15–30 s",
+            "sets": 3,
+            "restSec": 60,
+            "unlockAt": 30,
+            "min": 15,
+            "max": 30
           }
         }
       ]

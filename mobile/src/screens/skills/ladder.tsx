@@ -9,6 +9,7 @@ import { useMemo, useRef, useState } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
 import { platform } from '@lever/core/platform.ts'
 import * as L from '@lever/core/logic.ts'
+import { catalogData } from '@lever/core/data.ts'
 import { getLocale, t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
 import { Button, Card, color, ExerciseMedia, ExerciseStill, font, hasStill, Icon, SectionTitle, SheetScreen, Text } from '@/ui'
@@ -32,7 +33,13 @@ export function Ladder({ pid, focus }: { pid: string; focus?: string }) {
 
   const region = p.region ? L.regionLabel(p.region) : p.workout?.name ?? ''
   const stage = tr('logic.stage', { i: p.step.index + 1, n: p.step.total })
-  const sub = `${[region, L.BLOCK_LABEL[p.block], stage].filter(Boolean).join(' · ')}${p.paused ? tr('skills.paused') : ''}`
+  // nicht im Plan: Einordnung aus dem Katalog statt pauschal „Skill“ (Prehab ist Zubehör, nicht Skill)
+  const data = catalogData(t.ix.catalog)
+  const pattern = data.meta[p.step.exercise.id]?.pattern
+  const block = p.workout ? p.block
+    : data.skills.some(sk => sk.targets.includes(p.pid)) ? 'skill'
+    : pattern === 'isolation' ? 'accessory' : pattern === 'core' ? 'core' : 'strength'
+  const sub = `${[region, L.BLOCK_LABEL[block as keyof typeof L.BLOCK_LABEL], stage].filter(Boolean).join(' · ')}${p.paused ? tr('skills.paused') : ''}`
   const standing = L.stepStanding(t.sessions, p.step.exercise, p.step.target, p.step.nextTarget)
   const act = (a: 'unlock' | 'force' | 'back') => void switchStep(t, p, a)
   const ex = p.step.exercise

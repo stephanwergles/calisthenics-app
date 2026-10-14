@@ -91,10 +91,15 @@ for (const [pid, m] of Object.entries(THRESHOLD_MOVES)) {
     await payload.update({ collection: 'progressions', id: pid, data: { assessment: { test: p.assessment.test, thresholds: m.to } } as never, depth: 0 }); fixed++
   }
 }
-// neue Leiter als Unterstützung des Ring-Muscle-ups
-const rmu = (await payload.find({ collection: 'skills', where: { id: { equals: 'ring-muscle-up' } }, limit: 1, depth: 0 })).docs[0] as { support?: unknown[] } | undefined
-if (rmu && !(rmu.support ?? []).map(idOf).includes('ring-dip')) {
-  await payload.update({ collection: 'skills', id: 'ring-muscle-up', data: { support: [...(rmu.support ?? []).map(idOf), 'ring-dip'] } as never, depth: 0 }); fixed++
+// neue Leitern als Unterstützung bestehender Skills (nur ergänzen, nie entfernen)
+const SUPPORT_ADDS: [string, string][] = [
+  ['ring-muscle-up', 'ring-dip'], ['planche', 'wrists'], ['handstand', 'wrists'], ['nordic-curl', 'hip-hinge'], ['dragon-flag', 'rollout'],
+]
+for (const [sid, pid] of SUPPORT_ADDS) {
+  const doc = (await payload.find({ collection: 'skills', where: { id: { equals: sid } }, limit: 1, depth: 0 })).docs[0] as { support?: unknown[] } | undefined
+  if (doc && !(doc.support ?? []).map(idOf).includes(pid)) {
+    await payload.update({ collection: 'skills', id: sid, data: { support: [...(doc.support ?? []).map(idOf), pid] } as never, depth: 0 }); fixed++
+  }
 }
 if (fixed) console.log(`Katalog-Ausbau: ${fixed} Verweise auf neue Stufen umgestellt`)
 

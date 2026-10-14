@@ -202,7 +202,7 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 
 - [x] **Workouts auf Heute:** Leiste „Workouts“ – jedes Workout mit einem Tipp starten, auch außerhalb des Plan-Tags; am Ende „Vorlagen“ (14.10.2026)
 - [ ] Workouts, Ausbau: freies Workout aus Region/Muster zusammenstellen (Generator für die verfügbare Zeit), Erholungsregeln bei spontanem Training beachten
-- [ ] **Katalog-Ausbau** (Lückenanalyse 14.10.2026; je neue Stufe 3D-Clip und Coaching-Kernpunkte). Platz 1–5 erledigt (14.10.: Ring-Dip-Leiter, Tuck/einbeiniger L-Sit, Wall Walks + Shoulder Taps + Kick-ups, Wand-HSPU negativ, Muscle-up mit Absprung – 11 Übungen, Clips offen). Reihenfolge:
+- [ ] **Katalog-Ausbau** (Lückenanalyse 14.10.2026; je neue Stufe 3D-Clip und Coaching-Kernpunkte). Platz 1–10 erledigt (14.10.: Ring-Dip-Leiter, Tuck/einbeiniger L-Sit, Wall Walks + Shoulder Taps + Kick-ups, Wand-HSPU negativ, Muscle-up mit Absprung; Tuck-Planche-Liegestütz, Front Lever Raises + Ice Cream Makers, Prehab-Leitern Handgelenke/Schultern + Scapula-Liegestütz, Hüftstreckung ohne Geräte, Rollout und Anti-Rotation – 27 Übungen, Clips offen). Reihenfolge:
   1. Ringstütz → RTO-Stütz → Ring-Dip → RTO-Dip als Leiter (Basis Ring-Muscle-up, später Cross/Maltese)
   2. Tuck- und einbeiniger L-Sit (Einstieg L-Sit)
   3. Bauch zur Wand + Wall Shoulder Taps + Wall Walks (Lücke Heel Pull → freier Handstand)

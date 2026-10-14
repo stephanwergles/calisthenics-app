@@ -955,7 +955,8 @@ export function musclesOf(exercise: ExerciseId, meta: ExerciseMeta): MuscleArea[
       if (has('curl', 'triceps')) out.add('arms')
       if (has('fly')) out.add('chest')
       if (has('calf')) out.add('calf')
-      if (has('hang', 'skin-the-cat', 'scapula')) out.add('upperBack')
+      if (has('hang', 'skin-the-cat', 'scapula', 'dislocate', 'external-rotation', 'face-pull')) out.add('upperBack')
+      if (has('wrist')) out.add('arms')
       break
   }
   return [...out]
@@ -1029,6 +1030,7 @@ export function withSkillReached(ix: Index, user: UserState, skill: Skill): User
     trainiert und dort keine Stufe gewählt hat, stand bisher auf der alten ersten Stufe – dabei bleibt es */
 export const STEP_PINS: Record<ProgressionId, ExerciseId> = {
   'l-sit': 'l-sit-floor', handstand: 'handstand-wall', 'muscle-up-transition': 'muscle-up-band',
+  'planche-advanced': 'adv-tuck-planche', scapula: 'scapula-shrug',
 }
 export const needsStepPins = (user: UserState) => Object.keys(STEP_PINS).some(pid => !user.current[pid])
 export function withStepPins(user: UserState): UserState {

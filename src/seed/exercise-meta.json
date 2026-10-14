@@ -1606,6 +1606,212 @@
     "elbow": 1,
     "shoulder": 1
    }
+  },
+  "tuck-planche-push-up": {
+   "equipment": [
+    [
+     "parallettes"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 2,
+    "elbow": 2,
+    "shoulder": 2
+   }
+  },
+  "tuck-front-lever-raise": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 1,
+    "back": 1
+   }
+  },
+  "ice-cream-maker": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 1,
+    "back": 1
+   }
+  },
+  "scapula-push-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {
+    "wrist": 1
+   }
+  },
+  "wrist-prep": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "wrist-push-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {
+    "wrist": 1
+   }
+  },
+  "band-dislocate": {
+   "equipment": [
+    [
+     "band"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "band-external-rotation": {
+   "equipment": [
+    [
+     "band"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "face-pull": {
+   "equipment": [
+    [
+     "band"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "single-leg-glute-bridge": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "hinge",
+   "difficulty": 1,
+   "stress": {
+    "hip": 1
+   }
+  },
+  "single-leg-rdl": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "hinge",
+   "difficulty": 2,
+   "stress": {
+    "hip": 1,
+    "back": 1,
+    "ankle": 1
+   }
+  },
+  "sliding-leg-curl": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "hinge",
+   "difficulty": 3,
+   "stress": {
+    "knee": 1,
+    "hip": 1
+   }
+  },
+  "kneeling-rollout": {
+   "equipment": [
+    [
+     "rings"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 2,
+   "stress": {
+    "shoulder": 1,
+    "back": 1
+   }
+  },
+  "ring-rollout": {
+   "equipment": [
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 2,
+    "back": 1
+   }
+  },
+  "pallof-press": {
+   "equipment": [
+    [
+     "band"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "copenhagen-plank": {
+   "equipment": [
+    [
+     "box"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 3,
+   "stress": {
+    "hip": 2,
+    "shoulder": 1
+   }
   }
  }
 }

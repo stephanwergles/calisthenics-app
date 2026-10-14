@@ -29,7 +29,8 @@
     "handstand"
    ],
    "support": [
-    "vertical-push"
+    "vertical-push",
+    "wrists"
    ],
    "prerequisites": [
     {
@@ -72,7 +73,8 @@
     "planche"
    ],
    "support": [
-    "horizontal-push"
+    "horizontal-push",
+    "wrists"
    ],
    "prerequisites": [
     {
@@ -159,7 +161,8 @@
     "nordic"
    ],
    "support": [
-    "split-squat"
+    "split-squat",
+    "hip-hinge"
    ],
    "prerequisites": []
   },
@@ -198,7 +201,8 @@
     "dragon-flag"
    ],
    "support": [
-    "leg-raise"
+    "leg-raise",
+    "rollout"
    ],
    "prerequisites": [
     {
