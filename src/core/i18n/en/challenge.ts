@@ -19,6 +19,7 @@ export const challenge: Shape<typeof de> = {
   countAria: '{n} reps. Tap to add one.',
   tapToCount: 'Tap to count',
   tapHint: 'Tap the area = +1 · number below = whole set',
+  tapHintMax: 'Tap the area = +1 · number below = count faster',
   addSet: 'Add a set of {n}',
   sets: 'Sets: {list}',
   undo: 'Undo one',

@@ -16,6 +16,7 @@ export const challenge = {
   countAria: '{n} Wiederholungen. Tippen zählt eine dazu.',
   tapToCount: 'Tippen zählt',
   tapHint: 'Fläche antippen = +1 · Zahl unten = ganzer Satz',
+  tapHintMax: 'Fläche antippen = +1 · Zahl unten = schneller zählen',
   addSet: 'Satz mit {n} eintragen',
   sets: 'Sätze: {list}',
   undo: 'Eine zurück',

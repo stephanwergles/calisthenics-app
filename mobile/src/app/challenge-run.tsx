@@ -86,6 +86,8 @@ function Run({ c }: { c: Challenge }) {
   /** ganzen Satz mit n Wiederholungen eintragen */
   const addSet = (n: number) => {
     if (phase !== 'run') return
+    // am Stück: ein einziger Satz – die Buttons zählen nur schneller hoch
+    if (c.kind === 'max') { signals().haptic('success'); setCount(count + n); return }
     const open = count - partsSum
     const next = count + n
     const done = [...parts, ...(open > 0 ? [open] : []), n]
@@ -131,13 +133,13 @@ function Run({ c }: { c: Challenge }) {
           ? <CountdownRing size={280} stroke={12} end={runEnd} totalMs={(c.seconds ?? 60) * 1000}><BigNumber text={big} /></CountdownRing>
           : <BigNumber text={big} accent={phase === 'prep'} />}
         <Text variant="muted" style={{ fontSize: 19, marginTop: 12, fontVariant: ['tabular-nums'] }}>{sub}</Text>
-        {phase === 'run' && counting && c.kind !== 'max' && (
-          <Text variant="small" style={{ position: 'absolute', bottom: 16 }}>{tr('challenge.tapHint')}</Text>
+        {phase === 'run' && counting && (
+          <Text variant="small" style={{ position: 'absolute', bottom: 16 }}>{c.kind === 'max' ? tr('challenge.tapHintMax') : tr('challenge.tapHint')}</Text>
         )}
       </Pressable>
 
-      {/* ganze Sätze mit einem Tipp (nicht beim Maximum – dort zählt ein einziger Satz) */}
-      {phase === 'run' && c.kind !== 'max' && (
+      {/* ganze Sätze mit einem Tipp; am Stück zählen sie nur schneller hoch */}
+      {phase === 'run' && counting && (
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {SET_SIZES.map(n => (
             <Button key={n} variant="secondary" size="lg" title={`+${n}`} label={tr('challenge.addSet', { n })} onPress={() => addSet(n)} style={{ flex: 1, paddingHorizontal: 0 }} />
