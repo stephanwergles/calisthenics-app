@@ -137,6 +137,7 @@ export const profile = {
   days: {
     sub: 'Grundlage für Planvorschläge – dein Wochenplan ändert sich erst, wenn du einen Vorschlag bestätigst.',
     minutes: 'Minuten je Einheit',
+    weekdays: 'Trainingstage',
     shorter: 'Kürzer',
     longer: 'Länger',
     split: 'Wochenaufbau',

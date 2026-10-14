@@ -136,6 +136,7 @@ export const profile: Shape<typeof de> = {
   days: {
     sub: 'Basis for plan suggestions – your weekly plan only changes once you confirm a suggestion.',
     minutes: 'Minutes per session',
+    weekdays: 'Training days',
     shorter: 'Shorter',
     longer: 'Longer',
     split: 'Weekly structure',

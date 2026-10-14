@@ -92,7 +92,7 @@ const REGION_OF: Record<string, Region> = {
 /* Anzeigename je Progression – der Weg, nicht die letzte Übung (sonst heißen Skill und Progression gleich) */
 const NAME_OF: Record<string, string> = {
   "muscle-up-pull": "Muscle-up · Zugkraft", "muscle-up-transition": "Muscle-up · Übergang", "bar-dip": "Muscle-up · Stütz",
-  "pull-up": "Klimmzüge", "row": "Rudern → Front Lever", "one-arm-pull": "Einarmiger Klimmzug", "scapula": "Schulterblätter",
+  "pull-up": "Klimmzüge", "row": "Rudern → Front Lever", "one-arm-pull": "Asymmetrische Klimmzüge", "scapula": "Schulterblätter",
   "biceps": "Bizeps", "hang": "Hängen",
   "planche": "Planche", "dip": "Dips", "vertical-push": "Handstand-Push-up", "horizontal-push": "Liegestütze",
   "fly": "Flys", "triceps": "Trizeps", "handstand": "Handstand",

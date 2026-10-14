@@ -15,6 +15,7 @@ import * as migration_20261013_222448_catalog_v3 from './20261013_222448_catalog
 import * as migration_20261013_223934_progression_name from './20261013_223934_progression_name';
 import * as migration_20261013_224654_templates from './20261013_224654_templates';
 import * as migration_20261013_225541_equipment_pole from './20261013_225541_equipment_pole';
+import * as migration_20261014_120000_one_arm_pull_name from './20261014_120000_one_arm_pull_name';
 
 export const migrations = [
   {
@@ -101,5 +102,10 @@ export const migrations = [
     up: migration_20261013_225541_equipment_pole.up,
     down: migration_20261013_225541_equipment_pole.down,
     name: '20261013_225541_equipment_pole'
+  },
+  {
+    up: migration_20261014_120000_one_arm_pull_name.up,
+    down: migration_20261014_120000_one_arm_pull_name.down,
+    name: '20261014_120000_one_arm_pull_name',
   },
 ];

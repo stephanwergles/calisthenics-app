@@ -7,7 +7,7 @@ import { catalogData } from '@lever/core/data.ts'
 import { platform } from '@lever/core/platform.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import type { SplitTemplate, Weekday } from '@lever/domain/model.ts'
-import { Choices, color, font, Icon, radius, SectionTitle, SheetScreen, Stepper, Text } from '@/ui'
+import { color, DayPicker, font, Icon, radius, SectionTitle, SheetScreen, Stepper, Text } from '@/ui'
 import { useApp } from '@/state/app'
 import { NextFooter } from './parts'
 import { useProfile, type Next } from './shared'
@@ -20,7 +20,7 @@ export function DaysPage({ next }: { next?: Next }) {
   const { t } = useApp()
   const { profile, change } = useProfile(t)
   const data = catalogData(t.ix.catalog)
-  const items = L.WEEK_ORDER.map(d => ({ id: d, title: L.WEEKDAY_LONG[d], on: profile.days.includes(d) }))
+  const items = L.WEEK_ORDER.map(d => ({ id: d, short: L.WEEKDAY_SHORT[d], long: L.WEEKDAY_LONG[d], on: profile.days.includes(d) }))
   const toggle = (id: string, on: boolean) => change(p => ({ ...p, days: L.WEEK_ORDER.filter(d => (d === id ? on : p.days.includes(d))) as Weekday[] }))
   const setMin = (m: number) => change(p => ({ ...p, minutes: Math.min(180, Math.max(30, m)) }))
 
@@ -41,7 +41,8 @@ export function DaysPage({ next }: { next?: Next }) {
       <Stepper label={tr('profile.days.minutes')} value={String(profile.minutes)}
         onMinus={() => setMin(profile.minutes - 5)} onPlus={() => setMin(profile.minutes + 5)}
         minusLabel={tr('profile.days.shorter')} plusLabel={tr('profile.days.longer')} />
-      <Choices items={items} onToggle={toggle} />
+      <SectionTitle title={tr('profile.days.weekdays')} />
+      <DayPicker items={items} onToggle={toggle} />
       {fitting.length > 0 && (
         <View style={{ gap: 10 }}>
           <SectionTitle title={tr('profile.days.split')} />
