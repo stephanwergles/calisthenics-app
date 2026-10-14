@@ -28,7 +28,7 @@ function generate() {
     '',
   ].join('\n')
   const prev = fs.existsSync(out) ? fs.readFileSync(out, 'utf8') : ''
-  if (prev !== src) fs.writeFileSync(out, src)
+  if (prev !== src) { fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, src) }
   return { clips: clips.length, stills: stills.length }
 }
 
