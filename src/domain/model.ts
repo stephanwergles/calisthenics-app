@@ -143,6 +143,8 @@ export interface SetLog {
 
 /** Höchstlänge einer Notiz (Satz oder Einheit) – App und Server prüfen dasselbe */
 export const NOTE_MAX = 500;
+/** höchstens so viele Ziele gleichzeitig (mehr verteilt der Generator nicht sinnvoll aufs Zeitbudget) – gilt in App und Sync-Prüfung */
+export const MAX_GOALS = 5;
 
 export interface Session {
   id: string;                   // deterministisch `${date}-${workout}` → Import wiederholbar

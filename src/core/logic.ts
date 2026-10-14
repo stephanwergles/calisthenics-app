@@ -6,7 +6,7 @@ import type {
 } from '../domain/model.ts'
 import { assignThemes, restDays, usable } from '../domain/generator.ts'
 import { suggestSkills, suggestSplits, type SkillSuggestion } from '../domain/assessment.ts'
-import { NOTE_MAX, REGIONS } from '../domain/model.ts'
+import { MAX_GOALS, NOTE_MAX, REGIONS } from '../domain/model.ts'
 import { intl, t, tn, type Key } from './i18n/index.ts'
 
 export { NOTE_MAX }
@@ -713,8 +713,7 @@ export function goalProgress(ix: Index, user: UserState, sessions: Session[], sk
   const lead = parts.reduce((a, b) => (b.share < a.share ? b : a), parts[0])
   return { share, pid: lead?.pid, current: lead?.step.exercise.name ?? '', stage: lead ? t('logic.stage', { i: lead.step.index + 1, n: lead.step.total }) : '' }
 }
-/** höchstens so viele Ziele gleichzeitig (mehr verteilt der Generator nicht sinnvoll aufs Zeitbudget) */
-export const MAX_GOALS = 5
+export { MAX_GOALS }
 /** Ziel an/aus (höchstens MAX_GOALS, das älteste fällt raus) */
 export function withGoal(p: Profile, skill: SkillId, on: boolean): Profile {
   const goals = on ? [...new Set([...p.goals, skill])].slice(-MAX_GOALS) : p.goals.filter(g => g !== skill)

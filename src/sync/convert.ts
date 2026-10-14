@@ -3,7 +3,7 @@
 
    Payload liefert leere Felder als null, Relationen je nach depth als ID oder
    Objekt und Array-Zeilen mit eigener `id`. Das App-Modell kennt nichts davon. */
-import { NOTE_MAX } from '../domain/model.ts'
+import { MAX_GOALS, NOTE_MAX } from '../domain/model.ts'
 import type { Activity, AssessmentData, Catalog, Equipment, Exercise, ExerciseMeta, Phase, Plan, Profile, Skill, SplitTemplate, Template, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
 
 type Doc = Record<string, any>
@@ -141,7 +141,7 @@ export function isPhase(p: any): p is Phase {
 }
 const EQUIPMENT = ['bar', 'rings', 'parallettes', 'dip-bars', 'band', 'box', 'weight', 'pole', 'floor', 'wall']
 export function isProfile(p: any): p is Profile {
-  return !!p && Array.isArray(p.goals) && p.goals.length <= 3 && p.goals.every(isId)
+  return !!p && Array.isArray(p.goals) && p.goals.length <= MAX_GOALS && p.goals.every(isId)
     && Array.isArray(p.equipment) && p.equipment.every((e: any) => EQUIPMENT.includes(e))
     && Array.isArray(p.days) && p.days.length <= 7 && p.days.every((d: any) => WEEKDAYS.includes(d))
     && Number.isInteger(p.minutes) && p.minutes >= 15 && p.minutes <= 180
