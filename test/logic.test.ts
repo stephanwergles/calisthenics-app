@@ -422,6 +422,14 @@ test('Verletzung im Muskel: Bereiche aus dem Bewegungsmuster abgeleitet', () => 
   for (const [id, m] of Object.entries(meta)) if (id !== 'scapula-shrug') assert.ok(L.musclesOf(id, m as never).length, id)
 })
 
+test('Training abbrechen: Stand vor dem Start zurück, sonst Einheit gelöscht', () => {
+  const before = sess('2026-10-14', 'push', [['dip', [10]]])
+  const after = L.withSet(before, { exercise: 'dip', progression: 'dip', set: 2, value: 9 })
+  assert.deepEqual(L.discardedSession(after, before)!.sets, before.sets, 'frühere Sätze bleiben')
+  assert.equal(L.discardedSession(after, undefined)!.deleted, true, 'ohne Vorstand gelöscht')
+  assert.equal(L.discardedSession(undefined, undefined), undefined)
+})
+
 test('Kann ich schon: Ziel-Leitern auf die letzte Stufe, Skill erreicht', () => {
   const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
   const wd = skills.find((s: { id: string }) => s.id === 'weighted-dip')

@@ -9,6 +9,8 @@ import { usePlanSuggestion, type PlanSuggestion } from '@lever/core/usePlanSugge
 import { useRestTimer, type RestTimer } from '@lever/core/useRestTimer.ts'
 import { catalogData } from '@lever/core/data.ts'
 import { platform } from '@lever/core/platform.ts'
+import { t as tr, tn } from '@lever/core/i18n/index.ts'
+import { ask, choose } from '@/ui'
 import { useSessionActivity } from '@/live/use-session-activity'
 import { currentChoice, initialLocale, saveLocale, setLocale, type Locale, type LocaleChoice } from '@lever/core/i18n/index.ts'
 
@@ -35,6 +37,8 @@ export interface App {
   openTraining: (pid?: string) => void
   /** Session beenden → Zusammenfassung */
   finish: () => void
+  /** Beenden mit Wahl: speichern oder verwerfen (Rückfrage); weiter trainieren = nichts */
+  askEnd: () => Promise<void>
   /** Pausen-Screen: null = zu, sonst Rückmeldung zum gespeicherten Satz ('' = ohne) */
   restView: string | null
   setRestView: (v: string | null) => void
@@ -88,9 +92,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     router.push({ pathname: '/summary/[id]', params: { id } })
   }
 
+  const discard = () => {
+    t.discardSession(); rest.stop(); setRestView(null)
+    router.dismissTo('/')
+  }
+  const askEnd = async () => {
+    if (!t.active) return
+    const choice = await choose({
+      title: tr('training.bar.stopTitle'), message: tr('training.bar.stopMessage'), cancel: tr('training.bar.stopContinue'),
+      options: [{ id: 'save', title: tr('training.bar.stopSave') }, { id: 'discard', title: tr('training.bar.stopDiscard'), destructive: true }],
+    })
+    if (choice === 'save') finish()
+    if (choice !== 'discard') return
+    // Sätze seit dem Start – nur dann lohnt eine zweite Rückfrage
+    const id = L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout)
+    const n = (L.live(t.sessions.find(s => s.id === id))?.sets.length ?? 0) - (t.active.before?.sets.length ?? 0)
+    if (n > 0 && !await ask({ title: tr('training.bar.discardTitle'), message: tn('training.bar.discardMessage', n), ok: tr('training.bar.discardOk'), destructive: true })) return
+    discard()
+  }
+
   const value: App = {
     t, ps, rest, locale, localeChoice, changeLocale, slots, focus, focusSlot, pick: setPicked,
-    started, doneToday, start, openTraining, finish, restView, setRestView,
+    started, doneToday, start, openTraining, finish, askEnd, restView, setRestView,
   }
   return <Ctx value={value}>{children}</Ctx>
 }

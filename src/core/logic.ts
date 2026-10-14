@@ -237,6 +237,12 @@ export function emptySession(date: string, workout: WorkoutId): Session {
 const touch = (s: Session): Session => ({ ...s, updatedAt: Date.now() })
 /** Einheit löschen: Inhalt weg, Markierung bleibt (wird wie jede Änderung synchronisiert) */
 export const deletedSession = (s: Session): Session => touch({ ...emptySession(s.date, s.workout), deleted: true })
+/** Training abbrechen: Stand vor dem Start wiederherstellen (frühere Sätze desselben Tages bleiben),
+    gab es keinen, die Einheit löschen. Ohne Einheit nichts zu tun. */
+export function discardedSession(current: Session | undefined, before: Session | undefined): Session | undefined {
+  if (!current || current.deleted) return undefined
+  return before ? touch({ ...before, deleted: undefined }) : deletedSession(current)
+}
 /** gelöschte Einheiten zählen nirgends – wer sie wieder anfängt, beginnt leer */
 export const live = (s: Session | undefined): Session | undefined => (s && !s.deleted ? s : undefined)
 

@@ -21,7 +21,9 @@ const db = { get: () => platform().db }
 /** Katalog aus dem Build – Fallback und Grundlage für den v1-Import (dessen Positionen auf diese IDs zeigen) */
 export const bundledCatalog = catalogJson as unknown as Catalog
 
-export interface ActiveSession { start: number; workout: WorkoutId }
+export interface ActiveSession { start: number; workout: WorkoutId
+  /** Stand der Einheit beim Start – „Abbrechen“ stellt ihn wieder her (lokal, wird nicht synchronisiert) */
+  before?: Session }
 export interface SyncStatus {
   account: api.Who | null | undefined   // undefined = noch unbekannt (z. B. offline gestartet)
   /** angemeldet, aber ohne Einwilligung in die Gesundheitsdaten – Abgleich pausiert */
@@ -258,9 +260,19 @@ export function useTraining() {
 
   const startSession = useCallback(() => {
     if (active) return
-    const a = { start: Date.now(), workout }
+    const before = L.live(sessionsRef.current.get(L.sessionId(L.localDate(), workout)))
+    const a: ActiveSession = { start: Date.now(), workout, ...(before ? { before } : {}) }
     setActive(a); void db.get().kvSet('active', a)
   }, [active, workout])
+
+  /** Abbrechen: Session endet ohne Zeitgutschrift, Sätze seit dem Start werden verworfen */
+  const discardSession = useCallback(() => {
+    if (!active) return
+    const id = L.sessionId(L.localDate(new Date(active.start)), active.workout)
+    const s = L.discardedSession(sessionsRef.current.get(id), active.before)
+    if (s) putSession(s)
+    setActive(null); void db.get().kvSet('active', undefined)
+  }, [active, putSession])
 
   /** Beenden: Dauer ab 60 s wird der Einheit gutgeschrieben (mehrere pro Tag summieren sich) */
   const endSession = useCallback(() => {
@@ -382,7 +394,7 @@ export function useTraining() {
   return {
     loaded, persistent, today, ix, sessions: sessionList, activities, state, active, workout, recommended,
     todaySession, updateToday, setState, chooseWorkout, startSession, endSession,
-    addActivity, removeActivity, removeSession, importV1, exportData,
+    addActivity, removeActivity, removeSession, discardSession, importV1, exportData,
     sync, syncNow: runSync, signIn, signOut, deleteAccount,
     consent, acceptHealthConsent, acceptDisclaimer,
     plan, savePlan, editPlan, baseCatalog: catalog,

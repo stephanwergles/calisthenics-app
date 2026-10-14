@@ -24,7 +24,7 @@ export const openList = () => router.push({ pathname: '/exercises', params: { fr
 
 /** Kopf: Minimieren, Uhr (Dauer oder Pause), Übungsliste, Fortschritt je Übung */
 export function FocusTop() {
-  const { t, rest, slots, focusSlot, pick, setRestView } = useApp()
+  const { t, rest, slots, focusSlot, pick, setRestView, askEnd } = useApp()
   const now = useNow(!!t.active)
   const insets = useSafeAreaInsets()
   const resting = rest.running || rest.ringing
@@ -61,6 +61,7 @@ export function FocusTop() {
             ) : null}
           </View>
           <Button icon="list" label={tr('training.focus.allExercises')} onPress={openList} />
+          {t.active && <Button icon="stop" label={tr('training.bar.stop')} onPress={() => void askEnd()} />}
         </View>
         {/* Fortschritt je Übung – antippbar; VoiceOver: wischen hoch/runter wechselt die Übung */}
         <View accessible accessibilityRole="adjustable" accessibilityLabel={tr('training.focus.exercises')}
@@ -247,17 +248,22 @@ function SetInput({ slot, setNo }: { slot: L.SlotView; setNo: number }) {
   const lastSet = slot.last?.sets.find(x => x.set === setNo)
   const caption = `${tr('training.focus.caption', { set: setNo, planned: slot.planned, target: target.label })}${lastSet ? tr('training.focus.captionLast', { value: `${lastSet.value}${seconds ? ' s' : ''}${lastSet.weightKg ? ` +${L.fmtNum(lastSet.weightKg)} kg` : ''}` }) : ''}`
 
+  // kompakt, damit die Übung darüber sichtbar bleibt: Satz-Zeile mit Notiz-Knopf, kleiner Zähler,
+  // Aktionen in einer Reihe (Halteübungen: Timer + Speichern nebeneinander)
   return (
-    <View style={{ gap: 12 }}>
-      <Text variant="small" style={{ textAlign: 'center', fontFamily: font.bodySemi }}>{caption}</Text>
+    <View style={{ gap: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Text variant="small" numberOfLines={1} style={{ flex: 1, fontFamily: font.bodySemi }}>{caption}</Text>
+        <Button icon="note" size="sm" variant={note.trim() ? 'outline' : 'ghost'} label={tr('training.focus.noteThisSet')} onPress={() => setNoteOpen(o => !o)} />
+      </View>
       {timing ? <HoldRing hold={hold} /> : (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Button icon="minus" size="lg" label={tr('training.focus.less', { n: stepBy })} onPress={() => setValue(v => Math.max(1, v - stepBy))} style={{ width: 64, height: 64 }} />
+          <Button icon="minus" label={tr('training.focus.less', { n: stepBy })} onPress={() => setValue(v => Math.max(1, v - stepBy))} style={{ width: 52, height: 52 }} />
           <Text accessibilityLiveRegion="polite" accessibilityLabel={`${value}${seconds ? ' s' : ` ${tr('training.unitReps')}`}`}
-            style={{ fontFamily: font.displayBlack, fontSize: 76, lineHeight: 78, color: color.text, fontVariant: ['tabular-nums'] }}>
-            {value}{seconds ? <Text style={{ fontFamily: font.display, fontSize: 30, color: color.muted }}> s</Text> : null}
+            style={{ fontFamily: font.displayBlack, fontSize: 56, lineHeight: 58, color: color.text, fontVariant: ['tabular-nums'] }}>
+            {value}{seconds ? <Text style={{ fontFamily: font.display, fontSize: 24, color: color.muted }}> s</Text> : null}
           </Text>
-          <Button icon="plus" size="lg" label={tr('training.focus.more', { n: stepBy })} onPress={() => setValue(v => v + stepBy)} style={{ width: 64, height: 64 }} />
+          <Button icon="plus" label={tr('training.focus.more', { n: stepBy })} onPress={() => setValue(v => v + stepBy)} style={{ width: 52, height: 52 }} />
         </View>
       )}
       {ex.weighted && (
@@ -271,11 +277,6 @@ function SetInput({ slot, setNo }: { slot: L.SlotView; setNo: number }) {
           <Button icon="plus" label={tr('training.focus.weightMore')} onPress={() => setWeight(w => +(w + 2.5).toFixed(1))} />
         </View>
       )}
-      {seconds && (timing
-        ? <Button icon="close" block title={tr('training.focus.cancelTimer')} onPress={hold.cancel} />
-        : <Button variant={timerFirst ? 'primary' : 'outline'} size={timerFirst ? 'lg' : 'md'} icon="timer" block
-            title={hold.phase === 'done' ? tr('training.focus.again', { n: value }) : tr('training.focus.startTimer', { n: value })}
-            onPress={() => hold.start(value)} />)}
       {hold.phase === 'done' && (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }} accessible accessibilityLiveRegion="polite">
           <Icon name="check" size={15} color={color.accent} />
@@ -287,8 +288,11 @@ function SetInput({ slot, setNo }: { slot: L.SlotView; setNo: number }) {
           placeholder={tr('training.focus.noteSetPlaceholder')} />
       )}
       <ButtonRow>
-        <Button icon="note" size="lg" variant={note.trim() ? 'outline' : 'secondary'} label={tr('training.focus.noteThisSet')}
-          onPress={() => setNoteOpen(o => !o)} />
+        {seconds && (timing
+          ? <Button size="lg" icon="close" title={tr('training.focus.cancelTimer')} onPress={hold.cancel} style={{ flex: 1 }} />
+          : <Button variant={timerFirst ? 'primary' : 'outline'} size="lg" icon="timer" style={{ flex: 1 }}
+              title={hold.phase === 'done' ? tr('training.focus.againShort') : tr('training.focus.timerShort')}
+              onPress={() => hold.start(value)} />)}
         <Button variant={timerFirst ? 'secondary' : 'primary'} size="lg" icon="check" title={tr('training.focus.saveSet')} onPress={save} style={{ flex: 1 }} />
       </ButtonRow>
     </View>

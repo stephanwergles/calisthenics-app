@@ -11,6 +11,17 @@ export function ask(o: { title: string; message?: string; ok: string; destructiv
   })
 }
 
+/** Auswahl aus mehreren Aktionen (Alert mit Buttons; auf iOS 26 als Glas-Dialog) – liefert die
+    gewählte id oder null bei Abbruch */
+export function choose<T extends string>(o: { title: string; message?: string; options: { id: T; title: string; destructive?: boolean }[]; cancel?: string }): Promise<T | null> {
+  return new Promise(resolve => {
+    Alert.alert(o.title, o.message, [
+      ...o.options.map(x => ({ text: x.title, style: x.destructive ? 'destructive' as const : 'default' as const, onPress: () => resolve(x.id) })),
+      { text: o.cancel ?? t('common.cancel'), style: 'cancel', onPress: () => resolve(null) },
+    ], { cancelable: true, onDismiss: () => resolve(null) })
+  })
+}
+
 /** Hinweis mit einem Button */
 export function notice(title: string, message?: string) {
   Alert.alert(title, message)

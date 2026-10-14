@@ -6,16 +6,13 @@ import * as L from '@lever/core/logic.ts'
 import { useNow } from '@lever/core/useNow.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
-import { ask, Button, color, font, Icon, Text } from '@/ui'
+import { Button, color, font, Icon, Text } from '@/ui'
 
 export function SessionBar({ compact }: { compact?: boolean }) {
-  const { t, rest, openTraining, finish } = useApp()
+  const { t, rest, openTraining, askEnd } = useApp()
   const now = useNow(!!t.active)
   if (!t.active) return null
   const resting = rest.running || rest.ringing
-  const stop = async () => {
-    if (await ask({ title: tr('training.bar.stopTitle'), message: tr('training.bar.stopMessage'), ok: tr('training.bar.stopOk') })) finish()
-  }
   return (
     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: compact ? 10 : 14 }}>
       {resting ? (
@@ -38,7 +35,7 @@ export function SessionBar({ compact }: { compact?: boolean }) {
           </View>
         </Pressable>
       )}
-      <Button icon="stop" size="sm" variant="ghost" label={tr('training.bar.stop')} onPress={() => void stop()} />
+      <Button icon="stop" size="sm" variant="ghost" label={tr('training.bar.stop')} onPress={() => void askEnd()} />
     </View>
   )
 }
