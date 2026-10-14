@@ -112,6 +112,20 @@ WORD_FOOT = LEVELS["straddle"] * M
 WORD_SPACE = 34                  # Abstand Zeichen → E in Glyphen-Einheiten (Versalhöhe 700)
 TRACK = 10                       # Laufweite wie in der App (.01em)
 
+def ink_right(d):
+    """rechteste x-Koordinate eines Glyphen-Pfads (absolute Befehle M/L/Q/H/V/Z) – die Kursive ragt
+    über den Vorschub hinaus (R: Kontur bis 498, Vorschub 475), sonst wird der Buchstabe angeschnitten"""
+    import re
+    xs, cmd, nums = [], None, []
+    def flush():
+        if cmd and cmd in "MLQ": xs.extend(nums[0::2])
+        elif cmd == "H": xs.extend(nums)
+    for tok in re.findall(r"[MLQHVZ]|-?\d+(?:\.\d+)?", d):
+        if tok.isalpha(): flush(); cmd, nums = tok, []
+        else: nums.append(float(tok))
+    flush()
+    return max(xs)
+
 def word_layout():
     """(viewBox-Breite, Zeichen-Pfade in Glyphen-Einheiten, [(x, d) je Buchstabe])"""
     sc = 700 / H
@@ -121,7 +135,9 @@ def word_layout():
     letters = []
     for ch in "EVER":
         adv, d = GLYPHS[ch]; letters.append((x, d)); x += adv + TRACK
-    return x - TRACK, sym, letters
+    # Breite bis zur Kontur des letzten Buchstabens, nicht nur bis zu seinem Vorschub
+    last_x, last_d = letters[-1]
+    return max(x - TRACK, last_x + ink_right(last_d)), sym, letters
 
 def wordmark_svg(fill):
     w, (a, b), letters = word_layout()
