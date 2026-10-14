@@ -64,24 +64,26 @@ export function Today() {
         {/* Woche */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }} accessibilityLabel={tr('home.weekAria')}>
           {week.map((d, i) => {
-            // Tipp: trainierter Tag → Einheit, Cardio → Eintrag, geplanter Tag → Workout-Übersicht; leere Tage sind nur Anzeige
+            // Tipp: trainierter Tag → Einheit, Cardio → Eintrag, geplanter Tag → Workout-Übersicht,
+            // künftiger Ruhetag → Workout auf den Wochentag legen, sonst → Tag im Verlauf (Cardio nachtragen)
             const session = d.trained ? t.sessions.find(s => s.date === d.date && L.isTrained(s)) : undefined
             const activity = !session && d.cardio ? L.cardioOnly(t.activities).find(a => a.date === d.date) : undefined
             const planned = t.ix.catalog.weekplan[L.WEEK_ORDER[i]]
             const open = session ? () => router.push(dayHref({ kind: 'session', id: session.id }))
               : activity ? () => router.push(dayHref({ kind: 'activity', id: activity.id }))
               : planned && d.date >= t.today ? () => router.push({ pathname: '/workouts/[id]', params: { id: planned } })
-              : undefined
+              : d.date > t.today ? () => router.push({ pathname: '/workouts/day', params: { day: L.WEEK_ORDER[i] } })
+              : () => router.push(dayHref({ kind: 'empty', id: d.date }))
             return (
-            <Pressable key={d.date} disabled={!open} onPress={open} accessibilityRole={open ? 'button' : undefined}
+            <Pressable key={d.date} onPress={open} accessibilityRole="button"
               style={({ pressed }) => ({ alignItems: 'center', gap: 6, opacity: pressed ? 0.7 : 1 })}
               accessibilityLabel={`${d.label}${d.trained ? tr('home.dayTrained') : d.planned ? tr('home.dayPlanned') : ''}${d.cardio ? tr('home.dayCardio') : ''}${d.today ? tr('home.dayToday') : ''}`}>
               <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', color: d.today ? color.text : color.muted }}>{d.label}</Text>
               <View style={{
                 width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center',
                 backgroundColor: d.trained ? color.chalk : d.today ? color.accent : 'transparent',
-                // ohne Plan und ohne Eintrag kein Rand: nur Anzeige, nicht anfassbar (Fläche oder Rand = anfassbar)
-                borderWidth: d.trained || d.today || !open ? 0 : 2,
+                // jeder Tag ist antippbar: geplant = Volt-Ring, sonst dünner Rand (Fläche oder Rand = anfassbar)
+                borderWidth: d.trained || d.today ? 0 : d.planned ? 2 : 1,
                 borderColor: d.planned ? color.accent : color.line,
               }}>
                 {d.trained ? <Icon name="check" size={16} color={color.onAccent} weight="bold" />
