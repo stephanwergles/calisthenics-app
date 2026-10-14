@@ -36,6 +36,11 @@ export interface SyncStatus {
 const EMPTY_STATE: UserState = { current: {}, paused: [] }
 const SYNC_DELAY = 2500
 
+/** Abmelden abgebrochen: es gibt noch nicht abgeglichene Änderungen (offline oder Serverfehler) */
+export class UnsyncedError extends Error {
+  constructor(readonly pending: number) { super(`${pending} Änderungen noch nicht abgeglichen`) }
+}
+
 export function useTraining() {
   const [loaded, setLoaded] = useState(false)
   const [persistent, setPersistent] = useState(true)
@@ -207,6 +212,7 @@ export function useTraining() {
       if (platform().online()) {
         try {
           const who = await api.me()
+          if (who) await claimDevice(who)
           meta.current.account = who; void db.get().kvSet('account', who)
           // auf einem anderen Gerät schon eingewilligt → hier übernehmen
           if (who?.healthConsent === HEALTH_CONSENT_VERSION && consentRef.current.health !== HEALTH_CONSENT_VERSION)
@@ -349,9 +355,31 @@ export function useTraining() {
 
   /* ── Konto ────────────────────────────────────────────────────────────── */
 
+  /** Trainingsdaten dieses Geräts entfernen (Abmelden, Konto löschen, anderes Konto): Einheiten,
+      Aktivitäten, Trainingsstand, Plan, laufende Session, Postausgang. Katalog und Hinweis zum
+      ersten Start bleiben – sie gehören zu keinem Konto. */
+  const wipeLocal = useCallback(async () => {
+    const d = db.get()
+    for (const s of await d.getAll<Session>('sessions')) await d.remove('sessions', s.id)
+    for (const a of await d.getAll<Activity>('activities')) await d.remove('activities', a.id)
+    for (const k of ['state', 'active', 'choice', 'plan', 'outbox', 'owner']) await d.kvSet(k, undefined)
+    outbox.current = { ...api.EMPTY_OUTBOX }
+    setSessions(new Map()); setActivities([]); setStateRaw(EMPTY_STATE); setActive(null); setChoice(null)
+    planRef.current = null; setPlanRaw(null)
+    setSync(s => ({ ...s, pending: 0 }))
+  }, [])
+  /** Konto, dem die Daten auf dem Gerät gehören: bei der Anmeldung eines anderen Kontos erst leeren –
+      sonst würden fremde Trainingsdaten zum neuen Konto hochgeladen */
+  const claimDevice = useCallback(async (who: api.Who) => {
+    const owner = await db.get().kvGet<string>('owner')
+    if (owner && who.id != null && owner !== String(who.id)) await wipeLocal()
+    if (who.id != null) await db.get().kvSet('owner', String(who.id))
+  }, [wipeLocal])
+
   /** Anmelden; mit Einwilligung (Häkchen im Formular) wird sie am Konto gespeichert und sofort abgeglichen */
   const signIn = useCallback(async (email: string, password: string, healthConsent = false) => {
     const who = await api.login(email, password)
+    await claimDevice(who)
     meta.current.account = who; void db.get().kvSet('account', who)
     if (healthConsent && who.id != null) {
       await api.saveConsent(who.id, HEALTH_CONSENT_VERSION)
@@ -359,7 +387,7 @@ export function useTraining() {
     } else if (who.healthConsent === HEALTH_CONSENT_VERSION) setConsent({ ...consentRef.current, health: HEALTH_CONSENT_VERSION })
     setSync(s => ({ ...s, account: who, consentMissing: false }))
     await runSync()
-  }, [runSync])
+  }, [runSync, claimDevice])
 
   /** Einwilligung nachträglich geben (angemeldet, z. B. nach einem Update mit neuer Textfassung) */
   const acceptHealthConsent = useCallback(async () => {
@@ -372,15 +400,21 @@ export function useTraining() {
   }, [runSync])
   const acceptDisclaimer = useCallback(() => setConsent({ ...consentRef.current, disclaimer: DISCLAIMER_VERSION }), [])
 
-  const signOut = useCallback(async () => {
+  /** Abmelden: erst alles abgleichen, dann die Daten vom Gerät entfernen (sie liegen auf dem Server).
+      Ist noch etwas nicht abgeglichen und der Abgleich klappt nicht, bricht es ab – außer mit force. */
+  const signOut = useCallback(async (opts: { force?: boolean } = {}) => {
+    if (api.pendingCount(outbox.current) > 0 && !opts.force) {
+      const r = await runSync()
+      if (r !== 'ok' && api.pendingCount(outbox.current) > 0) throw new UnsyncedError(api.pendingCount(outbox.current))
+    }
     await api.logout()
-    // nächste Anmeldung (evtl. anderes Konto) lädt wieder alles hoch
     meta.current = { ...meta.current, account: null, lastSync: null }
     void db.get().kvSet('account', null)
     void db.get().kvSet('meta', { lastSync: null, catalogVersion: meta.current.catalogVersion })
     setConsent({ ...consentRef.current, health: null })   // gilt pro Konto
-    setSync(s => ({ ...s, account: null, consentMissing: false }))
-  }, [])
+    await wipeLocal()
+    setSync(s => ({ ...s, account: null, consentMissing: false, lastSync: null }))
+  }, [runSync, wipeLocal])
 
   /** Plan speichern (eigene Workouts, Wochenplan) – neue Version, wird abgeglichen */
   const savePlan = useCallback((next: Plan) => {
@@ -393,15 +427,16 @@ export function useTraining() {
     savePlan(fn(planRef.current ?? L.planFromCatalog(catalog)))
   }, [savePlan, catalog])
 
-  /** Konto löschen (Server: Konto + alle Trainingsdaten); auf dem Gerät bleibt alles, ohne Abgleich */
+  /** Konto löschen (Server: Konto + alle Trainingsdaten), danach auch auf dem Gerät */
   const deleteAccount = useCallback(async () => {
     await api.deleteAccount()
     meta.current = { ...meta.current, account: null, lastSync: null }
     void db.get().kvSet('account', null)
     void db.get().kvSet('meta', { lastSync: null, catalogVersion: meta.current.catalogVersion })
     setConsent({ ...consentRef.current, health: null })
-    setSync(s => ({ ...s, account: null, error: undefined, consentMissing: false }))
-  }, [])
+    await wipeLocal()
+    setSync(s => ({ ...s, account: null, error: undefined, consentMissing: false, lastSync: null }))
+  }, [wipeLocal])
 
   return {
     loaded, persistent, today, ix, sessions: sessionList, activities, state, active, workout, recommended, restDay,

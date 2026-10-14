@@ -71,6 +71,7 @@ function Root({ fonts }: { fonts: boolean }) {
         <Stack.Screen name="circuit-run" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
         <Stack.Screen name="onboarding" options={{ ...modal(), gestureEnabled: false }} />
         <Stack.Screen name="consent" options={{ ...modal(), gestureEnabled: false }} />
+        <Stack.Screen name="signin" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
       </Stack>
       <Gates />
       <Toaster />

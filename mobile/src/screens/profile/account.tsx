@@ -6,7 +6,7 @@ import * as WebBrowser from 'expo-web-browser'
 import { HEALTH_CONSENT, PRIVACY_URL } from '@lever/core/consent.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
-import type { Training } from '@lever/core/useTraining.ts'
+import { UnsyncedError, type Training } from '@lever/core/useTraining.ts'
 import { ask, Button, Card, Choices, color, ListGroup, SheetScreen, Text } from '@/ui'
 import { useApp } from '@/state/app'
 import { Field } from './parts'
@@ -22,7 +22,7 @@ export async function confirmDeleteAccount(t: Training) {
   try { await t.deleteAccount() } catch (e) { toast(tr('profile.deleteFailed', { msg: (e as Error).message }), 'error') }
 }
 
-export function AccountPage() {
+export function AccountPage({ gate }: { gate?: boolean } = {}) {
   const { t } = useApp()
   const s = t.sync
   const [email, setEmail] = useState('')
@@ -35,7 +35,13 @@ export function AccountPage() {
   if (s.account) {
     const syncing = s.phase === 'syncing'
     const signOut = async () => {
-      if (await ask({ title: tr('profile.signOutAsk.title'), message: tr('profile.signOutAsk.message'), ok: tr('profile.signOut') })) void t.signOut()
+      if (!await ask({ title: tr('profile.signOutAsk.title'), message: tr('profile.signOutAsk.message'), ok: tr('profile.signOut') })) return
+      try { await t.signOut() }
+      catch (e) {
+        if (!(e instanceof UnsyncedError)) { toast((e as Error).message, 'error'); return }
+        if (await ask({ title: tr('profile.signOutUnsynced.title'), message: tr('profile.signOutUnsynced.message', { n: e.pending }), ok: tr('profile.signOutUnsynced.ok'), destructive: true }))
+          await t.signOut({ force: true }).catch(x => toast((x as Error).message, 'error'))
+      }
     }
     return (
       <SheetScreen title={tr('profile.sync.title')} sub={`${tr('profile.sync.signedInAs')} ${s.account.email}`}>
@@ -67,8 +73,8 @@ export function AccountPage() {
     finally { setBusy(false) }
   }
   return (
-    <SheetScreen title={tr('profile.signIn')}
-      sub={`${s.phase === 'offline' ? tr('profile.offlineSignIn') : ''}${tr('profile.signInHint')} ${tr('profile.firstUpload')}`}
+    <SheetScreen title={gate ? tr('profile.gateTitle') : tr('profile.signIn')}
+      sub={`${s.phase === 'offline' ? tr('profile.offlineSignIn') : ''}${gate ? tr('profile.gateSub') : tr('profile.signInHint')}`}
       footer={<Button variant="primary" size="lg" title={busy ? tr('profile.signingIn') : tr('profile.signIn')} busy={busy}
         disabled={!agree || !email.trim() || !password} onPress={() => void signIn()} />}>
       <Field label={tr('profile.email')} value={email} onChangeText={setEmail}
@@ -82,6 +88,7 @@ export function AccountPage() {
       </View>
       <Button variant="ghost" icon="privacy" title={tr('common.privacy')} onPress={openPrivacy} />
       {err && <Text variant="muted" style={{ color: color.danger }} accessibilityLiveRegion="polite">{err}</Text>}
+      {gate && <Text variant="small">{tr('profile.gateNoAccount')}</Text>}
     </SheetScreen>
   )
 }
