@@ -24,6 +24,7 @@ const ICONS = {
   undo: { ios: 'arrow.uturn.backward', android: 'undo' },
   up: { ios: 'arrow.up', android: 'arrow_upward' },
   down: { ios: 'chevron.down', android: 'expand_more' },
+  collapse: { ios: 'chevron.up', android: 'expand_less' },
   lower: { ios: 'arrow.down', android: 'arrow_downward' },
   left: { ios: 'chevron.left', android: 'chevron_left' },
   right: { ios: 'chevron.right', android: 'chevron_right' },

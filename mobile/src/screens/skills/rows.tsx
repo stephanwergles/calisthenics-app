@@ -102,7 +102,8 @@ export function GoalCard({ id, name, share, stage, current, onRemove }: {
   )
 }
 
-export const openLadder = (pid: string) => { tapHaptic(); router.push({ pathname: '/progression/[pid]', params: { pid } }) }
+/** Leiter öffnen; `step` klappt diese Stufe gleich auf (z. B. die geforderte Stufe einer Voraussetzung) */
+export const openLadder = (pid: string, step?: string) => { tapHaptic(); router.push({ pathname: '/progression/[pid]', params: step ? { pid, step } : { pid } }) }
 
 /** Zeile einer Progression (Grundlagen, Unterstützung): öffnet die Leiter als Modal; optional mit Standbild */
 export function ProgressionRow({ pid, name, sub, exercise }: { pid: string; name: string; sub: string; exercise?: Exercise }) {

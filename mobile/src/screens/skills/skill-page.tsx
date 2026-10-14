@@ -35,8 +35,9 @@ export function SkillPage({ id }: { id: string }) {
   const prereqs = sk.prerequisites.filter(x => has(x.progression)).map(x => {
     const steps = t.ix.progressions.get(x.progression)!.steps
     const done = L.currentStep(t.ix, t.state, x.progression).index >= x.minStep
-    const name = t.ix.exercises.get(steps[Math.min(x.minStep, steps.length - 1)].exercise)?.name ?? x.progression
-    return { pid: x.progression, name, done, now: stepLine(t, x.progression).step.exercise.name }
+    const need = steps[Math.min(x.minStep, steps.length - 1)].exercise
+    const name = t.ix.exercises.get(need)?.name ?? x.progression
+    return { pid: x.progression, need, name, done, now: stepLine(t, x.progression).step.exercise.name }
   })
   const blocked = full && !card.goal
   const pct = Math.round(card.share * 100)
@@ -89,7 +90,7 @@ export function SkillPage({ id }: { id: string }) {
             {prereqs.map(x => (
               <Pressable key={x.pid} accessibilityRole="button"
                 accessibilityLabel={`${tr(x.done ? 'skills.prereqDone' : 'skills.prereqMissing', { name: x.name })}${x.done ? '' : `, ${tr('skills.prereqNow', { name: x.now })}`}`}
-                onPress={() => openLadder(x.pid)}
+                onPress={() => openLadder(x.pid, x.need)}
                 style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingLeft: 16, paddingRight: 14, minHeight: 56, backgroundColor: pressed ? 'rgba(255,255,255,0.06)' : 'transparent' })}>
                 {/* Status, kein Bedienelement: erfüllt = Haken, offen = Schloss (wie in der Skill-Liste) */}
                 <View style={{ width: 22, alignItems: 'center' }} accessibilityElementsHidden>

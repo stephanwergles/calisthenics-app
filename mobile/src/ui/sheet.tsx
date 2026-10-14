@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Text } from './text'
 import { color, GUTTER, space } from './theme'
 
-export function SheetScreen({ title, sub, children, footer, scroll = true, contentStyle, headerSpace = true }: {
+export function SheetScreen({ title, sub, children, footer, scroll = true, contentStyle, headerSpace = true, scrollRef }: {
   title?: string; sub?: string; children?: React.ReactNode
   /** feste Fußzeile (z. B. Speichern) */
   footer?: React.ReactNode
@@ -14,6 +14,8 @@ export function SheetScreen({ title, sub, children, footer, scroll = true, conte
   contentStyle?: StyleProp<ViewStyle>
   /** Platz für den transparenten nativen Header (Zurück/Schließen) */
   headerSpace?: boolean
+  /** z. B. um zu einem Abschnitt zu scrollen */
+  scrollRef?: React.Ref<React.ComponentRef<typeof ScrollView>>
 }) {
   const insets = useSafeAreaInsets()
   const head = title ? (
@@ -26,7 +28,7 @@ export function SheetScreen({ title, sub, children, footer, scroll = true, conte
   return (
     <View style={{ flex: 1, backgroundColor: color.bg }}>
       {scroll ? (
-        <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={[pad, contentStyle]}>
+        <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={[pad, contentStyle]}>
           {head}
           {children}
         </ScrollView>

@@ -1,19 +1,32 @@
-/* Progressions-Leiter (Modal, auch vom Heute-Screen): oben die aktuelle Stufe mit Clip,
-   Vorgabe, Kernpunkten und dem Freischalt-Kriterium samt Aktionen; darunter alle Stufen als
-   Zeitleiste (erledigt / aktuell / gesperrt); ganz unten eine Stufe zurück.
-   (Web: SkillsView.tsx – SkillSheet, Ladder, ladderBlocks) */
-import { useMemo } from 'react'
-import { View } from 'react-native'
+/* Progressions-Leiter (Modal, auch vom Heute-Screen). Drei klar getrennte Teile:
+   1. „Du trainierst gerade“ – aktuelle Stufe mit Clip, Vorgabe, Kernpunkten
+   2. „Nächste Stufe“ – eigene Karte mit Bild und Namen der nächsten Stufe, wie man sie freischaltet
+      und die Aktion, die sie beim Namen nennt (sonst wirkt „Trotzdem wechseln“ wie ein Wechsel der
+      aktuellen Übung)
+   3. alle Stufen als Zeitleiste – jede antippbar, klappt Clip, Vorgabe, Kernpunkte und Technik auf
+   `focus` klappt eine Stufe gleich auf (z. B. aus einer Voraussetzung: „Hollow Body Rocks“). */
+import { useMemo, useRef, useState } from 'react'
+import { Pressable, ScrollView, View } from 'react-native'
+import { platform } from '@lever/core/platform.ts'
 import * as L from '@lever/core/logic.ts'
 import { getLocale, t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
 import { Button, Card, color, ExerciseMedia, ExerciseStill, font, hasStill, Icon, SectionTitle, SheetScreen, Text } from '@/ui'
 import { switchStep } from './shared'
 
-export function Ladder({ pid }: { pid: string }) {
+export function Ladder({ pid, focus }: { pid: string; focus?: string }) {
   const { t } = useApp()
   const locale = getLocale()
   const tree = useMemo(() => L.skillTree(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions, locale])
+  // mit Fokus (aus einer Voraussetzung) einmal zur aufgeklappten Stufe scrollen
+  const scroll = useRef<React.ComponentRef<typeof ScrollView>>(null)
+  const stagesY = useRef(0)
+  const scrolled = useRef(false)
+  const toFocus = (y: number) => {
+    if (scrolled.current) return
+    scrolled.current = true
+    setTimeout(() => scroll.current?.scrollTo({ y: Math.max(0, stagesY.current + y - 24), animated: true }), 250)
+  }
   const p = tree.find(x => x.pid === pid)
   if (!p) return <SheetScreen title={tr('skills.notFound')} />
 
@@ -27,13 +40,13 @@ export function Ladder({ pid }: { pid: string }) {
 
   return (
     // Kopf nennt das Ziel der Leiter (letzte Stufe), nicht die aktuelle Übung – so sieht man, wohin es geht
-    <SheetScreen title={L.progressionName(t.ix, p.pid)} sub={sub}>
+    <SheetScreen title={L.progressionName(t.ix, p.pid)} sub={sub} scrollRef={scroll}>
       {/* aktuelle Stufe */}
       <Card active style={{ padding: 0, gap: 0, overflow: 'hidden' }}>
         <ExerciseMedia exercise={ex} label={ex.name} style={{ height: 230, borderRadius: 0 }} />
         <View style={{ padding: 18, gap: 14 }}>
           <View style={{ gap: 4 }}>
-            <Text variant="eyebrow">{tr('skills.currentStep')} · {stage}</Text>
+            <Text variant="eyebrow">{tr('skills.nowTraining')} · {stage}</Text>
             <Text variant="display" style={{ fontSize: 28, lineHeight: 28 }}>{ex.name}</Text>
             <Text variant="muted">{p.step.target.label}{standing.best ? tr('skills.bestSession', { best: standing.best }) : ''}</Text>
           </View>
@@ -50,14 +63,26 @@ export function Ladder({ pid }: { pid: string }) {
             </View>
           )}
 
-          <Unlock p={p} missing={standing.missing} onAct={act} />
+          {!p.step.next && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 14, borderTopWidth: 0.5, borderTopColor: color.line }}>
+              <Icon name="trophy" size={18} color={color.accent} />
+              <Text variant="label" style={{ flex: 1 }}>{tr('skills.topStep')}</Text>
+            </View>
+          )}
         </View>
       </Card>
 
-      {/* alle Stufen */}
-      <SectionTitle title={tr('skills.stages')} />
-      <View>
-        {p.nodes.map((n, i) => <Node key={n.exercise.id} n={n} i={i} last={i === p.nodes.length - 1} best={standing.best} />)}
+      {/* nächste Stufe: eigene Karte, Aktionen nennen sie beim Namen */}
+      {p.step.next && <>
+        <SectionTitle title={tr('skills.nextStage')} />
+        <Unlock p={p} missing={standing.missing} onAct={act} />
+      </>}
+
+      {/* alle Stufen – antippbar */}
+      <SectionTitle title={tr('skills.stages')} style={{ marginBottom: 0 }} />
+      <Text variant="muted">{tr('skills.stagesHint')}</Text>
+      <View onLayout={e => { stagesY.current = e.nativeEvent.layout.y }}>
+        <Stages p={p} best={standing.best} focus={focus} onFocusLayout={toFocus} />
       </View>
 
       {p.step.prev && <Button variant="ghost" icon="undo" title={tr('skills.backTo', { name: p.step.prev.name })} onPress={() => act('back')} />}
@@ -65,50 +90,67 @@ export function Ladder({ pid }: { pid: string }) {
   )
 }
 
-/** Kriterium zum Freischalten, Fortschritt (2 Einheiten) und die passende Aktion */
+/** Karte der nächsten Stufe: Bild und Name, Kriterium (bezogen auf die aktuelle Übung), Fortschritt
+    der zwei Einheiten und die Aktion – freischalten oder vorzeitig wechseln */
 function Unlock({ p, missing, onAct }: { p: L.SkillPath; missing: string | null; onAct: (a: 'unlock' | 'force') => void }) {
-  const next = p.step.next
+  const next = p.step.next!
   const at = p.step.target.unlockAt
   const unit = p.step.exercise.unit === 'seconds' ? ' s' : ''
   const done = p.progress?.done ?? 0
-  const ready = !p.paused && done === 2 && !!next
-  const box = { gap: 10, paddingTop: 14, borderTopWidth: 0.5, borderTopColor: color.line }
-  if (!next) return (
-    <View style={[box, { flexDirection: 'row', alignItems: 'center', gap: 10 }]}>
-      <Icon name="trophy" size={18} color={color.accent} />
-      <Text variant="label" style={{ flex: 1 }}>{tr('skills.topStep')}</Text>
-    </View>
-  )
-  if (at == null) return (
-    <View style={box}>
-      <Text variant="muted">{tr('skills.noCriterion')}</Text>
-      <Button variant="secondary" icon="up" title={tr('skills.switchTo', { name: next.name })} onPress={() => onAct('force')} />
-    </View>
-  )
+  const ready = !p.paused && done === 2
   return (
-    <View style={box}>
-      <Text variant="label">{tr('skills.unlockCriterion', { at, unit })}</Text>
-      <View style={{ flexDirection: 'row', gap: 6 }} accessible accessibilityLabel={tr('skills.progressLabel', { n: done })}>
-        {[1, 2].map(k => <View key={k} style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: done >= k ? color.accent : 'rgba(255,255,255,0.09)' }} />)}
+    <Card style={{ gap: 14 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+        {hasStill(next.id)
+          ? <ExerciseStill exercise={next} style={{ width: 64, height: 64, borderRadius: 14, borderCurve: 'continuous' }} />
+          : <View style={{ width: 64, height: 64, borderRadius: 14, backgroundColor: color.card2, alignItems: 'center', justifyContent: 'center' }}><Icon name="lock" size={18} color={color.muted} /></View>}
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text variant="eyebrow" style={{ color: color.muted }}>{tr('logic.stage', { i: p.step.index + 2, n: p.step.total })}</Text>
+          <Text variant="title" style={{ fontSize: 22 }}>{next.name}</Text>
+        </View>
       </View>
-      <Text variant="small" style={{ color: ready ? color.accent : color.muted }}>{tr('skills.progressOf', { n: done })}{missing ? ` · ${missing}` : tr('skills.ready')}</Text>
+      {at == null
+        ? <Text variant="muted">{tr('skills.noCriterionNext', { name: p.step.exercise.name })}</Text>
+        : <>
+          <Text variant="body">{tr('skills.unlockHow', { at, unit, name: p.step.exercise.name })}</Text>
+          <View style={{ flexDirection: 'row', gap: 6 }} accessible accessibilityLabel={tr('skills.progressLabel', { n: done })}>
+            {[1, 2].map(k => <View key={k} style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: done >= k ? color.accent : 'rgba(255,255,255,0.09)' }} />)}
+          </View>
+          <Text variant="small" style={{ color: ready ? color.accent : color.muted }}>{tr('skills.progressOf', { n: done })}{missing ? ` · ${missing}` : tr('skills.ready')}</Text>
+        </>}
       {ready
         ? <Button variant="primary" icon="up" title={tr('skills.unlock', { name: next.name })} onPress={() => onAct('unlock')} />
-        : <Button variant="secondary" icon="up" title={tr('skills.forceSwitch')} onPress={() => onAct('force')} />}
+        : <Button variant="secondary" icon="up" title={tr('skills.forceTo', { name: next.name })} onPress={() => onAct('force')} />}
+    </Card>
+  )
+}
+
+/** Alle Stufen als Zeitleiste; eine Stufe aufgeklappt (Fokus oder angetippt) */
+function Stages({ p, best, focus, onFocusLayout }: { p: L.SkillPath; best: string | null; focus?: string; onFocusLayout: (y: number) => void }) {
+  const [open, setOpen] = useState<string | null>(focus && focus !== p.step.exercise.id ? focus : null)
+  return (
+    <View>
+      {p.nodes.map((n, i) => (
+        <View key={n.exercise.id} onLayout={n.exercise.id === focus && focus !== p.step.exercise.id ? e => onFocusLayout(e.nativeEvent.layout.y) : undefined}>
+          <Node n={n} i={i} last={i === p.nodes.length - 1} best={best} open={open === n.exercise.id}
+            onToggle={() => { platform().signals.haptic('tap'); setOpen(o => (o === n.exercise.id ? null : n.exercise.id)) }} />
+          {open === n.exercise.id && <StageDetail n={n} />}
+        </View>
+      ))}
     </View>
   )
 }
 
 /** Stufe in der Zeitleiste: Punkt an der Linie, Standbild, Name, Stand */
-function Node({ n, i, last, best }: { n: L.SkillNode; i: number; last: boolean; best: string | null }) {
+function Node({ n, i, last, best, open, onToggle }: { n: L.SkillNode; i: number; last: boolean; best: string | null; open: boolean; onToggle: () => void }) {
   const sub = n.state === 'done' ? tn('skills.done', n.sessions)
     : n.state === 'current' ? tr('skills.current', { target: n.target.label, best: best ? tr('skills.bestSession', { best }) : '' })
     : last ? tr('skills.finalStep') : tr('skills.locked')
   const line = (on: boolean, show: boolean) => <View style={{ width: 2, flex: 1, backgroundColor: show ? (on ? color.chalk : color.line) : 'transparent' }} />
   const current = n.state === 'current', done = n.state === 'done'
   return (
-    <View style={{ flexDirection: 'row', gap: 14, minHeight: 76 }} accessible
-      accessibilityLabel={tr('skills.stepA11y', { i: i + 1, name: n.exercise.name, state: sub })}>
+    <Pressable style={{ flexDirection: 'row', gap: 14, minHeight: 76 }} accessibilityRole="button" accessibilityState={{ expanded: open }}
+      onPress={onToggle} accessibilityLabel={tr('skills.stepA11y', { i: i + 1, name: n.exercise.name, state: sub })}>
       <View style={{ width: 34, alignItems: 'center' }}>
         {line(done || current, i > 0)}
         <View style={{
@@ -130,7 +172,27 @@ function Node({ n, i, last, best }: { n: L.SkillNode; i: number; last: boolean; 
           <Text variant="title" style={{ fontSize: 19, color: n.state === 'locked' ? color.muted : current ? color.accent : color.text }}>{n.exercise.name}</Text>
           <Text variant="small">{sub}</Text>
         </View>
+        <Icon name={open ? 'collapse' : 'down'} size={13} color={color.muted} />
       </View>
+    </Pressable>
+  )
+}
+
+/** aufgeklappte Stufe: Clip, Vorgabe, Kernpunkte, Ausgangsposition und Ausführung */
+function StageDetail({ n }: { n: L.SkillNode }) {
+  const ex = n.exercise
+  return (
+    <View style={{ marginLeft: 48, marginBottom: 12, gap: 10 }}>
+      <ExerciseMedia exercise={ex} label={ex.name} style={{ height: 190, borderRadius: 16 }} />
+      <Text variant="muted">{n.target.label}</Text>
+      {(ex.cues ?? []).map(c => (
+        <View key={c} style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: color.accent, marginTop: 8 }} />
+          <Text variant="body" style={{ flex: 1 }}>{c}</Text>
+        </View>
+      ))}
+      {ex.technique.setup ? <View style={{ gap: 2 }}><Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', letterSpacing: 1.2 }}>{tr('skills.howSetup')}</Text><Text variant="body">{ex.technique.setup}</Text></View> : null}
+      {ex.technique.execution ? <View style={{ gap: 2 }}><Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', letterSpacing: 1.2 }}>{tr('skills.howExec')}</Text><Text variant="body">{ex.technique.execution}</Text></View> : null}
     </View>
   )
 }
