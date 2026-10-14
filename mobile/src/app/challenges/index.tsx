@@ -19,7 +19,7 @@ export default function ChallengesScreen() {
           const best = L.challengeBest(c, t.activities)
           const ex = c.exercise ? t.ix.exercises.get(c.exercise) : undefined
           return {
-            key: c.id, title: c.name, subtitle: L.fmtChallengeRule(c), exercise: ex, icon: ex ? undefined : 'flame' as const,
+            key: c.id, title: c.name, subtitle: L.fmtChallengeRule(c), exercise: ex, icon: 'flame' as const, iconTile: true,
             trailing: best ? L.fmtChallengeValue(c, best.value!) : undefined,
             onPress: () => router.push({ pathname: '/challenges/[id]', params: { id: c.id } }),
           }

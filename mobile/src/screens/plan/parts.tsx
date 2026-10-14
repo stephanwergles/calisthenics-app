@@ -58,6 +58,8 @@ export interface RowProps {
   exercise?: Exercise
   /** Symbol links (Volt) statt Bild */
   icon?: IconName
+  /** Symbol in einer Kachel so groß wie ein Übungsbild – in Listen, die Bilder und Symbole mischen */
+  iconTile?: boolean
   /** markiert (z. B. heute) */
   tag?: string
   /** gedimmter Titel (Ruhetag) */
@@ -72,7 +74,7 @@ export function Rows({ rows }: { rows: (RowProps & { key: string })[] }) {
     <View style={{ backgroundColor: color.card, borderRadius: radius.card, borderCurve: 'continuous', borderWidth: 1, borderColor: color.line, overflow: 'hidden' }}>
       {rows.map(({ key, ...r }, i) => (
         <Fragment key={key}>
-          {i > 0 && <View style={{ height: 0.5, backgroundColor: color.line, marginLeft: r.exercise ? 82 : r.icon ? 56 : 16 }} />}
+          {i > 0 && <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginLeft: r.exercise || r.iconTile ? 82 : r.icon ? 56 : 16 }} />}
           <Row {...r} />
         </Fragment>
       ))}
@@ -80,11 +82,15 @@ export function Rows({ rows }: { rows: (RowProps & { key: string })[] }) {
   )
 }
 
-export function Row({ title, subtitle, trailing, exercise, icon, tag, off, onPress, label }: RowProps) {
+export function Row({ title, subtitle, trailing, exercise, icon, iconTile, tag, off, onPress, label }: RowProps) {
   const body = (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: exercise ? 10 : 12, paddingLeft: exercise ? 12 : 16, paddingRight: 14, minHeight: 56 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: exercise || iconTile ? 10 : 12, paddingLeft: exercise || iconTile ? 12 : 16, paddingRight: 14, minHeight: 56 }}>
       {exercise ? <ExerciseStill exercise={exercise} size={22} style={{ width: 56, height: 56, borderRadius: radius.lg, borderCurve: 'continuous' }} /> : null}
-      {icon ? <View style={{ width: 26, alignItems: 'center' }}><Icon name={icon} size={19} color={color.accent} /></View> : null}
+      {icon && iconTile && !exercise ? (
+        <View style={{ width: 56, height: 56, borderRadius: radius.lg, borderCurve: 'continuous', backgroundColor: color.card2, alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name={icon} size={22} color={color.accent} />
+        </View>
+      ) : icon && !exercise ? <View style={{ width: 26, alignItems: 'center' }}><Icon name={icon} size={19} color={color.accent} /></View> : null}
       <View style={{ flex: 1, gap: 2 }}>
         <Text variant="label" style={{ fontSize: 16.5, color: off ? color.muted : color.text }}>{title}</Text>
         {subtitle ? <Text variant="small">{subtitle}</Text> : null}

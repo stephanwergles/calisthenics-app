@@ -24,7 +24,8 @@ export function ListGroup({ rows }: { rows: ListRowProps[] }) {
     <View style={{ backgroundColor: color.card, borderRadius: radius.card, borderCurve: 'continuous', borderWidth: 1, borderColor: color.line, overflow: 'hidden' }}>
       {rows.map((r, i) => (
         <Fragment key={`${r.title}-${i}`}>
-          {i > 0 && <View style={{ height: 0.5, backgroundColor: color.line, marginLeft: r.icon ? 56 : 16 }} />}
+          {/* 1 pt statt 0,5: halbe Punkte landen in Sheets mit Detents auf Bruchteil-Pixeln und verschwinden */}
+          {i > 0 && <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginLeft: r.icon ? 56 : 16 }} />}
           <ListRow {...r} />
         </Fragment>
       ))}
