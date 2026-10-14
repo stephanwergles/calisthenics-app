@@ -55,4 +55,11 @@ export const home = {
   bannerMissed: 'Nicht trainiert',
   bannerView: 'Ansehen',
   bannerOverview: 'Zur Übersicht',
+  bannerWorkout: 'Workout machen',
+  titleRest: 'Heute',
+  titleRestAccent: 'Ruhetag.',
+  restLabel: 'Heute · Ruhetag',
+  restAnyway: 'Doch trainieren: {name}',
+  restCardio: 'Cardio eintragen',
+  restChallenge: 'Challenge',
 }

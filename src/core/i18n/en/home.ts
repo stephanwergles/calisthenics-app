@@ -58,4 +58,11 @@ export const home: Shape<typeof de> = {
   bannerMissed: 'Not trained',
   bannerView: 'View',
   bannerOverview: 'Overview',
+  bannerWorkout: 'Do a workout',
+  titleRest: 'Today is a',
+  titleRestAccent: 'rest day.',
+  restLabel: 'Today · Rest day',
+  restAnyway: 'Train anyway: {name}',
+  restCardio: 'Log cardio',
+  restChallenge: 'Challenge',
 }

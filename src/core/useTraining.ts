@@ -240,6 +240,9 @@ export function useTraining() {
     return known(active?.workout) ?? known(started?.workout) ?? recommended
   }, [ix, choice, today, sessionList, active, recommended])
   const todaySession = L.live(sessions.get(L.sessionId(today, workout)))
+  /** heute laut Wochenplan kein Training – solange nichts gewählt, begonnen oder trainiert wurde */
+  const restDay = useMemo(() => !ix.catalog.weekplan[L.weekdayOf(today)] && choice?.date !== today && !active
+    && !sessionList.some(s => s.date === today && s.sets.length), [ix, today, choice, active, sessionList])
 
   /* ── Ändern (immer lokal + Postausgang) ───────────────────────────────── */
 
@@ -401,7 +404,7 @@ export function useTraining() {
   }, [])
 
   return {
-    loaded, persistent, today, ix, sessions: sessionList, activities, state, active, workout, recommended,
+    loaded, persistent, today, ix, sessions: sessionList, activities, state, active, workout, recommended, restDay,
     todaySession, updateToday, setState, chooseWorkout, startSession, endSession,
     addActivity, removeActivity, removeSession, discardSession, importV1, exportData,
     sync, syncNow: runSync, signIn, signOut, deleteAccount,

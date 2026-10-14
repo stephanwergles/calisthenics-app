@@ -52,8 +52,8 @@ export function Today() {
           <View style={{ flex: 1, gap: 6 }}>
             <Text variant="small" style={{ fontFamily: font.bodySemi, textTransform: 'uppercase', letterSpacing: 1.6 }}>{dateLabel}</Text>
             <Text variant="hero" accessibilityRole="header">
-              {done ? tr('home.titleDone') : t.active ? tr('home.titleActive') : tr('home.titleReady')}{'\n'}
-              <Text variant="hero" style={{ color: color.accent }}>{done ? tr('home.titleDoneAccent') : `${first}.`}</Text>
+              {done ? tr('home.titleDone') : t.active ? tr('home.titleActive') : t.restDay ? tr('home.titleRest') : tr('home.titleReady')}{'\n'}
+              <Text variant="hero" style={{ color: color.accent }}>{done ? tr('home.titleDoneAccent') : t.restDay ? tr('home.titleRestAccent') : `${first}.`}</Text>
             </Text>
           </View>
           {streak > 0 && (
@@ -95,8 +95,8 @@ export function Today() {
 
         {notice && <Text variant="muted" accessibilityLiveRegion="polite" style={{ color: color.text, backgroundColor: color.accentDim, padding: 12, borderRadius: 14, overflow: 'hidden' }}>{notice}</Text>}
 
-        {/* Workout des Tages */}
-        <Card style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
+        {/* Workout des Tages – an Ruhetagen stattdessen die Einladung zur Bewegung */}
+        {t.restDay ? <RestCard /> : <Card style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
           {hero && <ExerciseStill exercise={hero} style={{ position: 'absolute', right: -10, top: 0, bottom: 0, width: '55%', opacity: 0.55 }} />}
           <View style={{ padding: 22, gap: 12 }}>
             <Text variant="eyebrow">{tr('home.heroLabel', { name: w.name })}{started ? tr('home.heroSets', { done: doneSets, total: sets }) : ''}</Text>
@@ -117,7 +117,7 @@ export function Today() {
               </View>
             </View>
           </View>
-        </Card>
+        </Card>}
 
         {/* Workouts: jedes Workout mit einem Tipp starten (auch außerhalb des Plan-Tags) */}
         <WorkoutStrip mode="home" />
@@ -198,27 +198,30 @@ function DayBanner({ date, onClose }: { date: string; onClose: () => void }) {
   const session = t.sessions.find(s => s.date === date && L.isTrained(s))
   const cardio = L.cardioOnly(t.activities).filter(a => a.date === date)
   const planned = t.ix.workouts.get(t.ix.catalog.weekplan[L.weekdayOf(date)] ?? '')
-  const addCardio = { icon: 'plus' as const, title: tr('history.restAddCardio'), onPress: () => router.push({ pathname: '/activity', params: { date } }) }
-  let label: string, title: string, text: string | null, action: { icon: IconName; title: string; onPress: () => void } | null
+  type Action = { icon: IconName; title: string; onPress: () => void; primary?: boolean }
+  const addCardio: Action = { icon: 'plus', title: tr('history.restAddCardio'), onPress: () => router.push({ pathname: '/activity', params: { date } }) }
+  // „Workout machen“ heißt jetzt trainieren – die Liste der Workouts, gestartet wird dort
+  const doWorkout: Action = { icon: 'play', title: tr('home.bannerWorkout'), onPress: () => router.push('/workouts') }
+  let label: string, title: string, text: string | null, actions: Action[]
   if (session) {
     const w = t.ix.workouts.get(session.workout)
     label = tr('home.bannerDone'); title = w?.focus ?? session.workout
     text = [w?.name, session.durationSec ? L.fmtDuration(session.durationSec) : null, tn('history.sets', session.sets.length),
       ...cardio.map(a => L.activityTitle(a))].filter(Boolean).join(' · ')
-    action = { icon: 'right', title: tr('home.bannerView'), onPress: () => router.push(dayHref({ kind: 'session', id: session.id })) }
+    actions = [{ icon: 'right', title: tr('home.bannerView'), onPress: () => router.push(dayHref({ kind: 'session', id: session.id })) }]
   } else if (cardio.length) {
     label = tr('home.bannerCardio'); title = cardio.map(a => L.activityTitle(a)).join(' · ')
     text = cardio.map(a => L.fmtActivity(a)).filter(Boolean).join(' · ') || null
-    action = { icon: 'right', title: tr('home.bannerView'), onPress: () => router.push(dayHref({ kind: 'activity', id: cardio[0].id })) }
+    actions = [{ icon: 'right', title: tr('home.bannerView'), onPress: () => router.push(dayHref({ kind: 'activity', id: cardio[0].id })) }]
   } else if (planned && !past) {
     label = tr('home.bannerPlanned'); title = planned.focus
     text = `${planned.name} · ${tn('home.meta.exercises', planned.slots.length)}`
-    action = { icon: 'right', title: tr('home.bannerOverview'), onPress: () => router.push({ pathname: '/workouts/[id]', params: { id: planned.id } }) }
+    actions = [{ icon: 'right', title: tr('home.bannerOverview'), onPress: () => router.push({ pathname: '/workouts/[id]', params: { id: planned.id } }) }]
   } else if (planned) {
-    label = tr('home.bannerMissed'); title = planned.focus; text = tr('history.restTextPast'); action = addCardio
+    label = tr('home.bannerMissed'); title = planned.focus; text = tr('history.restTextPast'); actions = [addCardio, doWorkout]
   } else {
     label = tr('history.restDay'); title = tr('history.restTitle')
-    text = past ? tr('history.restTextPast') : tr('history.restText'); action = past ? addCardio : null
+    text = past ? tr('history.restTextPast') : tr('history.restText'); actions = past ? [addCardio, doWorkout] : [doWorkout]
   }
   return (
     <View accessibilityLiveRegion="polite" style={{ backgroundColor: color.card, borderWidth: 1, borderColor: color.line, borderRadius: radius.card, borderCurve: 'continuous', padding: 16, gap: 10 }}>
@@ -230,7 +233,32 @@ function DayBanner({ date, onClose }: { date: string; onClose: () => void }) {
         </View>
         <Button size="sm" variant="ghost" icon="close" label={tr('common.close')} onPress={onClose} />
       </View>
-      {action && <Button size="sm" icon={action.icon} title={action.title} onPress={action.onPress} style={{ alignSelf: 'flex-start' }} />}
+      {actions.length > 0 && (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {actions.map(a => <Button key={a.title} size="sm" icon={a.icon} title={a.title} onPress={a.onPress} />)}
+        </View>
+      )}
     </View>
+  )
+}
+
+/** Ruhetag (heute nichts geplant): Erholung als Normalfall, aber zu Bewegung einladen – Cardio,
+    Challenge oder doch trainieren (dann wird daraus die normale Trainingskarte) */
+function RestCard() {
+  const { t } = useApp()
+  const rec = t.ix.workouts.get(t.recommended)
+  return (
+    <Card style={{ gap: 12, padding: 22 }}>
+      <Text variant="eyebrow">{tr('home.restLabel')}</Text>
+      <Text variant="display" style={{ fontSize: 34, lineHeight: 34 }}>{tr('history.restTitle')}</Text>
+      <Text variant="muted">{tr('history.restText')}</Text>
+      <View style={{ gap: 10, marginTop: 6 }}>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <Button style={{ flex: 1 }} icon="walk" title={tr('home.restCardio')} onPress={() => router.push({ pathname: '/activity', params: { date: t.today } })} />
+          <Button style={{ flex: 1 }} icon="flame" title={tr('home.restChallenge')} onPress={() => router.push('/challenges')} />
+        </View>
+        {rec && <Button icon="play" title={tr('home.restAnyway', { name: rec.name })} onPress={() => t.chooseWorkout(rec.id)} />}
+      </View>
+    </Card>
   )
 }
