@@ -8,9 +8,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as L from '@lever/core/logic.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import { platform } from '@lever/core/platform.ts'
-import type { Activity } from '@lever/domain/model.ts'
+import { CARDIO_FIELDS, CARDIO_KINDS, type Activity } from '@lever/domain/model.ts'
 import { useApp } from '@/state/app'
-import { Button, ButtonRow, color, GUTTER, Segmented, space, Stepper, Text } from '@/ui'
+import { Button, ButtonRow, ChipChoices, color, GUTTER, space, Stepper, Text } from '@/ui'
 import { confirmRemoveActivity } from './actions'
 
 type Kind = Activity['kind']
@@ -27,17 +27,18 @@ export function ActivityEditor() {
   const [hm, setHm] = useState(existing?.elevationM ?? 0)
 
   const kinds: { id: Kind; title: string }[] = [
-    { id: 'run', title: tr('logic.activity.run') },
-    { id: 'ride', title: tr('logic.activity.ride') },
+    ...CARDIO_KINDS.map(id => ({ id, title: L.activityKindLabel(id) })),
     // „Workout“ (z. B. Cindy) legt das Formular nicht an, ein vorhandener Eintrag behält die Art
-    ...(existing?.kind === 'workout' ? [{ id: 'workout' as const, title: tr('logic.activity.workout') }] : []),
+    ...(existing?.kind === 'workout' ? [{ id: 'workout' as const, title: L.activityKindLabel('workout') }] : []),
   ]
+  // Distanz/Höhenmeter nur, wo sie zur Art passen (Klettern, Seilspringen: nur Minuten)
+  const fields = (CARDIO_FIELDS as Record<string, { km?: boolean; hm?: boolean }>)[kind] ?? { km: true, hm: true }
 
   const save = () => {
     // Zeitstempel statt laufender Nummer: nach dem Löschen eines Eintrags würde eine Nummer kollidieren
     const base: Activity = existing ?? { id: `${date}-${kind}-${Date.now().toString(36)}`, date, kind }
     const { distanceKm: _k, elevationM: _h, ...rest } = base
-    t.addActivity({ ...rest, kind, durationMin: min, ...(km ? { distanceKm: km } : {}), ...(hm ? { elevationM: hm } : {}) })
+    t.addActivity({ ...rest, kind, durationMin: min, ...(km && fields.km ? { distanceKm: km } : {}), ...(hm && fields.hm ? { elevationM: hm } : {}) })
     platform().signals.haptic('success')
     router.back()
   }
@@ -55,13 +56,13 @@ export function ActivityEditor() {
           <Text variant="display" accessibilityRole="header">{existing ? tr('history.cardioEdit') : tr('sheets.cardio.title')}</Text>
           <Text variant="muted">{L.fmtDate(date)}</Text>
         </View>
-        <Segmented<Kind> label={tr('sheets.cardio.kind')} options={kinds} value={kind} onChange={setKind} />
+        <ChipChoices items={kinds.map(k => ({ id: k.id, title: k.title, on: k.id === kind }))} onToggle={id => setKind(id as Kind)} />
         <Stepper label={tr('sheets.cardio.minutes')} value={num(min)}
           onMinus={() => setMin(v => Math.max(5, v - 5))} onPlus={() => setMin(v => v + 5)} />
-        <Stepper label={tr('sheets.cardio.km')} value={num(km)}
-          onMinus={() => setKm(v => Math.max(0, +(v - 1).toFixed(1)))} onPlus={() => setKm(v => +(v + 1).toFixed(1))} />
-        <Stepper label={tr('sheets.cardio.elevation')} value={num(hm)}
-          onMinus={() => setHm(v => Math.max(0, v - 50))} onPlus={() => setHm(v => v + 50)} />
+        {fields.km && <Stepper label={tr('sheets.cardio.km')} value={num(km)}
+          onMinus={() => setKm(v => Math.max(0, +(v - (kind === 'swim' ? 0.1 : 1)).toFixed(1)))} onPlus={() => setKm(v => +(v + (kind === 'swim' ? 0.1 : 1)).toFixed(1))} />}
+        {fields.hm && <Stepper label={tr('sheets.cardio.elevation')} value={num(hm)}
+          onMinus={() => setHm(v => Math.max(0, v - 50))} onPlus={() => setHm(v => v + 50)} />}
       </ScrollView>
       <View style={{ paddingHorizontal: GUTTER, paddingTop: 10, paddingBottom: Math.max(insets.bottom, 12) + 4, gap: 10 }}>
         <ButtonRow>

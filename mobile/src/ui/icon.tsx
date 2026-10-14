@@ -50,6 +50,13 @@ const ICONS = {
   signOut: { ios: 'rectangle.portrait.and.arrow.right', android: 'logout' },
   run: { ios: 'figure.run', android: 'directions_run' },
   bike: { ios: 'figure.outdoor.cycle', android: 'directions_bike' },
+  walk: { ios: 'figure.walk', android: 'directions_walk' },
+  hike: { ios: 'figure.hiking', android: 'hiking' },
+  swim: { ios: 'figure.pool.swim', android: 'pool' },
+  row: { ios: 'figure.rower', android: 'rowing' },
+  climb: { ios: 'figure.climbing', android: 'landscape' },
+  jumprope: { ios: 'figure.jumprope', android: 'sports' },
+  cardio: { ios: 'figure.mixed.cardio', android: 'favorite' },
   bolt: { ios: 'bolt.fill', android: 'bolt' },
   flame: { ios: 'flame.fill', android: 'local_fire_department' },
   info: { ios: 'info.circle', android: 'info' },
@@ -88,3 +95,9 @@ export function Icon({ name, size = 20, color = C.text, weight = 'semibold' }: {
 /** SF-Symbol-Name für native Stellen (NativeTabs, Menüs) */
 export const sf = (name: IconName) => ICONS[name].ios
 export const md = (name: IconName) => ICONS[name].android
+
+/** Symbol je Aktivitäts-Art (Cardio, Challenge) */
+export function activityIcon(kind: string): IconName {
+  const map: Record<string, IconName> = { run: 'run', ride: 'bike', walk: 'walk', hike: 'hike', swim: 'swim', row: 'row', climb: 'climb', jumprope: 'jumprope', challenge: 'flame' }
+  return map[kind] ?? 'cardio'
+}

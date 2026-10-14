@@ -13,7 +13,7 @@ export const logic: Shape<typeof de> = {
   muscle: { chest: 'Chest', upperBack: 'Upper back & lats', arms: 'Upper arm (biceps, triceps)', abs: 'Abs', thigh: 'Thigh & glutes', calf: 'Calf' },
   tendon: { shoulder: 'Shoulder', elbow: 'Elbow', wrist: 'Hand & wrist', back: 'Lower back', hip: 'Hip', knee: 'Knee', ankle: 'Foot & ankle' },
   level: { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' },
-  activity: { run: 'Run', ride: 'Ride', workout: 'Workout', challenge: 'Challenge' },
+  activity: { run: 'Run', ride: 'Ride', walk: 'Walk', hike: 'Hike', swim: 'Swim', row: 'Row', climb: 'Climb', jumprope: 'Jump rope', other: 'Other', workout: 'Workout', challenge: 'Challenge' },
   challenge: { reps: '{n} reps', amrap: 'As many as possible in {time}', fortime: '{n} reps for time', maxReps: 'As many as possible in one set', maxHold: 'Hold as long as possible' },
   customWorkout: 'Custom workout',
   fullBody: 'Full body',

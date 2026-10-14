@@ -445,7 +445,7 @@ export interface Activity {
   user: number | User;
   key: string;
   date: string;
-  kind: 'run' | 'ride' | 'workout' | 'challenge';
+  kind: 'run' | 'ride' | 'walk' | 'hike' | 'swim' | 'row' | 'climb' | 'jumprope' | 'other' | 'workout' | 'challenge';
   name?: string | null;
   durationMin?: number | null;
   distanceKm?: number | null;

@@ -10,7 +10,7 @@ export const logic = {
   muscle: { chest: 'Brust', upperBack: 'Oberer Rücken & Lat', arms: 'Oberarm (Bizeps, Trizeps)', abs: 'Bauch', thigh: 'Oberschenkel & Gesäß', calf: 'Wade' },
   tendon: { shoulder: 'Schulter', elbow: 'Ellenbogen', wrist: 'Hand & Handgelenk', back: 'Unterer Rücken', hip: 'Hüfte', knee: 'Knie', ankle: 'Fuß & Sprunggelenk' },
   level: { beginner: 'Einsteiger', intermediate: 'Fortgeschritten', advanced: 'Erfahren' },
-  activity: { run: 'Lauf', ride: 'Rad', workout: 'Workout', challenge: 'Challenge' },
+  activity: { run: 'Lauf', ride: 'Rad', walk: 'Gehen', hike: 'Wandern', swim: 'Schwimmen', row: 'Rudern', climb: 'Klettern', jumprope: 'Seilspringen', other: 'Sonstiges', workout: 'Workout', challenge: 'Challenge' },
   challenge: { reps: '{n} Wdh.', amrap: 'So viele wie möglich in {time}', fortime: '{n} Wdh. auf Zeit', maxReps: 'So viele wie möglich am Stück', maxHold: 'So lange wie möglich halten' },
   customWorkout: 'Eigenes Workout',
   fullBody: 'Ganzkörper',

@@ -19,6 +19,7 @@ import * as migration_20261014_101706_stress_hip_back_ankle from './20261014_101
 import * as migration_20261014_120000_one_arm_pull_name from './20261014_120000_one_arm_pull_name';
 import * as migration_20261014_120602_activity_challenge from './20261014_120602_activity_challenge';
 import * as migration_20261014_130949_user_challenges from './20261014_130949_user_challenges';
+import * as migration_20261014_165128_activity_cardio_kinds from './20261014_165128_activity_cardio_kinds';
 
 export const migrations = [
   {
@@ -124,6 +125,11 @@ export const migrations = [
   {
     up: migration_20261014_130949_user_challenges.up,
     down: migration_20261014_130949_user_challenges.down,
-    name: '20261014_130949_user_challenges'
+    name: '20261014_130949_user_challenges',
+  },
+  {
+    up: migration_20261014_165128_activity_cardio_kinds.up,
+    down: migration_20261014_165128_activity_cardio_kinds.down,
+    name: '20261014_165128_activity_cardio_kinds'
   },
 ];

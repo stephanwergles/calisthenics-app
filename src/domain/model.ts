@@ -167,10 +167,21 @@ export interface Session {
   deleted?: boolean;
 }
 
+/** Cardio-Arten (selbst eintragbar); dazu „workout“ (z. B. Cindy, nur Bestand) und „challenge“ */
+export const CARDIO_KINDS = ["run", "ride", "walk", "hike", "swim", "row", "climb", "jumprope", "other"] as const;
+export type CardioKind = (typeof CARDIO_KINDS)[number];
+export const ACTIVITY_KINDS = [...CARDIO_KINDS, "workout", "challenge"] as const;
+export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
+/** welche Angaben je Cardio-Art sinnvoll sind (Minuten immer) */
+export const CARDIO_FIELDS: Record<CardioKind, { km?: boolean; hm?: boolean }> = {
+  run: { km: true, hm: true }, ride: { km: true, hm: true }, walk: { km: true }, hike: { km: true, hm: true },
+  swim: { km: true }, row: { km: true }, climb: {}, jumprope: {}, other: { km: true },
+};
+
 export interface Activity {
   id: string;
   date: string;
-  kind: "run" | "ride" | "workout" | "challenge";
+  kind: ActivityKind;
   name?: string;                // z. B. „Cindy“, bei Challenges der Name der Vorlage
   durationMin?: number;
   distanceKm?: number;

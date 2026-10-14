@@ -6,7 +6,7 @@ import type {
 } from '../domain/model.ts'
 import { assignThemes, restDays, usable } from '../domain/generator.ts'
 import { suggestSkills, suggestSplits, type SkillSuggestion } from '../domain/assessment.ts'
-import { MAX_GOALS, MUSCLE_AREAS, NOTE_MAX, REGIONS, TENDONS } from '../domain/model.ts'
+import { ACTIVITY_KINDS, MAX_GOALS, MUSCLE_AREAS, NOTE_MAX, REGIONS, TENDONS } from '../domain/model.ts'
 import { intl, t, tn, type Key } from './i18n/index.ts'
 
 export { NOTE_MAX }
@@ -444,7 +444,8 @@ export function sessionExercises(ix: Index, s: Session): { exercise: Exercise; s
   })
 }
 
-const ACTIVITY_LABEL = labels(['run', 'ride', 'workout', 'challenge'] as const, k => `logic.activity.${k}`)
+const ACTIVITY_LABEL = labels(ACTIVITY_KINDS, k => `logic.activity.${k}`)
+export const activityKindLabel = (k: Activity['kind']) => ACTIVITY_LABEL[k]
 export const activityTitle = (a: Activity) => a.name || ACTIVITY_LABEL[a.kind]
 export const fmtActivity = (a: Activity) => a.kind === 'challenge' ? fmtChallengeActivity(a) : [
   a.durationMin ? `${a.durationMin} min` : null,

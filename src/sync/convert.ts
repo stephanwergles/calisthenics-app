@@ -3,7 +3,7 @@
 
    Payload liefert leere Felder als null, Relationen je nach depth als ID oder
    Objekt und Array-Zeilen mit eigener `id`. Das App-Modell kennt nichts davon. */
-import { MAX_GOALS, MUSCLE_AREAS, NOTE_MAX, TENDONS } from '../domain/model.ts'
+import { ACTIVITY_KINDS, MAX_GOALS, MUSCLE_AREAS, NOTE_MAX, TENDONS } from '../domain/model.ts'
 import type { Activity, AssessmentData, Catalog, Challenge, Equipment, Exercise, ExerciseMeta, Phase, Plan, Profile, Skill, SplitTemplate, Template, Progression, Session, SetLog, Target, UserState, Workout, Weekday } from '../domain/model.ts'
 
 type Doc = Record<string, any>
@@ -127,7 +127,7 @@ export function isPlan(p: any): p is Plan {
     && Object.entries(p.weekplan).every(([d, w]) => WEEKDAYS.includes(d as Weekday) && p.workouts.some((x: any) => x.id === w && !x.archived))
 }
 export function isActivity(a: any): a is Activity {
-  return !!a && isId(a.id) && isDate(a.date) && ['run', 'ride', 'workout', 'challenge'].includes(a.kind)
+  return !!a && isId(a.id) && isDate(a.date) && (ACTIVITY_KINDS as readonly string[]).includes(a.kind)
     && (a.kind !== 'challenge' || (isId(a.challenge) && isNum(a.value) && a.value >= 0 && a.value <= 100000))
     && (a.parts === undefined || (Array.isArray(a.parts) && a.parts.length <= 500 && a.parts.every(isNum)))
     && (a.durationSec === undefined || (isNum(a.durationSec) && a.durationSec >= 0 && a.durationSec <= 86400))

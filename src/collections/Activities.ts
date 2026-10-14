@@ -1,6 +1,12 @@
 import type { CollectionConfig } from 'payload'
 import { loggedIn, ownDocs, setOwner } from '../access'
 import { clientUpdatedAt, localDate, owner } from './fields'
+import { ACTIVITY_KINDS } from '../domain/model'
+
+const KIND_LABEL: Record<(typeof ACTIVITY_KINDS)[number], string> = {
+  run: 'Lauf', ride: 'Rad', walk: 'Gehen', hike: 'Wandern', swim: 'Schwimmen', row: 'Rudern', climb: 'Klettern',
+  jumprope: 'Seilspringen', other: 'Sonstiges', workout: 'Workout (z. B. Cindy)', challenge: 'Challenge',
+}
 
 export const Activities: CollectionConfig = {
   slug: 'activities',
@@ -16,7 +22,7 @@ export const Activities: CollectionConfig = {
       localDate,
       {
         name: 'kind', type: 'select', required: true, label: 'Art',
-        options: [{ label: 'Lauf', value: 'run' }, { label: 'Rad', value: 'ride' }, { label: 'Workout (z. B. Cindy)', value: 'workout' }, { label: 'Challenge', value: 'challenge' }],
+        options: ACTIVITY_KINDS.map(value => ({ label: KIND_LABEL[value], value })),
       },
       { name: 'name', type: 'text' },
     ] },

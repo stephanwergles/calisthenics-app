@@ -10,7 +10,7 @@ import { getLocale, intl, t as tr, tn } from '@lever/core/i18n/index.ts'
 import type { Activity, Session } from '@lever/domain/model.ts'
 import { platform } from '@lever/core/platform.ts'
 import type { Training } from '@lever/core/useTraining.ts'
-import { Button, color, font, Icon, radius, Text } from '@/ui'
+import { activityIcon, Button, color, font, Icon, radius, Text } from '@/ui'
 import { dayHref, type DayItem } from './params'
 import { confirmRemoveActivity, confirmRemoveSession } from './actions'
 
@@ -178,7 +178,7 @@ function FeedRow({ t, f }: { t: Training; f: FeedItem }) {
           // fester Style: Link.Trigger (asChild) reicht keine Style-Funktion durch
           style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 54, paddingVertical: 9, paddingHorizontal: 14 }}>
           <View style={{ width: 26, alignItems: 'center' }}>
-            <Icon name={f.kind === 'session' ? 'training' : f.a.kind === 'ride' ? 'bike' : f.a.kind === 'run' ? 'run' : 'flame'} size={18}
+            <Icon name={f.kind === 'session' ? 'training' : activityIcon(f.a.kind)} size={18}
               color={f.kind === 'session' ? color.accent : color.text} />
           </View>
           <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
