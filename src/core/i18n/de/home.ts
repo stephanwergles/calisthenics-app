@@ -49,4 +49,10 @@ export const home = {
   readyPct: '{pct} Prozent bereit für {name}',
   skillProgress: '{exercise} · Stufe {stage}/{total} · {done} von 2',
   unlock: 'Freischalten',
+  bannerDone: 'Erledigt',
+  bannerCardio: 'Cardio',
+  bannerPlanned: 'Geplant',
+  bannerMissed: 'Nicht trainiert',
+  bannerView: 'Ansehen',
+  bannerOverview: 'Zur Übersicht',
 }

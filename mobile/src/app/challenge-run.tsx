@@ -17,6 +17,7 @@ import type { Challenge } from '@lever/domain/model.ts'
 import { useApp } from '@/state/app'
 import { ask, Button, ButtonRow, color, CountdownRing, font, GUTTER, Icon, Text } from '@/ui'
 import { NoteInput } from '@/screens/training/parts'
+import { useChallengeActivity } from '@/live/use-challenge-activity'
 
 const PREP = 3
 /** Satzgrößen zum Eintragen mit einem Tipp */
@@ -48,6 +49,8 @@ function Run({ c }: { c: Challenge }) {
   const [note, setNote] = useState('')
   const timed = L.challengeMeasuresTime(c)
   const runEnd = c.kind === 'amrap' && startRef.current ? startRef.current + (c.seconds ?? 60) * 1000 : null
+  // Sperrbildschirm und Dynamic Island, solange der Versuch läuft
+  useChallengeActivity(c, phase === 'run' ? startRef.current : null, count)
 
   useEffect(() => { signals().prime(); void signals().keepAwake(true); return () => { void signals().keepAwake(false) } }, [])
   // ein Takt für Vorlauf, Countdown und Stoppuhr

@@ -1,6 +1,6 @@
 /* Heute: die Woche auf einen Blick, das Workout des Tages als große Karte, darunter die Skills
    mit dem kürzesten Weg zur nächsten Stufe. (Web: src/client/components/HomeView.tsx) */
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
 import { router } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
@@ -10,12 +10,15 @@ import { useApp } from '@/state/app'
 import { WorkoutStrip } from '@/screens/plan/workout-strip'
 import { dayHref } from '@/screens/log/params'
 import { HeaderButton } from '@/navigation'
-import { Button, Card, color, ExerciseStill, font, GUTTER, hasClip, Icon, Ring, SectionTitle, space, Text, Wordmark } from '@/ui'
+import { Button, Card, color, ExerciseStill, font, GUTTER, hasClip, Icon, type IconName, radius, Ring, SectionTitle, space, Text, Wordmark } from '@/ui'
 
 export function Today() {
   const { t, slots, started, doneToday: done, start, openTraining } = useApp()
   const w = t.ix.workouts.get(t.workout)!
   const locale = getLocale()
+  // ausgewählter Tag der Wochenleiste (wie im Log): zeigt ein Banner; heute = keins
+  const [sel, setSel] = useState<string | null>(null)
+  useEffect(() => setSel(null), [t.today])
   const week = useMemo(() => L.weekStrip(t.ix, t.sessions, t.activities, t.today), [t.ix, t.sessions, t.activities, t.today, locale])
   const streak = useMemo(() => L.streakWeeks(t.sessions, t.today, t.state.phases), [t.sessions, t.today, t.state.phases])
   const minutes = useMemo(() => L.estimateMinutes(t.sessions, t.workout), [t.sessions, t.workout])
@@ -63,27 +66,22 @@ export function Today() {
 
         {/* Woche */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }} accessibilityLabel={tr('home.weekAria')}>
-          {week.map((d, i) => {
-            // Tipp: trainierter Tag → Einheit, Cardio → Eintrag, geplanter Tag → Workout-Übersicht,
-            // sonst → Tagesansicht (Ruhetag mit Vorschlägen; ändert nie den Wochenplan)
-            const session = d.trained ? t.sessions.find(s => s.date === d.date && L.isTrained(s)) : undefined
-            const activity = !session && d.cardio ? L.cardioOnly(t.activities).find(a => a.date === d.date) : undefined
-            const planned = t.ix.catalog.weekplan[L.WEEK_ORDER[i]]
-            const open = session ? () => router.push(dayHref({ kind: 'session', id: session.id }))
-              : activity ? () => router.push(dayHref({ kind: 'activity', id: activity.id }))
-              : planned && d.date >= t.today ? () => router.push({ pathname: '/workouts/[id]', params: { id: planned } })
-              : () => router.push(dayHref({ kind: 'empty', id: d.date }))
+          {week.map(d => {
+            const selected = d.date === sel
             return (
-            <Pressable key={d.date} onPress={open} accessibilityRole="button"
+            <Pressable key={d.date} accessibilityRole="button" accessibilityState={{ selected: selected || (!sel && d.today) }}
+              onPress={() => setSel(cur => (d.today || cur === d.date ? null : d.date))}
               style={({ pressed }) => ({ alignItems: 'center', gap: 6, opacity: pressed ? 0.7 : 1 })}
               accessibilityLabel={`${d.label}${d.trained ? tr('home.dayTrained') : d.planned ? tr('home.dayPlanned') : ''}${d.cardio ? tr('home.dayCardio') : ''}${d.today ? tr('home.dayToday') : ''}`}>
-              <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', color: d.today ? color.text : color.muted }}>{d.label}</Text>
+              <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', color: d.today || selected ? color.text : color.muted }}>{d.label}</Text>
               <View style={{
                 width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center',
                 backgroundColor: d.trained ? color.chalk : d.today ? color.accent : 'transparent',
                 // jeder Tag ist antippbar: geplant = Volt-Ring, sonst dünner Rand (Fläche oder Rand = anfassbar)
                 borderWidth: d.trained || d.today ? 0 : d.planned ? 2 : 1,
                 borderColor: d.planned ? color.accent : color.line,
+                // ausgewählt: weißer Ring außen
+                boxShadow: selected ? `0 0 0 2px ${color.bg}, 0 0 0 4px ${color.text}` : undefined,
               }}>
                 {d.trained ? <Icon name="check" size={16} color={color.onAccent} weight="bold" />
                   : <Text style={{ fontFamily: font.display, fontSize: 17, color: d.today ? color.onAccent : d.planned ? color.accent : color.muted }}>{Number(d.date.slice(8))}</Text>}
@@ -93,6 +91,7 @@ export function Today() {
             )
           })}
         </View>
+        {sel && <DayBanner date={sel} onClose={() => setSel(null)} />}
 
         {notice && <Text variant="muted" accessibilityLiveRegion="polite" style={{ color: color.text, backgroundColor: color.accentDim, padding: 12, borderRadius: 14, overflow: 'hidden' }}>{notice}</Text>}
 
@@ -189,3 +188,49 @@ function ChallengeCard() {
   )
 }
 
+
+/** Banner zum ausgewählten Tag der Wochenleiste: erledigt, Cardio, geplant, verpasst oder Ruhetag –
+    mit der passenden Aktion. Ruhetage laden zu lockerer Bewegung ein; der Wochenplan ändert sich hier nie. */
+function DayBanner({ date, onClose }: { date: string; onClose: () => void }) {
+  const { t } = useApp()
+  const past = date < t.today
+  const day = new Date(`${date}T12:00`).toLocaleDateString(intl(), { weekday: 'long', day: 'numeric', month: 'numeric' })
+  const session = t.sessions.find(s => s.date === date && L.isTrained(s))
+  const cardio = L.cardioOnly(t.activities).filter(a => a.date === date)
+  const planned = t.ix.workouts.get(t.ix.catalog.weekplan[L.weekdayOf(date)] ?? '')
+  const addCardio = { icon: 'plus' as const, title: tr('history.restAddCardio'), onPress: () => router.push({ pathname: '/activity', params: { date } }) }
+  let label: string, title: string, text: string | null, action: { icon: IconName; title: string; onPress: () => void } | null
+  if (session) {
+    const w = t.ix.workouts.get(session.workout)
+    label = tr('home.bannerDone'); title = w?.focus ?? session.workout
+    text = [w?.name, session.durationSec ? L.fmtDuration(session.durationSec) : null, tn('history.sets', session.sets.length),
+      ...cardio.map(a => L.activityTitle(a))].filter(Boolean).join(' · ')
+    action = { icon: 'right', title: tr('home.bannerView'), onPress: () => router.push(dayHref({ kind: 'session', id: session.id })) }
+  } else if (cardio.length) {
+    label = tr('home.bannerCardio'); title = cardio.map(a => L.activityTitle(a)).join(' · ')
+    text = cardio.map(a => L.fmtActivity(a)).filter(Boolean).join(' · ') || null
+    action = { icon: 'right', title: tr('home.bannerView'), onPress: () => router.push(dayHref({ kind: 'activity', id: cardio[0].id })) }
+  } else if (planned && !past) {
+    label = tr('home.bannerPlanned'); title = planned.focus
+    text = `${planned.name} · ${tn('home.meta.exercises', planned.slots.length)}`
+    action = { icon: 'right', title: tr('home.bannerOverview'), onPress: () => router.push({ pathname: '/workouts/[id]', params: { id: planned.id } }) }
+  } else if (planned) {
+    label = tr('home.bannerMissed'); title = planned.focus; text = tr('history.restTextPast'); action = addCardio
+  } else {
+    label = tr('history.restDay'); title = tr('history.restTitle')
+    text = past ? tr('history.restTextPast') : tr('history.restText'); action = past ? addCardio : null
+  }
+  return (
+    <View accessibilityLiveRegion="polite" style={{ backgroundColor: color.card, borderWidth: 1, borderColor: color.line, borderRadius: radius.card, borderCurve: 'continuous', padding: 16, gap: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+        <View style={{ flex: 1, gap: 4 }}>
+          <Text variant="eyebrow" style={{ fontSize: 11 }}>{day} · {label}</Text>
+          <Text variant="title" style={{ fontSize: 20, lineHeight: 22 }}>{title}</Text>
+          {text ? <Text variant="small">{text}</Text> : null}
+        </View>
+        <Button size="sm" variant="ghost" icon="close" label={tr('common.close')} onPress={onClose} />
+      </View>
+      {action && <Button size="sm" icon={action.icon} title={action.title} onPress={action.onPress} style={{ alignSelf: 'flex-start' }} />}
+    </View>
+  )
+}

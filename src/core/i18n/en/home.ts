@@ -52,4 +52,10 @@ export const home: Shape<typeof de> = {
   readyPct: '{pct} percent ready for {name}',
   skillProgress: '{exercise} · Stage {stage}/{total} · {done} of 2',
   unlock: 'Unlock',
+  bannerDone: 'Done',
+  bannerCardio: 'Cardio',
+  bannerPlanned: 'Planned',
+  bannerMissed: 'Not trained',
+  bannerView: 'View',
+  bannerOverview: 'Overview',
 }
