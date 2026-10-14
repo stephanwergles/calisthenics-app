@@ -13,9 +13,9 @@ import { templateMeta } from '@/screens/plan/templates'
 
 export default function TemplatesScreen() {
   const { t } = useApp()
-  const { plansOnly } = useLocalSearchParams<{ plansOnly?: string; from?: string }>()
+  const { plansOnly, kind: start } = useLocalSearchParams<{ plansOnly?: string; from?: string; kind?: string }>()
   const onlyPlans = plansOnly === '1' || plansOnly === 'true'
-  const [kind, setKind] = useState<Template['kind']>('plan')
+  const [kind, setKind] = useState<Template['kind']>(start === 'workout' ? 'workout' : 'plan')
   const first = useIsFirst()
   const list = catalogData(t.ix.catalog).templates.filter(x => x.kind === (onlyPlans ? 'plan' : kind))
 

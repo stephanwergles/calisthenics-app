@@ -258,10 +258,12 @@ export function useTraining() {
     setChoice(c); void db.get().kvSet('choice', c)
   }, [today])
 
-  const startSession = useCallback(() => {
+  /** Session starten – optional für ein anderes Workout als das gewählte (Schnellstart auf Heute) */
+  const startSession = useCallback((w?: WorkoutId) => {
     if (active) return
-    const before = L.live(sessionsRef.current.get(L.sessionId(L.localDate(), workout)))
-    const a: ActiveSession = { start: Date.now(), workout, ...(before ? { before } : {}) }
+    const wk = w ?? workout
+    const before = L.live(sessionsRef.current.get(L.sessionId(L.localDate(), wk)))
+    const a: ActiveSession = { start: Date.now(), workout: wk, ...(before ? { before } : {}) }
     setActive(a); void db.get().kvSet('active', a)
   }, [active, workout])
 

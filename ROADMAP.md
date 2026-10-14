@@ -162,10 +162,10 @@ Ziel: Fremde Menschen können die App sicher nutzen. Keine neuen Trainings-Featu
 Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fertig vor 3.2** – sonst entstehen Kurztest, Onboarding und Generator-UI zweimal. Bis dahin wandert nichts Neues mehr in die Capacitor-Bridge.
 
 - [x] **Gemeinsamen Kern herauslösen:** `src/core` (Logik, Zustand `useTraining`, Vorschläge, Timer, Sync-Client, i18n, Katalog-Zugriff) neben `src/domain`, `src/sync/convert.ts` und den Seeds; Plattformzugriffe nur über den Adapter `src/core/platform.ts` (Web: `src/client/platformWeb.ts`). Bewusst **ohne** npm-Workspaces: `mobile/` ist ein eigenständiges Expo-Projekt, Metro bindet `src/` ein – so installiert der Server-Deploy keine React-Native-Pakete und Next/Expo behalten je ihre React-Version
-- [ ] **Expo-Grundgerüst** nach dem Muster von banking.vision: EAS, Sentry, Tokens (Volt, Barlow über expo-font), Anmeldung per Token gegen die Live-Instanz. Vorher prüfen: Expo Router mit nativen Tabs und aktuelle NativeWind-Version statt React Navigation 6 / NativeWind 2 übernehmen; React-Version zwischen Server und Expo abstimmen
-- [ ] **Datenhaltung:** `db.ts` (IndexedDB) → expo-sqlite mit gleicher Schnittstelle; `useTraining.ts`: `visibilitychange` → `AppState`, `online`/`offline` → NetInfo; Token in expo-secure-store statt Preferences
-- [ ] **Herzstück zuerst:** Fokus-Screen, Satz-Erfassung (natives Sheet mit Detents), Pausen-Screen mit Benachrichtigung am Pausenende, Haptik, Display wach, Kreide-Skizzen über react-native-svg. Erst weiter, wenn sich das im Gym besser anfühlt als die Capacitor-App
-- [ ] **Restliche Ansichten:** Heute, Skills, Verlauf (Kalender, Tagesansicht, Fortschritt), Daten/Konto inkl. Einwilligung und Konto löschen
+- [x] **Expo-Grundgerüst** nach dem Muster von banking.vision: EAS, Sentry, Tokens (Volt, Barlow über expo-font), Anmeldung per Token gegen die Live-Instanz. Vorher prüfen: Expo Router mit nativen Tabs und aktuelle NativeWind-Version statt React Navigation 6 / NativeWind 2 übernehmen; React-Version zwischen Server und Expo abstimmen
+- [x] **Datenhaltung:** `db.ts` (IndexedDB) → expo-sqlite mit gleicher Schnittstelle; `useTraining.ts`: `visibilitychange` → `AppState`, `online`/`offline` → NetInfo; Token in expo-secure-store statt Preferences
+- [x] **Herzstück zuerst:** Fokus-Screen, Satz-Erfassung (natives Sheet mit Detents), Pausen-Screen mit Benachrichtigung am Pausenende, Haptik, Display wach, Kreide-Skizzen über react-native-svg. Erst weiter, wenn sich das im Gym besser anfühlt als die Capacitor-App
+- [x] **Restliche Ansichten:** Heute, Skills, Verlauf (Kalender, Tagesansicht, Fortschritt), Daten/Konto inkl. Einwilligung und Konto löschen
 - [x] **Umstieg:** Expo-App ist auf TestFlight (ersetzt die Capacitor-App). Altes Frontend abgeschaltet (14.10.): Web-Trainingsoberfläche (`src/client/components`, `TrainingApp` unter `/`), `ios/` (Capacitor), `src/client/native.ts`, Swift-Sheets und Capacitor-Pakete entfernen; `/` bekommt eine schlichte Landingpage (bzw. Weiterleitung zum App-Store-Eintrag). Payload (API, Sync, Admin), `/datenschutz` und Konto löschen bleiben – davon hängt die App ab. `src/core` bleibt gemeinsamer Kern. CLAUDE.md anpassen
 - [ ] **Over-the-air-Updates (EAS Update)**, sobald mehr als ein Entwickler/Tester dranhängt: `expo-updates` einbauen (Kanäle preview/production, Laufzeitversion), einmal neu bauen; danach gehen JS-Änderungen (Oberfläche, `src/core`) ohne TestFlight-Build raus. Optional GitHub-Anbindung in expo.dev für automatische Updates/Builds bei Push. Bis dahin reicht der lokale Build (`npm run release:ios` in `mobile/`)
 - [x] **Live Activity** für den Pausen-Timer (Sperrbildschirm/Dynamic Island, `expo-widgets`, `mobile/src/live/`) – 14.10.2026
@@ -173,18 +173,18 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 
 ### Phase 3.2 — Training aus Skills (Herzstück) → geschlossene Beta
 
-- [ ] **Kurztest:** Max-Tests (Klimmzüge, Dips, Liegestütze, Hollow Hold, L-Sit, Pistol-Tiefe) → Startstufe jeder Leiter; wiederholbar; bei vorhandener Historie aus den Logs abgeleitet
-- [ ] **Eingaben:** Ziel-Skills (1–3, vorgeschlagen nach Nähe der Voraussetzungen), Equipment, Trainingstage (Wochentage), Split-Vorlage (vorgeschlagen, frei wählbar), Einheitendauer
-- [ ] **Generator** als reine, deterministische Funktion (Domain-Schicht, Client und Server):
+- [x] **Kurztest:** Max-Tests (Klimmzüge, Dips, Liegestütze, Hollow Hold, L-Sit, Pistol-Tiefe) → Startstufe jeder Leiter; wiederholbar; bei vorhandener Historie aus den Logs abgeleitet
+- [x] **Eingaben:** Ziel-Skills (1–3, vorgeschlagen nach Nähe der Voraussetzungen), Equipment, Trainingstage (Wochentage), Split-Vorlage (vorgeschlagen, frei wählbar), Einheitendauer
+- [x] **Generator** als reine, deterministische Funktion (Domain-Schicht, Client und Server):
   1. Skills → Leitern: Ziel-Leiter + noch nicht erfüllte Voraussetzungs-Leitern
   2. Grundmuster auffüllen (Zug vertikal/horizontal, Druck vertikal/horizontal, Beine, Rumpf), gefiltert nach Equipment
   3. Verteilen auf Tage: Skill-Slots zuerst in der Einheit, anspruchsvollste Skills an den Tag mit der längsten Pause davor, gleiche Sehnen-Belastung nicht an Folgetagen
   4. Volumen aus den Stufen-Standards, an das Dauer-Budget angepasst
 - [ ] **Leitplanken** als dieselben Regeln in `logic.ts`: Der Generator hält sie ein, bei manuellen Änderungen erscheinen sie als Hinweise
-- [ ] Tests: Eigenschaften für beliebige Eingaben (Balance, keine Sehnen-Kollision an Folgetagen, Dauer-Budget, nur verfügbares Equipment) + Abnahmetest mit meinen Eingaben
+- [x] Tests: Eigenschaften für beliebige Eingaben (Balance, keine Sehnen-Kollision an Folgetagen, Dauer-Budget, nur verfügbares Equipment) + Abnahmetest mit meinen Eingaben
 - [ ] **Anpassen:** Übung tauschen (andere Stufe oder gleiches `pattern`), Slot festpinnen, Volumen überschreiben, Slot entfernen; neu erzeugen behält gepinnte Slots und Überschreibungen
-- [ ] Ziel erreicht → Vorschlag für den nächsten Skill; Ziele/Tage/Vorlage ändern → **Vorschlag als Diff, erst nach Bestätigung neue Planversion**
-- [ ] **Phasen:** Pause/Krank (Serie bleibt, Wiedereinstieg mit reduziertem Volumen), Urlaub, Equipment temporär, Verletzung (Sehne/Körperstelle → Übungen ersetzen) – mit Zeitraum oder bis auf Weiteres
+- [x] Ziel erreicht → Vorschlag für den nächsten Skill; Ziele/Tage/Vorlage ändern → **Vorschlag als Diff, erst nach Bestätigung neue Planversion**
+- [x] **Phasen:** Pause/Krank (Serie bleibt, Wiedereinstieg mit reduziertem Volumen), Urlaub, Equipment temporär, Verletzung (Sehne/Körperstelle → Übungen ersetzen) – mit Zeitraum oder bis auf Weiteres
 - [x] **Eigene Workouts:** Name, Leitern mit Satzzahl, Reihenfolge, Wochentage (Heute → „Anderes Workout“ → „Workouts verwalten“, `PlanEditor.tsx`); löschen = `archived` (Verlauf behält den Namen). Offen: feste Übung ohne Leiter, Wdh.-Bereich/Pause je Slot
 - [x] **Tagesanpassung:** Übungen für eine Einheit hinzufügen/weglassen (`sessions.adjust`), danach „Als neues Workout speichern“ (Übungsplan → „Heute anpassen“)
 - [x] Onboarding: Willkommen → Kurztest → Ziele → Equipment → Tage & Dauer → Planvorschlag mit Begründung je Übung (`Onboarding.tsx`, ein Sheet mit Push-Seiten; nur bei frischer Installation, jeder Schritt überspringbar). Offen: Sprache (mit i18n)
@@ -198,6 +198,31 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 - [x] Vorlagen für die neuen Skills: Front-Lever-Programm 3×, Hebel-Programm Front & Back Lever 3×, Handstand & Press 3×, Planche-Programm 3×, Oberkörper / Beine 4×; Workouts Hebel-Praxis, Flag & Core (jetzt 10 Pläne, 6 Workouts)
 - [ ] Coach-Prüfung der Vorlagen
 
+### Phase 3.2b — Workouts, Katalog, Qualität (Okt 2026)
+
+- [x] **Workouts auf Heute:** Leiste „Workouts“ – jedes Workout mit einem Tipp starten, auch außerhalb des Plan-Tags; am Ende „Vorlagen“ (14.10.2026)
+- [ ] Workouts, Ausbau: freies Workout aus Region/Muster zusammenstellen (Generator für die verfügbare Zeit), Erholungsregeln bei spontanem Training beachten
+- [ ] **Katalog-Ausbau** (Lückenanalyse 14.10.2026; je neue Stufe 3D-Clip und Coaching-Kernpunkte). Reihenfolge:
+  1. Ringstütz → RTO-Stütz → Ring-Dip → RTO-Dip als Leiter (Basis Ring-Muscle-up, später Cross/Maltese)
+  2. Tuck- und einbeiniger L-Sit (Einstieg L-Sit)
+  3. Bauch zur Wand + Wall Shoulder Taps + Wall Walks (Lücke Heel Pull → freier Handstand)
+  4. Wand-HSPU negativ / Teilbewegung (Lücke Pike → HSPU)
+  5. Jumping / Low-Bar Muscle-up (Übergang ohne Band)
+  6. Tuck-Planche-Liegestütz · 7. Front Lever Raises / Ice Cream Makers
+  8. Prehab als Übungen mit Logging: Handgelenk-Prep, Außenrotation mit Band, Face Pull, Dislocates, Scapula-Liegestütz
+  9. Hinge-Leiter ohne Geräte: Hüftheben einbeinig → SL-RDL → Natural Leg Curl
+  10. Anti-Bewegung: Ab Wheel / Ring Rollout, Pallof Press, Copenhagen Plank
+  11. Einstieg für Anfänger: negative / Band-Klimmzüge, Stütz / negative Dips, Knie-/Schräg-Liegestütz
+  12. Cossack → Sissy Squat → Dragon Pistol; Knie-Prehab: Reverse Nordic, Spanish Squat, Tibialis Raise
+  13. Einarmiger Hang (vor einarmigen Negativen); Tischrudern (horizontaler Zug ohne Geräte)
+  14. Neue Skills: Korean/Impossible Dip, Side Lever; später Lever-Klimmzüge, 360 Pull
+  - Daten: einstufige Leitern (scapula, biceps, fly, triceps, split-squat, calf, side-plank, hang) ausbauen; Ringe bei `dip`/`pull-up` als eigene Stufe statt Geräte-Alternative; `pistol-squat-weighted` Equipment um `floor` ergänzen
+- [ ] **Refactoring:** große Screens aufteilen (`focus.tsx`, `skill-page.tsx`, `logic.ts` nach Bereichen), doppelte UI-Bausteine zusammenführen (Rows/ListGroup/Group), tote Web-Reste in `src/client` prüfen
+- [ ] **Tests:** Komponententests für kritische Screens (Satz erfassen, Pause, Verwerfen, Challenge), E2E-Durchlauf auf dem Simulator (Maestro o. ä.) für Onboarding → Training → Sync; Abdeckung `src/core` messen
+- [ ] **Security:** Abhängigkeiten prüfen (`npm audit`, Renovate), Rate-Limits und Größenlimits am Sync-Endpunkt, Payload-Zugriffsrechte (`npm run check:access`) in die CI, Secrets-Scan im Repo (öffentlich!), Token-Lebensdauer und Widerruf, Konto löschen vollständig
+- [ ] **Pentest:** externer oder strukturierter Selbsttest (OWASP ASVS/MASVS) für API, Admin-Panel und App – Auth, IDOR über Sync-IDs, Injection in JSON-Feldern, Transport (TLS/HSTS), Datenschutz der Gesundheitsdaten
+- [ ] **CI:** GitHub Actions für `npm test`, Typecheck (Server + `mobile/`), Build; Release-Build optional über EAS
+
 ### Phase 3.3 — Englisch & Store-Bereitschaft
 
 - [ ] Englische Fassung aller Oberflächentexte, Technik-Texte, Kernpunkte, Muskeln
@@ -210,11 +235,12 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 
 ### Phase 3.4 — Ausbau nach dem Release
 
-- [ ] Weitere Skill-Leitern: One-Arm Pull-up · Human Flag · V-Sit/Manna-Vorstufen · Dragon Flag · Shrimp Squat · Nordic Curl
+- [x] Weitere Skill-Leitern: One-Arm Pull-up · Human Flag · V-Sit/Manna-Vorstufen · Dragon Flag · Shrimp Squat · Nordic Curl (24 Skills, 37 Leitern, 94 Übungen)
 - [ ] Skizzen/3D-Clips für alle neuen Stufen (Pipeline in `art/`)
 - [ ] Adaptiv: Volumen-Anpassung nach letzter Leistung, Deload-Erkennung (Stagnation über 2+ Einheiten), Rotation im Zubehör-Block
 - [x] **Challenges** (14.10.2026): Karte auf Heute, 9 Vorlagen (so viele wie möglich / auf Zeit / Maximum), Durchführung im Vollbild mit Zähler bzw. Countdown/Stoppuhr, Bestwert und Verlauf; Versuch = Aktivität der Art „challenge“ (Sync wie Cardio), zählt nicht in die Serie
-- [ ] Challenges, Ausbau: Vorlagen im Admin pflegbar (Collection statt `src/seed/challenges.json`), eigene Challenges anlegen, Live Activity für Countdown/Stoppuhr, Verlaufskurve je Challenge, Max-Test → Vorschlag zur Einstufung
+- [x] Eigene Challenges anlegen (Name, Art, Wert, Übung; Nutzerstand, Sync) – 14.10.2026
+- [ ] Challenges, Ausbau: Vorlagen im Admin pflegbar (Collection statt `src/seed/challenges.json`), Live Activity für Countdown/Stoppuhr, Verlaufskurve je Challenge, Max-Test → Vorschlag zur Einstufung
 - [ ] **Spontanes Workout:** einfach mal ein Training starten, ohne dass es der Plan-Tag ist – klar sichtbarer Einstieg (Heute/Plan), dann Auswahl: anderes Workout aus dem Plan, Vorlage oder „frei“ (Übungen nach Region/Muster aus deinen aktuellen Stufen zusammenstellen, Vorschlag vom Generator für die verfügbare Zeit). Klären, wie es den Wochenplan und Erholungsregeln (Sehnen-Folgetage) beeinflusst
 - [ ] Readiness-Check vor der Einheit (Schlaf/Energie/Gelenke, 3 Taps) → Tagesanpassung
 - [ ] Statistiken: Volumen-Trends, Zeit unter Spannung, Kraft-zu-Gewicht

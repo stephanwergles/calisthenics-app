@@ -33,6 +33,8 @@ export interface App {
   doneToday: boolean
   /** Session starten und Training öffnen */
   start: () => void
+  /** beliebiges Workout wählen, starten und öffnen (Schnellstart) */
+  startWorkout: (id: string) => void
   /** Training öffnen (optional auf eine Übung) */
   openTraining: (pid?: string) => void
   /** Session beenden → Zusammenfassung */
@@ -84,6 +86,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const openTraining = (pid?: string) => { setPicked(pid); router.navigate('/training') }
   const start = () => { t.startSession(); openTraining(undefined) }
+  const startWorkout = (id: string) => {
+    if (t.active) { openTraining(undefined); return }
+    t.chooseWorkout(id); t.startSession(id); openTraining(undefined)
+  }
   const finish = () => {
     if (!t.active) return
     const id = L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout)
@@ -113,7 +119,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const value: App = {
     t, ps, rest, locale, localeChoice, changeLocale, slots, focus, focusSlot, pick: setPicked,
-    started, doneToday, start, openTraining, finish, askEnd, restView, setRestView,
+    started, doneToday, start, startWorkout, openTraining, finish, askEnd, restView, setRestView,
   }
   return <Ctx value={value}>{children}</Ctx>
 }
