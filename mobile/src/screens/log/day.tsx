@@ -54,7 +54,10 @@ function ActivityDetail({ t, a }: { t: Training; a: Activity }) {
     <SheetScreen title={L.activityTitle(a)} sub={L.fmtDate(a.date)}
       footer={
         <>
-          <Button icon="edit" block title={tr('history.editActivity')} onPress={() => router.push({ pathname: '/activity', params: { date: a.date, id: a.id, from: 'day' } })} />
+          {/* Challenge-Versuche bearbeitet man nicht im Cardio-Sheet – stattdessen zur Challenge */}
+          {a.kind === 'challenge' && a.challenge
+            ? <Button icon="flame" block title={tr('challenge.title')} onPress={() => router.push({ pathname: '/challenges/[id]', params: { id: a.challenge! } })} />
+            : <Button icon="edit" block title={tr('history.editActivity')} onPress={() => router.push({ pathname: '/activity', params: { date: a.date, id: a.id, from: 'day' } })} />}
           <Button variant="danger" icon="trash" block title={tr('history.deleteActivity')} onPress={async () => { if (await confirmRemoveActivity(t, a)) router.back() }} />
         </>
       }>

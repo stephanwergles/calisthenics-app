@@ -8,6 +8,7 @@ import * as DocumentPicker from 'expo-document-picker'
 import * as Sharing from 'expo-sharing'
 import { File, Paths } from 'expo-file-system'
 import { HEALTH_CONSENT } from '@lever/core/consent.ts'
+import * as L from '@lever/core/logic.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
 import { ask, Button, Card, color, font, ListGroup, SheetScreen, Text, Wordmark } from '@/ui'
@@ -60,7 +61,7 @@ export function ProfileHome() {
       <SheetScreen title={tr('profile.title')} sub={s.account ? `${s.account.email} · ${syncStatus(s)}` : tr('profile.localOnly')}>
         {/* Statistik */}
         <Card style={{ flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 18 }}>
-          {[[t.sessions.length, tr('profile.stats.sessions')], [sets, tr('profile.stats.sets')], [t.activities.length, tr('profile.stats.cardio')]].map(([v, label]) => (
+          {[[t.sessions.length, tr('profile.stats.sessions')], [sets, tr('profile.stats.sets')], [L.cardioOnly(t.activities).length, tr('profile.stats.cardio')]].map(([v, label]) => (
             <View key={String(label)} style={{ alignItems: 'center', gap: 2 }} accessible accessibilityLabel={`${v} ${label}`}>
               <Text variant="num" selectable>{v}</Text>
               <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', letterSpacing: 0.8, fontSize: 12 }}>{label}</Text>

@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { ScrollView, View } from 'react-native'
 import { router } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
+import { catalogData } from '@lever/core/data.ts'
 import { getLocale, intl, t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
 import { HeaderButton } from '@/navigation'
@@ -104,6 +105,9 @@ export function Today() {
           </View>
         </Card>
 
+        {/* Challenge: Einstieg in die Selbsttests, mit dem letzten Versuch */}
+        <ChallengeCard />
+
         {/* Nächste Skills */}
         {skills.length > 0 && (
           <View>
@@ -145,5 +149,24 @@ function Chip({ text, muted }: { text: string; muted?: boolean }) {
     <View style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' }}>
       <Text style={{ fontFamily: font.bodySemi, fontSize: 14, color: muted ? color.muted : color.text }}>{text}</Text>
     </View>
+  )
+}
+
+function ChallengeCard() {
+  const { t } = useApp()
+  const { challenges } = catalogData(t.ix.catalog)
+  const last = t.activities.filter(a => a.kind === 'challenge').sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.updatedAt ?? 0) - (a.updatedAt ?? 0)))[0]
+  const lastC = last && challenges.find(c => c.id === last.challenge)
+  return (
+    <Card onPress={() => router.push('/challenges')} label={`${tr('challenge.cardTitle')}, ${tr('challenge.cardSub')}`}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <Icon name="flame" size={22} color={color.accent} />
+        <Text variant="title" style={{ flex: 1 }}>{tr('challenge.cardTitle')}</Text>
+        <Icon name="right" size={14} color={color.muted} />
+      </View>
+      <Text variant="muted">{lastC && last.value !== undefined
+        ? tr('challenge.cardBest', { name: lastC.name, value: L.fmtChallengeValue(lastC, last.value) })
+        : tr('challenge.cardSub')}</Text>
+    </Card>
   )
 }

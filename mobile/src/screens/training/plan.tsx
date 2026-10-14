@@ -123,7 +123,7 @@ function Overview({ focus, onOpen, onAdjust }: { focus: string | undefined; onOp
 function Routine({ title, items }: { title: string; items: RoutineItem[] }) {
   const { t } = useApp()
   const doneIds = t.todaySession?.routineDone ?? []
-  const todays = t.activities.filter(a => a.date === t.today)
+  const todays = L.cardioOnly(t.activities).filter(a => a.date === t.today)
   const isDone = (it: RoutineItem) => (it.cardio ? todays.length > 0 : doneIds.includes(it.id))
   return (
     <ChecklistGroup title={title}
