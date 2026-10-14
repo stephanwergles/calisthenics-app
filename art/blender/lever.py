@@ -219,7 +219,7 @@ LEN = {b: (pb.tail - pb.head).length for b, pb in PB.items()}
 REACH = LEN["arm.L"] + LEN["forearm.L"]
 STRAIGHT = 0.985
 OVER = [0.0]          # größte Überdehnung eines IK-Ziels (Hand/Fuß erreicht ihr Ziel nicht) im Bild
-RULES = dict(gelenk=25, sprung=20, tempo=45, griff=0.03, eindringen=0.03, auflage=0.045)   # Grad, Grad je Bild, m, m, m
+RULES = dict(gelenk=25, sprung=20, tempo=45, griff=0.03, selbst=0.05, symmetrie=8, eindringen=0.03, auflage=0.045)   # Grad, Grad je Bild, m, m, m
 RAW = []              # Gelenkverstöße der Rohpose im zuletzt gesetzten Bild (vor dem Begrenzen)
 
 def align_hinge(up, lo, a, t, fallback):
@@ -403,6 +403,50 @@ def clamp_joints(bones=None, tol=0.0):
         q = sw @ tw
         pb.matrix_basis = (M.inverted() @ q.to_matrix() @ M).to_4x4()
         upd()
+# Körperteile als Kapseln (Knochenstrecke + Radius) für die Selbstdurchdringung
+CAPS = {"rumpf": (("pelvis", "head"), ("chest", "tail"), 0.11), "kopf": (("head", "head"), ("head", "tail"), 0.085)}
+for n in "LR":
+    CAPS.update({f"oberarm.{n}": ((f"arm.{n}", "head"), (f"arm.{n}", "tail"), 0.042),
+                 f"unterarm.{n}": ((f"forearm.{n}", "head"), (f"forearm.{n}", "tail"), 0.035),
+                 f"oberschenkel.{n}": ((f"thigh.{n}", "head"), (f"thigh.{n}", "tail"), 0.065),
+                 f"unterschenkel.{n}": ((f"shin.{n}", "head"), (f"shin.{n}", "tail"), 0.045)})
+CAP_PAIRS = [(f"unterarm.{n}", "rumpf") for n in "LR"] + [(f"unterarm.{n}", "kopf") for n in "LR"] + \
+            [("oberschenkel.L", "oberschenkel.R"), ("unterschenkel.L", "unterschenkel.R"),
+             ("unterschenkel.L", "oberschenkel.R"), ("unterschenkel.R", "oberschenkel.L"), ("unterarm.L", "unterarm.R")] + \
+            [(f"unterschenkel.{n}", "rumpf") for n in "LR"] + [(f"unterschenkel.{n}", "kopf") for n in "LR"] + \
+            [(f"unterarm.{n}", f"oberschenkel.{m}") for n in "LR" for m in "LR"] + \
+            []                                # Oberarm/Kopf nicht: Arme über Kopf liegen an den Ohren an
+def _seg_dist(p1, q1, p2, q2):
+    """Kürzester Abstand zweier Strecken."""
+    d1, d2, r = q1 - p1, q2 - p2, p1 - p2
+    a, e, f = d1.dot(d1), d2.dot(d2), d2.dot(r)
+    if a < 1e-9 and e < 1e-9: return r.length
+    c = d1.dot(r); b = d1.dot(d2); den = a * e - b * b
+    sp = min(max((b * f - c * e) / den, 0), 1) if den > 1e-9 else 0.0
+    t = (b * sp + f) / e if e > 1e-9 else 0.0
+    if t < 0: t, sp = 0.0, min(max(-c / a, 0), 1)
+    elif t > 1: t, sp = 1.0, min(max((b - c) / a, 0), 1)
+    return ((p1 + d1 * sp) - (p2 + d2 * t)).length
+def self_overlap():
+    """Tiefste Überlappung zweier Körperkapseln (m) und das Paar."""
+    pos = {}
+    for k, ((b0, e0), (b1, e1), r) in CAPS.items():
+        pos[k] = (world(getattr(PB[b0], e0)), world(getattr(PB[b1], e1)), r)
+    worst = (0.0, "")
+    for a, b in CAP_PAIRS:
+        (p0, p1, ra), (q0, q1, rb) = pos[a], pos[b]
+        depth = ra + rb - _seg_dist(p0, p1, q0, q1)
+        if depth > worst[0]: worst = (depth, f"{a}/{b}")
+    return worst
+def symmetry_gap():
+    """Größter Unterschied links ↔ rechts (Grad) über die Gelenkwinkel."""
+    g = (0.0, "")
+    for base in ("arm", "forearm", "hand", "thigh", "shin", "foot"):
+        aL, aR = joint_angles(f"{base}.L"), joint_angles(f"{base}.R")
+        for k in aL:
+            d = abs(aL[k] - aR[k]); d = min(d, 360 - d)
+            if d > g[0]: g = (d, f"{base}:{k}")
+    return g
 def joint_violations():
     out = []
     for pb in PB:
@@ -807,6 +851,11 @@ else:
         cam.location, target.location = Vector(c[:3]), Vector(c[3:])
     if MODE == "check":                    # ohne Rendern: Durchdringungen, Bodenkontakt, Reichweite pro Bild
         worst = {}; prev = {}; jumps = {}; gelenk = {}; griff = [0.0, 0]; steps = {}
+        selbst = [0.0, 0, ""]; symm = [0.0, 0, ""]
+        # Symmetrie nur prüfen, wenn die Schlüsselposen selbst beidseitig gleich sind (Archer, Pistol … sind es nicht)
+        key_sym = 0.0
+        for kk_ in keys:
+            pose_key(kk_); key_sym = max(key_sym, symmetry_gap()[0])
         JB = [f"{b}.{n}" for b in ("forearm", "hand", "fingers", "shin", "foot") for n in "LR"]
         for i, s in enumerate(S_OF + S_OF[:1]):      # letztes Bild → erstes: auch die Loop-Naht prüfen
             OVER[0] = 0.0; kk_ = key_at(keys, s); pose_key(kk_)
@@ -820,6 +869,10 @@ else:
                     steps.setdefault(b, []).append(a)
                 prev[b] = q
             if i == len(S_OF): break
+            ov = self_overlap()
+            if ov[0] > selbst[0]: selbst[:] = [ov[0], i, ov[1]]
+            sg = symmetry_gap()
+            if sg[0] > symm[0]: symm[:] = [sg[0], i, sg[1]]
             for over, b, k, v in RAW:
                 key = f"{b}:{k}"
                 if over > gelenk.get(key, (0,))[0]: gelenk[key] = (over, i, v)
@@ -852,6 +905,10 @@ else:
         for kk, (v, i_, w_) in worst.items():   # Hände/Füße auf Auflage: Weichteile geben nach, etwas mehr erlaubt
             tol = RULES["auflage"] if w_.split(".")[0] in ("hand", "fingers", "foot") else RULES["eindringen"]
             if kk != "reichweite" and v < -tol: fails.append(f"{kk} {v * 100:.1f} cm ({w_})")
+        if selbst[0] > RULES["selbst"]:    # Kapseln sind grob (Rumpf rund statt flach): erst Warnung, Sichtprüfung entscheidet
+            print("WARNUNG", ARG, f"Selbstdurchdringung {selbst[2]} {selbst[0] * 100:.1f} cm @{selbst[1]}")
+        if key_sym < 5 and symm[0] > RULES["symmetrie"]: fails.append(f"Asymmetrie {symm[2]} {symm[0]:.0f}°")
+        print("SELBST", ARG, f"{selbst[0] * 100:.1f}cm@{selbst[1]}({selbst[2]})", "SYMM", f"{symm[0]:.0f}°@{symm[1]}({symm[2]})", f"schlüssel {key_sym:.0f}°")
         print("PRUEFUNG", ARG, "ok" if not fails else "FEHLER " + "; ".join(fails))
         print("CHECK", ARG, " ".join(f"{kk}={v:+.3f}@{i}{'(' + w + ')' if w else ''}" for kk, (v, i, w) in worst.items()))
     elif MODE == "still":                  # jede Schlüsselpose als Bild: <übung>_k0.png …
