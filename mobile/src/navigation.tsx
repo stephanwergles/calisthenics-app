@@ -15,7 +15,6 @@ export const formSheet = (detents: number[] = [0.6, 1]): NativeStackNavigationOp
   presentation: 'formSheet',
   sheetGrabberVisible: true,
   sheetAllowedDetents: detents,
-  sheetCornerRadius: 30,
   contentStyle: { backgroundColor: Platform.OS === 'ios' ? 'transparent' : color.card },
   headerShown: false,
 })
@@ -24,6 +23,19 @@ export const modal = (): NativeStackNavigationOptions => ({
   presentation: 'modal',
   headerShown: false,
   contentStyle: { backgroundColor: color.bg },
+})
+
+/** Modal ohne eigenen Stack, aber mit transparentem nativen Kopf für Glas-Buttons (Schließen,
+    Zurück) – im Root-Layout gesetzt; Optionen aus dem Screen selbst greifen hier nicht zuverlässig */
+export const modalWithHeader = (): NativeStackNavigationOptions => ({
+  ...modal(),
+  headerShown: true,
+  headerTransparent: true,
+  headerShadowVisible: false,
+  title: '',
+  headerTitle: '',
+  headerBackButtonDisplayMode: 'minimal',
+  headerTintColor: color.text,
 })
 
 /** für Stacks in Modals und Tabs: transparenter Header, nur Glas-Zurück ohne Text */
@@ -52,7 +64,7 @@ export function CloseButton({ onPress }: { onPress?: () => void }) {
   return <HeaderButton icon="close" label={t('common.close')} onPress={onPress ?? (() => router.dismiss())} />
 }
 
-/** Schließen nur, wenn die Seite die erste im Modal-Stack ist (direkt geöffnet, z. B. /profile/goals);
+/** Schließen nur, wenn die Seite die erste im Modal-Stack ist (direkt geöffnet, z. B. /profile/days);
     weiter hinten gibt es das native Zurück */
 export function CloseIfRoot() {
   const nav = useNavigation()

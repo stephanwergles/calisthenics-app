@@ -7,8 +7,9 @@ import * as L from '@lever/core/logic.ts'
 import { t as tr, type Key } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
 import { useApp } from '@/state/app'
-import { Button, Choices, Segmented, SheetScreen } from '@/ui'
+import { Button, Choices, Segmented } from '@/ui'
 import { Section } from '@/screens/plan/parts'
+import { FormSheet } from '@/screens/training/parts'
 
 const DURATIONS: { id: string; key: Key; days: number | null }[] = [
   { id: '3', key: 'plan.phase.dur.d3', days: 3 }, { id: '7', key: 'plan.phase.dur.d7', days: 7 },
@@ -46,7 +47,7 @@ export default function PhaseScreen() {
   }
 
   return (
-    <SheetScreen headerSpace={false} title={L.PHASE_LABEL[kind]} sub={tr(`plan.phase.intro.${kind}` as Key)}
+    <FormSheet title={L.PHASE_LABEL[kind]} sub={tr(`plan.phase.intro.${kind}` as Key)}
       footer={<Button variant="primary" size="lg" icon="check" disabled={!valid}
         title={valid ? tr(`plan.phase.cta.${kind}` as Key) : tr('plan.phase.pickJoint')} onPress={save} />}>
       <Section title={tr('plan.phase.duration')} />
@@ -56,6 +57,6 @@ export default function PhaseScreen() {
         <Section title={kind === 'injury' ? tr('plan.phase.affected') : tr('plan.phase.available')} />
         <Choices items={choices} onToggle={onToggle} />
       </>}
-    </SheetScreen>
+    </FormSheet>
   )
 }

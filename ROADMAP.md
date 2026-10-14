@@ -168,7 +168,8 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 - [ ] **Restliche Ansichten:** Heute, Skills, Verlauf (Kalender, Tagesansicht, Fortschritt), Daten/Konto inkl. Einwilligung und Konto löschen
 - [x] **Umstieg:** Expo-App ist auf TestFlight (ersetzt die Capacitor-App). Altes Frontend abgeschaltet (14.10.): Web-Trainingsoberfläche (`src/client/components`, `TrainingApp` unter `/`), `ios/` (Capacitor), `src/client/native.ts`, Swift-Sheets und Capacitor-Pakete entfernen; `/` bekommt eine schlichte Landingpage (bzw. Weiterleitung zum App-Store-Eintrag). Payload (API, Sync, Admin), `/datenschutz` und Konto löschen bleiben – davon hängt die App ab. `src/core` bleibt gemeinsamer Kern. CLAUDE.md anpassen
 - [ ] **Over-the-air-Updates (EAS Update)**, sobald mehr als ein Entwickler/Tester dranhängt: `expo-updates` einbauen (Kanäle preview/production, Laufzeitversion), einmal neu bauen; danach gehen JS-Änderungen (Oberfläche, `src/core`) ohne TestFlight-Build raus. Optional GitHub-Anbindung in expo.dev für automatische Updates/Builds bei Push. Bis dahin reicht der lokale Build (`npm run release:ios` in `mobile/`)
-- [ ] Danach erst, was vorher nicht ging: **Live Activity** für den Pausen-Timer (Sperrbildschirm/Dynamic Island, Config-Plugin), Android-Gegenstück als laufende Benachrichtigung
+- [x] **Live Activity** für den Pausen-Timer (Sperrbildschirm/Dynamic Island, `expo-widgets`, `mobile/src/live/`) – 14.10.2026
+- [ ] Android-Gegenstück zur Live Activity als laufende Benachrichtigung
 
 ### Phase 3.2 — Training aus Skills (Herzstück) → geschlossene Beta
 
@@ -212,6 +213,8 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 - [ ] Weitere Skill-Leitern: One-Arm Pull-up · Human Flag · V-Sit/Manna-Vorstufen · Dragon Flag · Shrimp Squat · Nordic Curl
 - [ ] Skizzen/3D-Clips für alle neuen Stufen (Pipeline in `art/`)
 - [ ] Adaptiv: Volumen-Anpassung nach letzter Leistung, Deload-Erkennung (Stagnation über 2+ Einheiten), Rotation im Zubehör-Block
+- [ ] **Challenges** (eigener Modus neben dem Plan): Calisthenics-typische Selbsttests tracken – „so viele wie möglich in X Minuten“ (AMRAP, z. B. Liegestütze in 2 min) oder „Gesamtzahl so schnell wie möglich“ (z. B. 100 Klimmzüge, Zeit stoppen, Sätze frei). Eigener Erfassungs-Screen (großer Zähler, Zeit läuft mit/runter), Bestwerte und Verlauf je Challenge, im Log sichtbar, zählt nicht ins Plan-Volumen. Vorlagen + eigene Challenges; Sync als eigener Datentyp
+- [ ] **Spontanes Workout:** einfach mal ein Training starten, ohne dass es der Plan-Tag ist – klar sichtbarer Einstieg (Heute/Plan), dann Auswahl: anderes Workout aus dem Plan, Vorlage oder „frei“ (Übungen nach Region/Muster aus deinen aktuellen Stufen zusammenstellen, Vorschlag vom Generator für die verfügbare Zeit). Klären, wie es den Wochenplan und Erholungsregeln (Sehnen-Folgetage) beeinflusst
 - [ ] Readiness-Check vor der Einheit (Schlaf/Energie/Gelenke, 3 Taps) → Tagesanpassung
 - [ ] Statistiken: Volumen-Trends, Zeit unter Spannung, Kraft-zu-Gewicht
 - [ ] KI-Unterstützung (Sprachmodell, immer als Vorschlag mit Bestätigung): Freitext → Phase/Verletzung, Erklärung der Skill-Vorschläge, Wochenrückblick aus Notizen

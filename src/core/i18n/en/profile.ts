@@ -86,13 +86,10 @@ export const profile: Shape<typeof de> = {
   goals: {
     sub: 'Up to five · {n} selected · sorted by “realistic next”',
     reached: 'reached',
-    missing: 'still missing: {list}',
     tier: { next: 'Realistic next', work: 'Needs some groundwork', long: 'Long-term goal' },
     none: 'none selected yet',
     pickHint: 'Tap what you want to learn – up to five. Lever builds your plan around it.',
     full: 'Five goals selected – remove one first.',
-    after: 'After {name}',
-    partOf: 'Already part of {name}',
     reachedGroup: 'Reached',
     reachedHint: 'Already done – no longer needed as a goal.',
     blurb: {

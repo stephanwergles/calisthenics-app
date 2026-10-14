@@ -401,6 +401,23 @@ test('Profil und Ziele: Standardwerte, höchstens fünf Ziele, Vorschläge, Fort
   assert.ok(mu.pid)
 })
 
+test('Zielvorschläge: ohne Ziele, Erreichtes und Mittrainiertes, mit konkreter Begründung', () => {
+  const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
+  const withMu: UserState = { ...state, profile: { ...L.profileOf(ix, state), goals: ['muscle-up'] } }
+  const ideas = L.goalIdeas(ix, withMu, skills)
+  assert.equal(ideas.length, 3)
+  assert.ok(!ideas.some(x => x.skill === 'muscle-up'), 'gewähltes Ziel nicht vorgeschlagen')
+  const choices = L.skillChoices(ix, withMu, skills)
+  const inMu = choices.filter(c => c.partOf.includes('muscle-up')).map(c => c.skill)
+  assert.ok(!ideas.some(x => inMu.includes(x.skill)), 'was der Muscle-up mittrainiert, fehlt')
+  const order = { next: 0, work: 1, long: 2 }
+  assert.ok(ideas.every((x, i) => i === 0 || order[ideas[i - 1].tier] <= order[x.tier]), 'realistischste zuerst')
+  assert.ok(ideas.every(x => x.reason.length > 0))
+  // Begründung: begonnene Leiter → Stand, fehlende Voraussetzung → was fehlt
+  const mu = choices.find(c => c.skill === 'muscle-up')!
+  assert.match(L.goalReason(ix, withMu, skills, mu), mu.missing.length ? new RegExp(mu.missing[0]) : /Stufe 2\/3/)
+})
+
 test('Planvorschlag: Generator → Nutzerplan, Diff, gleicher Plan = kein Vorschlag', async () => {
   const { generatePlan } = await import('../src/domain/generator.ts')
   const json = (f: string) => JSON.parse(readFileSync(new URL(`../src/seed/${f}`, import.meta.url), 'utf8'))

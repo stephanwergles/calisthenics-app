@@ -13,7 +13,7 @@ import {
 import { AppProvider, useApp } from '@/state/app'
 import { Gates } from '@/screens/gates'
 import { color, Toaster } from '@/ui'
-import { formSheet, modal } from '@/navigation'
+import { formSheet, modal, modalWithHeader } from '@/navigation'
 
 void SplashScreen.preventAutoHideAsync()
 
@@ -55,11 +55,11 @@ function Root({ fonts }: { fonts: boolean }) {
         <Stack.Screen name="exercise" options={formSheet([0.6, 1])} />
         <Stack.Screen name="activity" options={formSheet([0.7, 1])} />
         <Stack.Screen name="phase" options={formSheet([0.62, 1])} />
-        <Stack.Screen name="exercises" options={modal()} />
-        <Stack.Screen name="progression/[pid]" options={modal()} />
-        <Stack.Screen name="day/[id]" options={modal()} />
+        <Stack.Screen name="exercises" options={modalWithHeader()} />
+        <Stack.Screen name="progression/[pid]" options={modalWithHeader()} />
+        <Stack.Screen name="day/[id]" options={modalWithHeader()} />
         <Stack.Screen name="summary/[id]" options={{ ...modal(), gestureEnabled: true }} />
-        <Stack.Screen name="suggestion" options={modal()} />
+        <Stack.Screen name="suggestion" options={modalWithHeader()} />
         {/* Bereiche mit eigener Push-Navigation (Stack im Modal) */}
         <Stack.Screen name="profile" options={modal()} />
         <Stack.Screen name="templates" options={modal()} />

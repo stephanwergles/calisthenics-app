@@ -71,7 +71,7 @@ export function ProfileHome() {
 
         <GroupLabel title={tr('profile.section.training')} />
         <ListGroup rows={[
-          { title: tr('profile.row.goals'), subtitle: sum.goals, icon: 'target', onPress: go('/profile/goals') },
+          { title: tr('profile.row.goals'), subtitle: sum.goals, icon: 'target', onPress: () => { router.dismissAll(); router.navigate('/skills') } },
           { title: tr('profile.row.equipment'), subtitle: sum.equipment, icon: 'dumbbell', onPress: go('/profile/equipment') },
           { title: tr('profile.row.days'), subtitle: sum.days, icon: 'calendar', onPress: go('/profile/days') },
           { title: tr('profile.row.assessment'), subtitle: sum.assessment, icon: 'gauge', onPress: go('/profile/assessment') },

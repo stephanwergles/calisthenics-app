@@ -1,7 +1,7 @@
 /* Ziele: Skills als Kacheln mit Bild, Ein-Satz-Erklärung und Stand, nach Körperbereich gruppiert
    („realistisch als Nächstes“ zuerst). Erreichte Skills stehen in einer eigenen Gruppe am Ende und
-   sind kein Ziel mehr. Baut ein Skill auf einem anderen auf („nach Muscle-up“) oder steckt er in
-   einem gewählten Ziel („steckt schon in Muscle-up“), sagt die Kachel das. (Web: GoalPicker) */
+   sind kein Ziel mehr. Jede Kachel nennt Einstufung und Begründung (L.goalReason). Nur noch im
+   Onboarding – danach setzt man Ziele auf der Skill-Seite bzw. über die Vorschläge im Skills-Tab. */
 import { View } from 'react-native'
 import * as L from '@lever/core/logic.ts'
 import { catalogData } from '@lever/core/data.ts'
@@ -28,14 +28,10 @@ export function GoalsPage({ next }: { next?: Next }) {
   const { profile, change } = useProfile(t)
   const data = catalogData(t.ix.catalog)
   const choices = L.skillChoices(t.ix, t.state, data.skills, data.meta)
-  const nameOf = (id: string) => choices.find(c => c.skill === id)?.name ?? data.skills.find(s => s.id === id)?.name ?? id
   const detail = (c: SkillSuggestion) => {
     if (c.reached) return tr('profile.goals.reached')
-    const inGoal = c.partOf.find(g => profile.goals.includes(g))
-    if (inGoal && !profile.goals.includes(c.skill)) return tr('profile.goals.partOf', { name: nameOf(inGoal) })
-    if (c.after) return tr('profile.goals.after', { name: nameOf(c.after) })
-    if (c.missing.length) return tr('profile.goals.missing', { list: c.missing.join(', ') })
-    return tr(`profile.goals.tier.${c.tier}`)
+    // Einstufung plus konkrete Begründung (was fehlt, wo du stehst, womit du startest)
+    return `${tr(`profile.goals.tier.${c.tier}`)} · ${L.goalReason(t.ix, t.state, data.skills, c)}`
   }
   const tiles = choices.map((c): Tile & { region: string; reached: boolean } => {
     const skill = data.skills.find(x => x.id === c.skill)!

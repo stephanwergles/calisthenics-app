@@ -60,7 +60,7 @@ export function PlanTab() {
             <More text={tr('plan.view.view')} />
           </Card>
         ) : !ps.hasGoals ? (
-          <Card onPress={() => router.push('/profile/goals')} label={`${tr('plan.view.goalsTitle')}, ${tr('plan.view.goalsSub')}`}>
+          <Card onPress={() => router.navigate('/skills')} label={`${tr('plan.view.goalsTitle')}, ${tr('plan.view.goalsSub')}`}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <Icon name="target" size={22} color={color.accent} />
               <Text variant="title" style={{ flex: 1 }}>{tr('plan.view.goalsTitle')}</Text>

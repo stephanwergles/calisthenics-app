@@ -714,6 +714,33 @@ export function goalProgress(ix: Index, user: UserState, sessions: Session[], sk
   return { share, pid: lead?.pid, current: lead?.step.exercise.name ?? '', stage: lead ? t('logic.stage', { i: lead.step.index + 1, n: lead.step.total }) : '' }
 }
 export { MAX_GOALS }
+
+/** Konkrete Begründung zu einem Skill-Vorschlag: was fehlt, wo man steht oder womit man anfängt –
+    statt nur einer Einstufung („realistisch“) */
+export function goalReason(ix: Index, user: UserState, skills: Skill[], c: SkillSuggestion): string {
+  if (c.reached) return t('skills.reached')
+  if (c.missing.length) return t('skills.reason.missing', { list: c.missing.join(', ') })
+  const after = c.after && skills.find(s => s.id === c.after)?.name
+  if (after) return t('skills.reason.after', { name: after })
+  const skill = skills.find(s => s.id === c.skill)
+  const steps = (skill?.targets ?? []).filter(pid => ix.progressions.has(pid)).map(pid => currentStep(ix, user, pid))
+  const started = steps.find(s => s.index > 0)
+  if (started) return t('skills.reason.started', { name: started.exercise.name, stage: t('logic.stage', { i: started.index + 1, n: started.total }) })
+  return steps[0] ? t('skills.reason.start', { name: steps[0].exercise.name }) : t(`profile.goals.tier.${c.tier}`)
+}
+
+export interface GoalIdea { skill: SkillId; name: string; tier: SkillSuggestion['tier']; reason: string }
+/** Zielvorschläge: die realistischsten Skills, ohne gewählte Ziele, Erreichtes und Skills, die ein
+    Ziel ohnehin mittrainiert (Klimmzüge mit Gewicht stecken im Muscle-up) */
+export function goalIdeas(ix: Index, user: UserState, skills: Skill[], meta?: Record<string, ExerciseMeta>, n = 3): GoalIdea[] {
+  const goals = profileOf(ix, user).goals
+  const order = { next: 0, work: 1, long: 2 }
+  return skillChoices(ix, user, skills, meta)
+    .filter(c => !c.reached && !goals.includes(c.skill) && !c.partOf.some(g => goals.includes(g)))
+    .sort((a, b) => order[a.tier] - order[b.tier] || b.score - a.score)
+    .slice(0, n)
+    .map(c => ({ skill: c.skill, name: c.name, tier: c.tier, reason: goalReason(ix, user, skills, c) }))
+}
 /** Ziel an/aus (höchstens MAX_GOALS, das älteste fällt raus) */
 export function withGoal(p: Profile, skill: SkillId, on: boolean): Profile {
   const goals = on ? [...new Set([...p.goals, skill])].slice(-MAX_GOALS) : p.goals.filter(g => g !== skill)

@@ -28,7 +28,7 @@ export function SkillPage({ id }: { id: string }) {
     const steps = t.ix.progressions.get(x.progression)!.steps
     const done = L.currentStep(t.ix, t.state, x.progression).index >= x.minStep
     const name = t.ix.exercises.get(steps[Math.min(x.minStep, steps.length - 1)].exercise)?.name ?? x.progression
-    return { name, done }
+    return { pid: x.progression, name, done, now: stepLine(t, x.progression).step.exercise.name }
   })
   const blocked = full && !card.goal
   const pct = Math.round(card.share * 100)
@@ -88,14 +88,21 @@ export function SkillPage({ id }: { id: string }) {
           <SectionTitle title={tr('skills.prerequisites')} />
           <Group inset={50}>
             {prereqs.map(x => (
-              <View key={x.name} accessible accessibilityLabel={tr(x.done ? 'skills.prereqDone' : 'skills.prereqMissing', { name: x.name })}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 16, minHeight: 52 }}>
+              // antippbar: öffnet die Leiter der Voraussetzung (was ist das, wo stehe ich)
+              <Pressable key={x.pid} accessibilityRole="button"
+                accessibilityLabel={`${tr(x.done ? 'skills.prereqDone' : 'skills.prereqMissing', { name: x.name })}${x.done ? '' : `, ${tr('skills.prereqNow', { name: x.now })}`}`}
+                onPress={() => openLadder(x.pid)}
+                style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingLeft: 16, paddingRight: 14, minHeight: 56, backgroundColor: pressed ? 'rgba(255,255,255,0.06)' : 'transparent' })}>
                 <View style={{ width: 22, alignItems: 'center' }}>
                   <Icon name={x.done ? 'checkCircle' : 'circle'} size={20} color={x.done ? color.accent : color.muted} />
                 </View>
-                <Text variant="label" style={{ flex: 1, color: x.done ? color.text : color.muted }}>{x.name}</Text>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text variant="label">{x.name}</Text>
+                  {!x.done && x.now !== x.name && <Text variant="small">{tr('skills.prereqNow', { name: x.now })}</Text>}
+                </View>
                 <Text variant="small" style={{ color: x.done ? color.accent : color.muted }}>{x.done ? tr('skills.prereqMet') : tr('skills.prereqOpen')}</Text>
-              </View>
+                <Icon name="right" size={13} color={color.muted} />
+              </Pressable>
             ))}
           </Group>
         </>

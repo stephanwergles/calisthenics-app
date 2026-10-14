@@ -87,13 +87,10 @@ export const profile = {
   goals: {
     sub: 'Bis zu fünf · {n} gewählt · sortiert nach „realistisch als Nächstes“',
     reached: 'erreicht',
-    missing: 'fehlt noch: {list}',
     tier: { next: 'Realistisch als Nächstes', work: 'Mit etwas Vorarbeit', long: 'Langfristiges Ziel' },
     none: 'noch keine gewählt',
     pickHint: 'Tippe an, was du lernen willst – bis zu fünf. Lever baut deinen Plan darauf auf.',
     full: 'Fünf Ziele gewählt – nimm erst eins raus.',
-    after: 'Nach {name}',
-    partOf: 'Steckt schon in {name}',
     reachedGroup: 'Erreicht',
     reachedHint: 'Schon geschafft – als Ziel nicht mehr nötig.',
     blurb: {
