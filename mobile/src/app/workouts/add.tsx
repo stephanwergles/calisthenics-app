@@ -23,7 +23,9 @@ export default function AddExerciseScreen() {
             onPress: () => {
               if (!w) return
               t.editPlan(p => L.withWorkout(p, L.withSlot(t.ix, w, x.pid)))
+              // zurück zum Editor und gleich die Sätze der neuen Übung zeigen
               router.back()
+              router.push({ pathname: '/workouts/slot', params: { id: w.id, pid: x.pid } })
             },
           }))} />
         </View>
