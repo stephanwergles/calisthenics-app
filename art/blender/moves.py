@@ -243,12 +243,13 @@ def russian_dip():
     fore = dict(rot=(-4, 0, 0), pose={**SUPPORT, **DIP_LEGS}, place=("hang", dict(sz=S.z - K.z, dy=S.y - K.y)), hands=hands)
     return dict(keys=[top, bot, fore], view=(-38, 8))
 def straight_bar_dip():
+    """Stütz auf der geraden Stange, Ellbogen gerade nach hinten (seitlich ausweichende Ellbogen knicken die Hand ab)."""
     H = 1.42; bar(H, half=0.6)
-    hands = lambda hint: symh(dict(k=(0.27, -0.04, H + 0.012), hdir=(0, -1, -0.35), palm=(0, 0.15, -1),
+    hands = lambda hint: symh(dict(k=(0.25, -0.04, H + 0.012), hdir=(0, -1, -0.8), palm=(0, 0.15, -1),
                                    flex=110, bar=("x", 1), hint=hint))
     top = dict(rot=(8, 0, 0), pose={**SUPPORT, **DIP_LEGS}, place=("hang", dict(ext=STRAIGHT, up=True, dy=-0.03)),
-               hands=hands((0.15, 1, -0.2)))
-    bot = dict(rot=(32, 0, 0), pose={**SUPPORT, **DIP_LEGS}, place=("hang", dict(sz=0.12, dy=-0.12)), hands=hands((0.2, 1, -0.45)))
+               hands=hands((0.05, 1, -0.2)))
+    bot = dict(rot=(32, 0, 0), pose={**SUPPORT, **DIP_LEGS}, place=("hang", dict(sz=0.12, dy=-0.12)), hands=hands((0.05, 1, -0.3)))
     return dict(keys=[hang_sz(top), bot], view=(-40, 8))
 
 # ── Liegestütz-Familie: Körper kippt um die Zehen ───────────────────────────
@@ -531,7 +532,7 @@ RING_H = 2.3
 def ring_hands(H, w, hint, g=0.22, y=0.0):
     """Neutralgriff im Ring; w: 0 normaler Hang · 0.4 False Grip · 1 Stütz. Im Neutralgriff zeigt die Handfläche
     zur Mitte – der False Grip ist deshalb ein Beugen der Hand zur Mitte hin (nicht nach vorn, das wäre Abknicken)."""
-    fg, sup = Vector((-0.9, 0.0, 0.35)), Vector((0, -0.45, -1))
+    fg, sup = Vector((-0.9, 0.0, 0.35)), Vector((-0.1, -0.12, -1))   # Stütz: Hand verlängert den Unterarm
     t = min(max((w - FG) / (1 - FG), 0), 1)
     hd = fg.normalized().slerp(sup.normalized(), t)
     if w <= FG: palm = Vector((-1, -0.2, 0)).lerp(Vector((-0.34, 0, -0.94)), w / FG)
@@ -664,7 +665,12 @@ def press_key(pitch, legs, H, feet=None):
     """Schultern über den Händen; feet: Füße auf Höhe feet (Stand), sonst Schwerpunkt über den Händen."""
     k = dict(rot=(pitch, 0, 0), pose={**PIKE, **legs, **sym({"clavicle.L": (1, 0.05, 0.35), "neck": (0, -0.1, 1)})},
              place=("hang", dict(ext=STRAIGHT, up=True, dy=0.0)), hands=H)
-    if feet is None: solve(k, set_place(1, "dy"), -0.6, 0.6, lambda k: mesh_np()[:, 1].mean(), 0.0)
+    if feet is None:
+        for _ in range(12):                # Schwerpunkt über die Hände; Füße dürfen dabei nicht in den Boden
+            solve(k, set_place(1, "dy"), -0.6, 0.6, lambda k: mesh_np()[:, 1].mean(), 0.0)
+            pose_key(k, limbs=False)
+            if mesh_np()[FOOTV][:, 2].min() >= 0.04: break
+            set_rot(0)(k, k["rot"][0] + 3)
     else: solve(k, 0, pitch - 15, pitch + 25, lambda k: mesh_np()[FOOTV][:, 2].min(), feet)   # enger Bereich: eindeutig
     return hang_sz(k)
 def pike_legs(hip, spread=0.0):
@@ -675,12 +681,13 @@ def press_ex(spread, wall_y=None, timing="pp"):
     H = floor_hands(0.26, 0.0, (0, -1, 0), (0.4, 0.6, 0.2))
     if wall_y is not None: wall(wall_y, 1)
     keys = [press_key(122, pike_legs(130, spread * 0.7), H, feet=0.0),      # gegrätschter Stand, Hände vor den Füßen
+            press_key(126, pike_legs(128, spread * 0.85), H, feet=0.06),    # Füße lösen sich
             press_key(132, pike_legs(125, spread), H),                      # Schultern vor, Füße lösen sich
             press_key(155, pike_legs(95, spread), H),                       # Beine waagerecht gegrätscht
             press_key(180, pike_legs(0, 0.0), H)]                           # Handstand, Beine geschlossen
     return dict(keys=keys, timing=timing, view=(-35, 8))
 def straddle_press(): return press_ex(0.42)
-def wall_straddle_press(): return press_ex(0.42, wall_y=0.72)
+def wall_straddle_press(): return press_ex(0.42, wall_y=0.85)
 def elevated_pike_press():
     """Füße auf der Box, Hüfte über die Hände schieben, bis die Füße abheben."""
     ex = pike_ex(feet_h=0.5, a_top=150); top = to_hang(ex["keys"][0])
