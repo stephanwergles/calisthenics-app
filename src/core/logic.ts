@@ -952,6 +952,10 @@ export function musclesOf(exercise: ExerciseId, meta: ExerciseMeta): MuscleArea[
       if (has('l-sit', 'v-sit', 'manna', 'elbow-lever', 'crow')) out.add('arms')
       if (has('flag', 'side-lever') && !has('dragon')) out.add('upperBack').add('arms')
       break
+    case 'conditioning':
+      out.add('thigh').add('abs')
+      if (has('burpee', 'squat-thrust', 'bear-crawl', 'mountain', 'inchworm')) out.add('arms').add('chest')
+      break
     case 'isolation':
       if (has('curl', 'triceps')) out.add('arms')
       if (has('fly')) out.add('chest')
@@ -1034,6 +1038,7 @@ export const STEP_PINS: Record<ProgressionId, ExerciseId> = {
   'planche-advanced': 'adv-tuck-planche', scapula: 'scapula-shrug',
   'pull-up': 'pull-up', dip: 'dip', 'horizontal-push': 'decline-push-up', 'split-squat': 'bulgarian-split-squat',
   'one-arm-pull-up': 'one-arm-negative', row: 'body-row',
+  'hip-hinge': 'single-leg-glute-bridge', calf: 'calf-raise-single-leg',
 }
 export const needsStepPins = (user: UserState) => Object.keys(STEP_PINS).some(pid => !user.current[pid])
 export function withStepPins(user: UserState): UserState {

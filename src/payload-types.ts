@@ -379,6 +379,7 @@ export interface Exercise {
           | 'hinge'
           | 'core'
           | 'isolation'
+          | 'conditioning'
         )
       | null;
     difficulty?: number | null;

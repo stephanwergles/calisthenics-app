@@ -21,6 +21,7 @@ import * as migration_20261014_120602_activity_challenge from './20261014_120602
 import * as migration_20261014_130949_user_challenges from './20261014_130949_user_challenges';
 import * as migration_20261014_165128_activity_cardio_kinds from './20261014_165128_activity_cardio_kinds';
 import * as migration_20261014_172238_session_circuits from './20261014_172238_session_circuits';
+import * as migration_20261014_184946_pattern_conditioning from './20261014_184946_pattern_conditioning';
 
 export const migrations = [
   {
@@ -136,6 +137,11 @@ export const migrations = [
   {
     up: migration_20261014_172238_session_circuits.up,
     down: migration_20261014_172238_session_circuits.down,
-    name: '20261014_172238_session_circuits'
+    name: '20261014_172238_session_circuits',
+  },
+  {
+    up: migration_20261014_184946_pattern_conditioning.up,
+    down: migration_20261014_184946_pattern_conditioning.down,
+    name: '20261014_184946_pattern_conditioning'
   },
 ];

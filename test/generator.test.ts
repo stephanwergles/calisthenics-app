@@ -140,3 +140,12 @@ test('Kontinuität: Leitern des bisherigen Plans bleiben, Tage werden ans Budget
   assert.ok(slots(withKeep).some(s => s.progression === 'leg-raise'), 'Beinheben bleibt')
   for (const d of withKeep.days) assert.ok(d.minutes >= 90 * 0.75, `${d.day}: nur ${d.minutes} min von 90`)
 })
+
+test('Erreichtes Ziel (L-Sit auf der letzten Stufe): einmal pro Woche halten, kein zweites Mal', () => {
+  const lsit = data.catalog.progressions.find(p => p.id === 'l-sit')!
+  const base: GeneratorInput = { skills: ['muscle-up', 'elbow-lever', 'pistol', 'handstand', 'l-sit'], equipment: EQUIP, days: ['sun', 'mon', 'wed'], minutes: 90, current: {}, split: 'ppl-3' }
+  const count = (p: GeneratedPlan) => slots(p).filter(s => s.progression === 'l-sit').length
+  assert.ok(count(generatePlan(data, base)) >= 1)
+  const done = generatePlan(data, { ...base, current: { 'l-sit': lsit.steps.length - 1 } })
+  assert.equal(count(done), 1, `L-Sit ${count(done)}× statt 1×`)
+})

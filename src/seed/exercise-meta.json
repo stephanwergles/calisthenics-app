@@ -2082,6 +2082,390 @@
     "knee": 2,
     "ankle": 1
    }
+  },
+  "chin-up": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 2,
+   "stress": {
+    "elbow": 1,
+    "shoulder": 1
+   }
+  },
+  "wide-push-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 1,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1
+   }
+  },
+  "diamond-push-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 2,
+   "stress": {
+    "wrist": 2,
+    "elbow": 1
+   }
+  },
+  "clap-push-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 3,
+   "stress": {
+    "wrist": 2,
+    "elbow": 1,
+    "shoulder": 1
+   }
+  },
+  "bench-dip": {
+   "equipment": [
+    [
+     "box"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 1,
+   "stress": {
+    "shoulder": 1,
+    "elbow": 1,
+    "wrist": 1
+   }
+  },
+  "front-plank": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 1,
+   "stress": {
+    "shoulder": 1
+   }
+  },
+  "crunch": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "reverse-crunch": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 1,
+   "stress": {
+    "back": 1
+   }
+  },
+  "sit-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 2,
+   "stress": {
+    "back": 1
+   }
+  },
+  "v-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 3,
+   "stress": {
+    "back": 1
+   }
+  },
+  "dead-bug": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "russian-twist": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 2,
+   "stress": {
+    "back": 1
+   }
+  },
+  "flutter-kick": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 1,
+   "stress": {
+    "back": 1
+   }
+  },
+  "superman": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "hinge",
+   "difficulty": 1,
+   "stress": {
+    "back": 1
+   }
+  },
+  "reverse-lunge": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 1,
+   "stress": {
+    "knee": 1
+   }
+  },
+  "walking-lunge": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 2,
+   "stress": {
+    "knee": 1,
+    "hip": 1
+   }
+  },
+  "split-jump": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 3,
+   "stress": {
+    "knee": 2,
+    "ankle": 1
+   }
+  },
+  "glute-bridge": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "hinge",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "wall-sit": {
+   "equipment": [
+    [
+     "wall"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 1,
+   "stress": {
+    "knee": 1
+   }
+  },
+  "step-up": {
+   "equipment": [
+    [
+     "box"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 1,
+   "stress": {
+    "knee": 1
+   }
+  },
+  "calf-raise": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {
+    "ankle": 1
+   }
+  },
+  "squat-thrust": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "conditioning",
+   "difficulty": 1,
+   "stress": {
+    "wrist": 1
+   }
+  },
+  "burpee": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "conditioning",
+   "difficulty": 2,
+   "stress": {
+    "wrist": 1,
+    "knee": 1
+   }
+  },
+  "mountain-climber": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "conditioning",
+   "difficulty": 1,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1
+   }
+  },
+  "jumping-jack": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "conditioning",
+   "difficulty": 1,
+   "stress": {
+    "ankle": 1
+   }
+  },
+  "high-knees": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "conditioning",
+   "difficulty": 1,
+   "stress": {
+    "ankle": 1
+   }
+  },
+  "bear-crawl": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "conditioning",
+   "difficulty": 2,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1
+   }
+  },
+  "inchworm": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "conditioning",
+   "difficulty": 1,
+   "stress": {
+    "wrist": 1
+   }
+  },
+  "skater-jump": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "conditioning",
+   "difficulty": 2,
+   "stress": {
+    "knee": 1,
+    "ankle": 1
+   }
+  },
+  "broad-jump": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "conditioning",
+   "difficulty": 2,
+   "stress": {
+    "knee": 1,
+    "ankle": 1
+   }
+  },
+  "tuck-jump": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "conditioning",
+   "difficulty": 3,
+   "stress": {
+    "knee": 2,
+    "ankle": 2
+   }
   }
  }
 }

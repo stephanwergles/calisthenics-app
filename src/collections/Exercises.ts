@@ -12,6 +12,7 @@ const PATTERNS = [
   { label: 'Zug vertikal', value: 'vertical-pull' }, { label: 'Zug horizontal', value: 'horizontal-pull' },
   { label: 'Druck vertikal', value: 'vertical-push' }, { label: 'Druck horizontal', value: 'horizontal-push' },
   { label: 'Kniebeuge', value: 'squat' }, { label: 'Hüftstreckung', value: 'hinge' }, { label: 'Rumpf', value: 'core' }, { label: 'Isolation', value: 'isolation' },
+  { label: 'Kondition', value: 'conditioning' },
 ]
 const TENDONS: [string, string][] = [['wrist', 'Hand & Handgelenk'], ['elbow', 'Ellenbogen'], ['shoulder', 'Schulter'], ['knee', 'Knie'], ['hip', 'Hüfte'], ['back', 'Unterer Rücken'], ['ankle', 'Fuß & Sprunggelenk']]
 

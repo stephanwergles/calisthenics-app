@@ -25,7 +25,7 @@ export const BASE_PATTERNS: Pattern[] = ['vertical-pull', 'horizontal-pull', 've
 const FILL = 0.95
 const PATTERN_LABEL: Record<Pattern, string> = {
   'vertical-pull': 'Zug vertikal', 'horizontal-pull': 'Zug horizontal', 'vertical-push': 'Druck vertikal',
-  'horizontal-push': 'Druck horizontal', squat: 'Kniebeuge', hinge: 'Hüftstreckung', core: 'Rumpf', isolation: 'Isolation',
+  'horizontal-push': 'Druck horizontal', squat: 'Kniebeuge', hinge: 'Hüftstreckung', core: 'Rumpf', isolation: 'Isolation', conditioning: 'Kondition',
 }
 const ALWAYS: Equipment[] = ['floor', 'wall']
 const WARMUP_MIN = 10
@@ -116,6 +116,9 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
   const candidates: Candidate[] = []
   const keep = new Set(input.keep ?? [])
   const stepOf = (p: Progression) => Math.min(input.current[p.id] ?? 0, p.steps.length - 1)
+  /** Ziel schon erreicht (alle Ziel-Leitern auf der letzten Stufe): einmal pro Woche halten,
+      keine zweite Einheit und kein Auffüllen damit – die Zeit gehört den offenen Zielen */
+  const reached = (s: Skill) => s.targets.every(pid => { const p = progressions.get(pid); return !p || (input.current[pid] ?? 0) >= p.steps.length - 1 })
   /** aktuelle Stufe, sonst die nächst-leichtere, zuletzt die nächst-schwerere mit vorhandenem Equipment
       (z. B. Negativ-Muscle-ups statt Muscle-ups mit Band, wenn kein Band da ist) */
   const resolve = (p: Progression) => {
@@ -244,6 +247,7 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
   for (const d of days) {
     for (const s of skills) {
       if (minutesOf(d) >= input.minutes * 0.6) break
+      if (reached(s)) continue
       if (plan.get(d)!.some(x => x.skill === s.id && x.kind === 'skill')) continue
       const first = queue.find(x => x.kind === 'skill' && x.skill === s.id)
       if (!first) continue
@@ -261,11 +265,12 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
      zuerst, mittlere Schwierigkeit, Themen, Sehnen und Zug/Druck wie oben ── */
   // Ziel-Leitern anderer Skills (Planche, Muscle-up …) nur, wenn der Skill gewählt ist – oder die
   // Leiter schon im bisherigen Plan steht (Beinheben, L-Sit: Gewohntes nicht ohne Not streichen)
-  const goalLadders = new Set(skills.flatMap(sk => sk.targets))
+  const goalLadders = new Set(skills.filter(sk => !reached(sk)).flatMap(sk => sk.targets))
   const otherSkills = new Set(data.skills.filter(sk => !input.skills.includes(sk.id)).flatMap(sk => sk.targets).filter(pid => !keep.has(pid)))
+  // Kondition (Burpees, Sprünge …) füllt keine Kraftpläne auf – dafür sind Runden-Blöcke da
   const extras = catalog.progressions.filter(p => !otherSkills.has(p.id)).flatMap(p => {
     const r = resolve(p)
-    return r && meta[r.ex.id] ? [{ p, r }] : []
+    return r && meta[r.ex.id] && meta[r.ex.id].pattern !== 'conditioning' ? [{ p, r }] : []
   })
   // immer den leersten Tag zuerst – sonst nimmt der erste Tag alle passenden Ergänzungen und spätere bleiben kurz
   const open = new Set(days)

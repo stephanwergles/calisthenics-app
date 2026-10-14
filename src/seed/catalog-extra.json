@@ -2441,6 +2441,787 @@
     "Gesäß",
     "Waden"
    ]
+  },
+  {
+   "id": "chin-up",
+   "name": "Chin-ups (Untergriff)",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im Hang an der Stange, Untergriff schulterbreit.",
+    "execution": "Schulterblätter nach unten ziehen und hochziehen, bis das Kinn über der Stange ist. Kontrolliert in den gestreckten Hang ablassen.",
+    "faults": "Schwung aus den Beinen · halbe Bewegung · Schultern zu den Ohren",
+    "scaling": "Leichter: negativ oder mit Band. Schwerer: Pause oben, Zusatzgewicht."
+   },
+   "media": {
+    "videoQuery": "chin up form"
+   },
+   "cues": [
+    "Brust zur Stange",
+    "Ellenbogen nach unten",
+    "Ganz ablassen"
+   ],
+   "muscles": [
+    "Bizeps",
+    "Latissimus"
+   ]
+  },
+  {
+   "id": "wide-push-up",
+   "name": "Breite Liegestütze",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Liegestützposition, Hände deutlich breiter als schulterbreit.",
+    "execution": "Brust Richtung Boden absenken, Körper bleibt eine Linie, und hochdrücken. Mehr Brust, weniger Trizeps.",
+    "faults": "Ellenbogen ganz seitlich · Hüfte hängt · halbe Bewegung",
+    "scaling": "Leichter: schräg an einer Bank. Schwerer: Füße erhöht."
+   },
+   "media": {
+    "videoQuery": "wide push up"
+   },
+   "cues": [
+    "Körper als Linie",
+    "Brust tief",
+    "Schulterblätter weg vom Ohr"
+   ],
+   "muscles": [
+    "Brust",
+    "vordere Schulter",
+    "Trizeps"
+   ]
+  },
+  {
+   "id": "diamond-push-up",
+   "name": "Diamant-Liegestütze",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Liegestützposition, Daumen und Zeigefinger bilden unter der Brust ein Dreieck.",
+    "execution": "Absenken, Ellenbogen eng am Körper, bis die Brust die Hände fast berührt, und hochdrücken.",
+    "faults": "Ellenbogen gehen nach außen · Hüfte sinkt · Handgelenke knicken",
+    "scaling": "Leichter: Knie am Boden oder schräg. Schwerer: Füße erhöht."
+   },
+   "media": {
+    "videoQuery": "diamond push up"
+   },
+   "cues": [
+    "Ellenbogen eng",
+    "Brust zu den Händen",
+    "Rumpf fest"
+   ],
+   "muscles": [
+    "Trizeps",
+    "Brust"
+   ]
+  },
+  {
+   "id": "clap-push-up",
+   "name": "Klatsch-Liegestütze",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Liegestützposition, Hände schulterbreit.",
+    "execution": "Explosiv hochdrücken, sodass die Hände abheben, kurz klatschen und weich in die nächste Wiederholung landen.",
+    "faults": "Harte Landung mit gestreckten Armen · Hüfte knickt · zu wenig Höhe",
+    "scaling": "Leichter: nur abheben ohne Klatschen. Schwerer: zweimal klatschen."
+   },
+   "media": {
+    "videoQuery": "clap push up"
+   },
+   "cues": [
+    "Explosiv drücken",
+    "Weich landen",
+    "Körper bleibt steif"
+   ],
+   "muscles": [
+    "Brust",
+    "Trizeps",
+    "vordere Schulter"
+   ]
+  },
+  {
+   "id": "bench-dip",
+   "name": "Dips an der Bank",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Hände hinter dem Körper auf einer Bank, Beine gestreckt oder angewinkelt.",
+    "execution": "Ellenbogen nach hinten beugen und absenken, bis die Oberarme waagerecht sind, dann hochdrücken.",
+    "faults": "Schultern rollen nach vorn · zu tief · Ellenbogen nach außen",
+    "scaling": "Leichter: Knie gebeugt. Schwerer: Füße erhöht."
+   },
+   "media": {
+    "videoQuery": "bench dip"
+   },
+   "cues": [
+    "Ellenbogen nach hinten",
+    "Brust offen",
+    "Nicht zu tief"
+   ],
+   "muscles": [
+    "Trizeps",
+    "vordere Schulter"
+   ]
+  },
+  {
+   "id": "front-plank",
+   "name": "Unterarmstütz (Plank)",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Unterarme unter den Schultern, Beine gestreckt, auf den Fußspitzen.",
+    "execution": "Körper als gerade Linie halten: Bauch fest, Gesäß angespannt, Blick zum Boden.",
+    "faults": "Hüfte hängt durch · Po ragt hoch · Luft anhalten",
+    "scaling": "Leichter: Knie am Boden. Schwerer: ein Bein oder einen Arm anheben."
+   },
+   "media": {
+    "videoQuery": "forearm plank form"
+   },
+   "cues": [
+    "Gesäß anspannen",
+    "Rippen runter",
+    "Ruhig atmen"
+   ],
+   "muscles": [
+    "Bauch",
+    "Rumpf"
+   ]
+  },
+  {
+   "id": "crunch",
+   "name": "Crunches",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Rückenlage, Beine angewinkelt, Hände an den Schläfen.",
+    "execution": "Oberen Rücken einrollen, bis die Schulterblätter abheben, kurz halten und langsam ablegen.",
+    "faults": "Am Kopf ziehen · Schwung · Lendenwirbel heben ab",
+    "scaling": "Leichter: Arme vor der Brust. Schwerer: langsamer, Pause oben."
+   },
+   "media": {
+    "videoQuery": "crunch form"
+   },
+   "cues": [
+    "Einrollen statt hochziehen",
+    "Kinn locker",
+    "Langsam ab"
+   ],
+   "muscles": [
+    "Bauch"
+   ]
+  },
+  {
+   "id": "reverse-crunch",
+   "name": "Reverse Crunches",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Rückenlage, Knie über der Hüfte gebeugt, Arme neben dem Körper.",
+    "execution": "Becken einrollen und vom Boden heben, Knie Richtung Brust, langsam wieder ablegen.",
+    "faults": "Schwung aus den Beinen · Hohlkreuz beim Ablegen · zu schnell",
+    "scaling": "Leichter: kleinerer Weg. Schwerer: Beine gestreckter, schräge Bank."
+   },
+   "media": {
+    "videoQuery": "reverse crunch"
+   },
+   "cues": [
+    "Becken einrollen",
+    "Langsam ab",
+    "Arme ruhig"
+   ],
+   "muscles": [
+    "Bauch",
+    "Hüftbeuger"
+   ]
+  },
+  {
+   "id": "sit-up",
+   "name": "Sit-ups",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Rückenlage, Beine angewinkelt, Füße am Boden.",
+    "execution": "Wirbel für Wirbel bis zum Sitzen aufrollen und kontrolliert zurück ablegen.",
+    "faults": "Hände ziehen am Kopf · Schwung · Füße heben ab",
+    "scaling": "Leichter: Füße fixieren, Arme nach vorn. Schwerer: Arme über dem Kopf."
+   },
+   "media": {
+    "videoQuery": "sit up form"
+   },
+   "cues": [
+    "Aufrollen",
+    "Kontrolliert ab",
+    "Füße am Boden"
+   ],
+   "muscles": [
+    "Bauch",
+    "Hüftbeuger"
+   ]
+  },
+  {
+   "id": "v-up",
+   "name": "V-ups",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Rückenlage, Arme über dem Kopf, Beine gestreckt.",
+    "execution": "Gleichzeitig Oberkörper und gestreckte Beine anheben, Hände Richtung Füße, und langsam ablegen.",
+    "faults": "Beine stark gebeugt · Hohlkreuz · Schwung",
+    "scaling": "Leichter: Tuck-ups mit gebeugten Knien. Schwerer: Pause oben."
+   },
+   "media": {
+    "videoQuery": "v up exercise"
+   },
+   "cues": [
+    "Arme und Beine gleichzeitig",
+    "Lendenwirbel am Boden",
+    "Langsam ab"
+   ],
+   "muscles": [
+    "Bauch",
+    "Hüftbeuger"
+   ]
+  },
+  {
+   "id": "dead-bug",
+   "name": "Dead Bug",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Rückenlage, Arme senkrecht nach oben, Knie über der Hüfte im rechten Winkel.",
+    "execution": "Gegenüberliegenden Arm und gestrecktes Bein langsam Richtung Boden senken, Lendenwirbel bleibt am Boden, zurück und Seite wechseln.",
+    "faults": "Hohlkreuz · zu schnell · Luft anhalten",
+    "scaling": "Leichter: kleinerer Weg. Schwerer: Band zwischen Händen und Füßen."
+   },
+   "media": {
+    "videoQuery": "dead bug exercise"
+   },
+   "cues": [
+    "Rücken am Boden",
+    "Langsam",
+    "Ausatmen beim Strecken"
+   ],
+   "muscles": [
+    "Bauch",
+    "Rumpf"
+   ]
+  },
+  {
+   "id": "russian-twist",
+   "name": "Russian Twists",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Im Sitz, Oberkörper leicht zurückgelehnt, Füße am Boden oder angehoben.",
+    "execution": "Oberkörper kontrolliert von Seite zu Seite drehen, Hände zum Boden neben der Hüfte.",
+    "faults": "Nur die Arme bewegen · Rundrücken · zu schnell",
+    "scaling": "Leichter: Füße am Boden. Schwerer: Füße angehoben, Gewicht in den Händen."
+   },
+   "media": {
+    "videoQuery": "russian twist"
+   },
+   "cues": [
+    "Aus der Brust drehen",
+    "Rücken lang",
+    "Kontrolliert"
+   ],
+   "muscles": [
+    "seitlicher Bauch",
+    "Bauch"
+   ]
+  },
+  {
+   "id": "flutter-kick",
+   "name": "Flutter Kicks",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Rückenlage, Hände unter dem Gesäß, Beine gestreckt knapp über dem Boden.",
+    "execution": "Gestreckte Beine abwechselnd klein auf und ab bewegen, Lendenwirbel bleibt am Boden.",
+    "faults": "Hohlkreuz · Beine zu hoch · Kopf verspannt",
+    "scaling": "Leichter: Beine höher. Schwerer: Beine tiefer, länger."
+   },
+   "media": {
+    "videoQuery": "flutter kicks"
+   },
+   "cues": [
+    "Rücken am Boden",
+    "Beine gestreckt",
+    "Kleine Bewegung"
+   ],
+   "muscles": [
+    "Bauch",
+    "Hüftbeuger"
+   ]
+  },
+  {
+   "id": "superman",
+   "name": "Superman",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Bauchlage, Arme nach vorn gestreckt.",
+    "execution": "Arme, Brust und Beine gleichzeitig leicht anheben, kurz halten und ablegen.",
+    "faults": "Kopf in den Nacken · Schwung · zu hoch ins Hohlkreuz",
+    "scaling": "Leichter: abwechselnd Arm und Bein. Schwerer: länger halten."
+   },
+   "media": {
+    "videoQuery": "superman exercise"
+   },
+   "cues": [
+    "Lang machen statt hoch",
+    "Blick zum Boden",
+    "Gesäß an"
+   ],
+   "muscles": [
+    "unterer Rücken",
+    "Gesäß"
+   ]
+  },
+  {
+   "id": "reverse-lunge",
+   "name": "Ausfallschritte rückwärts",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Aufrecht stehen, Füße hüftbreit.",
+    "execution": "Großen Schritt nach hinten, hinteres Knie Richtung Boden, vorderes Schienbein bleibt steil. Über das vordere Bein zurück.",
+    "faults": "Vorderes Knie fällt nach innen · Oberkörper kippt · zu kurzer Schritt",
+    "scaling": "Leichter: festhalten, weniger tief. Schwerer: Gewicht, Gehen."
+   },
+   "media": {
+    "videoQuery": "reverse lunge"
+   },
+   "cues": [
+    "Großer Schritt",
+    "Knie über dem Fuß",
+    "Aufrecht"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Gesäß"
+   ]
+  },
+  {
+   "id": "walking-lunge",
+   "name": "Ausfallschritte gehend",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Aufrecht stehen, Platz zum Gehen.",
+    "execution": "Mit großem Schritt nach vorn in den Ausfallschritt, hinteres Knie Richtung Boden, und mit dem hinteren Bein den nächsten Schritt machen.",
+    "faults": "Knie fällt nach innen · Oberkörper schwankt · Ferse hebt ab",
+    "scaling": "Leichter: rückwärts auf der Stelle. Schwerer: Gewicht, langsamer."
+   },
+   "media": {
+    "videoQuery": "walking lunge"
+   },
+   "cues": [
+    "Großer Schritt",
+    "Aufrecht",
+    "Kontrolliert ab"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Gesäß",
+    "Adduktoren"
+   ]
+  },
+  {
+   "id": "split-jump",
+   "name": "Ausfallschritt-Sprünge",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Im Ausfallschritt, beide Knie gebeugt.",
+    "execution": "Explosiv hochspringen, in der Luft die Beine wechseln und weich im Ausfallschritt landen.",
+    "faults": "Harte Landung · Knie fällt nach innen · zu flach",
+    "scaling": "Leichter: ohne Sprung wechseln. Schwerer: höher, tiefer landen."
+   },
+   "media": {
+    "videoQuery": "split jump lunge"
+   },
+   "cues": [
+    "Weich landen",
+    "Knie über dem Fuß",
+    "Oberkörper aufrecht"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Gesäß",
+    "Waden"
+   ]
+  },
+  {
+   "id": "glute-bridge",
+   "name": "Hüftheben (beidbeinig)",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Rückenlage, Füße hüftbreit nahe am Gesäß.",
+    "execution": "Über die Fersen die Hüfte heben, bis Knie, Hüfte und Schultern eine Linie bilden, oben anspannen und ablegen.",
+    "faults": "Hohlkreuz statt Gesäß · Knie fallen auseinander · Schwung",
+    "scaling": "Leichter: kleinerer Weg. Schwerer: einbeinig, Pause oben."
+   },
+   "media": {
+    "videoQuery": "glute bridge"
+   },
+   "cues": [
+    "Über die Fersen",
+    "Gesäß oben fest",
+    "Rippen runter"
+   ],
+   "muscles": [
+    "Gesäß",
+    "hintere Oberschenkel"
+   ]
+  },
+  {
+   "id": "wall-sit",
+   "name": "Wandsitzen",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Rücken an der Wand, Füße einen Schritt vor der Wand.",
+    "execution": "An der Wand herunterrutschen, bis die Oberschenkel waagerecht sind, und halten.",
+    "faults": "Knie über den Zehen · Hände auf den Oberschenkeln · zu hoch",
+    "scaling": "Leichter: weniger tief. Schwerer: ein Bein anheben, länger."
+   },
+   "media": {
+    "videoQuery": "wall sit"
+   },
+   "cues": [
+    "Knie über den Fersen",
+    "Rücken an der Wand",
+    "Oberschenkel waagerecht"
+   ],
+   "muscles": [
+    "Quadrizeps"
+   ]
+  },
+  {
+   "id": "step-up",
+   "name": "Step-ups",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Vor einer Box oder Bank, ein Fuß ganz auf der Fläche.",
+    "execution": "Über das obere Bein aufsteigen, ohne mit dem unteren abzustoßen, oben strecken und kontrolliert absteigen.",
+    "faults": "Abstoßen mit dem unteren Bein · Knie fällt nach innen · Oberkörper kippt",
+    "scaling": "Leichter: niedrigere Box. Schwerer: höher, Gewicht."
+   },
+   "media": {
+    "videoQuery": "step up exercise"
+   },
+   "cues": [
+    "Nur das obere Bein arbeitet",
+    "Knie über dem Fuß",
+    "Langsam ab"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Gesäß"
+   ]
+  },
+  {
+   "id": "calf-raise",
+   "name": "Wadenheben (beidbeinig)",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Auf einer Stufe, Fersen frei, leicht festhalten.",
+    "execution": "Auf die Zehenspitzen hochdrücken, oben halten und langsam unter die Stufe absenken.",
+    "faults": "Wippen statt ganzer Bewegung · Knie gebeugt · zu schnell",
+    "scaling": "Leichter: ebener Boden. Schwerer: einbeinig."
+   },
+   "media": {
+    "videoQuery": "calf raise"
+   },
+   "cues": [
+    "Ganz hoch",
+    "Langsam ab",
+    "Knie gestreckt"
+   ],
+   "muscles": [
+    "Waden"
+   ]
+  },
+  {
+   "id": "squat-thrust",
+   "name": "Squat Thrusts",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aufrecht stehen.",
+    "execution": "In die Hocke, Hände auf den Boden, Füße nach hinten in den Liegestütz springen, zurück in die Hocke und aufstehen.",
+    "faults": "Hüfte hängt im Liegestütz · Rundrücken · harte Landung",
+    "scaling": "Leichter: Füße einzeln zurücksetzen. Schwerer: Burpees."
+   },
+   "media": {
+    "videoQuery": "squat thrust"
+   },
+   "cues": [
+    "Rumpf fest im Stütz",
+    "Weich springen",
+    "Ganz aufrichten"
+   ],
+   "muscles": [
+    "ganzer Körper"
+   ]
+  },
+  {
+   "id": "burpee",
+   "name": "Burpees",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aufrecht stehen.",
+    "execution": "In die Hocke, Füße zurück in den Liegestütz, Liegestütz, Füße wieder heran und mit Strecksprung abschließen.",
+    "faults": "Hüfte hängt · Liegestütz ausgelassen · harte Landung",
+    "scaling": "Leichter: ohne Liegestütz und Sprung. Schwerer: Tuck Jump am Ende."
+   },
+   "media": {
+    "videoQuery": "burpee form"
+   },
+   "cues": [
+    "Brust zum Boden",
+    "Rumpf fest",
+    "Explosiv hoch"
+   ],
+   "muscles": [
+    "ganzer Körper"
+   ]
+  },
+  {
+   "id": "mountain-climber",
+   "name": "Mountain Climbers",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Liegestützposition, Hände unter den Schultern.",
+    "execution": "Knie abwechselnd zügig Richtung Brust ziehen, Hüfte bleibt tief und ruhig.",
+    "faults": "Po ragt hoch · Schultern hinter den Händen · Hüfte wackelt",
+    "scaling": "Leichter: langsamer, abwechselnd setzen. Schwerer: schneller, Knie zum Ellenbogen."
+   },
+   "media": {
+    "videoQuery": "mountain climbers"
+   },
+   "cues": [
+    "Hüfte tief",
+    "Schultern über den Händen",
+    "Rhythmisch atmen"
+   ],
+   "muscles": [
+    "Bauch",
+    "Schultern",
+    "Hüftbeuger"
+   ]
+  },
+  {
+   "id": "jumping-jack",
+   "name": "Hampelmann",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aufrecht, Füße zusammen, Arme seitlich.",
+    "execution": "Im Sprung Beine grätschen und Arme über den Kopf führen, im nächsten Sprung zurück.",
+    "faults": "Harte Landung auf den Fersen · Arme nur halb · Hohlkreuz",
+    "scaling": "Leichter: Schritt statt Sprung. Schwerer: schneller, Star Jumps."
+   },
+   "media": {
+    "videoQuery": "jumping jacks"
+   },
+   "cues": [
+    "Leicht auf den Ballen",
+    "Arme ganz hoch",
+    "Gleichmäßig"
+   ],
+   "muscles": [
+    "Waden",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "high-knees",
+   "name": "Skippings (Knie hoch)",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aufrecht, hüftbreit.",
+    "execution": "Auf der Stelle laufen und die Knie zügig bis auf Hüfthöhe ziehen, Arme schwingen mit.",
+    "faults": "Rücklage · Knie zu tief · Landen auf den Fersen",
+    "scaling": "Leichter: gehend. Schwerer: schneller, länger."
+   },
+   "media": {
+    "videoQuery": "high knees exercise"
+   },
+   "cues": [
+    "Knie auf Hüfthöhe",
+    "Auf den Ballen",
+    "Aufrecht"
+   ],
+   "muscles": [
+    "Hüftbeuger",
+    "Waden",
+    "Quadrizeps"
+   ]
+  },
+  {
+   "id": "bear-crawl",
+   "name": "Bärengang",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Vierfüßlerstand, Knie knapp über dem Boden.",
+    "execution": "Gegenüberliegende Hand und Fuß gleichzeitig kleine Schritte vorwärts setzen, Knie bleiben tief, Rücken flach.",
+    "faults": "Po ragt hoch · Knie berühren den Boden · Rücken rund",
+    "scaling": "Leichter: auf der Stelle halten. Schwerer: rückwärts, seitwärts, schneller."
+   },
+   "media": {
+    "videoQuery": "bear crawl"
+   },
+   "cues": [
+    "Rücken flach",
+    "Knie tief",
+    "Kleine Schritte"
+   ],
+   "muscles": [
+    "Schultern",
+    "Bauch",
+    "Quadrizeps"
+   ]
+  },
+  {
+   "id": "inchworm",
+   "name": "Inchworm",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aufrecht stehen, Beine gestreckt.",
+    "execution": "Hände zum Boden, mit den Händen nach vorn in den Liegestütz laufen, mit kleinen Schritten zurück zu den Händen und aufrichten.",
+    "faults": "Knie stark gebeugt · Hüfte hängt im Stütz · zu schnell",
+    "scaling": "Leichter: Knie beugen. Schwerer: Liegestütz einbauen."
+   },
+   "media": {
+    "videoQuery": "inchworm exercise"
+   },
+   "cues": [
+    "Beine möglichst gestreckt",
+    "Rumpf fest",
+    "Langsam"
+   ],
+   "muscles": [
+    "hintere Oberschenkel",
+    "Schultern",
+    "Bauch"
+   ]
+  },
+  {
+   "id": "skater-jump",
+   "name": "Skater-Sprünge",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Auf einem Bein, Knie leicht gebeugt.",
+    "execution": "Seitlich auf das andere Bein springen, weich landen, das freie Bein hinter dem Standbein, und zurück.",
+    "faults": "Knie fällt nach innen · harte Landung · Oberkörper aufrecht steif",
+    "scaling": "Leichter: kleinere Sprünge. Schwerer: weiter, Pause bei der Landung."
+   },
+   "media": {
+    "videoQuery": "skater jumps"
+   },
+   "cues": [
+    "Weich landen",
+    "Knie über dem Fuß",
+    "Aus der Hüfte"
+   ],
+   "muscles": [
+    "Gesäß",
+    "Quadrizeps",
+    "Adduktoren"
+   ]
+  },
+  {
+   "id": "broad-jump",
+   "name": "Weitsprung aus dem Stand",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Hüftbreit, Arme hinten.",
+    "execution": "Mit Armschwung explosiv weit nach vorn springen und tief und weich landen, zurückgehen.",
+    "faults": "Harte Landung mit gestreckten Knien · Knie fallen nach innen · kein Armschwung",
+    "scaling": "Leichter: kürzer. Schwerer: mehrere Sprünge hintereinander."
+   },
+   "media": {
+    "videoQuery": "standing broad jump"
+   },
+   "cues": [
+    "Armschwung",
+    "Weit und tief landen",
+    "Knie über den Zehen"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Gesäß",
+    "Waden"
+   ]
+  },
+  {
+   "id": "tuck-jump",
+   "name": "Hocksprünge",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Hüftbreit, leicht gebeugt.",
+    "execution": "Explosiv hochspringen, Knie zur Brust ziehen und weich landen.",
+    "faults": "Harte Landung · Knie zu niedrig · Rücklage",
+    "scaling": "Leichter: Strecksprünge. Schwerer: direkt hintereinander."
+   },
+   "media": {
+    "videoQuery": "tuck jumps"
+   },
+   "cues": [
+    "Knie zur Brust",
+    "Leise landen",
+    "Arme helfen"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Waden",
+    "Bauch"
+   ]
   }
  ],
  "progressions": [
@@ -3396,6 +4177,458 @@
      }
     }
    ]
+  },
+  {
+   "id": "chin-ups",
+   "name": "Chin-ups",
+   "region": "pull",
+   "steps": [
+    {
+     "exercise": "chin-up",
+     "target": {
+      "label": "4 × 5–10",
+      "sets": 4,
+      "restSec": 120,
+      "unlockAt": 10,
+      "min": 5,
+      "max": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "push-up-variants",
+   "name": "Liegestütz-Varianten",
+   "region": "push",
+   "steps": [
+    {
+     "exercise": "wide-push-up",
+     "target": {
+      "label": "3 × 10–20",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 20,
+      "min": 10,
+      "max": 20
+     }
+    },
+    {
+     "exercise": "diamond-push-up",
+     "target": {
+      "label": "3 × 8–15",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 15,
+      "min": 8,
+      "max": 15
+     }
+    },
+    {
+     "exercise": "clap-push-up",
+     "target": {
+      "label": "3 × 5–10",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 10,
+      "min": 5,
+      "max": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "bench-dips",
+   "name": "Dips an der Bank",
+   "region": "push",
+   "steps": [
+    {
+     "exercise": "bench-dip",
+     "target": {
+      "label": "3 × 10–20",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 20,
+      "min": 10,
+      "max": 20
+     }
+    }
+   ]
+  },
+  {
+   "id": "plank",
+   "name": "Plank",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "front-plank",
+     "target": {
+      "label": "3 × 30–60 s",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 60,
+      "min": 30,
+      "max": 60
+     }
+    }
+   ]
+  },
+  {
+   "id": "abs-basics",
+   "name": "Bauch-Basics",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "crunch",
+     "target": {
+      "label": "3 × 15–25",
+      "sets": 3,
+      "restSec": 45,
+      "unlockAt": 25,
+      "min": 15,
+      "max": 25
+     }
+    },
+    {
+     "exercise": "reverse-crunch",
+     "target": {
+      "label": "3 × 10–20",
+      "sets": 3,
+      "restSec": 45,
+      "unlockAt": 20,
+      "min": 10,
+      "max": 20
+     }
+    },
+    {
+     "exercise": "sit-up",
+     "target": {
+      "label": "3 × 10–20",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 20,
+      "min": 10,
+      "max": 20
+     }
+    },
+    {
+     "exercise": "v-up",
+     "target": {
+      "label": "3 × 8–15",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 15,
+      "min": 8,
+      "max": 15
+     }
+    }
+   ]
+  },
+  {
+   "id": "dead-bugs",
+   "name": "Dead Bug",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "dead-bug",
+     "target": {
+      "label": "3 × 8–12",
+      "sets": 3,
+      "restSec": 45,
+      "unlockAt": 12,
+      "min": 8,
+      "max": 12
+     }
+    }
+   ]
+  },
+  {
+   "id": "russian-twists",
+   "name": "Russian Twists",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "russian-twist",
+     "target": {
+      "label": "3 × 10–20",
+      "sets": 3,
+      "restSec": 45,
+      "unlockAt": 20,
+      "min": 10,
+      "max": 20
+     }
+    }
+   ]
+  },
+  {
+   "id": "flutter-kicks",
+   "name": "Flutter Kicks",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "flutter-kick",
+     "target": {
+      "label": "3 × 20–40 s",
+      "sets": 3,
+      "restSec": 45,
+      "unlockAt": 40,
+      "min": 20,
+      "max": 40
+     }
+    }
+   ]
+  },
+  {
+   "id": "back-extension",
+   "name": "Rückenstrecker",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "superman",
+     "target": {
+      "label": "3 × 10–15",
+      "sets": 3,
+      "restSec": 45,
+      "unlockAt": 15,
+      "min": 10,
+      "max": 15
+     }
+    }
+   ]
+  },
+  {
+   "id": "lunges",
+   "name": "Ausfallschritte",
+   "region": "legs",
+   "steps": [
+    {
+     "exercise": "reverse-lunge",
+     "target": {
+      "label": "3 × 8–12",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 12,
+      "min": 8,
+      "max": 12
+     }
+    },
+    {
+     "exercise": "walking-lunge",
+     "target": {
+      "label": "3 × 10–16",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 16,
+      "min": 10,
+      "max": 16
+     }
+    },
+    {
+     "exercise": "split-jump",
+     "target": {
+      "label": "3 × 6–10",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 10,
+      "min": 6,
+      "max": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "wall-sits",
+   "name": "Wandsitzen",
+   "region": "legs",
+   "steps": [
+    {
+     "exercise": "wall-sit",
+     "target": {
+      "label": "3 × 30–60 s",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 60,
+      "min": 30,
+      "max": 60
+     }
+    }
+   ]
+  },
+  {
+   "id": "step-ups",
+   "name": "Step-ups",
+   "region": "legs",
+   "steps": [
+    {
+     "exercise": "step-up",
+     "target": {
+      "label": "3 × 8–12",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 12,
+      "min": 8,
+      "max": 12
+     }
+    }
+   ]
+  },
+  {
+   "id": "burpees",
+   "name": "Burpees",
+   "region": "legs",
+   "steps": [
+    {
+     "exercise": "squat-thrust",
+     "target": {
+      "label": "3 × 8–12",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 12,
+      "min": 8,
+      "max": 12
+     }
+    },
+    {
+     "exercise": "burpee",
+     "target": {
+      "label": "3 × 8–15",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 15,
+      "min": 8,
+      "max": 15
+     }
+    }
+   ]
+  },
+  {
+   "id": "mountain-climbers",
+   "name": "Mountain Climbers",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "mountain-climber",
+     "target": {
+      "label": "3 × 20–40 s",
+      "sets": 3,
+      "restSec": 45,
+      "unlockAt": 40,
+      "min": 20,
+      "max": 40
+     }
+    }
+   ]
+  },
+  {
+   "id": "jumping-jacks",
+   "name": "Hampelmann",
+   "region": "legs",
+   "steps": [
+    {
+     "exercise": "jumping-jack",
+     "target": {
+      "label": "3 × 30–60 s",
+      "sets": 3,
+      "restSec": 30,
+      "unlockAt": 60,
+      "min": 30,
+      "max": 60
+     }
+    }
+   ]
+  },
+  {
+   "id": "skippings",
+   "name": "Skippings",
+   "region": "legs",
+   "steps": [
+    {
+     "exercise": "high-knees",
+     "target": {
+      "label": "3 × 20–40 s",
+      "sets": 3,
+      "restSec": 45,
+      "unlockAt": 40,
+      "min": 20,
+      "max": 40
+     }
+    }
+   ]
+  },
+  {
+   "id": "bear-crawls",
+   "name": "Bärengang",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "bear-crawl",
+     "target": {
+      "label": "3 × 20–40 s",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 40,
+      "min": 20,
+      "max": 40
+     }
+    }
+   ]
+  },
+  {
+   "id": "inchworms",
+   "name": "Inchworm",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "inchworm",
+     "target": {
+      "label": "2 × 6–10",
+      "sets": 2,
+      "restSec": 45,
+      "unlockAt": 10,
+      "min": 6,
+      "max": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "jumps",
+   "name": "Sprünge",
+   "region": "legs",
+   "steps": [
+    {
+     "exercise": "skater-jump",
+     "target": {
+      "label": "3 × 8–12",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 12,
+      "min": 8,
+      "max": 12
+     }
+    },
+    {
+     "exercise": "broad-jump",
+     "target": {
+      "label": "3 × 5–8",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 8,
+      "min": 5,
+      "max": 8
+     }
+    },
+    {
+     "exercise": "tuck-jump",
+     "target": {
+      "label": "3 × 5–10",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 10,
+      "min": 5,
+      "max": 10
+     }
+    }
+   ]
   }
  ],
  "inserts": [
@@ -3731,6 +4964,40 @@
       "unlockAt": 12,
       "min": 8,
       "max": 12
+     }
+    }
+   ]
+  },
+  {
+   "progression": "hip-hinge",
+   "before": "single-leg-glute-bridge",
+   "steps": [
+    {
+     "exercise": "glute-bridge",
+     "target": {
+      "label": "3 × 12–20",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 20,
+      "min": 12,
+      "max": 20
+     }
+    }
+   ]
+  },
+  {
+   "progression": "calf",
+   "before": "calf-raise-single-leg",
+   "steps": [
+    {
+     "exercise": "calf-raise",
+     "target": {
+      "label": "3 × 15–25",
+      "sets": 3,
+      "restSec": 45,
+      "unlockAt": 25,
+      "min": 15,
+      "max": 25
      }
     }
    ]
