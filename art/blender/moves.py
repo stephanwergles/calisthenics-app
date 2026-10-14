@@ -1152,6 +1152,27 @@ def side_lever_ex(pose):
 def tuck_side_lever(): return side_lever_ex(TUCKED)
 def side_lever(): return side_lever_ex(STRAIGHT_LEGS)
 
+# ── Kniebeuge, Sprungkniebeuge ──────────────────────────────────────────────
+def squat_feet(z=0.085, fd=(0, -1, -0.42), w=0.17, out=0.25):
+    return {n: dict(a=(x, 0.0, z), hint=(out * (1 if x > 0 else -1), -1, 0.1), fdir=(0.15 * (1 if x > 0 else -1), fd[1], fd[2]))
+            for n, x in (("L", w), ("R", -w))}
+ARMS_FWD = sym({"arm.L": (0.1, -1, 0.0), "forearm.L": (0.06, -1, 0.04)})
+def air_squat():
+    """Hüfte nach hinten-unten bis die Oberschenkel waagerecht sind, Fersen am Boden, Arme vorn."""
+    up = dict(rot=(3, 0, 0), pose={**ARMS_FWD, "neck": (0, -0.05, 1)}, place=("pin", "pelvis", (0, 0.02, 0.86)), legs=squat_feet())
+    down = dict(up, rot=(30, 0, 0), place=("pin", "pelvis", (0, 0.24, 0.47)),
+                pose={**sym({"arm.L": (0.1, -1, 0.4), "forearm.L": (0.06, -1, 0.42)}), "neck": (0, -0.05, 1)})   # Arme bleiben waagerecht
+    return dict(keys=[up, down], view=(-55, 8))
+def jump_squat():
+    """Tiefe Hocke mit Armen hinten → explosiv hoch, Füße verlassen den Boden, Arme schwingen nach oben."""
+    back = sym({"arm.L": (0.08, 0.6, -0.8), "forearm.L": (0.06, 0.55, -0.83)})
+    up_arms = sym({"arm.L": (0.12, -0.25, 1), "forearm.L": (0.1, -0.2, 1)})
+    down = dict(rot=(32, 0, 0), pose={**back, "neck": (0, -0.05, 1)}, place=("pin", "pelvis", (0, 0.24, 0.47)), legs=squat_feet())
+    tall = dict(rot=(4, 0, 0), pose={**up_arms, "neck": (0, -0.05, 1)}, place=("pin", "pelvis", (0, 0.02, 0.97)),
+                legs=squat_feet(0.16, (0, -0.55, -0.85), 0.11, 0.35))                            # auf den Zehenspitzen
+    air = dict(tall, place=("pin", "pelvis", (0, 0.02, 1.2)), legs=squat_feet(0.36, (0, -0.45, -0.9), 0.11, 0.35))
+    return dict(keys=[down, tall, air], view=(-55, 8), timing="pp")
+
 NEW_EXERCISES = {
     "ring-support-hold": ring_support_hold, "rto-support-hold": rto_support_hold, "ring-dip": ring_dip, "rto-dip": rto_dip,
     "tuck-l-sit": tuck_l_sit, "one-leg-l-sit": one_leg_l_sit, "wall-walk": wall_walk, "wall-shoulder-tap": wall_shoulder_tap,
@@ -1166,6 +1187,7 @@ NEW_EXERCISES = {
     "dragon-pistol": dragon_pistol, "tibialis-raise": tibialis_raise, "spanish-squat": spanish_squat,
     "reverse-nordic": reverse_nordic, "one-arm-hang": one_arm_hang, "table-row": table_row,
     "korean-dip-negative": korean_dip_negative, "korean-dip": korean_dip, "tuck-side-lever": tuck_side_lever, "side-lever": side_lever,
+    "air-squat": air_squat, "jump-squat": jump_squat,
 }
 
 EXERCISES = {
