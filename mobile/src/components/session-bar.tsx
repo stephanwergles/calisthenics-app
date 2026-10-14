@@ -1,6 +1,6 @@
 /* Session-Leiste als Mini-Player über der Tab-Leiste (NativeTabs.BottomAccessory): Dauer +
-   Workout (Tipp öffnet das Training), rechts Beenden. Während einer Pause: Timer (Tipp beendet
-   die Pause). Zustand liegt im AppProvider – die Leiste rendert in zwei Platzierungen. */
+   Workout (Tipp öffnet das Training), rechts Beenden. Während einer Pause: Timer (Tipp öffnet
+   das Training mit der laufenden Pause – beendet sie nicht). Zustand liegt im AppProvider – die Leiste rendert in zwei Platzierungen. */
 import { Pressable, View } from 'react-native'
 import * as L from '@lever/core/logic.ts'
 import { useNow } from '@lever/core/useNow.ts'
@@ -9,14 +9,14 @@ import { useApp } from '@/state/app'
 import { Button, color, font, Icon, Text } from '@/ui'
 
 export function SessionBar({ compact }: { compact?: boolean }) {
-  const { t, rest, openTraining, askEnd } = useApp()
+  const { t, rest, openTraining, askEnd, setRestView } = useApp()
   const now = useNow(!!t.active)
   if (!t.active) return null
   const resting = rest.running || rest.ringing
   return (
     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: compact ? 10 : 14 }}>
       {resting ? (
-        <Pressable onPress={rest.stop} accessibilityRole="button" accessibilityLabel={tr('training.bar.stopRest')}
+        <Pressable onPress={() => { setRestView(''); openTraining(undefined) }} accessibilityRole="button" accessibilityLabel={tr('training.focus.openRest')}
           style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Icon name="timer" size={18} color={color.accent} />
           <Text style={{ fontFamily: font.display, fontSize: 22, color: rest.ringing ? color.accent : color.text, fontVariant: ['tabular-nums'] }}>
