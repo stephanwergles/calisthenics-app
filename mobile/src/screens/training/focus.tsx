@@ -46,11 +46,11 @@ export function FocusTop() {
   const restPill = resting ? (
     <Pressable onPress={() => { haptic(); setRestView('') }} accessibilityRole="button" accessibilityLabel={tr('training.focus.openRest')}
       style={({ pressed }) => ({
-        flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 14, borderRadius: 999,
+        flexDirection: 'row', alignItems: 'center', gap: 5, height: 34, paddingHorizontal: 10, borderRadius: 999,
         backgroundColor: rest.ringing ? color.accent : color.accentDim, borderWidth: 1, borderColor: color.accentLine, opacity: pressed ? 0.8 : 1,
       })}>
       <Icon name="timer" size={15} color={rest.ringing ? color.onAccent : color.accent} />
-      <Text style={{ fontFamily: font.display, fontSize: 19, color: rest.ringing ? color.onAccent : color.accent, fontVariant: ['tabular-nums'] }}>
+      <Text style={{ fontFamily: font.display, fontSize: 18, color: rest.ringing ? color.onAccent : color.accent, fontVariant: ['tabular-nums'] }}>
         {rest.ringing ? '0:00' : L.fmtClock(rest.remaining)}
       </Text>
     </Pressable>
@@ -69,10 +69,12 @@ export function FocusTop() {
           <Stack.Toolbar.Button icon={sf('list') as never} onPress={openList} accessibilityLabel={tr('training.focus.allExercises')} />
           {t.active ? <Stack.Toolbar.Button icon={sf('stop') as never} onPress={() => void askEnd()} accessibilityLabel={tr('training.bar.stop')} /> : null}
         </Stack.Toolbar>
+        {/* Uhr in der Zeile der Toolbar-Knöpfe (zwischen Minimieren und Übungen | Stopp), über der
+            nativen Leiste gezeichnet; box-none lässt Tipps neben der Uhr zu den Knöpfen durch */}
         {(duration || restPill) && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, minHeight: 36 }}>
+          <View pointerEvents="box-none" style={{ position: 'absolute', top: insets.top, left: 0, right: 0, height: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, zIndex: 10 }}>
             {duration ? <Text accessibilityLabel={tr('training.focus.duration', { time: duration })}
-              style={{ fontFamily: font.display, fontSize: 20, color: color.text, fontVariant: ['tabular-nums'] }}>{duration}</Text> : null}
+              style={{ fontFamily: font.display, fontSize: restPill ? 17 : 20, color: restPill ? color.muted : color.text, fontVariant: ['tabular-nums'] }}>{duration}</Text> : null}
             {restPill}
           </View>
         )}
