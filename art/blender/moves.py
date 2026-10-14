@@ -4,6 +4,7 @@
 #   keys    Schlüsselposen (≥ 2); der Clip läuft 0 → letzte → 0
 #   timing  "pp" (gleichmäßig), "hold" (hoch, halten, runter), "fast" (schnell hoch, langsam runter), "slow"
 #   view    (Azimut, Höhe) der Kamera in Grad; der Ausschnitt wird aus allen Posen berechnet
+#   tempo   nur als begründete Ausnahme: erlaubte Drehung je Bild (Grad, Sprung und Kippen) statt RULES["sprung"] (15°)
 # Schlüsselpose: rot (Wurzel: Nicken um X, Rollen um Y, Gieren um Z), pose (Knochenrichtungen im
 # Körperraum, Figur steht, blickt nach −Y, +X = links), wpose (Richtungen in Welt), place, hands, legs.
 
@@ -69,7 +70,7 @@ def explosive_pull_up():
                hands=pulling(pulling(bar_hands(PULL_H, hint=(0.25, 1, -0.6)), "L"), "R"))
     mid = dict(pose=ARCH, hang=dict(ext=0.36, dy=0.21), hint=(0.35, 0.2, -1))   # Kopf bleibt hinter der Stange
     return hang_ex([dict(pose=ACTIVE, hang=dict(ext=STRAIGHT), hint=(0.6, -0.3, -1)), mid, top],
-                   timing="fast", sz=True, view=VIEW_PULL)
+                   timing=(0.26, 0.08, 0.55), sz=True, view=VIEW_PULL)   # schnell hoch, aber ohne Ruckeln (≤ 15°/Bild)
 def chest_to_bar_pull_up():
     """Brust an die Stange: Schultern auf Stangenhöhe (beim Klimmzug nur das Kinn darüber)."""
     return hang_ex([dict(pose=ACTIVE, hang=dict(ext=STRAIGHT), hint=(0.6, -0.3, -1)),
@@ -128,7 +129,8 @@ def muscle_up():          # follow: Kamera geht mit, die Figur füllt das Bild s
     return dict(hang_ex(mu_keys(PULL_H), sz=True, view=VIEW_PULL), follow=True, fit=0.9)
 def muscle_up_negative():
     """Oben starten, langsam durch den Übergang ablassen – Hochkommen (Sprung) im Zeitraffer."""
-    return dict(hang_ex(mu_keys(PULL_H), sz=True, timing=(0.35, 0.08, 0.5), view=VIEW_PULL), follow=True, fit=0.9)
+    return dict(hang_ex(mu_keys(PULL_H), sz=True, timing=(0.35, 0.08, 0.5), view=VIEW_PULL), follow=True, fit=0.9,
+                tempo=22)   # Zeitraffer: der ganze Muscle-up in 0,7 s, die Hände drehen dabei gut 300°
 def muscle_up_band():
     ex = dict(hang_ex(mu_keys(PULL_H), sz=True, view=VIEW_PULL), follow=True, fit=0.9)
     knee = skin("shin.L", (0.13, -0.02, 0.47), (0, -1, 0))        # Band hängt im linken Knie
@@ -180,7 +182,7 @@ GERMAN = sym({**STRAIGHT_LEGS, "clavicle.L": (1, -0.1, 0.3), "neck": (0, -0.15, 
 def skin_keys():                            # Hang → kopfüber gehockt → German Hang
     return [hang0(), com_hang(-180, TUCKED), com_hang(-330, GERMAN)]
 def german_hang(): return lever_ex(skin_keys()[1:])          # aus der Umkehr langsam hinein und zurück
-def skin_the_cat(): return lever_ex(skin_keys(), timing="pp")
+def skin_the_cat(): return dict(lever_ex(skin_keys(), timing="pp"), tempo=19)   # 330° Drehung in 2 s: Füße schneller
 def back_lever_ex(pose): return lever_ex([com_hang(-180, TUCKED), com_hang(-270, pose)])   # aus der Umkehr
 def tuck_back_lever(): return back_lever_ex(TUCKED)
 def adv_tuck_back_lever(): return back_lever_ex(ADV_TUCK)
@@ -301,7 +303,9 @@ def triceps_extension():
     def key(dz, dy, hint):
         k = dict(pose=stand, place=("pin", "ankle", (0, 0.02, 0.085)))
         pose_key(k, limbs=False); S = pt("shoulder")
-        k["hands"] = symh(dict(k=(0.07, S.y + dy, S.z + dz), palm=(-0.6, 0.6, 0), flex=20, hint=hint))
+        # Neutralgriff: Handflächen zueinander, quer zur Beugeebene – eine Handfläche mit Anteil nach hinten
+        # müsste sich beim Strecken mit dem Unterarm um gut 100° eindrehen
+        k["hands"] = symh(dict(k=(0.07, S.y + dy, S.z + dz), palm=(-1, 0.05, 0), flex=20, hint=hint))
         return k
     for n in "LR": strand(lambda n=n: pt(f"knuckle.{n}"), lambda: A, 0.008)
     return dict(keys=[key(0.12, 0.2, (0.15, -0.5, 1)), key(0.64, 0.05, (0.15, -0.3, 1))], view=(-18, 6))
@@ -561,7 +565,7 @@ def ring_muscle_up():
                     dict(rot=(22, 0, 0), pose=OVER_BAR, hang=dict(sz=0.27, dy=0.1), hands=ring_hands(H, 0.7, (0.1, 1, -0.5))),
                     dict(rot=(22, 0, 0), pose=OVER_BAR, hang=dict(sz=0.38, dy=0.0), hands=ring_hands(H, 1, (0.1, 1, -0.2))),
                     dict(rot=(8, 0, 0), pose=SUPPORT, hang=dict(ext=STRAIGHT, up=True, dy=-0.04), hands=ring_hands(H, 1, (0.1, 1, -0.2)))],
-                   follow=True, fit=0.9)
+                   follow=True, fit=0.9, tempo=22)   # der ganze Ring-Muscle-up in 1 s, Hände drehen über die Ringe
 def ring_transition():
     """Ringe tief, Füße am Boden: aus dem Sitz über die Ringe kippen und in den Stütz hochdrücken; die Füße
     rutschen dabei unter den Körper."""
@@ -707,7 +711,7 @@ def pike_compression():
     return dict(keys=[key(-0.03, 22), key(0.16, 28)], timing="hold", view=(-35, 10))
 
 # ── Human Flag an der senkrechten Stange ────────────────────────────────────
-def flag_ex(stages):
+def flag_ex(stages, timing="hold"):
     """Stange bei x = 0, Figur rechts davon (+X); obere Hand (links) zieht über dem Kopf, untere (rechts) drückt.
     Wurzel-Drehung um Y: 0 Stand · −90 waagerecht (Füße weg von der Stange) · −180 senkrecht kopfüber."""
     cyl((0, 0, 0), (0, 0, 2.7), 0.025, coll="stange")
@@ -725,9 +729,9 @@ def flag_ex(stages):
         if os.environ.get("LEVER_DEBUG"): print("FLAG", roll, k["place"], round(m_arm("L")(k), 3), round(m_arm("R")(k), 3))
         keys.append(k)
     FRAME.extend([Vector((0, 0, 0.9)), Vector((0, 0, 1.95))])
-    return dict(keys=keys, timing="hold", view=(-72, 8))
+    return dict(keys=keys, timing=timing, view=(-72, 8))
 STAND_FLAG = sym({"thigh.L": (-0.03, 0, -1), "shin.L": (-0.02, 0, -1)})
-def vertical_flag(): return flag_ex([(0, STAND_FLAG, 0.3), (-180, STRAIGHT_LEGS, 0.42)])
+def vertical_flag(): return flag_ex([(0, STAND_FLAG, 0.3), (-180, STRAIGHT_LEGS, 0.42)], timing=(0.38, 0.2, 0.38))   # 180° Rolle
 def tuck_flag(): return flag_ex([(-180, TUCKED, 0.42), (-90, TUCKED, 0.5)])
 def straddle_flag(): return flag_ex([(-180, STRADDLE, 0.42), (-90, STRADDLE, 0.5)])
 def human_flag(): return flag_ex([(-180, STRAIGHT_LEGS, 0.42), (-90, STRAIGHT_LEGS, 0.5)])

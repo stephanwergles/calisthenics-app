@@ -5,7 +5,7 @@
     --python art/blender/lever.py -- <modus> <übung|lasten> <ausgabeordner>
 
   modus: still (jede Schlüsselpose ein Bild) | clip (48 Bilder) | check (ohne Rendern: Durchdringung,
-         Bodenkontakt, Reichweite) | heat (Körperkarte, „region=0..1,…“)
+         Bodenkontakt, Reichweite, Sprung/Kippen je Bild) | heat (Körperkarte, „region=0..1,…“)
   Übungen: art/blender/moves.py
 
 Grundlage: „realistic body male“ (Multires, 3 Stufen). Das Skript macht ihn athletischer
@@ -198,6 +198,17 @@ def aim(b, d, local=False, hinge=None, prefer=None):
     pb.matrix = Matrix.Translation(h) @ q.to_matrix().to_4x4() @ Matrix.Translation(-h) @ pb.matrix
     upd()
 def V(*a): return Vector(a).normalized()
+def smooth(x):
+    """Weiche Rampe 0 → 1 (smoothstep): ohne Knick, an dem eine Gewichtung schlagartig anspringt."""
+    x = min(max(x, 0.0), 1.0); return x * x * (3 - 2 * x)
+def slerp_dir(a, b, u):
+    """Richtung sphärisch mischen (gleichmäßige Winkelgeschwindigkeit, Länge linear). Lineares Mischen fast
+    entgegengesetzter Richtungen läuft durch einen sehr kurzen Vektor – dort springt die Richtung."""
+    a, b = Vector(a), Vector(b); la, lb = a.length, b.length
+    if la < 1e-9 or lb < 1e-9: return a.lerp(b, u)
+    an, bn = a / la, b / lb; th = an.angle(bn)
+    if th < 1e-4 or th > math.pi - 1e-3: return a.lerp(b, u)
+    return (an * math.sin((1 - u) * th) + bn * math.sin(u * th)) / math.sin(th) * (la + (lb - la) * u)
 def mirror(v): return (-v[0], v[1], v[2])
 def sym(d):
     """Pose für die linke Seite angeben, rechte gespiegelt (x negiert)."""
@@ -219,28 +230,35 @@ LEN = {b: (pb.tail - pb.head).length for b, pb in PB.items()}
 REACH = LEN["arm.L"] + LEN["forearm.L"]
 STRAIGHT = 0.985
 OVER = [0.0]          # größte Überdehnung eines IK-Ziels (Hand/Fuß erreicht ihr Ziel nicht) im Bild
-RULES = dict(gelenk=25, sprung=20, tempo=45, griff=0.03, selbst=0.05, symmetrie=8, eindringen=0.03, auflage=0.045)   # Grad, Grad je Bild, m, m, m
+# gelenk: Grad über der Gelenkgrenze · sprung: Grad je Bild (Sprung und Kippen) · griff, selbst, eindringen, auflage: m
+# symmetrie: Grad links ↔ rechts
+RULES = dict(gelenk=25, sprung=15, griff=0.03, selbst=0.05, symmetrie=8, eindringen=0.03, auflage=0.045)
 RAW = []              # Gelenkverstöße der Rohpose im zuletzt gesetzten Bild (vor dem Begrenzen)
+HINGE_OUT = {}        # Scharnierachsen (Körperraum) der zuletzt gesetzten Pose, je Unterarm/Unterschenkel
 
-def align_hinge(up, lo, a, t, fallback):
+def align_hinge(up, lo, a, t, fallback, follow=True):
     """Oberarm/Oberschenkel um seine Achse a drehen, bis die Scharnierachse von Ellbogen/Knie auf der Beugeebene
     (a, t) senkrecht steht. Ist das Glied fast gestreckt, legt fallback (gewünschte Scharnierachse) die Drehung
-    fest – sonst wäre sie bei Armen über Kopf oder Beinen nach oben unbestimmt und klappte um 180° um."""
+    fest – sonst wäre sie bei Armen über Kopf oder Beinen nach oben unbestimmt und klappte um 180° um.
+    follow=False: Achse = fallback, unabhängig von t. Gibt die gesetzte Achse zurück (Welt, senkrecht zu a)."""
     pu = PB[up]; R = rig.matrix_world.to_3x3() @ pu.matrix.to_3x3() @ pu.bone.matrix_local.to_3x3().inverted()
     c = a.cross(t); fb = Vector(fallback).normalized(); fb = fb - a * fb.dot(a)
     if fb.length < 1e-4: fb = c.copy()
     fb.normalize()
     # Gewicht der tatsächlichen Beugeebene: wächst mit der Beugung und nur, solange sie zur Wunschrichtung passt.
     # Überstrecken (c gegen fb) wird nie durch 180°-Verdrehen „geheilt“ – so hing einmal ein Bein falsch herum.
+    # Die Richtung von c ist bei fast gestrecktem Glied beliebig: zwischen zwei Schlüsseln gilt deshalb nicht dieses
+    # Gewicht, sondern die gemischte Achse der Schlüssel (pose_key, follow=False).
     cn = c.normalized() if c.length > 1e-6 else fb
-    wgt = min(max((c.length - 0.05) / 0.2, 0), 1) * min(max(cn.dot(fb) / 0.3, 0), 1)
+    wgt = min(max((c.length - 0.05) / 0.2, 0), 1) * min(max(cn.dot(fb) / 0.3, 0), 1) if follow else 0.0
     want = cn * wgt + fb * (1 - wgt)
     cur = R @ flex_axis_rest(lo)
     cur, want = cur - a * cur.dot(a), want - a * want.dot(a)
-    if cur.length < 1e-4 or want.length < 1e-4: return
+    if cur.length < 1e-4 or want.length < 1e-4: return fb
     ang = math.atan2(a.dot(cur.cross(want)), cur.dot(want)); ap = to_pose(a); hd = pu.head.copy()
     pu.matrix = Matrix.Translation(hd) @ Matrix.Rotation(ang, 4, ap) @ Matrix.Translation(-hd) @ pu.matrix
     upd()
+    return want.normalized()
 def two_bone(up, lo, target, hint):
     """Analytische 2-Knochen-IK: Mittelgelenk in der Ebene zur Hinweisrichtung."""
     S = world(PB[up].head); a, b = LEN[up], LEN[lo]
@@ -254,12 +272,15 @@ def two_bone(up, lo, target, hint):
         PB[lo].matrix_basis = Matrix(); upd()                       # Unterschenkel/-arm neu aus der Ruhelage beugen
         align_hinge(up, lo, (E - S).normalized(), (target - E).normalized(), -u.cross(w))
     aim(lo, target - E)
-def spin(b, ref_bone, rest_n, want):
-    """Knochen b um seine Achse drehen, bis die Normale rest_n (Ruhelage von ref_bone) Richtung want zeigt."""
-    pb = PB[b]; axis = (pb.tail - pb.head).normalized(); rb = PB[ref_bone]
-    n = (rb.matrix.to_3x3() @ rb.bone.matrix_local.to_3x3().inverted()) @ Vector(rest_n)
-    w = to_pose(want); n = (n - axis * n.dot(axis)).normalized(); w = (w - axis * w.dot(axis)).normalized()
-    ang = math.atan2(axis.dot(n.cross(w)), n.dot(w)); h = pb.head.copy()
+def spin(b, rest_n, want):
+    """Knochen b um seine Achse drehen, bis die Normale rest_n (Ruhelage, mit b mitgedreht) Richtung want zeigt.
+    Bezug ist die Lage von b selbst (nicht die eines Kindknochens), und liegt want fast auf der Achse, ist die
+    Drehung unbestimmt: dann stetig weniger drehen statt einer zufälligen Seite zu folgen."""
+    pb = PB[b]; axis = (pb.tail - pb.head).normalized()
+    n = (pb.matrix.to_3x3() @ pb.bone.matrix_local.to_3x3().inverted()) @ Vector(rest_n)
+    w = to_pose(want).normalized(); n = n - axis * n.dot(axis); w = w - axis * w.dot(axis)
+    if n.length < 1e-6 or w.length < 1e-6: return
+    ang = math.atan2(axis.dot(n.cross(w)), n.dot(w)) * smooth((w.length - 0.1) / 0.25); h = pb.head.copy()
     pb.matrix = Matrix.Translation(h) @ Matrix.Rotation(ang, 4, axis) @ Matrix.Translation(-h) @ pb.matrix
     upd()
 PALM = {"L": (-1, 0, 0), "R": (1, 0, 0)}     # Handflächen-Normale in Ruhelage (zum Oberschenkel)
@@ -274,7 +295,7 @@ def hand(n, s):
         two_bone(f"arm.{n}", f"forearm.{n}", K - u * LEN[f"hand.{n}"], s["hint"])
         u = (K - world(fa.head)).normalized()
     if s.get("hdir") is not None:              # Vorgabe stetig einblenden (hw: Übergang Hängen → Stütz)
-        u = u.lerp(Vector(s["hdir"]).normalized(), s.get("hw", 1.0)).normalized()
+        u = slerp_dir(u, Vector(s["hdir"]).normalized(), min(max(s.get("hw", 1.0), 0.0), 1.0)).normalized()
     for it in range(1):
         W = K - u * LEN[f"hand.{n}"]
         two_bone(f"arm.{n}", f"forearm.{n}", W, s["hint"])
@@ -289,7 +310,12 @@ def hand(n, s):
             axs, sg = s["bar"]; A = {"x": X, "y": Y, "z": Z}[axs]
             if n == "R" and axs != "x": sg = -sg       # gespiegelt (Handfläche ist ein gewöhnlicher Vektor)
             pw0 = A.cross(u) * sg
-            pw0 = pw0.normalized() if pw0.length > 1e-4 else Vector(s.get("palm", (0, -1, 0))).normalized()
+            # Hand fast parallel zur Stange (gestreckter Arm beim weiten Griff): die Richtung des Kreuzprodukts dreht
+            # dann schnell – stetig zur angegebenen Handfläche überblenden statt ihr zu folgen
+            ps = Vector(s.get("palm", (0, -1, 0))); ps = ps - u * ps.dot(u)
+            if ps.length < 1e-4: ps = pw0
+            pw0 = slerp_dir(ps.normalized(), pw0.normalized() if pw0.length > 1e-6 else ps.normalized(),
+                            smooth((pw0.length - 0.1) / 0.35)).normalized()
         else: pw0 = Vector(s.get("palm", (0, -1, 0))).normalized()
         pw = pw0 - u * pw0.dot(u)
         cur_p = palm_normal(n); cur_p = (cur_p - u * cur_p.dot(u)).normalized()
@@ -307,7 +333,7 @@ def hand(n, s):
             c = bend.normalized().dot(want); pf = bend.normalized() * (1 if c >= 0 else -1)
             wgt = min(1.0, (th - 5) / 25) * min(1.0, abs(c) / 0.35)
             want = want.slerp(pf, wgt).normalized()
-        spin(f"forearm.{n}", f"hand.{n}", PALM[n], want)
+        spin(f"forearm.{n}", PALM[n], want)
         clamp_joints([f"forearm.{n}"])        # Pro-/Supination begrenzen, bevor die Hand ausgerichtet wird
         for hb_ in (f"hand.{n}", f"fingers.{n}"): PB[hb_].matrix_basis = Matrix()
         upd()                                  # Hand aus der Ruhelage ausrichten: keine Restdrehung um die eigene Achse
@@ -383,6 +409,16 @@ def joint_angles(b):
 for n in "LR":                         # Beugeachse im Knochenraum (senkrecht zum Knochen)
     for b in (f"shin.{n}", f"foot.{n}", f"forearm.{n}"):
         HINGE[b] = PB[b].bone.matrix_local.to_3x3().inverted() @ flex_axis_rest(b)
+def soft_twist(t, hi):
+    """Drehung um die Knochenachse stetig auf ±hi begrenzen: ab 0,9·hi weich abbremsen (tanh), über der Mitte
+    zwischen hi und 180° zurück auf 0 falten. Ein hartes Falten ab hi drehte die Hand rückwärts, sobald die
+    verlangte Drehung die Grenze überschritt (Handtuchgriff), ein hartes Kappen spränge bei ±180°."""
+    a = abs(t); k = 0.9 * hi; m = (hi + 180) / 2
+    soft = lambda x: k + (hi - k) * math.tanh((x - k) / (hi - k))
+    if a <= k: f = a
+    elif a <= m: f = soft(a)
+    else: f = soft(m) * (180 - a) / (180 - m)
+    return math.copysign(f, t)
 def clamp_joints(bones=None, tol=0.0):
     """Jedes Gelenk (Eltern zuerst) in seinen Bereich holen: Beugen, seitlich und Drehung getrennt begrenzen."""
     for b in bones or ORDER_ALL:
@@ -390,9 +426,8 @@ def clamp_joints(bones=None, tol=0.0):
         if base not in JLIM: continue
         ang = joint_angles(b); lim = JLIM[base]
         cl = {k: min(max(v, lim[k][0] - tol), lim[k][1] + tol) if k in lim else v for k, v in ang.items()}
-        if "tw" in lim and abs(ang["tw"]) > lim["tw"][1]:     # jenseits der Grenze stetig zurück zur Mitte falten:
-            hi = lim["tw"][1]; t = ang["tw"]                  # bei ±180° keine Kante, an der die Hand umspringt
-            cl["tw"] = math.copysign(hi * (180 - abs(t)) / (180 - hi), t)
+        if "tw" in lim and abs(ang["tw"]) > 0.9 * lim["tw"][1]:   # weich begrenzen, jenseits zurück zur Mitte falten:
+            cl["tw"] = soft_twist(ang["tw"], lim["tw"][1])        # bei ±180° keine Kante, an der die Hand umspringt
         if all(abs(cl[k] - ang[k]) < 1e-3 for k in ang): continue
         pb = PB[b]; M = pb.bone.matrix_local.to_3x3(); d = (pb.bone.tail_local - pb.bone.head_local).normalized()
         f = flex_axis_rest(b); g = d.cross(f); side = -1 if b.endswith(".R") else 1
@@ -593,7 +628,8 @@ def belt_plate(r=0.13, drop=0.36):
     DYN.append(upd_plate); return pl
 
 # ── Schlüsselposen mischen und anwenden ─────────────────────────────────────
-def mix(a, b, u):
+DIRS = {"pose", "wpose", "hinge", "hdir", "palm", "hint", "curl", "fdir"}   # Werte sind Richtungen (sphärisch mischen)
+def mix(a, b, u, d=False):
     if a is None and isinstance(b, (int, float)) and not isinstance(b, bool): a = 0.0   # fehlende Versätze = 0
     if b is None and isinstance(a, (int, float)) and not isinstance(a, bool): b = 0.0
     if a is None: return b
@@ -601,8 +637,8 @@ def mix(a, b, u):
     if isinstance(a, bool) or isinstance(a, str): return a if u < 0.5 else b
     if isinstance(a, (int, float)): return a + (b - a) * u
     if isinstance(a, Vector) or (isinstance(a, (tuple, list)) and len(a) == 3 and all(isinstance(x, (int, float)) for x in a)):
-        return Vector(a).lerp(Vector(b), u)
-    if isinstance(a, dict): return {k: mix(a.get(k), b.get(k), u) for k in set(a) | set(b)}
+        return slerp_dir(a, b, u) if d else Vector(a).lerp(Vector(b), u)
+    if isinstance(a, dict): return {k: mix(a.get(k), b.get(k), u, d or k in DIRS) for k in set(a) | set(b)}
     if isinstance(a, (tuple, list)) and len(a) == len(b): return tuple(mix(x, y, u) for x, y in zip(a, b))
     return a if u < 0.5 else b
 
@@ -645,6 +681,7 @@ def pose_key(k, limbs=True):
     for b in ORDER:                        # Eltern vor Kindern (gemischte dicts haben keine feste Reihenfolge)
         if b in W: aim(b, W[b])
     if "rots" not in k:                    # Knie/Ellbogen aus Richtungs-Posen als echtes Scharnier nachstellen
+        HINGE_OUT.clear()
         for up, lo, ch in [(f"thigh.{n}", f"shin.{n}", f"foot.{n}") for n in "LR"] + [(f"arm.{n}", f"forearm.{n}", f"hand.{n}") for n in "LR"]:
             dirs = {b: (world(PB[b].tail) - world(PB[b].head)).normalized() for b in (up, lo, ch)}
             PB[lo].matrix_basis = Matrix(); upd()
@@ -653,7 +690,21 @@ def pose_key(k, limbs=True):
             fwd_ = Rw @ Vector((0, -1, 0)) * (1 if lo.endswith(".L") else -1)   # … bei seitlich gestrecktem Glied (Achse ∥ Scharnier) zusätzlich
             if lo.startswith("forearm"):     # (Arm seitlich gestreckt; Beine spreizen nie bis in die Scharnierachse)
                 body_h = (body_h - a_ * body_h.dot(a_)) + (fwd_ - a_ * fwd_.dot(a_)) * 0.5
-            align_hinge(up, lo, dirs[up], dirs[lo], body_h); aim(lo, dirs[lo]); aim(ch, dirs[ch])
+            kh = k.get("hinge", {}).get(lo)
+            if kh is None:
+                want = align_hinge(up, lo, a_, dirs[lo], body_h); aim(lo, dirs[lo])
+            else:
+                # Zwischen Schlüsseln: Scharnierachse sphärisch gemischt (stetige Drehung des Glieds über die ganze
+                # Bewegung) und nur in ihrer Ebene beugen. Aus den Richtungen allein bliebe die Beugeebene bis kurz
+                # vor dem Strecken stehen und das Glied drehte dann in wenigen Bildern um (Straddle aus der Hocke).
+                h = Rw @ Vector(kh); h = h - a_ * h.dot(a_); bh = body_h - a_ * body_h.dot(a_)
+                g = smooth((h.length - 0.1) / 0.3)          # Achse fast entlang des Glieds: stetig zum Stand-Scharnier
+                fb_ = (h.normalized() if h.length > 1e-6 else bh) * g + bh.normalized() * (1 - g)
+                want = align_hinge(up, lo, a_, dirs[lo], fb_, follow=False)
+                t_ = dirs[lo]; tp = t_ - want * t_.dot(want)
+                aim(lo, tp + want * t_.dot(want) * (1 - smooth((tp.length - 0.1) / 0.3)))
+            HINGE_OUT[lo] = tuple(to_pose(want))
+            aim(ch, dirs[ch])
     for b, deg in k.get("twist", {}).items():   # Drehung um die eigene Knochenachse (Rumpfrotation)
         pb = PB[b]; rot(b, (pb.tail - pb.head).normalized(), deg)
     place(k)
@@ -711,15 +762,22 @@ def grounded(k, name):
     pose_key(k, limbs=False); k["place"] = ("pin", name, tuple(pt(name))); return k
 
 def ease(t): return (1 - math.cos(math.pi * min(max(t, 0), 1))) / 2
+def ease_flat(t, a=0.2):
+    """Weich anfahren und abbremsen (je a), dazwischen gleichmäßig: Spitzentempo 1/(1−a) statt π/2 des Kosinus."""
+    t = min(max(t, 0.0), 1.0); f = lambda x: x / 2 - a / (2 * math.pi) * math.sin(math.pi * x / a)
+    if t < a: y = f(t)
+    elif t > 1 - a: y = 1 - a - f(1 - t)
+    else: y = a / 2 + (t - a)
+    return y / (1 - a)
 PROFILES = {"pp": (0.5, 0, 0.5), "hold": (0.3, 0.35, 0.3), "fast": (0.22, 0.08, 0.55), "slow": (0.55, 0.08, 0.22)}
-def curve(x, prof):
+def curve(x, prof, e=ease):
     """Bild x ∈ [0,1) → Fortschritt 0…1…0: Anstieg, Halten oben, Abstieg, Rest unten."""
     rise, top, fall = PROFILES[prof] if isinstance(prof, str) else prof
-    if x < rise: return ease(x / rise)
+    if x < rise: return e(x / rise)
     x -= rise
     if x < top: return 1.0
     x -= top
-    if x < fall: return 1 - ease(x / fall)
+    if x < fall: return 1 - e(x / fall)
     return 0.0
 def _hands_compatible(a, b):
     """Hand-Vorgaben zweier Schlüssel angleichen, bevor gemischt wird: fehlt hdir auf einer Seite, gilt dort hw=0
@@ -820,8 +878,42 @@ else:
         if "rots" not in k: k["pose"] = {b: k.get("pose", {}).get(b, REST[b]) for b in ORDER
                                          if b in k.get("pose", {}) or b.split(".")[0] not in ("hand", "fingers")}
         k.setdefault("rot", (0, 0, 0))
+    for k in keys:                         # Scharnierachsen je Schlüssel (werden zwischen den Schlüsseln gemischt)
+        if "rots" not in k: pose_key(k, limbs=False); k["hinge"] = dict(HINGE_OUT)
     frames = int(os.environ.get("LEVER_FRAMES") or EX.get("frames", 48)); prof = EX.get("timing", "pp")
-    S_OF = [curve(i / frames, prof) * (len(keys) - 1) for i in range(frames)]
+    # Gleichmäßiges Tempo für Clips mit mehr als zwei Schlüsseln und für Clips, die mit dem einfachen Verlauf
+    # die Sprung-Regel reißen: s nach Bogenlänge umrechnen, so dass der größte Sprung (Hand, Unterarm, Fuß) bzw.
+    # das größte Kippen (auch Oberarm/-schenkel – sonst rauscht die Zeit durch Abschnitte, in denen nur sie sich
+    # drehen) je Zeitschritt überall gleich ist, dazu ein Tempoverlauf mit gleichmäßiger Mitte
+    # (ease_flat, Spitze −20 %). Gleich lange Abschnitte machten den Übergang beim Muscle-up so schnell, dass die
+    # Hände in wenigen Bildern umklappten, während Zug und Stütz gemächlich liefen. Ruhige Clips behalten ihr Timing.
+    DISTAL = [f"{b}.{n}" for b in ("forearm", "hand", "fingers", "shin", "foot") for n in "LR"]
+    UPPER = [f"{b}.{n}" for b in ("arm", "thigh") for n in "LR"]
+    def limb_q(s_):
+        pose_key(key_at(keys, s_)); return {b: (rig.matrix_world @ PB[b].matrix).to_3x3().normalized() for b in DISTAL + UPPER}
+    def step(qa, qb):                      # wie die Prüfung: Sprung der Hände/Füße, Kippen der Oberarme/-schenkel
+        def ang(b):
+            dq = qb[b].to_quaternion() @ qa[b].to_quaternion().inverted(); a = math.degrees(dq.angle); return min(a, 360 - a)
+        def tw(b):
+            dq = qb[b].to_quaternion() @ qa[b].to_quaternion().inverted(); ax = qa[b].col[1].normalized()
+            return abs(math.degrees(2 * math.atan2(Vector((dq.x, dq.y, dq.z)).dot(ax), abs(dq.w))))
+        return max(max(ang(b) for b in DISTAL), max(tw(b) for b in UPPER))
+    def timing(flat):
+        SS, LL = [0.0, len(keys) - 1.0], [0.0, 1.0]
+        if flat:
+            SS = [i / 48 for i in range(48 * (len(keys) - 1) + 1)]; Q = [limb_q(x) for x in SS]   # fein: IK nahe der Streckung
+            LL = [0.0]
+            for qa, qb in zip(Q, Q[1:]): LL.append(LL[-1] + step(qa, qb))
+            LL = [x / max(LL[-1], 1e-9) for x in LL]
+        def warp(p):
+            j = max(i for i in range(len(LL) - 1) if LL[i] <= p + 1e-12) if p < 1 else len(LL) - 2
+            return SS[j] + (SS[j + 1] - SS[j]) * min(max((p - LL[j]) / max(LL[j + 1] - LL[j], 1e-9), 0.0), 1.0)
+        return [warp(curve(i / frames, prof, ease_flat if flat else ease)) for i in range(frames)]
+    flat = len(keys) > 2
+    S_OF = timing(flat)
+    if not flat:
+        Q = [limb_q(x) for x in S_OF]
+        if max(step(Q[i - 1], Q[i]) for i in range(len(Q))) > RULES["sprung"]: S_OF = timing(True)
     top = [i for i, x in enumerate(S_OF) if x >= max(S_OF) - 1e-6]          # Schlüsselposition auf 1 s legen:
     shift = (top[0] + top[-1]) // 2 - frames // 2                           # Mitte des Loops = Vorschaubild der App
     S_OF = S_OF[shift:] + S_OF[:shift]
@@ -850,24 +942,26 @@ else:
         c = [float(x) for x in os.environ["LEVER_CAM"].split(",")]
         cam.location, target.location = Vector(c[:3]), Vector(c[3:])
     if MODE == "check":                    # ohne Rendern: Durchdringungen, Bodenkontakt, Reichweite pro Bild
-        worst = {}; prev = {}; jumps = {}; gelenk = {}; griff = [0.0, 0]; steps = {}
+        worst = {}; prev = {}; gelenk = {}; griff = [0.0, 0]; steps = {}
         selbst = [0.0, 0, ""]; symm = [0.0, 0, ""]
         # Symmetrie nur prüfen, wenn die Schlüsselposen selbst beidseitig gleich sind (Archer, Pistol … sind es nicht)
         key_sym = 0.0
         for kk_ in keys:
             pose_key(kk_); key_sym = max(key_sym, symmetry_gap()[0])
-        JB = [f"{b}.{n}" for b in ("forearm", "hand", "fingers", "shin", "foot") for n in "LR"]
+        JB = [f"{b}.{n}" for b in ("arm", "forearm", "hand", "fingers", "thigh", "shin", "foot") for n in "LR"]
         for i, s in enumerate(S_OF + S_OF[:1]):      # letztes Bild → erstes: auch die Loop-Naht prüfen
             OVER[0] = 0.0; kk_ = key_at(keys, s); pose_key(kk_)
             for n, hs in kk_.get("hands", {}).items():     # Griff nach dem Begrenzen: Knöchel noch am Ziel?
                 miss = (pt(f"knuckle.{n}") - Vector(hs["k"]() if callable(hs["k"]) else hs["k"])).length
                 if miss > griff[0]: griff[:] = [miss, i, n]
-            for b in JB:                     # Drehsprung je Bild (Grad): zeigt kippende Hände/Füße
-                q = (rig.matrix_world @ PB[b].matrix).to_quaternion()
+            for b in JB:                     # Drehung je Bild (Grad) in Welt, davon um die eigene Achse (Kippen)
+                M = (rig.matrix_world @ PB[b].matrix).to_3x3().normalized(); q = M.to_quaternion(); ax = M.col[1].normalized()
                 if b in prev:
-                    a = math.degrees(prev[b].rotation_difference(q).angle); a = min(a, 360 - a)
-                    steps.setdefault(b, []).append(a)
-                prev[b] = q
+                    q0, ax0 = prev[b]; dq = q @ q0.inverted()
+                    tot = math.degrees(dq.angle); tot = min(tot, 360 - tot)
+                    tw = abs(math.degrees(2 * math.atan2(Vector((dq.x, dq.y, dq.z)).dot(ax0), abs(dq.w))))
+                    steps.setdefault(b, []).append((tot, min(tw, tot)))
+                prev[b] = (q, ax)
             if i == len(S_OF): break
             ov = self_overlap()
             if ov[0] > selbst[0]: selbst[:] = [ov[0], i, ov[1]]
@@ -884,23 +978,26 @@ else:
             for kk, v in row.items():
                 if v < worst.get(kk, (9, 0))[0]: worst[kk] = (v, i, where.get(kk, ""))
             if os.environ.get("LEVER_DEBUG"): print("FRAME", i, {kk: round(v, 3) for kk, v in row.items()})
-        # Sprung = Spitze gegenüber den Nachbarbildern (Umklappen) – gleichmäßig schnelle Bewegung ist erlaubt,
-        # solange sie unter RULES["tempo"] Grad je Bild bleibt.
-        for b, st in steps.items():
-            m = len(st)
-            for i_ in range(m):
-                spike = st[i_] - 0.5 * (st[i_ - 1] + st[(i_ + 1) % m])
-                v = max(spike, st[i_] - RULES["tempo"] + RULES["sprung"])
-                if v > jumps.get(b, (0, 0))[0]: jumps[b] = (v, i_ + 1)
+        # Sprung = größte Drehung von Unterarm, Hand, Fingern, Unterschenkel oder Fuß von einem Bild zum nächsten
+        # (inklusive Loop-Naht), Kippen = Drehung eines Glieds um die eigene Achse (auch Ober-/Unterarm, Ober-/
+        # Unterschenkel). Ruhige Clips bleiben unter 10°; darüber ruckelt oder kippt es bei 24 fps sichtbar.
+        # Oberarm und Oberschenkel zählen beim Sprung nicht: sie schwingen bei großen Bewegungen (Skin the Cat,
+        # Hebel aus dem Hang) legitim schneller und tragen keine Hand/keinen Fuß, die umklappen könnte.
+        jumps = {b: max((a, i_ + 1) for i_, (a, _) in enumerate(st)) for b, st in steps.items() if b.split(".")[0] not in ("arm", "thigh")}
+        twists = {b: max((t, i_ + 1) for i_, (_, t) in enumerate(st)) for b, st in steps.items()}
         bad = sorted(gelenk.items(), key=lambda x: -x[1][0])
         print("GRIFF", ARG, f"{griff[0] * 100:.1f}cm@{griff[1]}" + (f"({griff[2]})" if len(griff) > 2 else ""))
         print("GELENK", ARG, "ok" if not bad else " ".join(f"{k}={v:.0f}°(+{o:.0f})@{i}" for k, (o, i, v) in bad[:6]))
         print("SPRUNG", ARG, " ".join(f"{b}={a:.0f}°@{i}" for b, (a, i) in sorted(jumps.items(), key=lambda x: -x[1][0])[:4]))
+        print("KIPPEN", ARG, " ".join(f"{b}={a:.0f}°@{i}" for b, (a, i) in sorted(twists.items(), key=lambda x: -x[1][0])[:4]))
         # Abnahme-Regeln: nur was alle erfüllt, wird gerendert (clips.sh bricht sonst ab)
         fails = []
         if bad and bad[0][1][0] > RULES["gelenk"]: fails.append(f"Gelenk {bad[0][0]} +{bad[0][1][0]:.0f}°")
         jmax = max(jumps.items(), key=lambda x: x[1][0], default=(None, (0, 0)))
-        if jmax[1][0] > RULES["sprung"]: fails.append(f"Sprung {jmax[0]} {jmax[1][0]:.0f}° Spitze")
+        if jmax[1][0] > EX.get("tempo", RULES["sprung"]):   # tempo: begründete Ausnahme der Übung (sehr viel Bewegung in 2 s)
+            fails.append(f"Sprung {jmax[0]} {jmax[1][0]:.0f}° je Bild @{jmax[1][1]}")
+        tmax = max(twists.items(), key=lambda x: x[1][0], default=(None, (0, 0)))
+        if tmax[1][0] > EX.get("tempo", RULES["sprung"]): fails.append(f"Kippen {tmax[0]} {tmax[1][0]:.0f}° je Bild @{tmax[1][1]}")
         if griff[0] > RULES["griff"]: fails.append(f"Griff {griff[0] * 100:.1f} cm daneben")
         for kk, (v, i_, w_) in worst.items():   # Hände/Füße auf Auflage: Weichteile geben nach, etwas mehr erlaubt
             tol = RULES["auflage"] if w_.split(".")[0] in ("hand", "fingers", "foot") else RULES["eindringen"]
