@@ -3,26 +3,26 @@
    Wischen nach unten), Dauer bzw. laufende Pause, Übungsliste, Fortschritt je Übung. Wischen nach
    links/rechts wechselt die Übung. Technik, Stufe, Überspringen, Pausieren: Technik-Sheet. */
 import { useEffect, useState } from 'react'
-import { KeyboardAvoidingView, Pressable, ScrollView, View, type LayoutChangeEvent } from 'react-native'
+import { KeyboardAvoidingView, Pressable, ScrollView, View } from 'react-native'
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg'
-import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
+import Animated, { FadeIn } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler'
 import { router, Stack } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
 import { useNow } from '@lever/core/useNow.ts'
-import { useHoldTimer, type HoldTimer } from '@lever/core/useHoldTimer.ts'
 import { platform } from '@lever/core/platform.ts'
 import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
-import { Button, ButtonRow, color, CountdownRing, ExerciseMedia, font, GUTTER, Icon, radius, sf, space, Text } from '@/ui'
-import { NoteInput, SetTiles } from './parts'
+import { Button, color, ExerciseMedia, font, GUTTER, Icon, radius, sf, space, Text } from '@/ui'
+import { setSheet, useSetSheet } from '@/state/set-sheet'
 
 const haptic = (k: 'tap' | 'success' = 'tap') => platform().signals.haptic(k)
 /** Höhe der nativen Navigationsleiste unter der Statusleiste (Inhalt beginnt darunter) */
 const NAV_BAR = 50
 
-export const minimize = () => { if (router.canGoBack()) router.back(); else router.replace('/') }
+// mit offenem Erfassungs-Sheet beides schließen (Sheet und Training)
+export const minimize = () => { if (setSheet.get().open) router.dismiss(2); else if (router.canGoBack()) router.back(); else router.replace('/') }
 export const openList = () => router.push({ pathname: '/exercises', params: { from: 'training' } })
 
 /** Kopf: Minimieren, Uhr (Dauer oder Pause), Übungsliste, Fortschritt je Übung */
@@ -127,6 +127,8 @@ export function AllDone() {
 /** Übung im Fokus: Inhalt (scrollend, seitlich wischbar) und Erfassungs-Panel */
 export function FocusExercise({ slot, index, total }: { slot: L.SlotView; index: number; total: number }) {
   const { t, slots, pick } = useApp()
+  // Platz für das native Erfassungs-Sheet (app/log-set.tsx) unter dem Inhalt
+  const sheetHeight = useSetSheet().height
   const { step } = slot, ex = step.exercise
   const muscles = ex.muscles ?? []
   const lastNotes = slot.last ? L.notesOf(slot.last.sets) : []
@@ -144,7 +146,7 @@ export function FocusExercise({ slot, index, total }: { slot: L.SlotView; index:
     <KeyboardAvoidingView behavior={process.env.EXPO_OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <GestureDetector gesture={swipe}>
         <View style={{ flex: 1 }}>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: space.sm, paddingBottom: space.xl, gap: space.lg }}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: space.sm, paddingBottom: sheetHeight + space.xl, gap: space.lg }}>
             <Animated.View entering={FadeIn.duration(180)} style={{ gap: space.lg }}>
               {/* Bild mit allem, was zur Übung gehört: Einordnung und Technik oben, Name und Muskeln unten
                   über einem Verlauf – so bleibt es auch über dem Erfassungs-Sheet sichtbar */}
@@ -210,185 +212,7 @@ export function FocusExercise({ slot, index, total }: { slot: L.SlotView; index:
           </ScrollView>
         </View>
       </GestureDetector>
-      <SetPanel slot={slot} />
     </KeyboardAvoidingView>
-  )
-}
-
-/** Erfassung als Sheet mit zwei Zuständen: Satz-Kacheln, Zähler und Aktionen immer sichtbar; hochgezogen
-    (Griff ziehen oder antippen, Notiz-Knopf) zusätzlich die Werte vom letzten Mal und die Satz-Notiz.
-    Der Zusatzbereich folgt beim Ziehen dem Finger und rastet beim Loslassen ein. */
-function SetPanel({ slot }: { slot: L.SlotView }) {
-  const { t } = useApp()
-  const insets = useSafeAreaInsets()
-  const ex = slot.step.exercise
-  const setNo = slot.state === 'open' ? L.nextSetNo(slot) : null
-  // ohne offenen Satz (erledigt, übersprungen, pausiert) gibt es nichts einzuklappen
-  const fixed = setNo === null
-  const [expanded, setExpanded] = useState(false)
-  const [note, setNote] = useState('')
-  useEffect(() => { setNote('') }, [setNo, slot.pid])
-  const last = slot.last?.sets.length ? slot.last.sets.slice().sort((a, b) => a.set - b.set).map(x => L.fmtSet(x, ex)).join(' · ') : null
-  const [full, setFull] = useState(0)
-  const open = useSharedValue(0)
-  const startOpen = useSharedValue(0)
-  const shown = !fixed && expanded
-  useEffect(() => { open.set(withSpring(shown ? 1 : 0, { damping: 22, stiffness: 240 })) }, [shown, open])
-  const moreStyle = useAnimatedStyle(() => ({ height: full * open.get(), opacity: Math.min(1, open.get() * 1.6) }))
-  const toggle = (on?: boolean) => { if (fixed) return; haptic(); setExpanded(x => on ?? !x) }
-  const drag = usePanGesture({
-    activeOffsetY: [-6, 6], runOnJS: true, enabled: !fixed && full > 0,
-    onActivate: () => { startOpen.set(open.get()) },
-    onUpdate: e => { open.set(Math.max(0, Math.min(1, startOpen.get() - e.translationY / full))) },
-    onDeactivate: e => {
-      const next = e.velocityY < -350 ? true : e.velocityY > 350 ? false : open.get() > 0.5
-      if (next === expanded) open.set(withSpring(next ? 1 : 0, { damping: 22, stiffness: 240 }))
-      else toggle(next)
-    },
-  })
-  const undo = () => slot.state === 'skipped'
-    ? t.updateToday(x => L.withSkip(x, ex.id, false))
-    : t.setState(st => ({ ...st, paused: st.paused.filter(p => p !== slot.pid) }))
-  const onMore = (e: LayoutChangeEvent) => { const h = e.nativeEvent.layout.height; if (h && Math.abs(h - full) > 1) setFull(h) }
-
-  return (
-    <View accessibilityLabel={tr('training.focus.logSet')}
-      style={{
-        backgroundColor: color.card, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, borderCurve: 'continuous',
-        paddingHorizontal: GUTTER, paddingBottom: insets.bottom + 8, gap: 12,
-        boxShadow: '0 -10px 30px rgba(0, 0, 0, 0.45)',
-      }}>
-      <GestureDetector gesture={drag}>
-        <View>
-          {/* Griff: ziehen oder antippen */}
-          <Pressable onPress={() => toggle()} disabled={fixed} accessibilityRole="button" accessibilityState={{ expanded: shown }}
-            accessibilityLabel={shown ? tr('training.focus.collapse') : tr('training.focus.expand')}
-            style={{ height: 24, alignItems: 'center', justifyContent: 'center' }}>
-            {!fixed && <View style={{ width: 36, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.22)' }} />}
-          </Pressable>
-          <SetTiles slot={slot} setNo={setNo} />
-          <Animated.View style={[{ overflow: 'hidden' }, moreStyle]} accessibilityElementsHidden={!shown} importantForAccessibility={shown ? 'auto' : 'no-hide-descendants'}>
-            {/* gemessen in voller Höhe, sichtbar je nach Aufzug */}
-            <View onLayout={onMore} style={{ position: 'absolute', left: 0, right: 0, gap: 10, paddingTop: 12 }}>
-              {last && <Text variant="small">{tr('training.focus.lastTime', { sets: last })}</Text>}
-              {setNo !== null && (
-                <NoteInput label={tr('training.focus.noteSet', { set: setNo })} value={note} onChangeText={setNote}
-                  placeholder={tr('training.focus.noteSetPlaceholder')} />
-              )}
-            </View>
-          </Animated.View>
-        </View>
-      </GestureDetector>
-      {slot.state === 'skipped' || slot.state === 'paused' ? (
-        <View style={{ gap: 10, paddingBottom: 6 }}>
-          <Text variant="muted">{slot.state === 'skipped' ? tr('training.skippedToday') : tr('training.pausedUntil')}</Text>
-          <Button icon="undo" block title={slot.state === 'skipped' ? tr('training.undoSkip') : tr('training.resume')} onPress={undo} />
-        </View>
-      ) : setNo === null ? (
-        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', paddingVertical: 10 }} accessible>
-          <Icon name="checkCircle" size={20} color={color.chalk} />
-          <Text variant="label" style={{ flex: 1 }}>{tn('training.focus.allLogged', slot.planned, { sets: slot.sets.map(x => L.fmtSet(x, ex)).join(' · ') })}</Text>
-        </View>
-      ) : (
-        <SetInput key={`${slot.pid}-${setNo}`} slot={slot} setNo={setNo} note={note} onNote={() => toggle()} />
-      )}
-    </View>
-  )
-}
-
-/** Erfassung des nächsten Satzes – Vorbelegung wie im Satz-Sheet; Halteübungen mit Timer */
-function SetInput({ slot, setNo, note, onNote }: { slot: L.SlotView; setNo: number; note: string; onNote: () => void }) {
-  const { t, rest, pick, setRestView } = useApp()
-  const ex = slot.step.exercise, target = slot.step.target
-  const seconds = ex.unit === 'seconds'
-  const init = L.prefill(slot.sets, slot.last?.sets ?? [], setNo, target, ex)
-  const [value, setValue] = useState(init.value)
-  const [weight, setWeight] = useState(init.weightKg)
-  const stepBy = seconds ? 5 : 1
-  // Halteübungen: Timer mit Vorlauf; bis er durch ist, ist „Timer starten“ die Hauptaktion
-  const hold = useHoldTimer()
-  const timing = hold.phase === 'prep' || hold.phase === 'hold'
-  const timerFirst = seconds && hold.phase !== 'done'
-
-  const save = () => {
-    const n = L.cleanNote(note)
-    t.updateToday(s => L.withSet(s, { exercise: ex.id, progression: slot.pid, set: setNo, value, ...(weight ? { weightKg: weight } : {}), ...(n ? { note: n } : {}) }))
-    t.startSession()
-    haptic('success')
-    rest.start(target.restSec)
-    // Rückmeldung für den Pausen-Screen: Wert und Vergleich zum gleichen Satz beim letzten Mal
-    const before = slot.last?.sets.find(x => x.set === setNo)
-    const d = before ? value - before.value : null
-    const unit = seconds ? 's' : tr('training.unitReps')
-    const summary = `${value}${weight ? ` +${weight} kg` : ''} ${unit}${d === null ? '' : d === 0 ? tr('training.focus.sameAsLast') : tr('training.focus.vsLast', { d: `${d > 0 ? '+' : '−'}${Math.abs(d)}` })}`
-    // letzter geplanter Satz → nach der Pause geht es mit der nächsten offenen Übung weiter
-    if (L.nextSetNo({ sets: [...slot.sets, { exercise: ex.id, progression: slot.pid, set: setNo, value: 0 }], planned: slot.planned }) === null) pick(undefined)
-    if (target.restSec > 0) setRestView(summary)
-  }
-
-  const lastSet = slot.last?.sets.find(x => x.set === setNo)
-  const caption = `${tr('training.focus.caption', { set: setNo, planned: slot.planned, target: target.label })}${lastSet ? tr('training.focus.captionLast', { value: `${lastSet.value}${seconds ? ' s' : ''}${lastSet.weightKg ? ` +${L.fmtNum(lastSet.weightKg)} kg` : ''}` }) : ''}`
-
-  // kompakt, damit die Übung darüber sichtbar bleibt: Satz-Zeile mit Notiz-Knopf, kleiner Zähler,
-  // Aktionen in einer Reihe (Halteübungen: Timer + Speichern nebeneinander)
-  return (
-    <View style={{ gap: 10 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Text variant="small" numberOfLines={1} style={{ flex: 1, fontFamily: font.bodySemi }}>{caption}</Text>
-        <Button icon="note" size="sm" variant={note.trim() ? 'outline' : 'ghost'} label={tr('training.focus.noteThisSet')} onPress={onNote} />
-      </View>
-      {timing ? <HoldRing hold={hold} /> : (
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Button icon="minus" label={tr('training.focus.less', { n: stepBy })} onPress={() => setValue(v => Math.max(1, v - stepBy))} style={{ width: 52, height: 52 }} />
-          <Text accessibilityLiveRegion="polite" accessibilityLabel={`${value}${seconds ? ' s' : ` ${tr('training.unitReps')}`}`}
-            style={{ fontFamily: font.displayBlack, fontSize: 56, lineHeight: 58, color: color.text, fontVariant: ['tabular-nums'] }}>
-            {value}{seconds ? <Text style={{ fontFamily: font.display, fontSize: 24, color: color.muted }}> s</Text> : null}
-          </Text>
-          <Button icon="plus" label={tr('training.focus.more', { n: stepBy })} onPress={() => setValue(v => v + stepBy)} style={{ width: 52, height: 52 }} />
-        </View>
-      )}
-      {ex.weighted && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Text variant="small" style={{ flex: 1, fontFamily: font.bodyBold, textTransform: 'uppercase', letterSpacing: 0.6 }}>{tr('training.focus.weight')}</Text>
-          <Button icon="minus" label={tr('training.focus.weightLess')} onPress={() => setWeight(w => Math.max(0, +(w - 2.5).toFixed(1)))} />
-          <Text style={{ minWidth: 70, textAlign: 'center', fontFamily: font.display, fontSize: 24, color: color.text, fontVariant: ['tabular-nums'] }}
-            accessibilityLabel={`${tr('training.focus.weight')}: ${L.fmtNum(weight)} kg`}>
-            {L.fmtNum(weight)}<Text style={{ fontFamily: font.displaySemi, fontSize: 15, color: color.muted }}> kg</Text>
-          </Text>
-          <Button icon="plus" label={tr('training.focus.weightMore')} onPress={() => setWeight(w => +(w + 2.5).toFixed(1))} />
-        </View>
-      )}
-      {hold.phase === 'done' && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }} accessible accessibilityLiveRegion="polite">
-          <Icon name="check" size={15} color={color.accent} />
-          <Text variant="small" style={{ color: color.accent, fontFamily: font.bodySemi }}>{tr('training.focus.held', { n: value })}</Text>
-        </View>
-      )}
-      <ButtonRow>
-        {seconds && (timing
-          ? <Button size="lg" icon="close" title={tr('training.focus.cancelTimer')} onPress={hold.cancel} style={{ flex: 1 }} />
-          : <Button variant={timerFirst ? 'primary' : 'outline'} size="lg" icon="timer" style={{ flex: 1 }}
-              title={hold.phase === 'done' ? tr('training.focus.againShort') : tr('training.focus.timerShort')}
-              onPress={() => hold.start(value)} />)}
-        <Button variant={timerFirst ? 'secondary' : 'primary'} size="lg" icon="check" title={tr('training.focus.saveSet')} onPress={save} style={{ flex: 1 }} />
-      </ButtonRow>
-    </View>
-  )
-}
-
-/** Großer Ring während des Halte-Timers: erst Vorlauf zum Positionieren, dann Halten */
-function HoldRing({ hold }: { hold: HoldTimer }) {
-  const prep = hold.phase === 'prep'
-  return (
-    <View style={{ alignItems: 'center' }} accessible accessibilityRole="timer"
-      accessibilityLabel={`${hold.left} s, ${prep ? tr('training.focus.inPosition') : tr('training.focus.hold')}`}>
-      <CountdownRing size={170} stroke={10} end={hold.end} totalMs={hold.spanMs} tint={prep ? color.muted : color.accent}>
-        <Text style={{ fontFamily: font.displayBlack, fontSize: 64, lineHeight: 66, color: prep ? color.text : color.accent, fontVariant: ['tabular-nums'] }}>{hold.left}</Text>
-        <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', letterSpacing: 1 }}>
-          {prep ? tr('training.focus.inPosition') : tr('training.focus.hold')}
-        </Text>
-      </CountdownRing>
-    </View>
   )
 }
 

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
+import { Platform } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { useFonts } from 'expo-font'
 import { Barlow_400Regular, Barlow_500Medium, Barlow_600SemiBold, Barlow_700Bold } from '@expo-google-fonts/barlow'
@@ -71,6 +72,11 @@ function Root({ fonts }: { fonts: boolean }) {
         <Stack.Screen name="challenges" options={modal()} />
         {/* Challenge im Vollbild – kein Wegwischen mitten im Versuch */}
         <Stack.Screen name="challenge-run" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
+        {/* Erfassung als echtes iOS-Sheet: Höhe nach Inhalt, Training dahinter bleibt bedienbar,
+            nicht wegwischbar (öffnet/schließt das Training selbst) */}
+        <Stack.Screen name="log-set" options={{ presentation: 'formSheet', sheetAllowedDetents: 'fitToContents', sheetLargestUndimmedDetentIndex: 'last',
+          sheetGrabberVisible: false, gestureEnabled: false, headerShown: false,
+          contentStyle: { backgroundColor: Platform.OS === 'ios' ? 'transparent' : color.card } }} />
         <Stack.Screen name="circuit-run" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
         <Stack.Screen name="onboarding" options={{ ...modal(), gestureEnabled: false }} />
         <Stack.Screen name="consent" options={{ ...modal(), gestureEnabled: false }} />
