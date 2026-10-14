@@ -2,7 +2,7 @@
    und Cardio-Einträge des Monats als Feed (neueste zuerst). Tag antippen wählt ihn aus: Der Feed zeigt
    dann nur diesen Tag (oder dass nichts eingetragen ist), Cardio nachtragen gilt für ihn; nochmal
    antippen zeigt wieder den Monat. Feed-Einträge haben ein Kontextmenü (lange drücken) mit Löschen. */
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Pressable, View } from 'react-native'
 import { Link, router } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
@@ -31,6 +31,12 @@ export function Month({ t, month, setMonth }: { t: Training; month: string; setM
   const [selected, setSelected] = useState<string | null>(null)
   useEffect(() => setSelected(null), [month])
   const shown = selected ? feed.filter(f => f.date === selected) : feed
+  // nach Tag gruppiert (Feed ist schon nach Datum sortiert)
+  const days = shown.reduce<{ date: string; items: FeedItem[] }[]>((out, f) => {
+    const last = out[out.length - 1]
+    if (last?.date === f.date) last.items.push(f); else out.push({ date: f.date, items: [f] })
+    return out
+  }, [])
   const pickDay = (d: string) => setSelected(cur => (cur === d ? null : d))
 
   return (
@@ -79,8 +85,20 @@ export function Month({ t, month, setMonth }: { t: Training; month: string; setM
         </Text>
       )}
 
-      <View style={{ gap: 8 }}>
-        {shown.map(f => <FeedRow key={`${f.kind}-${f.id}`} t={t} f={f} />)}
+      <View style={{ gap: 14 }}>
+        {days.map(d => (
+          <View key={d.date} style={{ gap: 6 }}>
+            {!selected && <DayHeader date={d.date} />}
+            <View style={{ backgroundColor: color.card, borderRadius: radius.xl, borderCurve: 'continuous', borderWidth: 1, borderColor: color.line, overflow: 'hidden' }}>
+              {d.items.map((f, i) => (
+                <Fragment key={`${f.kind}-${f.id}`}>
+                  {i > 0 && <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginLeft: 52 }} />}
+                  <FeedRow t={t} f={f} />
+                </Fragment>
+              ))}
+            </View>
+          </View>
+        ))}
       </View>
 
       <Button variant="ghost" icon="plus" block title={tr('history.addCardio')}
@@ -125,10 +143,19 @@ function DayCell({ date, today, future, trained, cardio, selected, onPress }: {
   )
 }
 
-/** Eintrag im Feed: Datum links, Titel und Kennzahlen, Chevron. Lange drücken: Kontextmenü. */
+/** Überschrift einer Tagesgruppe: Wochentag und Datum */
+function DayHeader({ date }: { date: string }) {
+  const day = new Date(`${date}T12:00`)
+  const weekday = day.toLocaleDateString(intl(), { weekday: 'long' })
+  return (
+    <Text accessibilityRole="header" style={{ fontFamily: font.bodyBold, fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase', color: color.muted, paddingLeft: 4 }}>
+      {weekday} · {day.toLocaleDateString(intl(), { day: 'numeric', month: 'numeric' })}
+    </Text>
+  )
+}
+
+/** Eintrag im Feed (kompakt, in der Tageskarte): Symbol, Titel, Kennzahlen, Chevron. Lange drücken: Kontextmenü. */
 function FeedRow({ t, f }: { t: Training; f: FeedItem }) {
-  const day = new Date(`${f.date}T12:00`)
-  const weekday = day.toLocaleDateString(intl(), { weekday: 'short' }).replace('.', '')
   const item: DayItem = { kind: f.kind, id: f.id }
   let title: string, meta: string, note = false
   if (f.kind === 'activity') {
@@ -148,21 +175,17 @@ function FeedRow({ t, f }: { t: Training; f: FeedItem }) {
     <Link href={dayHref(item)} asChild onPress={() => platform().signals.haptic('tap')}>
       <Link.Trigger>
         <Pressable accessibilityRole="button" accessibilityLabel={label}
-          style={{
-            flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 64, paddingVertical: 12, paddingLeft: 12, paddingRight: 14,
-            borderRadius: radius.xl, borderCurve: 'continuous', borderWidth: 1, borderColor: color.line,
-            backgroundColor: color.card,
-          }}>
-          <View style={{ width: 44, alignItems: 'center' }}>
-            <Text style={{ fontFamily: font.bodyBold, fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', color: color.muted }}>{weekday}</Text>
-            <Text variant="num" style={{ fontSize: 28, lineHeight: 30, color: f.kind === 'session' ? color.accent : color.text }}>{day.getDate()}</Text>
+          // fester Style: Link.Trigger (asChild) reicht keine Style-Funktion durch
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 54, paddingVertical: 9, paddingHorizontal: 14 }}>
+          <View style={{ width: 26, alignItems: 'center' }}>
+            <Icon name={f.kind === 'session' ? 'training' : f.a.kind === 'ride' ? 'bike' : f.a.kind === 'run' ? 'run' : 'flame'} size={18}
+              color={f.kind === 'session' ? color.accent : color.text} />
           </View>
-          <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
-            <Text variant="title" numberOfLines={2} style={{ fontSize: 19, lineHeight: 20 }}>{title}</Text>
+          <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
+            <Text variant="title" numberOfLines={1} style={{ fontSize: 17, lineHeight: 19 }}>{title}</Text>
             <Text variant="small" numberOfLines={1}>{meta}</Text>
           </View>
-          {f.kind === 'activity' && <Icon name={f.a.kind === 'ride' ? 'bike' : f.a.kind === 'run' ? 'run' : 'flame'} size={16} color={color.muted} />}
-          {note && <Icon name="note" size={16} color={color.accent} />}
+          {note && <Icon name="note" size={15} color={color.accent} />}
           <Icon name="right" size={14} color={color.muted} />
         </Pressable>
       </Link.Trigger>
