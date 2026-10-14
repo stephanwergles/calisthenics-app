@@ -8,17 +8,19 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg'
 import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler'
-import { router } from 'expo-router'
+import { router, Stack } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
 import { useNow } from '@lever/core/useNow.ts'
 import { useHoldTimer, type HoldTimer } from '@lever/core/useHoldTimer.ts'
 import { platform } from '@lever/core/platform.ts'
 import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
-import { Button, ButtonRow, color, CountdownRing, ExerciseMedia, font, GUTTER, Icon, IconCapsule, radius, space, Text } from '@/ui'
+import { Button, ButtonRow, color, CountdownRing, ExerciseMedia, font, GUTTER, Icon, radius, sf, space, Text } from '@/ui'
 import { NoteInput, SetTiles } from './parts'
 
 const haptic = (k: 'tap' | 'success' = 'tap') => platform().signals.haptic(k)
+/** Höhe der nativen Navigationsleiste unter der Statusleiste (Inhalt beginnt darunter) */
+const NAV_BAR = 50
 
 export const minimize = () => { if (router.canGoBack()) router.back(); else router.replace('/') }
 export const openList = () => router.push({ pathname: '/exercises', params: { from: 'training' } })
@@ -38,36 +40,35 @@ export function FocusTop() {
   })
   const duration = t.active ? L.fmtDuration(Math.max(0, now - t.active.start) / 1000) : ''
 
+  // Uhr als nativer Titel: Dauer bzw. laufende Pause (antippen öffnet den Pausen-Screen)
+  const clock = () => resting ? (
+    <Pressable onPress={() => { haptic(); setRestView('') }} accessibilityRole="button" accessibilityLabel={tr('training.focus.openRest')}
+      style={({ pressed }) => ({
+        flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 14, borderRadius: 999,
+        backgroundColor: rest.ringing ? color.accent : color.accentDim, borderWidth: 1, borderColor: color.accentLine, opacity: pressed ? 0.8 : 1,
+      })}>
+      <Icon name="timer" size={15} color={rest.ringing ? color.onAccent : color.accent} />
+      <Text style={{ fontFamily: font.display, fontSize: 19, color: rest.ringing ? color.onAccent : color.accent, fontVariant: ['tabular-nums'] }}>
+        {rest.ringing ? '0:00' : L.fmtClock(rest.remaining)}
+      </Text>
+    </Pressable>
+  ) : duration ? (
+    <Text accessibilityLabel={tr('training.focus.duration', { time: duration })}
+      style={{ fontFamily: font.display, fontSize: 20, color: color.text, fontVariant: ['tabular-nums'] }}>{duration}</Text>
+  ) : null
+
   return (
     <GestureDetector gesture={pan}>
-      <View style={{ paddingTop: insets.top + 2, paddingHorizontal: GUTTER, gap: 4 }}>
-        <View style={{ alignSelf: 'center', width: 36, height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.22)' }} accessibilityElementsHidden />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Button icon="down" label={tr('training.focus.minimize')} onPress={minimize} />
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            {resting ? (
-              <Pressable onPress={() => { haptic(); setRestView('') }} accessibilityRole="button" accessibilityLabel={tr('training.focus.openRest')}
-                style={({ pressed }) => ({
-                  flexDirection: 'row', alignItems: 'center', gap: 6, height: 44, paddingHorizontal: 16, borderRadius: 999,
-                  backgroundColor: rest.ringing ? color.accent : color.accentDim, borderWidth: 1, borderColor: color.accentLine, opacity: pressed ? 0.8 : 1,
-                })}>
-                <Icon name="timer" size={16} color={rest.ringing ? color.onAccent : color.accent} />
-                <Text style={{ fontFamily: font.display, fontSize: 20, color: rest.ringing ? color.onAccent : color.accent, fontVariant: ['tabular-nums'] }}>
-                  {rest.ringing ? '0:00' : L.fmtClock(rest.remaining)}
-                </Text>
-              </Pressable>
-            ) : duration ? (
-              <Text accessibilityLabel={tr('training.focus.duration', { time: duration })}
-                style={{ fontFamily: font.display, fontSize: 20, color: color.text, fontVariant: ['tabular-nums'] }}>{duration}</Text>
-            ) : null}
-          </View>
-          {t.active
-            ? <IconCapsule items={[
-                { icon: 'list', label: tr('training.focus.allExercises'), onPress: openList },
-                { icon: 'stop', label: tr('training.bar.stop'), onPress: () => void askEnd() },
-              ]} />
-            : <Button icon="list" label={tr('training.focus.allExercises')} onPress={openList} />}
-        </View>
+      {/* Kopf als native iOS-Toolbar (Glas): links minimieren, rechts Übungen | Stopp als Kapsel */}
+      <View style={{ paddingTop: insets.top + NAV_BAR, paddingHorizontal: GUTTER, gap: 4 }}>
+        <Stack.Screen options={{ headerShown: true, headerTransparent: true, headerShadowVisible: false, title: '', headerTitle: clock, headerBackVisible: false }} />
+        <Stack.Toolbar placement="left">
+          <Stack.Toolbar.Button icon={sf('down') as never} onPress={minimize} accessibilityLabel={tr('training.focus.minimize')} />
+        </Stack.Toolbar>
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button icon={sf('list') as never} onPress={openList} accessibilityLabel={tr('training.focus.allExercises')} />
+          {t.active ? <Stack.Toolbar.Button icon={sf('stop') as never} onPress={() => void askEnd()} accessibilityLabel={tr('training.bar.stop')} /> : null}
+        </Stack.Toolbar>
         {/* Fortschritt je Übung – antippbar; VoiceOver: wischen hoch/runter wechselt die Übung */}
         <View accessible accessibilityRole="adjustable" accessibilityLabel={tr('training.focus.exercises')}
           accessibilityValue={{ text: focusSlot ? tr('training.focus.position', { i: index + 1, n: slots.length, name: focusSlot.step.exercise.name }) : tr('training.strong') }}
