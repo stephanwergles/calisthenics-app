@@ -213,7 +213,8 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 - [ ] Weitere Skill-Leitern: One-Arm Pull-up · Human Flag · V-Sit/Manna-Vorstufen · Dragon Flag · Shrimp Squat · Nordic Curl
 - [ ] Skizzen/3D-Clips für alle neuen Stufen (Pipeline in `art/`)
 - [ ] Adaptiv: Volumen-Anpassung nach letzter Leistung, Deload-Erkennung (Stagnation über 2+ Einheiten), Rotation im Zubehör-Block
-- [ ] **Challenges** (eigener Modus neben dem Plan): Calisthenics-typische Selbsttests tracken – „so viele wie möglich in X Minuten“ (AMRAP, z. B. Liegestütze in 2 min) oder „Gesamtzahl so schnell wie möglich“ (z. B. 100 Klimmzüge, Zeit stoppen, Sätze frei). Eigener Erfassungs-Screen (großer Zähler, Zeit läuft mit/runter), Bestwerte und Verlauf je Challenge, im Log sichtbar, zählt nicht ins Plan-Volumen. Vorlagen + eigene Challenges; Sync als eigener Datentyp
+- [x] **Challenges** (14.10.2026): Karte auf Heute, 9 Vorlagen (so viele wie möglich / auf Zeit / Maximum), Durchführung im Vollbild mit Zähler bzw. Countdown/Stoppuhr, Bestwert und Verlauf; Versuch = Aktivität der Art „challenge“ (Sync wie Cardio), zählt nicht in die Serie
+- [ ] Challenges, Ausbau: Vorlagen im Admin pflegbar (Collection statt `src/seed/challenges.json`), eigene Challenges anlegen, Live Activity für Countdown/Stoppuhr, Verlaufskurve je Challenge, Max-Test → Vorschlag zur Einstufung
 - [ ] **Spontanes Workout:** einfach mal ein Training starten, ohne dass es der Plan-Tag ist – klar sichtbarer Einstieg (Heute/Plan), dann Auswahl: anderes Workout aus dem Plan, Vorlage oder „frei“ (Übungen nach Region/Muster aus deinen aktuellen Stufen zusammenstellen, Vorschlag vom Generator für die verfügbare Zeit). Klären, wie es den Wochenplan und Erholungsregeln (Sehnen-Folgetage) beeinflusst
 - [ ] Readiness-Check vor der Einheit (Schlaf/Energie/Gelenke, 3 Taps) → Tagesanpassung
 - [ ] Statistiken: Volumen-Trends, Zeit unter Spannung, Kraft-zu-Gewicht
