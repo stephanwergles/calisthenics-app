@@ -31,7 +31,9 @@ export function useChallengeActivity(c: Challenge, start: number | null, count: 
     try {
       if (!props) { void instance.current?.end('immediate').catch(() => undefined); instance.current = null; return }
       if (instance.current) void instance.current.update(props).catch(() => undefined)
-      else instance.current = SessionActivity.start(props, 'lever://challenges')
+      // ohne Link: Antippen holt nur die App nach vorn – die laufende Challenge liegt schon oben
+      // (ein Link würde die Challenge-Liste darüberlegen)
+      else instance.current = SessionActivity.start(props)
     } catch { /* ohne Live Activity weiter */ }
   }, [key]) // eslint-disable-line react-hooks/exhaustive-deps
 
