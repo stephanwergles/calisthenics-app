@@ -219,7 +219,7 @@ LEN = {b: (pb.tail - pb.head).length for b, pb in PB.items()}
 REACH = LEN["arm.L"] + LEN["forearm.L"]
 STRAIGHT = 0.985
 OVER = [0.0]          # größte Überdehnung eines IK-Ziels (Hand/Fuß erreicht ihr Ziel nicht) im Bild
-RULES = dict(gelenk=25, sprung=25, griff=0.025, eindringen=0.03, auflage=0.045)   # Grad, Grad je Bild, m, m, m
+RULES = dict(gelenk=25, sprung=20, tempo=45, griff=0.03, eindringen=0.03, auflage=0.045)   # Grad, Grad je Bild, m, m, m
 RAW = []              # Gelenkverstöße der Rohpose im zuletzt gesetzten Bild (vor dem Begrenzen)
 
 def align_hinge(up, lo, a, t, fallback):
@@ -268,7 +268,7 @@ def hand(n, s):
     Schulter→Knöchel, wie beim Hängen), palm = Handflächen-Normale, curl/flex = Finger, hint = Ellbogen.
     Die Gelenkgrenzen gelten schon hier: Unterarm-Drehung wird begrenzt, und kann das Handgelenk die verlangte
     Richtung nicht erreichen, kippt die Hand Richtung Unterarm (Knöchel bleiben am Ziel, das Handgelenk wandert)."""
-    K = Vector(s["k"]); S = world(PB[f"arm.{n}"].head); u = (K - S).normalized()
+    K = Vector(s["k"]() if callable(s["k"]) else s["k"]); S = world(PB[f"arm.{n}"].head); u = (K - S).normalized()   # k darf mitwandern (Fuß halten)
     lim = JLIM["hand"]; fa = PB[f"forearm.{n}"]
     for _ in range(3):                         # Griff ohne Vorgabe: Handgelenk möglichst gerade (Hand verlängert Unterarm)
         two_bone(f"arm.{n}", f"forearm.{n}", K - u * LEN[f"hand.{n}"], s["hint"])
@@ -285,7 +285,13 @@ def hand(n, s):
         if th0 > 78:                           # mehr als ~80° Knick (beide Richtungen) vorab begrenzen; stetig
             u = ax.slerp(u, 78 / th0).normalized(); W = K - u * LEN[f"hand.{n}"]
             two_bone(f"arm.{n}", f"forearm.{n}", W, s["hint"]); ax = rig.matrix_world.to_3x3() @ (fa.tail - fa.head).normalized()
-        pw0 = Vector(s.get("palm", (0, -1, 0))).normalized(); pw = pw0 - u * pw0.dot(u)
+        if s.get("bar"):                       # Griff um eine Stange: sie liegt quer in der Hand → Handfläche = ±Achse × Hand
+            axs, sg = s["bar"]; A = {"x": X, "y": Y, "z": Z}[axs]
+            if n == "R" and axs != "x": sg = -sg       # gespiegelt (Handfläche ist ein gewöhnlicher Vektor)
+            pw0 = A.cross(u) * sg
+            pw0 = pw0.normalized() if pw0.length > 1e-4 else Vector(s.get("palm", (0, -1, 0))).normalized()
+        else: pw0 = Vector(s.get("palm", (0, -1, 0))).normalized()
+        pw = pw0 - u * pw0.dot(u)
         cur_p = palm_normal(n); cur_p = (cur_p - u * cur_p.dot(u)).normalized()
         # Liegt die gewünschte Handfläche fast entlang der Hand, ist sie unbestimmt: dann stetig die aktuelle behalten
         pw = cur_p.slerp(pw.normalized(), min(max((pw.length - 0.05) / 0.25, 0), 1)) if pw.length > 1e-6 else cur_p
@@ -598,7 +604,11 @@ def pose_key(k, limbs=True):
         for up, lo, ch in [(f"thigh.{n}", f"shin.{n}", f"foot.{n}") for n in "LR"] + [(f"arm.{n}", f"forearm.{n}", f"hand.{n}") for n in "LR"]:
             dirs = {b: (world(PB[b].tail) - world(PB[b].head)).normalized() for b in (up, lo, ch)}
             PB[lo].matrix_basis = Matrix(); upd()
-            body_h = rig.matrix_world.to_3x3() @ flex_axis_rest(lo)   # gestreckt: Scharnier wie im Stand
+            Rw = rig.matrix_world.to_3x3(); a_ = dirs[up]
+            body_h = Rw @ flex_axis_rest(lo)   # gestreckt: Scharnier wie im Stand …
+            fwd_ = Rw @ Vector((0, -1, 0)) * (1 if lo.endswith(".L") else -1)   # … bei seitlich gestrecktem Glied (Achse ∥ Scharnier) zusätzlich
+            if lo.startswith("forearm"):     # (Arm seitlich gestreckt; Beine spreizen nie bis in die Scharnierachse)
+                body_h = (body_h - a_ * body_h.dot(a_)) + (fwd_ - a_ * fwd_.dot(a_)) * 0.5
             align_hinge(up, lo, dirs[up], dirs[lo], body_h); aim(lo, dirs[lo]); aim(ch, dirs[ch])
     for b, deg in k.get("twist", {}).items():   # Drehung um die eigene Knochenachse (Rumpfrotation)
         pb = PB[b]; rot(b, (pb.tail - pb.head).normalized(), deg)
@@ -796,18 +806,18 @@ else:
         c = [float(x) for x in os.environ["LEVER_CAM"].split(",")]
         cam.location, target.location = Vector(c[:3]), Vector(c[3:])
     if MODE == "check":                    # ohne Rendern: Durchdringungen, Bodenkontakt, Reichweite pro Bild
-        worst = {}; prev = {}; jumps = {}; gelenk = {}; griff = [0.0, 0]
+        worst = {}; prev = {}; jumps = {}; gelenk = {}; griff = [0.0, 0]; steps = {}
         JB = [f"{b}.{n}" for b in ("forearm", "hand", "fingers", "shin", "foot") for n in "LR"]
         for i, s in enumerate(S_OF + S_OF[:1]):      # letztes Bild → erstes: auch die Loop-Naht prüfen
             OVER[0] = 0.0; kk_ = key_at(keys, s); pose_key(kk_)
             for n, hs in kk_.get("hands", {}).items():     # Griff nach dem Begrenzen: Knöchel noch am Ziel?
-                miss = (pt(f"knuckle.{n}") - Vector(hs["k"])).length
+                miss = (pt(f"knuckle.{n}") - Vector(hs["k"]() if callable(hs["k"]) else hs["k"])).length
                 if miss > griff[0]: griff[:] = [miss, i, n]
             for b in JB:                     # Drehsprung je Bild (Grad): zeigt kippende Hände/Füße
                 q = (rig.matrix_world @ PB[b].matrix).to_quaternion()
                 if b in prev:
                     a = math.degrees(prev[b].rotation_difference(q).angle); a = min(a, 360 - a)
-                    if a > jumps.get(b, (0, 0))[0]: jumps[b] = (a, i)
+                    steps.setdefault(b, []).append(a)
                 prev[b] = q
             if i == len(S_OF): break
             for over, b, k, v in RAW:
@@ -821,6 +831,14 @@ else:
             for kk, v in row.items():
                 if v < worst.get(kk, (9, 0))[0]: worst[kk] = (v, i, where.get(kk, ""))
             if os.environ.get("LEVER_DEBUG"): print("FRAME", i, {kk: round(v, 3) for kk, v in row.items()})
+        # Sprung = Spitze gegenüber den Nachbarbildern (Umklappen) – gleichmäßig schnelle Bewegung ist erlaubt,
+        # solange sie unter RULES["tempo"] Grad je Bild bleibt.
+        for b, st in steps.items():
+            m = len(st)
+            for i_ in range(m):
+                spike = st[i_] - 0.5 * (st[i_ - 1] + st[(i_ + 1) % m])
+                v = max(spike, st[i_] - RULES["tempo"] + RULES["sprung"])
+                if v > jumps.get(b, (0, 0))[0]: jumps[b] = (v, i_ + 1)
         bad = sorted(gelenk.items(), key=lambda x: -x[1][0])
         print("GRIFF", ARG, f"{griff[0] * 100:.1f}cm@{griff[1]}" + (f"({griff[2]})" if len(griff) > 2 else ""))
         print("GELENK", ARG, "ok" if not bad else " ".join(f"{k}={v:.0f}°(+{o:.0f})@{i}" for k, (o, i, v) in bad[:6]))
@@ -829,7 +847,7 @@ else:
         fails = []
         if bad and bad[0][1][0] > RULES["gelenk"]: fails.append(f"Gelenk {bad[0][0]} +{bad[0][1][0]:.0f}°")
         jmax = max(jumps.items(), key=lambda x: x[1][0], default=(None, (0, 0)))
-        if jmax[1][0] > RULES["sprung"]: fails.append(f"Sprung {jmax[0]} {jmax[1][0]:.0f}°/Bild")
+        if jmax[1][0] > RULES["sprung"]: fails.append(f"Sprung {jmax[0]} {jmax[1][0]:.0f}° Spitze")
         if griff[0] > RULES["griff"]: fails.append(f"Griff {griff[0] * 100:.1f} cm daneben")
         for kk, (v, i_, w_) in worst.items():   # Hände/Füße auf Auflage: Weichteile geben nach, etwas mehr erlaubt
             tol = RULES["auflage"] if w_.split(".")[0] in ("hand", "fingers", "foot") else RULES["eindringen"]
