@@ -19,6 +19,8 @@ import { ask, Button, ButtonRow, color, CountdownRing, font, GUTTER, Icon, Text 
 import { NoteInput } from '@/screens/training/parts'
 
 const PREP = 3
+/** Satzgrößen zum Eintragen mit einem Tipp */
+const SET_SIZES = [5, 8, 10, 12, 15]
 type Phase = 'prep' | 'run' | 'result'
 const signals = () => platform().signals
 
@@ -38,8 +40,8 @@ function Run({ c }: { c: Challenge }) {
   const [prepEnd] = useState(() => Date.now() + PREP * 1000)
   const startRef = useRef(0)
   const [count, setCount] = useState(0)
-  // Sätze: Satzgröße einmal einstellen, dann je Satz ein Tipp; Einzeltipps zählen in den laufenden Satz
-  const [chunk, setChunk] = useState(() => Math.min(10, c.target ?? 10))
+  // Sätze: ein Tipp auf eine Satzgröße trägt den ganzen Satz ein; Einzeltipps auf die Fläche bilden
+  // einen eigenen Satz, sobald der nächste ganze Satz kommt oder die Challenge endet
   const [parts, setParts] = useState<number[]>([])
   const partsSum = parts.reduce((a, b) => a + b, 0)
   const [result, setResult] = useState<number | null>(null)
@@ -81,12 +83,12 @@ function Run({ c }: { c: Challenge }) {
     signals().haptic('tap'); setCount(next)
     if (c.kind === 'fortime' && next >= (c.target ?? 0)) finish(next)
   }
-  /** ganzen Satz eintragen (inkl. der Einzeltipps seit dem letzten Satz) */
-  const addSet = () => {
+  /** ganzen Satz mit n Wiederholungen eintragen */
+  const addSet = (n: number) => {
     if (phase !== 'run') return
-    const n = Math.max(chunk, count - partsSum)
-    const next = partsSum + n
-    const done = [...parts, n]
+    const open = count - partsSum
+    const next = count + n
+    const done = [...parts, ...(open > 0 ? [open] : []), n]
     signals().haptic('success'); setParts(done); setCount(next)
     if (c.kind === 'fortime' && next >= (c.target ?? 0)) finish(next, done)
   }
@@ -129,16 +131,17 @@ function Run({ c }: { c: Challenge }) {
           ? <CountdownRing size={280} stroke={12} end={runEnd} totalMs={(c.seconds ?? 60) * 1000}><BigNumber text={big} /></CountdownRing>
           : <BigNumber text={big} accent={phase === 'prep'} />}
         <Text variant="muted" style={{ fontSize: 19, marginTop: 12, fontVariant: ['tabular-nums'] }}>{sub}</Text>
+        {phase === 'run' && counting && c.kind !== 'max' && (
+          <Text variant="small" style={{ position: 'absolute', bottom: 16 }}>{tr('challenge.tapHint')}</Text>
+        )}
       </Pressable>
 
-      {/* Sätze statt Einzeltipps: Satzgröße einstellen, Satz eintragen (nicht beim Maximum – ein Satz) */}
+      {/* ganze Sätze mit einem Tipp (nicht beim Maximum – dort zählt ein einziger Satz) */}
       {phase === 'run' && c.kind !== 'max' && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Button icon="minus" label={tr('challenge.smaller')} onPress={() => setChunk(n => Math.max(1, n - 1))} />
-          <Text accessibilityLabel={`${tr('challenge.setSize')}: ${chunk}`}
-            style={{ minWidth: 44, textAlign: 'center', fontFamily: font.display, fontSize: 28, color: color.text, fontVariant: ['tabular-nums'] }}>{chunk}</Text>
-          <Button icon="plus" label={tr('challenge.bigger')} onPress={() => setChunk(n => n + 1)} />
-          <Button variant="primary" size="lg" icon="plus" title={tr('challenge.addSet', { n: Math.max(chunk, count - partsSum) })} onPress={addSet} style={{ flex: 1 }} />
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {SET_SIZES.map(n => (
+            <Button key={n} variant="secondary" size="lg" title={`+${n}`} label={tr('challenge.addSet', { n })} onPress={() => addSet(n)} style={{ flex: 1, paddingHorizontal: 0 }} />
+          ))}
         </View>
       )}
       {phase === 'run' && parts.length > 0 && (
@@ -146,7 +149,7 @@ function Run({ c }: { c: Challenge }) {
       )}
       {phase === 'run' && (
         <ButtonRow>
-          {counting && <Button size="lg" icon="minus" label={tr('challenge.undo')} onPress={() => add(-1)} style={{ width: 64 }} />}
+          {counting && <Button size="lg" icon="undo" title="−1" label={tr('challenge.undo')} onPress={() => add(-1)} />}
           {c.kind === 'max' && <Button variant="primary" size="lg" icon={c.unit === 'seconds' ? 'stop' : 'check'}
             title={c.unit === 'seconds' ? tr('challenge.stopHold') : tr('challenge.done')} onPress={() => finish(count)} style={{ flex: 1 }} />}
           {c.kind !== 'max' && <Button size="lg" icon="check" title={tr('challenge.done')} onPress={() => finish(count)} style={{ flex: 1 }} />}
