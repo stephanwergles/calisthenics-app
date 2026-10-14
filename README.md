@@ -5,7 +5,7 @@ Progressionsbasierte Trainings-App für drei feste Workouts pro Woche.
 | | |
 |---|---|
 | **v1** (im Einsatz) | `index.html` – eine Datei, läuft auf GitHub Pages, Daten im Browser |
-| **v2** (im Aufbau) | Next.js 16 + Payload 3 + Postgres, Deployment über Ploi. Trainingsansicht unter `/`, offline-fähig; Admin unter `/admin` |
+| **v2** (im Aufbau) | Next.js 16 + Payload 3 + Postgres, Deployment über Ploi: API, Sync, Admin unter `/admin`, Landingpage und Datenschutz. Trainiert wird in der **Expo-App** (`mobile/`, iOS) |
 
 v1 bleibt im Hauptverzeichnis, bis v2 im Training trägt – GitHub Pages liefert
 sie von dort aus. Danach wird sie gelöscht; die Git-Historie bewahrt sie.
@@ -28,9 +28,10 @@ npm run import:v1 -- <v1-export.json> <email>   # Trainingshistorie übernehmen
 
 | Pfad | Inhalt |
 |---|---|
-| `src/client/` | Trainingsansicht: `logic.ts` (reine Trainingslogik, getestet), `db.ts` (IndexedDB), `useTraining.ts` (Zustand + Sync-Ablauf), `sync.ts` (Server-Aufrufe, Konfliktregel), `components/` |
+| `mobile/` | Expo-App (iOS): Oberfläche, Plattform-Adapter, Release – siehe `mobile/README.md` |
+| `src/core/` | Gemeinsamer Kern für App und Server: `logic.ts` (reine Trainingslogik, getestet), `useTraining.ts` (Zustand + Sync-Ablauf), `api.ts` (Server-Aufrufe, Konfliktregel), `i18n/`, `platform.ts` (Adapter-Schnittstelle) |
 | `src/sync/` | Sync-Endpunkt `POST /api/sync` (`endpoint.ts`) und die reinen Umrechnungen App ↔ Payload (`convert.ts`, getestet) |
-| `public/sw.js` | Service Worker – Trainingsansicht startet ohne Netz |
+| `public/clips`, `public/clip-stills` | 3D-Übungsclips und Standbilder (die App bündelt sie) |
 | `src/domain/model.ts` | Datenmodell. Leitregel: Jede Referenz über eine **stabile ID**, nie über eine Position |
 | `src/seed/catalog.json` | Katalog: 47 Übungen, 24 Progressionen, 3 Workouts, Wochenplan |
 | `src/collections/`, `src/globals/` | Payload-Collections; Katalog-IDs sind die Slugs aus dem Katalog |
@@ -39,29 +40,16 @@ npm run import:v1 -- <v1-export.json> <email>   # Trainingshistorie übernehmen
 | `scripts/` | Katalog aus v1 erzeugen, Katalog einspielen, v1-Export importieren |
 | `test/` | `npm test` – v1-Smoke-Test, Import-, Logik- und Sync-Tests (nur erfundene Daten, das Repo ist öffentlich) |
 
-## Trainingsansicht
+## App
 
-Unter `/`. Der Training-Tab ist die Startseite **Heute** (Woche, Serie, Workout des Tages,
-nächste Skills). Alles Weitere läuft über **Sheets**: „Übungen ansehen“ öffnet den Plan als
-großes Sheet (mit Start-Button), „Starten“ das **Training als Vollbild-Sheet** – eine Übung pro
-Screen mit Kreide-Skizze, drei Kernpunkten, Muskeln und großem Zähler; die Erfassung unten ist
-ein eigenes, hochziehbares Sheet (Satz-Kacheln, Notiz). Nach unten wischen oder ⌄ minimiert das
-Training zur Session-Leiste über den Tabs (wie ein Mini-Player), ein Tipp darauf holt es zurück.
-Nach dem Speichern ein Pausen-Screen mit Ring, nach „Training beenden“ ein **Abschluss** mit Bestwerten.
-Kernpunkte und Muskeln stehen in `src/seed/coaching.json`. Vier Bereiche über die Tab-Leiste unten (darüber die Session-Leiste mit
-Timer, solange trainiert wird): **Training** (Fokus auf die aktive Übung; Notizen
-pro Satz im Satz-Editor und zur ganzen Einheit, die Satz-Notizen vom letzten Mal
-stehen an der Übung), **Verlauf**, **Skills** (Skill-Tree)
-(Kalender mit Tagesansicht und Cardio-Erfassung für beliebige Tage; Fortschritt pro
-Übung über alle Stufen mit Summe, Delta zur vorigen Einheit derselben Stufe und
-Balkendiagramm) und **Daten**. Die App liest und schreibt **nur lokal** (IndexedDB) und gleicht im
-Hintergrund mit Payload ab – im Gym lädt keine Ansicht Daten vom Server. Unter
-„Daten“ anmelden (Payload-Nutzer, Sitzung 60 Tage, wird bei jedem Start verlängert),
-einen v1-Export übernehmen (wiederholbar) oder alles als JSON sichern.
+Die Trainingsoberfläche ist die Expo-App in `mobile/` (Aufbau, Entwickeln, Veröffentlichen:
+`mobile/README.md`). Sie liest und schreibt **nur lokal** (SQLite) und gleicht im Hintergrund
+mit Payload ab – im Gym lädt keine Ansicht Daten vom Server. Anmeldung mit einem Payload-Nutzer
+(Token im Schlüsselbund, Sitzung 60 Tage, wird bei jedem Start verlängert).
 
 **Sync** (`POST /api/sync`, ein Aufruf hin und zurück):
 
-- Jede Änderung landet im Postausgang (IndexedDB `kv.outbox`) und wird ~2,5 s später
+- Jede Änderung landet im Postausgang (lokal, `outbox`) und wird ~2,5 s später
   gesendet; außerdem beim Start, bei Netz-Rückkehr, beim Zurückholen der App und per Button.
 - Der erste Abgleich nach der Anmeldung lädt alles vom Gerät hoch, danach nur Geändertes.
   Vom Server kommt alles, was seit dem letzten Abgleich (`serverTime`) geändert wurde.
@@ -74,35 +62,9 @@ einen v1-Export übernehmen (wiederholbar) oder alles als JSON sichern.
   Änderung an Übungen, Progressionen, Workouts, Wochenplan) – Änderungen im Admin landen
   so ohne Deploy in der App. Ohne Server-Katalog gilt `src/seed/catalog.json` aus dem Build.
 
-Offline-Start über `public/sw.js`, nur im Produktionsbuild aktiv (`npm run build && npm start`).
-Bei Änderungen am Service Worker `CACHE` hochzählen; bei jedem Deploy `APP_VERSION`
-in `src/client/version.ts` erhöhen.
-
-## iOS-App (Capacitor)
-
-Native Hülle um dieselbe Oberfläche, Projekt in `ios/`. Die Oberfläche liegt **im App-Paket**
-(startet immer offline), nur der Sync geht an die Live-Instanz – dort per Token statt Cookie,
-weil die App von `capacitor://localhost` kommt (in `payload.config.ts` unter `cors` erlaubt).
-Zusätzlich zur Web-App: Benachrichtigung am Pausenende (auch bei gesperrtem Display), Haptik,
-Display bleibt während der Session an. Native Teile stecken in `src/client/native.ts`
-und sind im Browser wirkungslos.
-
-```bash
-npm run native:build   # next build → native/www → cap sync ios
-npm run native:open    # Xcode öffnen
-```
-
-**TestFlight** (Updates ohne Kabel): App einmalig in App Store Connect anlegen, API-Key
-in `.env.ios` eintragen (Vorlage im Kopf von `scripts/ios-release.sh`), dann pro Update:
-
-```bash
-npm run native:release   # native:build → Archiv (Build-Nummer = Zeitstempel) → Upload
-```
-
-In Xcode einmalig unter *Signing & Capabilities* das eigene Team wählen
-(Bundle-ID `de.offected.lever`), dann aufs iPhone spielen (▶) oder über
-*Product → Archive* zu TestFlight hochladen. Nach jeder Änderung an der Oberfläche
-`npm run native:build` und neu bauen – die App zieht keine Updates vom Server.
+Die frühere Web-Trainingsoberfläche unter `/` ist abgeschaltet; `public/sw.js` meldet ihren
+Service Worker bei früheren Nutzern ab. Bei jedem Server-Deploy `APP_VERSION` in
+`src/client/version.ts` erhöhen (steht auf der Landingpage).
 
 ## Marke & 3D (`art/`)
 
@@ -121,11 +83,11 @@ Grafiken entstehen per Skript in Blender (headless, `art/vendor/Blender.app`, ni
 Jede Übung aus `src/seed/catalog.json` hat einen 2-Sekunden-Loop (48 Bilder, 24 fps, 800×600,
 Hintergrund `#1a1a1a` eingebrannt) unter `public/clips/<exercise-id>.mp4`.
 
-**In der App:** `scripts/clips-manifest.mjs` (läuft vor `dev`, `build`, `native:build`) erzeugt mit
-ffmpeg je Clip ein Standbild `public/clip-stills/<id>.jpg` (Schlüsselposition nach 1 s, nur wenn
-es fehlt oder älter als der Clip ist – **mitcommitten**, der Server hat kein ffmpeg) und schreibt
-`src/seed/clips.json` (nicht im Repo). Trainingsansicht zeigt den Loop (`ExerciseMedia`), Heute,
-Übungsliste, Pause und Skill-Tree das Standbild (`ExerciseStill`); ohne Clip bleibt die Skizze.
+**In der App:** `npm run clips:stills` erzeugt mit ffmpeg je Clip ein Standbild
+`public/clip-stills/<id>.jpg` (Schlüsselposition nach 1 s, nur wenn es fehlt oder älter als der
+Clip ist – **mitcommitten**). Die Expo-App bündelt Clips und Standbilder automatisch
+(`mobile/scripts/media.js`): Training zeigt den Loop, Listen und Kacheln das Standbild; ohne Clip
+bleibt die Skizze.
 
 ```bash
 art/blender/clips.sh pull-up muscle-up      # rendern (Cycles/Metal, ~5 min je Clip) + kodieren

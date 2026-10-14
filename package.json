@@ -5,8 +5,8 @@
   "description": "Calisthenics-Trainings-App: v1 = index.html (GitHub Pages), v2 = Next.js + Payload",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/clips-manifest.mjs && cross-env NODE_OPTIONS=--no-deprecation next dev",
-    "build": "node scripts/clips-manifest.mjs && cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=4096\" next build",
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=4096\" next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "generate:types": "npm run payload -- generate:types",
@@ -18,18 +18,9 @@
     "import:v1": "npm run payload -- run scripts/import-v1.ts",
     "catalog:extract": "node scripts/extract-catalog.ts",
     "test": "node test/smoke.cjs && node --test test/migrate.test.ts test/logic.test.ts test/sync.test.ts test/access.test.ts test/generator.test.ts test/assessment.test.ts test/rateLimit.test.ts",
-    "native:web": "node scripts/native-web.ts",
-    "native:build": "node scripts/clips-manifest.mjs && next build && node scripts/native-web.ts && cap sync ios",
-    "native:open": "cap open ios",
-    "native:release": "bash scripts/ios-release.sh"
+    "clips:stills": "node scripts/clip-stills.mjs"
   },
   "dependencies": {
-    "@capacitor-community/keep-awake": "^8.0.1",
-    "@capacitor/core": "^8.5.3",
-    "@capacitor/haptics": "^8.0.2",
-    "@capacitor/ios": "^8.5.3",
-    "@capacitor/local-notifications": "^8.3.1",
-    "@capacitor/preferences": "^8.0.1",
     "@payloadcms/db-postgres": "3.90.2",
     "@payloadcms/next": "3.90.2",
     "@payloadcms/translations": "3.90.2",
@@ -37,14 +28,12 @@
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
     "graphql": "^16.8.1",
-    "lucide-react": "^1.55.0",
     "next": "16.3.8",
     "payload": "3.90.2",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.3",
     "@types/node": "22.19.9",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",

@@ -23,8 +23,6 @@ npm-debug.log*
 /.claude/launch.json
 /.claude/settings.local.json
 
-# iOS-App: erzeugte Oberfläche (scripts/native-web.ts)
-native/www/
 
 # App Store Connect API-Key (scripts/ios-release.sh) – nie committen
 .env.ios
@@ -38,5 +36,3 @@ art/out/
 # Python
 __pycache__/
 
-# erzeugt von scripts/clips-manifest.mjs (vor dev/build)
-src/seed/clips.json

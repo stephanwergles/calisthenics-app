@@ -6,17 +6,14 @@ import './styles.css'
 export const metadata: Metadata = {
   title: 'Lever',
   description: 'Lever – progressionsbasiertes Calisthenics-Training',
-  appleWebApp: { capable: true, title: 'Lever', statusBarStyle: 'black-translucent' },
   icons: { apple: '/apple-touch-icon.png?v=4', icon: [{ url: '/favicon.svg?v=4', type: 'image/svg+xml' }, { url: '/icon-512.png?v=4', sizes: '512x512' }] },
 }
 
 export const viewport: Viewport = {
-  width: 'device-width', initialScale: 1, maximumScale: 1, userScalable: false,
-  viewportFit: 'cover', themeColor: '#101010',
+  width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#101010',
 }
 
-/* Schrift wird beim Build geladen und selbst ausgeliefert (/_next/static) – keine Anfrage an Google,
-   der Service Worker cached sie mit, die App bleibt offline lesbar */
+/* Schrift wird beim Build geladen und selbst ausgeliefert (/_next/static) – keine Anfrage an Google */
 const body = Barlow({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-body', display: 'swap' })
 const display = Barlow_Condensed({ subsets: ['latin'], weight: ['600', '700', '800', '900'], style: ['normal', 'italic'], variable: '--font-display', display: 'swap' })
 

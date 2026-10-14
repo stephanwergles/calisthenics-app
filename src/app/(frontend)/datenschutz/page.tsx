@@ -1,5 +1,5 @@
 /* Datenschutzerklärung – ENTWURF. Platzhalter [ … ] füllen und vor dem Store-Release
-   rechtlich prüfen lassen. Textversion der Einwilligung: src/client/consent.ts. */
+   rechtlich prüfen lassen. Textversion der Einwilligung: src/core/consent.ts. */
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Datenschutz · Lever' }
