@@ -80,10 +80,11 @@ export function SetTiles({ slot, setNo }: { slot: L.SlotView; setNo: number | nu
               boxShadow: v ? '0 0 0 3px rgba(244, 244, 244, 0.12)' : undefined,
               opacity: pressed ? 0.75 : 1,
             })}>
-            <Text style={{ fontFamily: font.display, fontSize: v ? 20 : 15, color: v ? color.onAccent : current ? color.accent : color.muted, fontVariant: ['tabular-nums'] }}>
+            {/* mit Zusatzgewicht: Wiederholungen und Gewicht untereinander mit Luft, nicht überlagert */}
+            <Text style={{ fontFamily: font.display, fontSize: v ? (v.weightKg ? 18 : 20) : 15, lineHeight: v?.weightKg ? 19 : undefined, color: v ? color.onAccent : current ? color.accent : color.muted, fontVariant: ['tabular-nums'] }}>
               {v ? v.value : n}
             </Text>
-            {v?.weightKg ? <Text style={{ position: 'absolute', bottom: 2, fontFamily: font.bodyBold, fontSize: 9, color: color.onAccent }}>+{L.fmtNum(v.weightKg)}</Text> : null}
+            {v?.weightKg ? <Text style={{ fontFamily: font.bodyBold, fontSize: 10, lineHeight: 12, marginTop: 1, color: color.onAccent, opacity: 0.7 }}>+{L.fmtNum(v.weightKg)} kg</Text> : null}
             {v?.note ? <View style={{ position: 'absolute', top: 5, right: 5, width: 6, height: 6, borderRadius: 3, backgroundColor: color.onAccent }} /> : null}
           </Pressable>
         )

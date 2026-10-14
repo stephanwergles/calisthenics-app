@@ -43,18 +43,9 @@ export function FocusTop() {
   // Uhr unter der Toolbar (nicht als nativer Titel – der wurde nicht zuverlässig neu gezeichnet):
   // Trainingsdauer immer sichtbar, laufende Pause daneben (antippen öffnet den Pausen-Screen)
   const restShown = restView !== null && resting
-  const restPill = resting ? (
-    <Pressable onPress={() => { haptic(); setRestView('') }} accessibilityRole="button" accessibilityLabel={tr('training.focus.openRest')}
-      style={({ pressed }) => ({
-        flexDirection: 'row', alignItems: 'center', gap: 5, height: 34, paddingHorizontal: 10, borderRadius: 999,
-        backgroundColor: rest.ringing ? color.accent : color.accentDim, borderWidth: 1, borderColor: color.accentLine, opacity: pressed ? 0.8 : 1,
-      })}>
-      <Icon name="timer" size={15} color={rest.ringing ? color.onAccent : color.accent} />
-      <Text style={{ fontFamily: font.display, fontSize: 18, color: rest.ringing ? color.onAccent : color.accent, fontVariant: ['tabular-nums'] }}>
-        {rest.ringing ? '0:00' : L.fmtClock(rest.remaining)}
-      </Text>
-    </Pressable>
-  ) : null
+  // laufende Pause als eigener nativer Toolbar-Knopf (Glas): antippbar – die Toolbar liegt über
+  // dem Inhalt und nimmt sonst jeden Tipp in ihrer Zeile ab
+  const restLabel = rest.ringing ? '0:00' : L.fmtClock(rest.remaining)
 
   return (
     <GestureDetector gesture={pan}>
@@ -66,18 +57,26 @@ export function FocusTop() {
           <Stack.Toolbar.Button icon={sf('down') as never} onPress={minimize} accessibilityLabel={tr('training.focus.minimize')} />
         </Stack.Toolbar>
         <Stack.Toolbar placement="right">
+          {resting && !restShown ? (
+            // nur Text: mit Symbol zeigt iOS den Titel nicht an
+            <Stack.Toolbar.Button onPress={() => { haptic(); setRestView('') }} separateBackground
+              tintColor={color.accent} accessibilityLabel={tr('training.focus.openRest')} style={{ fontFamily: font.display, fontSize: 18 }}>
+              {restLabel}
+            </Stack.Toolbar.Button>
+          ) : null}
           <Stack.Toolbar.Button icon={sf('list') as never} onPress={openList} accessibilityLabel={tr('training.focus.allExercises')} />
           {t.active ? <Stack.Toolbar.Button icon={sf('stop') as never} onPress={() => void askEnd()} accessibilityLabel={tr('training.bar.stop')} /> : null}
         </Stack.Toolbar>
         {/* Uhr in der Zeile der Toolbar-Knöpfe (zwischen Minimieren und Übungen | Stopp), über der
             nativen Leiste gezeichnet; box-none lässt Tipps neben der Uhr zu den Knöpfen durch */}
-        {(duration || restPill) && (
-          <View pointerEvents="box-none" style={{ position: 'absolute', top: insets.top, left: 0, right: 0, height: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, zIndex: 10 }}>
-            {duration ? <Text accessibilityLabel={tr('training.focus.duration', { time: duration })}
-              style={{ fontFamily: font.display, fontSize: restPill ? 17 : 20, color: restPill ? color.muted : color.text, fontVariant: ['tabular-nums'] }}>{duration}</Text> : null}
-            {restPill}
+        {/* Trainingsdauer in der Zeile der Toolbar-Knöpfe; während der Pause links neben Minimieren,
+            weil rechts die Pause steht */}
+        {duration ? (
+          <View pointerEvents="none" style={{ position: 'absolute', top: insets.top, left: resting ? 76 : 0, right: resting ? undefined : 0, height: 44, flexDirection: 'row', alignItems: 'center', justifyContent: resting ? 'flex-start' : 'center', zIndex: 10 }}>
+            <Text accessibilityLabel={tr('training.focus.duration', { time: duration })}
+              style={{ fontFamily: font.display, fontSize: resting ? 18 : 20, color: resting ? color.muted : color.text, fontVariant: ['tabular-nums'] }}>{duration}</Text>
           </View>
-        )}
+        ) : null}
         {/* Fortschritt je Übung – antippbar; VoiceOver: wischen hoch/runter wechselt die Übung */}
         <View accessible accessibilityRole="adjustable" accessibilityLabel={tr('training.focus.exercises')}
           accessibilityValue={{ text: focusSlot ? tr('training.focus.position', { i: index + 1, n: slots.length, name: focusSlot.step.exercise.name }) : tr('training.strong') }}
