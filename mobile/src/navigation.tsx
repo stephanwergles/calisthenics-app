@@ -8,7 +8,7 @@ import { Platform } from 'react-native'
 import { router, Stack, useNavigation } from 'expo-router'
 import type { NativeStackNavigationOptions } from 'expo-router'
 import { t } from '@lever/core/i18n/index.ts'
-import { color } from '@/ui/theme'
+import { color, font } from '@/ui/theme'
 import { sf, type IconName } from '@/ui/icon'
 
 export const formSheet = (detents: number[] = [0.6, 1]): NativeStackNavigationOptions => ({
@@ -58,4 +58,24 @@ export function CloseIfRoot() {
   const nav = useNavigation()
   if ((nav.getState()?.index ?? 0) !== 0) return null
   return <CloseButton />
+}
+
+/** Kopf der Tab-Seiten: großer iOS-Titel (Barlow Condensed), der beim Scrollen klein und sticky
+    wird, rechts der Profil-Button. Die ScrollView muss das erste Element der Seite sein. */
+export function TabHeader({ title, syncError }: { title: string; syncError?: boolean }) {
+  return (
+    <>
+      <Stack.Screen options={{
+        title: title.toUpperCase(),
+        headerTitle: title.toUpperCase(),
+        headerLargeTitleEnabled: true,
+        headerTransparent: true,
+        headerShadowVisible: false,
+        headerLargeTitleShadowVisible: false,
+        headerLargeTitleStyle: { fontFamily: font.displayBlack, fontSize: 42, color: color.text },
+        headerTitleStyle: { fontFamily: font.display, fontSize: 20, color: color.text },
+      }} />
+      <HeaderButton icon={syncError ? 'warning' : 'user'} label={t('app.profileButton', { status: '' })} onPress={() => router.push('/profile')} />
+    </>
+  )
 }

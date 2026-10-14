@@ -9,7 +9,7 @@ import { catalogData } from '@lever/core/data.ts'
 import { getLocale, t as tr } from '@lever/core/i18n/index.ts'
 import { platform } from '@lever/core/platform.ts'
 import { useApp } from '@/state/app'
-import { HeaderButton } from '@/navigation'
+import { TabHeader } from '@/navigation'
 import { Button, Card, color, font, GUTTER, Icon, SectionTitle, Segmented, space, Text } from '@/ui'
 import { Group, stepLine, useGoalToggle } from './shared'
 import { GoalCard, ProgressionRow, SkillRow } from './rows'
@@ -33,11 +33,9 @@ export function SkillsTab() {
 
   return (
     <>
-      <HeaderButton icon={syncError ? 'warning' : 'user'} label={tr('app.profileButton', { status: '' })} onPress={() => router.push('/profile')} />
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 40, gap: space.md }}>
         <View style={{ gap: 6, marginBottom: space.sm }}>
           <Text variant="small" style={{ fontFamily: font.bodySemi, textTransform: 'uppercase', letterSpacing: 1.6 }}>{tr('skills.count', { n: cards.length, started })}</Text>
-          <Text variant="hero" accessibilityRole="header">{tr('skills.title')}</Text>
         </View>
 
         <Goals />
@@ -59,6 +57,7 @@ export function SkillsTab() {
           </>
         )}
       </ScrollView>
+      <TabHeader title={tr('skills.title')} syncError={syncError} />
     </>
   )
 }

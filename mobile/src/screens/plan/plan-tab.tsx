@@ -9,7 +9,7 @@ import * as L from '@lever/core/logic.ts'
 import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
 import { useApp } from '@/state/app'
-import { HeaderButton } from '@/navigation'
+import { TabHeader } from '@/navigation'
 import { ask, Button, Card, color, font, GUTTER, Icon, SectionTitle, space, Text, type IconName } from '@/ui'
 import { DAY_NAME, Rows } from './parts'
 
@@ -42,14 +42,12 @@ export function PlanTab() {
 
   return (
     <>
-      <HeaderButton icon={syncError ? 'warning' : 'user'} label={tr('app.profileButton', { status: '' })} onPress={() => router.push('/profile')} />
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 40, gap: space.md }}>
         {/* Kopf */}
         <View style={{ gap: 6, marginBottom: space.sm }}>
           <Text variant="small" style={{ fontFamily: font.bodySemi, textTransform: 'uppercase', letterSpacing: 1.6 }}>
             {t.plan ? tr('plan.view.myPlan') : tr('plan.view.defaultPlan')} · {tn('plan.view.days', days)}{minutes ? tr('plan.view.minutes', { n: minutes }) : ''}
           </Text>
-          <Text variant="hero" accessibilityRole="header">{tr('plan.view.title')}</Text>
         </View>
 
         {/* Vorschlag / Ziele / ausgeblendet */}
@@ -137,6 +135,7 @@ export function PlanTab() {
 
         {!t.plan && <Text variant="small" style={{ marginTop: space.md }}>{tr('plan.view.defaultHint')}</Text>}
       </ScrollView>
+      <TabHeader title={tr('plan.view.title')} syncError={syncError} />
     </>
   )
 }

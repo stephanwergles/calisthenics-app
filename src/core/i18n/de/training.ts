@@ -1,5 +1,7 @@
 /* Deutsch: training */
 export const training = {
+  /** Live Activity (Sperrbildschirm), wenn nichts mehr offen ist */
+  liveDone: 'Alle Sätze erledigt',
   strong: 'Stark',
   target: 'Ziel {target}',
   unitReps: 'Wdh.',

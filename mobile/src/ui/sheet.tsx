@@ -22,7 +22,7 @@ export function SheetScreen({ title, sub, children, footer, scroll = true, conte
       {sub ? <Text variant="muted">{sub}</Text> : null}
     </View>
   ) : null
-  const pad: ViewStyle = { paddingHorizontal: GUTTER, paddingTop: headerSpace ? 8 : 24, paddingBottom: footer ? 16 : insets.bottom + 24, gap: space.md }
+  const pad: ViewStyle = { paddingHorizontal: GUTTER, paddingTop: headerSpace ? 20 : 24, paddingBottom: footer ? 16 : insets.bottom + 24, gap: space.md }
   return (
     <View style={{ flex: 1, backgroundColor: color.bg }}>
       {scroll ? (

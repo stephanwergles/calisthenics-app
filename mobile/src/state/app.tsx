@@ -9,6 +9,7 @@ import { usePlanSuggestion, type PlanSuggestion } from '@lever/core/usePlanSugge
 import { useRestTimer, type RestTimer } from '@lever/core/useRestTimer.ts'
 import { catalogData } from '@lever/core/data.ts'
 import { platform } from '@lever/core/platform.ts'
+import { useSessionActivity } from '@/live/use-session-activity'
 import { currentChoice, initialLocale, saveLocale, setLocale, type Locale, type LocaleChoice } from '@lever/core/i18n/index.ts'
 
 export interface App {
@@ -73,6 +74,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const focusSlot = slots.find(s => s.pid === focus)
   const started = !!t.active || (t.todaySession?.sets.length ?? 0) > 0
   const doneToday = started && !L.upNext(slots, undefined)
+
+  // Sperrbildschirm & Dynamic Island: laufende Session mit Pausen-Countdown
+  useSessionActivity(t, rest, slots, focus)
 
   const openTraining = (pid?: string) => { setPicked(pid); router.navigate('/training') }
   const start = () => { t.startSession(); openTraining(undefined) }

@@ -2,7 +2,7 @@
    mit dem kürzesten Weg zur nächsten Stufe. (Web: src/client/components/HomeView.tsx) */
 import { useMemo, useState } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
-import { router } from 'expo-router'
+import { router, Stack } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
 import { getLocale, intl, t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
@@ -38,10 +38,7 @@ export function Today() {
 
   return (
     <>
-      <HeaderButton icon={syncError ? 'warning' : 'user'} label={tr('app.profileButton', { status: '' })} onPress={() => router.push('/profile')} />
       <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 40, gap: space.lg }}>
-        <Wordmark height={20} />
-
         {/* Kopf: Datum, Titel, Serie */}
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
           <View style={{ flex: 1, gap: 6 }}>
@@ -154,6 +151,13 @@ export function Today() {
           </View>
         )}
       </ScrollView>
+      {/* Kopf: Wortmarke links, Profil rechts – beides im nativen Header, der Inhalt beginnt direkt darunter */}
+      <Stack.Toolbar placement="left">
+        <Stack.Toolbar.View hidesSharedBackground>
+          <View style={{ width: 96, height: 22, justifyContent: 'center' }}><Wordmark height={20} /></View>
+        </Stack.Toolbar.View>
+      </Stack.Toolbar>
+      <HeaderButton icon={syncError ? 'warning' : 'user'} label={tr('app.profileButton', { status: '' })} onPress={() => router.push('/profile')} />
     </>
   )
 }

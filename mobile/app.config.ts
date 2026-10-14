@@ -40,6 +40,8 @@ const config: ExpoConfig = {
     'expo-video',
     'expo-sharing',
     ['expo-notifications', { color: '#D4FF3A' }],
+    // Live Activity (Sperrbildschirm/Dynamic Island) – das Layout registriert src/live/session-activity.tsx zur Laufzeit
+    ['expo-widgets', {}],
   ],
   experiments: { typedRoutes: true, reactCompiler: true },
   extra: {

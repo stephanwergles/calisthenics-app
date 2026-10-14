@@ -3,6 +3,7 @@ import type { Shape } from '..'
 import type { training as de } from '../de/training'
 
 export const training: Shape<typeof de> = {
+  liveDone: 'All sets done',
   strong: 'Well done',
   target: 'Target {target}',
   unitReps: 'reps',
