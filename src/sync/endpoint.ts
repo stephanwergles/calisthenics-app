@@ -13,6 +13,8 @@ import * as C from './convert'
 import { createLimiter } from './rateLimit'
 
 const MAX_DOCS = 2000
+/** größer wird ein Sync nie (Erstabgleich mit 2000 Einheiten ≈ 2 MB) – alles darüber ist Missbrauch */
+const MAX_BYTES = 8 * 1024 * 1024
 /** Die App synchronisiert höchstens alle paar Sekunden – 30 pro Minute ist großzügig */
 const limiter = createLimiter(30, 60_000)
 
@@ -22,6 +24,7 @@ export const syncHandler: PayloadHandler = async req => {
   if (!limiter.take(key)) {
     return Response.json({ error: 'Zu viele Anfragen – bitte kurz warten' }, { status: 429, headers: { 'Retry-After': String(limiter.retryAfter(key)) } })
   }
+  if (Number(req.headers.get('content-length') ?? 0) > MAX_BYTES) return Response.json({ error: 'Anfrage zu groß' }, { status: 413 })
   await addDataAndFileToRequest(req)
   const body = (req.data ?? {}) as Partial<C.SyncRequest>
   const { payload } = req

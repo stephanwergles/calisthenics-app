@@ -1,0 +1,3 @@
+# Fehlalarme (gitleaks-Fingerprint: Commit:Datei:Regel:Zeile)
+# i18n-Schlüssel „plan.phase.dur.d14“, kein Secret
+6dce118f46cc13ed9d4fb24a675a7a284ac0ebc5:mobile/src/app/phase.tsx:generic-api-key:15

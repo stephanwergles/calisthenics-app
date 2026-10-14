@@ -20,3 +20,12 @@ export function createLimiter(limit: number, windowMs: number, now: () => number
     },
   }
 }
+
+/** Adresse der anfragenden Person hinter nginx (Ploi): X-Real-IP setzt nginx selbst; bei
+    X-Forwarded-For zählt nur der letzte Eintrag – die vorderen kann jede:r mitschicken. */
+export function clientIp(headers: Pick<Headers, 'get'> | undefined): string | null {
+  const real = headers?.get('x-real-ip')?.trim()
+  if (real) return real
+  const fwd = headers?.get('x-forwarded-for')?.split(',').map(s => s.trim()).filter(Boolean)
+  return fwd?.length ? fwd[fwd.length - 1] : null
+}

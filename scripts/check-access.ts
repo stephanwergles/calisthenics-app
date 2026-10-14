@@ -13,6 +13,10 @@ const expectDenied = async (name: string, fn: () => Promise<unknown>) => {
   try { await fn(); results.push([name, false]) } catch { results.push([name, true]) }
 }
 
+// Leere Datenbank (CI): Die erste Person wird automatisch Admin – dann eine Platzhalter-Person davor
+const placeholder = (await payload.count({ collection: 'users' })).totalDocs === 0
+  ? await payload.create({ collection: 'users', data: { email: `access-owner-${Date.now()}@calisthenics.test`, password: crypto.randomUUID() } as never })
+  : null
 const athlete = await payload.create({ collection: 'users', data: { email, password: crypto.randomUUID() } as never })
 try {
   const req = { user: { ...athlete, collection: 'users' } } as unknown as PayloadRequest
@@ -84,6 +88,7 @@ try {
   results.push(['Admin-Panel verweigert', !(await panel?.({ req } as never))])
 } finally {
   await payload.delete({ collection: 'users', id: athlete.id })
+  if (placeholder) await payload.delete({ collection: 'users', id: placeholder.id })
 }
 
 // Konto löschen: eigene Daten weg, fremde bleiben

@@ -219,9 +219,9 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
   - Daten: einstufige Leitern (scapula, biceps, fly, triceps, split-squat, calf, side-plank, hang) ausbauen; Ringe bei `dip`/`pull-up` als eigene Stufe statt Geräte-Alternative; `pistol-squat-weighted` Equipment um `floor` ergänzen
 - [ ] **Refactoring:** große Screens aufteilen (`focus.tsx`, `skill-page.tsx`, `logic.ts` nach Bereichen), doppelte UI-Bausteine zusammenführen (Rows/ListGroup/Group), tote Web-Reste in `src/client` prüfen
 - [ ] **Tests:** Komponententests für kritische Screens (Satz erfassen, Pause, Verwerfen, Challenge), E2E-Durchlauf auf dem Simulator (Maestro o. ä.) für Onboarding → Training → Sync; Abdeckung `src/core` messen
-- [ ] **Security:** Abhängigkeiten prüfen (`npm audit`, Renovate), Rate-Limits und Größenlimits am Sync-Endpunkt, Payload-Zugriffsrechte (`npm run check:access`) in die CI, Secrets-Scan im Repo (öffentlich!), Token-Lebensdauer und Widerruf, Konto löschen vollständig
+- [x] **Security** (14.10.2026, Überblick in `SECURITY.md`): `npm audit` (nur Build-Werkzeuge betroffen, ohne Fix – akzeptiert), Dependabot, Login-Bremse je IP, Größenlimit am Sync, GraphQL aus, CORS ohne Capacitor, Sicherheits-Header, gitleaks über die ganze Historie (sauber), Token-Widerruf über Payload-Sitzungen, Konto löschen vollständig (geprüft in `check:access`). Offen: Anmeldung per Sign in with Apple (3.0), Fehler-Monitoring
 - [ ] **Pentest:** externer oder strukturierter Selbsttest (OWASP ASVS/MASVS) für API, Admin-Panel und App – Auth, IDOR über Sync-IDs, Injection in JSON-Feldern, Transport (TLS/HSTS), Datenschutz der Gesundheitsdaten
-- [ ] **CI:** GitHub Actions für `npm test`, Typecheck (Server + `mobile/`), Build; Release-Build optional über EAS
+- [x] **CI** (14.10.2026, `.github/workflows/ci.yml`): Tests, Typen (Server + `mobile/`), Katalog aktuell, Migrationen + Seed (idempotent) + `check:access` gegen Postgres, Build, gitleaks, `npm audit`. Später: Ploi-Deploy erst nach grüner CI, Release-Build über EAS
 
 ### Phase 3.3 — Englisch & Store-Bereitschaft
 

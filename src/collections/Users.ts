@@ -1,5 +1,14 @@
-import type { CollectionConfig } from 'payload'
+import { APIError, type CollectionConfig } from 'payload'
 import { adminField, adminPanel, isAdmin, selfOrAdmin } from '../access'
+import { clientIp, createLimiter } from '../sync/rateLimit'
+
+/* Bremse je IP gegen Passwort-Raten über viele Konten hinweg (je Konto sperrt Payload selbst nach
+   5 Fehlversuchen für 10 Minuten) und gegen Mail-Fluten über „Passwort vergessen“ */
+const AUTH_LIMITS = {
+  login: createLimiter(20, 15 * 60_000),
+  forgotPassword: createLimiter(5, 60 * 60_000),
+  resetPassword: createLimiter(10, 60 * 60_000),
+} as const
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -8,6 +17,13 @@ export const Users: CollectionConfig = {
   // Jede Person sieht und ändert nur sich selbst; anlegen/löschen und Admin-Panel nur Admins
   access: { read: selfOrAdmin, update: selfOrAdmin, create: isAdmin, delete: isAdmin, admin: adminPanel },
   hooks: {
+    beforeOperation: [({ operation, req, args }) => {
+      const limiter = AUTH_LIMITS[operation as keyof typeof AUTH_LIMITS]
+      const ip = clientIp(req.headers)
+      // Local API (Skripte, Seed) hat keine Adresse – nur echte HTTP-Anfragen bremsen
+      if (limiter && ip && !limiter.take(`${operation}:${ip}`)) throw new APIError('Zu viele Versuche – bitte später erneut', 429)
+      return args
+    }],
     // Erste Person einer leeren Datenbank (Admin-Panel „Ersten Benutzer anlegen“) wird Admin
     beforeChange: [async ({ req, operation, data }) => {
       if (operation === 'create') {

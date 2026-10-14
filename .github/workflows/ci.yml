@@ -1,0 +1,107 @@
+# Prüft jeden Push und Pull Request: Tests, Typen, Build, Rechte gegen eine echte Datenbank,
+# App-Typen, Secrets in der Historie, Abhängigkeiten. Deploy (Ploi) und TestFlight laufen getrennt.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server:
+    name: Server – Tests, Rechte, Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      db:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: calisthenics
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/calisthenics
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      # nur für diesen Lauf – die CI-Datenbank ist nach dem Job weg
+      - run: echo "PAYLOAD_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+      - name: Tests
+        run: npm test
+      - name: Typen
+        run: npx tsc --noEmit
+      - name: Katalog aktuell (catalog:extract ändert nichts)
+        run: npm run catalog:extract && git diff --exit-code src/seed/catalog.json
+      - name: Migrationen
+        run: npm run payload -- migrate
+      - name: Seed (zweimal – muss idempotent sein)
+        run: npm run seed && npm run seed
+      - name: Zugriffsrechte gegen die Datenbank
+        run: npm run check:access
+      - name: Build
+        run: npm run build
+
+  app:
+    name: App – Typen
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            mobile/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: mobile
+      # Clip-Verzeichnis (clips.generated.ts) entsteht aus public/clips
+      - run: npm run media
+        working-directory: mobile
+      - run: npx tsc --noEmit
+        working-directory: mobile
+
+  secrets:
+    name: Secrets-Scan (ganze Historie)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.3 \
+            git /repo --redact --no-banner --exit-code 1
+
+  audit:
+    name: Abhängigkeiten
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      # schlägt erst bei „critical“ an: die bekannten „high“-Meldungen stecken nur in Build-Werkzeugen
+      # (sass/braces, metro, node-forge in der Expo-CLI) und haben noch keinen Fix – siehe SECURITY.md
+      - name: Server
+        run: npm audit --omit=dev --audit-level=critical
+      - name: App
+        run: npm audit --omit=dev --audit-level=critical
+        working-directory: mobile

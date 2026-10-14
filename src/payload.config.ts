@@ -38,8 +38,10 @@ export default buildConfig({
     { path: '/sync', method: 'post', handler: syncHandler },
     { path: '/account/delete', method: 'post', handler: deleteAccountHandler },
   ],
-  // iOS-App (Capacitor) lädt die Oberfläche aus dem App-Paket und ruft die API von dort aus auf
-  cors: [process.env.NEXT_PUBLIC_SERVER_URL || '', 'capacitor://localhost'].filter(Boolean),
+  // Die native App braucht kein CORS (kein Browser-Ursprung) – nur die eigene Seite
+  cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),
+  // weder App noch Admin-Panel nutzen GraphQL – weniger Angriffsfläche
+  graphQL: { disable: true },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({
