@@ -76,13 +76,14 @@ export const plan = {
     intro: {
       pause: 'Nichts ist fällig, deine Serie bleibt. Danach eine Woche Wiedereinstieg mit je einem Satz weniger.',
       vacation: 'Nichts ist fällig, deine Serie bleibt. Danach eine Woche Wiedereinstieg mit je einem Satz weniger.',
-      injury: 'Übungen, die die gewählten Gelenke belasten, ruhen in dieser Zeit. Bei Schmerzen: ärztlich abklären lassen.',
+      injury: 'Übungen, die die gewählten Bereiche belasten, ruhen in dieser Zeit. Bei Schmerzen: ärztlich abklären lassen.',
       equipment: 'Wähle, was du in dieser Zeit hast. Übungen, die anderes brauchen, ruhen.',
     },
     cta: { pause: 'Pause starten', vacation: 'Urlaub eintragen', injury: 'Verletzung eintragen', equipment: 'Eintragen' },
     duration: 'Dauer',
-    affected: 'Betroffen',
     available: 'Vorhanden',
-    pickJoint: 'Gelenk wählen',
+    pickJoint: 'Bereich wählen',
+    joints: 'Gelenke & Sehnen',
+    muscles: 'Muskeln',
   },
 }

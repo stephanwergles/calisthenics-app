@@ -13,7 +13,7 @@ const PATTERNS = [
   { label: 'Druck vertikal', value: 'vertical-push' }, { label: 'Druck horizontal', value: 'horizontal-push' },
   { label: 'Kniebeuge', value: 'squat' }, { label: 'Hüftstreckung', value: 'hinge' }, { label: 'Rumpf', value: 'core' }, { label: 'Isolation', value: 'isolation' },
 ]
-const TENDONS: [string, string][] = [['wrist', 'Handgelenk'], ['elbow', 'Ellenbogen'], ['shoulder', 'Schulter'], ['knee', 'Knie'], ['hip', 'Hüfte'], ['back', 'Unterer Rücken'], ['ankle', 'Sprunggelenk']]
+const TENDONS: [string, string][] = [['wrist', 'Hand & Handgelenk'], ['elbow', 'Ellenbogen'], ['shoulder', 'Schulter'], ['knee', 'Knie'], ['hip', 'Hüfte'], ['back', 'Unterer Rücken'], ['ankle', 'Fuß & Sprunggelenk']]
 
 export const Exercises: CollectionConfig = {
   slug: 'exercises',

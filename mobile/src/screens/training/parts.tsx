@@ -12,26 +12,24 @@ import { color, ExerciseStill, font, GUTTER, hasClip, Icon, radius, space, Text,
 
 const haptic = () => platform().signals.haptic('tap')
 
-/** Inhalt eines Form-Sheets (Detents, Glas): Titel, Untertitel, scrollender Inhalt, feste Fußzeile.
-    Durchsichtig, damit der native Sheet-Hintergrund (Liquid Glass) bleibt. */
+/** Inhalt eines Form-Sheets (Detents, Glas): Titel, Untertitel, Inhalt, Aktion am Ende des Inhalts.
+    Die Aktion ist bewusst nicht unten angeheftet: in der halbhohen Detent-Stufe begrenzt iOS die
+    Scrollfläche nicht, ein fester Fuß lag dann über langem Inhalt (Verletzungs-Sheet). Durchsichtig,
+    damit der native Sheet-Hintergrund (Liquid Glass) bleibt. */
 export function FormSheet({ title, sub, children, footer }: {
   title: string; sub?: string; children?: React.ReactNode; footer?: React.ReactNode
 }) {
   const insets = useSafeAreaInsets()
   return (
-    <View style={{ flex: 1 }}>
-      {/* flex: 1 – sonst wächst die Liste unter die Fußzeile (z. B. sieben Gelenke im Verletzungs-Sheet) */}
-      <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: 28, paddingBottom: 16, gap: space.md }}>
-        <View style={{ gap: 4, marginBottom: space.xs }}>
-          <Text variant="display" accessibilityRole="header">{title}</Text>
-          {sub ? <Text variant="muted">{sub}</Text> : null}
-        </View>
-        {children}
-      </ScrollView>
-      {footer ? (
-        <View style={{ paddingHorizontal: GUTTER, paddingTop: 8, paddingBottom: Math.max(insets.bottom, 12) + 4, gap: 10 }}>{footer}</View>
-      ) : null}
-    </View>
+    <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: 28, paddingBottom: Math.max(insets.bottom, 12) + 8, gap: space.md }}>
+      <View style={{ gap: 4, marginBottom: space.xs }}>
+        <Text variant="display" accessibilityRole="header">{title}</Text>
+        {sub ? <Text variant="muted">{sub}</Text> : null}
+      </View>
+      {children}
+      {footer ? <View style={{ gap: 10, marginTop: space.sm }}>{footer}</View> : null}
+    </ScrollView>
   )
 }
 

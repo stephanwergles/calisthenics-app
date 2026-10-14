@@ -2,7 +2,7 @@
    Auswahl; „offen“ = bis auf Weiteres, endet mit „Beenden“ im Plan-Tab. (Web: PhaseSheet) */
 import { useState } from 'react'
 import { router, useLocalSearchParams } from 'expo-router'
-import type { Equipment, PhaseKind, Tendon } from '@lever/domain/model.ts'
+import { MUSCLE_AREAS, TENDONS, type BodyArea, type Equipment, type PhaseKind } from '@lever/domain/model.ts'
 import * as L from '@lever/core/logic.ts'
 import { t as tr, type Key } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
@@ -22,7 +22,7 @@ export default function PhaseScreen() {
   const param = useLocalSearchParams<{ kind?: string }>().kind
   const kind: PhaseKind = KINDS.includes(param as PhaseKind) ? (param as PhaseKind) : 'pause'
   const [dur, setDur] = useState(kind === 'injury' ? 'open' : '7')
-  const [tendons, setTendons] = useState<Tendon[]>([])
+  const [tendons, setTendons] = useState<BodyArea[]>([])
   const [equipment, setEquipment] = useState<Equipment[]>([])
   const valid = kind !== 'injury' || tendons.length > 0
   const toggle = <T,>(list: T[], x: T, on: boolean) => (on ? [...new Set([...list, x])] : list.filter(y => y !== x))
@@ -36,13 +36,14 @@ export default function PhaseScreen() {
     router.back()
   }
 
+  const area = (id: BodyArea) => ({ id: id as string, title: L.AREA_LABEL[id], on: tendons.includes(id) })
   const choices = kind === 'injury'
-    ? (Object.entries(L.TENDON_LABEL) as [Tendon, string][]).map(([id, title]) => ({ id: id as string, title, on: tendons.includes(id) }))
+    ? TENDONS.map(area)
     : kind === 'equipment'
       ? (Object.entries(L.EQUIPMENT_LABEL) as [Equipment, string][]).map(([id, title]) => ({ id: id as string, title, on: equipment.includes(id) }))
       : []
   const onToggle = (id: string, on: boolean) => {
-    if (kind === 'injury') setTendons(x => toggle(x, id as Tendon, on))
+    if (kind === 'injury') setTendons(x => toggle(x, id as BodyArea, on))
     else setEquipment(x => toggle(x, id as Equipment, on))
   }
 
@@ -54,8 +55,13 @@ export default function PhaseScreen() {
       <Segmented label={tr('plan.phase.duration')} value={dur} onChange={setDur}
         options={DURATIONS.map(d => ({ id: d.id, title: tr(d.key) }))} />
       {choices.length > 0 && <>
-        <Section title={kind === 'injury' ? tr('plan.phase.affected') : tr('plan.phase.available')} />
+        <Section title={kind === 'injury' ? tr('plan.phase.joints') : tr('plan.phase.available')} />
         <ChipChoices items={choices} onToggle={onToggle} />
+      </>}
+      {/* Verletzung: auch Muskelbereiche (Zerrung, Prellung) – nicht nur Gelenke */}
+      {kind === 'injury' && <>
+        <Section title={tr('plan.phase.muscles')} />
+        <ChipChoices items={MUSCLE_AREAS.map(area)} onToggle={onToggle} />
       </>}
     </FormSheet>
   )

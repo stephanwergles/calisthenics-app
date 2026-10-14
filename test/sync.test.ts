@@ -175,6 +175,7 @@ test('Phasen im Trainingsstand: Sync und Prüfung', () => {
   assert.equal(C.isState({ current: {}, paused: [], phases: [{ ...phases[1], to: '2026-09-01' }] }), false, 'Ende vor Beginn')
   assert.equal(C.isState({ current: {}, paused: [], phases: [{ ...phases[0], tendons: ['nose'] }] }), false)
   assert.equal(C.isState({ current: {}, paused: [], phases: [{ ...phases[0], tendons: ['hip', 'back', 'ankle'] }] }), true, 'Hüfte, Rücken, Sprunggelenk gültig')
+  assert.equal(C.isState({ current: {}, paused: [], phases: [{ ...phases[0], tendons: ['chest', 'calf'] }] }), true, 'Muskelbereiche gültig')
   assert.equal(C.isState({ current: {}, paused: [], phases: [{ ...phases[0], kind: 'party' }] }), false)
 })
 

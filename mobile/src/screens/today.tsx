@@ -37,7 +37,7 @@ export function Today() {
 
   return (
     <>
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 40, gap: space.lg }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 40, gap: space.lg }}>
         {/* Wortmarke auf Höhe des Profil-Buttons (in den transparenten Kopf hochgezogen), scrollt
             mit dem Inhalt weg – als Toolbar-Element war sie angeschnitten und blieb kleben */}
         <View style={{ marginTop: -44, height: 22, justifyContent: 'center', alignSelf: 'flex-start' }}><Wordmark height={20} /></View>

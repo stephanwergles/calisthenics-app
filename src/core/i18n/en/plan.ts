@@ -79,13 +79,14 @@ export const plan: Shape<typeof de> = {
     intro: {
       pause: 'Nothing is due, your streak is safe. Afterwards one week of easing back in with one set less each.',
       vacation: 'Nothing is due, your streak is safe. Afterwards one week of easing back in with one set less each.',
-      injury: 'Exercises that load the selected joints rest during this time. If you’re in pain, get it checked by a doctor.',
+      injury: 'Exercises that load the selected areas rest during this time. If you’re in pain, get it checked by a doctor.',
       equipment: 'Choose what you have during this time. Exercises that need anything else will rest.',
     },
     cta: { pause: 'Start break', vacation: 'Add holiday', injury: 'Add injury', equipment: 'Save' },
     duration: 'Duration',
-    affected: 'Affected',
     available: 'Available',
-    pickJoint: 'Choose a joint',
+    pickJoint: 'Choose an area',
+    joints: 'Joints & tendons',
+    muscles: 'Muscles',
   },
 }

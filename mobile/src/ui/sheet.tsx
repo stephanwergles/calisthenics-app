@@ -26,7 +26,7 @@ export function SheetScreen({ title, sub, children, footer, scroll = true, conte
   return (
     <View style={{ flex: 1, backgroundColor: color.bg }}>
       {scroll ? (
-        <ScrollView contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={[pad, contentStyle]}>
+        <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={[pad, contentStyle]}>
           {head}
           {children}
         </ScrollView>

@@ -2,11 +2,11 @@
    Die Oberfläche ruft diese Funktionen auf; getestet wird direkt mit node --test. */
 import type {
   Activity, Catalog, Equipment, Exercise, ExerciseId, Plan, Profile, Progression, ProgressionId, Region, Session, SetLog,
-  Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId, GeneratedPlan, GeneratorInput, SplitTemplate, Phase, PhaseKind, Tendon, ExerciseMeta, Template,
+  Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId, GeneratedPlan, GeneratorInput, SplitTemplate, Phase, PhaseKind, Tendon, ExerciseMeta, Template, MuscleArea, BodyArea,
 } from '../domain/model.ts'
 import { assignThemes, restDays, usable } from '../domain/generator.ts'
 import { suggestSkills, suggestSplits, type SkillSuggestion } from '../domain/assessment.ts'
-import { MAX_GOALS, NOTE_MAX, REGIONS, TENDONS } from '../domain/model.ts'
+import { MAX_GOALS, MUSCLE_AREAS, NOTE_MAX, REGIONS, TENDONS } from '../domain/model.ts'
 import { intl, t, tn, type Key } from './i18n/index.ts'
 
 export { NOTE_MAX }
@@ -339,7 +339,7 @@ export function workoutSlots(ix: Index, workout: WorkoutId, user: UserState, tod
   const lighter = reentry(user, date)
   const view = (sl: DaySlot, substituteFor?: string): SlotView => {
     const step = currentStep(ix, user, sl.progression)
-    const blockedBy = opts.meta ? phaseBlock(phases, opts.meta[step.exercise.id]) ?? undefined : undefined
+    const blockedBy = opts.meta ? phaseBlock(phases, opts.meta[step.exercise.id], step.exercise.id) ?? undefined : undefined
     const paused = user.paused.includes(sl.progression) || !!blockedBy
     const base = plannedSets(undefined, sl.progression, step.target, sl.sets)
     const planned = today?.setPlan?.[sl.progression] ?? (lighter ? Math.max(2, base - 1) : base)
@@ -373,8 +373,9 @@ export function substituteFor(ix: Index, user: UserState, phases: Phase[], meta:
   const region = ix.progressions.get(pid)?.region
   return [...ix.progressions.values()]
     .filter(p => p.id !== pid && !exclude.has(p.id) && !user.paused.includes(p.id))
-    .map(p => ({ p, m: meta[currentStep(ix, user, p.id).exercise.id] }))
-    .filter(x => x.m && x.m.pattern === m.pattern && (x.p.region === region || m.pattern !== 'isolation') && !phaseBlock(phases, x.m))
+    .map(p => ({ p, id: currentStep(ix, user, p.id).exercise.id }))
+    .map(x => ({ ...x, m: meta[x.id] }))
+    .filter(x => x.m && x.m.pattern === m.pattern && (x.p.region === region || m.pattern !== 'isolation') && !phaseBlock(phases, x.m, x.id))
     .sort((a, b) => Number(b.p.region === region) - Number(a.p.region === region) || Math.abs(a.m.difficulty - m.difficulty) - Math.abs(b.m.difficulty - m.difficulty))[0]?.p.id ?? null
 }
 
@@ -851,6 +852,37 @@ export function planDiff(ix: Index, user: UserState, next: Plan): DayDiff[] {
 
 export const PHASE_LABEL: Record<PhaseKind, string> = labels(['pause', 'vacation', 'injury', 'equipment'] as const, k => `logic.phase.${k}`)
 export const TENDON_LABEL: Record<Tendon, string> = labels(TENDONS, k => `logic.tendon.${k}`)
+export const MUSCLE_LABEL: Record<MuscleArea, string> = labels(MUSCLE_AREAS, k => `logic.muscle.${k}`)
+export const AREA_LABEL: Record<BodyArea, string> = { ...TENDON_LABEL, ...MUSCLE_LABEL }
+const isTendon = (a: BodyArea): a is Tendon => (TENDONS as string[]).includes(a)
+
+/** Muskelbereiche einer Übung – abgeleitet aus Bewegungsmuster und Übung (fachlich grob, reicht zum
+    Sperren bei einer Zerrung): Zug = oberer Rücken + Oberarm, Druck = Oberarm (+ Brust bei Dips und
+    Liegestütz-Mustern), Rumpf = Bauch, Kniebeuge/Hüftstreckung = Oberschenkel. */
+export function musclesOf(exercise: ExerciseId, meta: ExerciseMeta): MuscleArea[] {
+  const has = (...xs: string[]) => xs.some(x => exercise.includes(x))
+  const out = new Set<MuscleArea>()
+  switch (meta.pattern) {
+    case 'vertical-pull': out.add('upperBack').add('arms'); if (has('muscle-up', 'ring-transition')) out.add('chest'); break
+    case 'horizontal-pull': out.add('upperBack').add('arms'); if (has('lever')) out.add('abs'); break
+    case 'vertical-push': out.add('arms'); if (has('dip')) out.add('chest'); break
+    case 'horizontal-push': out.add('chest').add('arms'); if (has('planche')) out.add('abs'); break
+    case 'squat': out.add('thigh'); if (has('pistol', 'shrimp')) out.add('calf'); break
+    case 'hinge': out.add('thigh'); break
+    case 'core':
+      out.add('abs')
+      if (has('l-sit', 'v-sit', 'manna', 'elbow-lever', 'crow')) out.add('arms')
+      if (has('flag') && !has('dragon')) out.add('upperBack').add('arms')
+      break
+    case 'isolation':
+      if (has('curl', 'triceps')) out.add('arms')
+      if (has('fly')) out.add('chest')
+      if (has('calf')) out.add('calf')
+      if (has('hang', 'skin-the-cat', 'scapula')) out.add('upperBack')
+      break
+  }
+  return [...out]
+}
 /** ab dieser Sehnenbelastung (0–3) ruht eine Übung bei Verletzung – jede Belastung des Gelenks */
 const INJURY_STRESS = 1
 
@@ -859,12 +891,13 @@ export const activePhases = (user: UserState, date: string) => (user.phases ?? [
 export const restingPhase = (user: UserState, date: string) => activePhases(user, date).find(p => p.kind === 'pause' || p.kind === 'vacation')
 
 /** Warum eine Übung heute ruht (Verletzung, fehlendes Gerät) – sonst null */
-export function phaseBlock(phases: Phase[], meta: ExerciseMeta | undefined): string | null {
+export function phaseBlock(phases: Phase[], meta: ExerciseMeta | undefined, exercise?: ExerciseId): string | null {
   if (!meta) return null
   for (const p of phases) {
     if (p.kind === 'injury') {
-      const hit = (p.tendons ?? []).filter(t => (meta.stress[t] ?? 0) >= INJURY_STRESS)
-      if (hit.length) return t('logic.injuredBy', { joints: hit.map(x => TENDON_LABEL[x]).join(', ') })
+      const muscles = exercise ? musclesOf(exercise, meta) : []
+      const hit = (p.tendons ?? []).filter(a => (isTendon(a) ? (meta.stress[a] ?? 0) >= INJURY_STRESS : muscles.includes(a)))
+      if (hit.length) return t('logic.injuredBy', { joints: hit.map(x => AREA_LABEL[x]).join(', ') })
     }
     if (p.kind === 'equipment' && !usable(meta, p.equipment ?? [])) return t('logic.noEquipment')
   }
@@ -888,7 +921,7 @@ export function withPhaseEnded(user: UserState, id: string, today: string): User
   const phases = (user.phases ?? []).flatMap(p => p.id !== id ? [p] : p.from >= today ? [] : [{ ...p, to: addDays(today, -1) }])
   return { ...user, phases }
 }
-export const fmtPhase = (p: Phase) => `${PHASE_LABEL[p.kind]}${p.kind === 'injury' && p.tendons?.length ? ` · ${p.tendons.map(t => TENDON_LABEL[t]).join(', ')}` : ''}`
+export const fmtPhase = (p: Phase) => `${PHASE_LABEL[p.kind]}${p.kind === 'injury' && p.tendons?.length ? ` · ${p.tendons.map(t => AREA_LABEL[t]).join(', ')}` : ''}`
   + (p.to ? t('logic.phaseUntil', { date: fmtShortDate(p.to) }) : t('logic.phaseOpen'))
 
 /* ── Einstufung (Kurztest) ───────────────────────────────────────────────── */

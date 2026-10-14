@@ -50,7 +50,7 @@ export function ActivityEditor() {
   const num = (n: number) => L.fmtNum(n)
   return (
     <View style={{ flex: 1, backgroundColor: Platform.OS === 'ios' ? 'transparent' : color.card }}>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: 28, paddingBottom: 16, gap: space.md }} keyboardShouldPersistTaps="handled">
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: 28, paddingBottom: 16, gap: space.md }} keyboardShouldPersistTaps="handled">
         <View style={{ gap: 4, marginBottom: 4 }}>
           <Text variant="display" accessibilityRole="header">{existing ? tr('history.cardioEdit') : tr('sheets.cardio.title')}</Text>
           <Text variant="muted">{L.fmtDate(date)}</Text>

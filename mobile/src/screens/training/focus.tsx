@@ -124,7 +124,7 @@ export function FocusExercise({ slot, index, total }: { slot: L.SlotView; index:
     <KeyboardAvoidingView behavior={process.env.EXPO_OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <GestureDetector gesture={swipe}>
         <View style={{ flex: 1 }}>
-          <ScrollView contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: space.sm, paddingBottom: space.xl, gap: space.lg }}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: space.sm, paddingBottom: space.xl, gap: space.lg }}>
             <Animated.View entering={FadeIn.duration(180)} style={{ gap: space.lg }}>
               <ExerciseMedia exercise={ex} label={tr('training.focus.movement', { name: ex.name })} style={{ width: '100%', aspectRatio: 1.3 }} />
 

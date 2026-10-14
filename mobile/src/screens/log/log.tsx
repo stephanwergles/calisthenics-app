@@ -20,7 +20,7 @@ export function Log() {
   const syncError = !!t.sync.account && t.sync.phase === 'error'
   return (
     <>
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 40, gap: space.lg }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 40, gap: space.lg }}>
         <View style={{ gap: 6 }}>
           <Text variant="small" style={{ fontFamily: font.bodySemi, textTransform: 'uppercase', letterSpacing: 1.6 }}>
             {sub === 'cal' ? tn('history.totalSessions', t.sessions.filter(L.isTrained).length) : tr('history.perExercise')}

@@ -199,7 +199,7 @@ export interface Phase {
   kind: PhaseKind;
   from: string;                 // YYYY-MM-DD
   to?: string;                  // letzter Tag (inklusive)
-  tendons?: Tendon[];           // Verletzung: betroffene Sehnen/Gelenke
+  tendons?: BodyArea[];         // Verletzung: betroffene Gelenke und Muskelbereiche (Feldname historisch)
   equipment?: Equipment[];      // Equipment-Phase: was in dieser Zeit da ist
   note?: string;
 }
@@ -230,6 +230,12 @@ export type Pattern = "vertical-pull" | "horizontal-pull" | "vertical-push" | "h
 export type Tendon = "wrist" | "elbow" | "shoulder" | "knee" | "hip" | "back" | "ankle";
 /** alle Gelenke/Bereiche mit Belastungsangabe – Reihenfolge von oben nach unten (Auswahl bei Verletzung) */
 export const TENDONS: Tendon[] = ["shoulder", "elbow", "wrist", "back", "hip", "knee", "ankle"];
+/** Muskelbereiche für Verletzungen (Zerrung, Prellung) – aus Bewegungsmuster und Übung abgeleitet
+    (logic.ts musclesOf), bewusst nicht in der Folgetag-Regel des Generators */
+export type MuscleArea = "chest" | "upperBack" | "arms" | "abs" | "thigh" | "calf";
+export const MUSCLE_AREAS: MuscleArea[] = ["chest", "upperBack", "arms", "abs", "thigh", "calf"];
+/** betroffener Bereich einer Verletzung: Gelenk/Sehne oder Muskelbereich */
+export type BodyArea = Tendon | MuscleArea;
 
 export interface ExerciseMeta {
   /** Alternativen – jede eine Liste nötiger Geräte; floor und wall gelten als immer vorhanden */

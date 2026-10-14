@@ -410,6 +410,18 @@ test('Verletzung: neue Bereiche (Hüfte, Rücken, Sprunggelenk) sperren passende
   assert.equal(Object.keys(L.TENDON_LABEL).length, 7)
 })
 
+test('Verletzung im Muskel: Bereiche aus dem Bewegungsmuster abgeleitet', () => {
+  const meta = JSON.parse(readFileSync(new URL('../src/seed/exercise-meta.json', import.meta.url), 'utf8')).exercises
+  assert.deepEqual(L.musclesOf('pull-up', meta['pull-up']).sort(), ['arms', 'upperBack'])
+  assert.ok(L.musclesOf('dip', meta['dip']).includes('chest'), 'Dips belasten die Brust')
+  assert.deepEqual(L.musclesOf('calf-raise-single-leg', meta['calf-raise-single-leg']), ['calf'])
+  const chest = [{ id: 'x', kind: 'injury' as const, from: '2026-10-14', tendons: ['chest' as const] }]
+  assert.match(L.phaseBlock(chest, meta['decline-push-up'], 'decline-push-up')!, /Brust/)
+  assert.equal(L.phaseBlock(chest, meta['pistol-squat'], 'pistol-squat'), null, 'Beine nicht')
+  // jede Übung hat mindestens einen Muskelbereich – sonst wäre sie bei Muskelverletzungen nie gesperrt
+  for (const [id, m] of Object.entries(meta)) if (id !== 'scapula-shrug') assert.ok(L.musclesOf(id, m as never).length, id)
+})
+
 test('Kann ich schon: Ziel-Leitern auf die letzte Stufe, Skill erreicht', () => {
   const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
   const wd = skills.find((s: { id: string }) => s.id === 'weighted-dip')
