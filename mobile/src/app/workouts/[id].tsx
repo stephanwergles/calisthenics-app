@@ -46,7 +46,12 @@ function Editor({ w, first }: { w: Workout; first: boolean }) {
   }
   const weekplan = t.ix.catalog.weekplan
   const other = (d: Weekday) => (weekplan[d] && weekplan[d] !== w.id ? t.ix.workouts.get(weekplan[d]!)?.name : undefined)
-  const setDay = (d: Weekday, on: boolean) => t.editPlan(p => L.withDay(p, d, on ? w.id : undefined))
+  // belegten Tag nicht stillschweigend überschreiben
+  const setDay = async (d: Weekday, on: boolean) => {
+    const old = on ? other(d) : undefined
+    if (old && !await ask({ title: tr('editor.replaceDayTitle', { day: DAY_NAME[d] }), message: tr('editor.replaceDayMsg', { old, name: w.name }), ok: tr('editor.replaceDayOk') })) return
+    t.editPlan(p => L.withDay(p, d, on ? w.id : undefined))
+  }
   const slots = w.slots.flatMap(sl => {
     if (!t.ix.progressions.has(sl.progression)) return []
     const step = L.currentStep(t.ix, t.state, sl.progression)
@@ -84,7 +89,7 @@ function Editor({ w, first }: { w: Workout; first: boolean }) {
         <Button icon="plus" title={tr('editor.addExercise')} onPress={() => router.push({ pathname: '/workouts/add', params: { id: w.id } })} />
 
         <Section title={tr('editor.weekdays')} />
-        <DayPicker onToggle={(d, on) => setDay(d as Weekday, on)} items={L.WEEK_ORDER.map(d => ({
+        <DayPicker onToggle={(d, on) => void setDay(d as Weekday, on)} items={L.WEEK_ORDER.map(d => ({
           id: d, short: L.WEEKDAY_SHORT[d], long: DAY_NAME[d], on: weekplan[d] === w.id,
           taken: !!other(d), hint: other(d) ? tr('editor.instead', { name: other(d)! }) : undefined,
         }))} />
