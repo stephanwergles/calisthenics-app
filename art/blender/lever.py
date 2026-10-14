@@ -304,7 +304,7 @@ def hand(n, s):
         ax = rig.matrix_world.to_3x3() @ (fa.tail - fa.head).normalized()
         th0 = math.degrees(ax.angle(u))
         if th0 > 78:                           # mehr als ~80° Knick (beide Richtungen) vorab begrenzen; stetig
-            u = ax.slerp(u, 78 / th0).normalized(); W = K - u * LEN[f"hand.{n}"]
+            u = slerp_dir(ax, u, 78 / th0).normalized(); W = K - u * LEN[f"hand.{n}"]
             two_bone(f"arm.{n}", f"forearm.{n}", W, s["hint"]); ax = rig.matrix_world.to_3x3() @ (fa.tail - fa.head).normalized()
         if s.get("bar"):                       # Griff um eine Stange: sie liegt quer in der Hand → Handfläche = ±Achse × Hand
             axs, sg = s["bar"]; A = {"x": X, "y": Y, "z": Z}[axs]
@@ -320,7 +320,7 @@ def hand(n, s):
         pw = pw0 - u * pw0.dot(u)
         cur_p = palm_normal(n); cur_p = (cur_p - u * cur_p.dot(u)).normalized()
         # Liegt die gewünschte Handfläche fast entlang der Hand, ist sie unbestimmt: dann stetig die aktuelle behalten
-        pw = cur_p.slerp(pw.normalized(), min(max((pw.length - 0.05) / 0.25, 0), 1)) if pw.length > 1e-6 else cur_p
+        pw = slerp_dir(cur_p, pw.normalized(), min(max((pw.length - 0.05) / 0.25, 0), 1)) if pw.length > 1e-6 else cur_p
         pw.normalize()
         flex_goal = s.get("flex")
         if flex_goal is None and s.get("curl") is not None:   # Fingerkrümmung aus der Wunschhaltung, nicht aus der Raumrichtung
@@ -332,7 +332,7 @@ def hand(n, s):
         if bend.length > 1e-4 and th > 5:   # stetig: liegt die Handfläche quer zur Knickebene, nicht hineinzwingen
             c = bend.normalized().dot(want); pf = bend.normalized() * (1 if c >= 0 else -1)
             wgt = min(1.0, (th - 5) / 25) * min(1.0, abs(c) / 0.35)
-            want = want.slerp(pf, wgt).normalized()
+            want = slerp_dir(want, pf, wgt).normalized()
         spin(f"forearm.{n}", PALM[n], want)
         clamp_joints([f"forearm.{n}"])        # Pro-/Supination begrenzen, bevor die Hand ausgerichtet wird
         for hb_ in (f"hand.{n}", f"fingers.{n}"): PB[hb_].matrix_basis = Matrix()
@@ -343,7 +343,7 @@ def hand(n, s):
         if over < 1 or s.get("hdir") is None and it > 0: break
         ax = rig.matrix_world.to_3x3() @ (fa.tail - fa.head).normalized(); tot = math.degrees(ax.angle(u))
         if tot < 1: break
-        u = ax.slerp(u, max(0.0, (tot - over - 3) / tot)).normalized()   # Hand um den Überschuss zum Unterarm kippen
+        u = slerp_dir(ax, u, max(0.0, (tot - over - 3) / tot)).normalized()   # Hand um den Überschuss zum Unterarm kippen
     hb = PB[f"hand.{n}"]; hd = rig.matrix_world.to_3x3() @ (hb.tail - hb.head).normalized(); pn = palm_normal(n)
     a = math.radians(flex_goal if flex_goal is not None else 0.0)   # Finger um festen Winkel zur Handfläche (dreht mit)
     curl = hd * math.cos(a) + pn * math.sin(a)
