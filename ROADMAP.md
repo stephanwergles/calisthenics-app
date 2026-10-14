@@ -167,6 +167,7 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 - [ ] **Herzstück zuerst:** Fokus-Screen, Satz-Erfassung (natives Sheet mit Detents), Pausen-Screen mit Benachrichtigung am Pausenende, Haptik, Display wach, Kreide-Skizzen über react-native-svg. Erst weiter, wenn sich das im Gym besser anfühlt als die Capacitor-App
 - [ ] **Restliche Ansichten:** Heute, Skills, Verlauf (Kalender, Tagesansicht, Fortschritt), Daten/Konto inkl. Einwilligung und Konto löschen
 - [ ] **Umstieg:** bei Gleichstand eigene Daten migrieren (Export/Import bzw. Sync), dann `ios/`, Capacitor-Pakete und `native.ts` entfernen; Next liefert danach Admin, API, Datenschutz und optional die Web-App. CLAUDE.md anpassen
+- [ ] **Over-the-air-Updates (EAS Update)**, sobald mehr als ein Entwickler/Tester dranhängt: `expo-updates` einbauen (Kanäle preview/production, Laufzeitversion), einmal neu bauen; danach gehen JS-Änderungen (Oberfläche, `src/core`) ohne TestFlight-Build raus. Optional GitHub-Anbindung in expo.dev für automatische Updates/Builds bei Push. Bis dahin reicht der lokale Build (`npm run release:ios` in `mobile/`)
 - [ ] Danach erst, was vorher nicht ging: **Live Activity** für den Pausen-Timer (Sperrbildschirm/Dynamic Island, Config-Plugin), Android-Gegenstück als laufende Benachrichtigung
 
 ### Phase 3.2 — Training aus Skills (Herzstück) → geschlossene Beta
