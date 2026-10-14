@@ -117,6 +117,8 @@ export const profile: Shape<typeof de> = {
       'v-sit': 'Like an L-sit, but your legs rise above horizontal.',
       'ring-muscle-up': 'Muscle-up on rings – false grip and a stable transition.',
       'press-handstand': 'Press into a handstand from standing or sitting, no swing.',
+      'korean-dip': 'Dip behind the bar – deep shoulder extension, strength for transitions.',
+      'side-lever': 'Hold your body sideways and horizontal on the bar – a step towards the human flag.',
     },
   },
   equipment: {

@@ -87,7 +87,7 @@ test('Formatierung', () => {
 })
 
 test('Workout-Ansicht: Reihenfolge, Status, Historie, Freischaltung', () => {
-  const user: UserState = { current: {}, paused: ['one-arm-pull'] }
+  const user = L.withStepPins({ current: {}, paused: ['one-arm-pull'] }) // bestehender Nutzer
   const hist = [
     sess('2026-09-21', 'pull', [['straight-bar-dip', [14, 14, 10, 8]]]),
     sess('2026-09-30', 'pull', [['straight-bar-dip', [14, 14, 12, 10]], ['pull-up', [5, 5, 5, 4]]]),
@@ -181,14 +181,14 @@ test('Fokus: nächster Satz und was nach der Pause kommt', () => {
   assert.equal(L.nextSetNo({ sets: [1, 2].map(set => ({ exercise: 'x', progression: 'x', set, value: 5 })), planned: 2 }), null)
 
   const today = sess('2026-10-12', 'legs', [['pistol-squat-assisted', [6, 6, 6, 6]], ['bulgarian-split-squat', [8]]])
-  const slots = L.workoutSlots(ix, 'legs', { current: {}, paused: [] }, today, [today], '2026-10-12')
+  const slots = L.workoutSlots(ix, 'legs', L.withStepPins({ current: {}, paused: [] }), today, [today], '2026-10-12')
   const after = L.upNext(slots, 'split-squat')
   assert.equal(after?.slot.pid, 'split-squat')
   assert.equal(after?.setNo, 2, 'gleiche Übung, nächster Satz')
   const fromDone = L.upNext(slots, 'pistol')
   assert.equal(fromDone?.slot.pid, 'split-squat', 'erledigte Übung → erste offene')
   const skipped = { ...today, skipped: ['bulgarian-split-squat'] }
-  const s2 = L.workoutSlots(ix, 'legs', { current: {}, paused: [] }, skipped, [skipped], '2026-10-12')
+  const s2 = L.workoutSlots(ix, 'legs', L.withStepPins({ current: {}, paused: [] }), skipped, [skipped], '2026-10-12')
   assert.equal(L.upNext(s2, 'pistol')?.slot.pid, 'nordic', 'übersprungene fallen weg')
 })
 
@@ -486,6 +486,16 @@ test('Katalog-Ausbau: neue Stufen, Verweise per Übung, bestehende Nutzer behalt
   assert.equal(steps('handstand')[pre('handstand-push-up', 'handstand')], 'handstand-heel-pull')
   assert.equal(steps('l-sit')[pre('v-sit', 'l-sit')], 'l-sit-parallettes')
   assert.equal(steps('vertical-push')[pre('freestanding-hspu', 'vertical-push')], 'handstand-push-up-wall')
+  // Platz 11–14: Einstiegsstufen vorn, Skill-Voraussetzungen zeigen weiter auf die freie Übung
+  assert.deepEqual(steps('pull-up').slice(0, 3), ['pull-up-negative', 'band-pull-up', 'pull-up'])
+  assert.deepEqual(steps('dip').slice(0, 3), ['bar-support-hold', 'dip-negative', 'dip'])
+  assert.equal(steps('pull-up')[pre('muscle-up', 'pull-up')], 'pull-up-weighted')
+  assert.equal(steps('dip')[pre('planche', 'dip')], 'dip-weighted')
+  assert.equal(steps('pull-up')[pre('human-flag', 'pull-up')], 'pull-up')
+  assert.equal(steps('horizontal-push')[pre('one-arm-push-up', 'horizontal-push')], 'ring-push-up')
+  assert.equal(steps('dip')[pre('korean-dip', 'dip')], 'dip')
+  assert.deepEqual(steps('pistol').at(-1), 'pistol-squat-weighted', 'Pistol-Skill bleibt bei derselben Endstufe')
+  for (const pid of ['knees', 'korean-dip', 'side-lever']) assert.ok(ix.progressions.has(pid), pid)
   // ohne gewählte Stufe: bisher erste Stufe – bestehende Nutzer bleiben dort, eigene Wahl bleibt
   const st: UserState = { current: { 'l-sit': 'tuck-l-sit' }, paused: [] }
   const pinned = L.withStepPins(st)
@@ -494,6 +504,9 @@ test('Katalog-Ausbau: neue Stufen, Verweise per Übung, bestehende Nutzer behalt
   assert.equal(L.currentStep(ix, pinned, 'muscle-up-transition').exercise.id, 'muscle-up-band')
   assert.equal(L.currentStep(ix, pinned, 'planche-advanced').exercise.id, 'adv-tuck-planche')
   assert.equal(L.currentStep(ix, pinned, 'scapula').exercise.id, 'scapula-shrug')
+  assert.equal(L.currentStep(ix, pinned, 'pull-up').exercise.id, 'pull-up')
+  assert.equal(L.currentStep(ix, pinned, 'row').exercise.id, 'body-row')
+  assert.equal(L.currentStep(ix, { current: {}, paused: [] }, 'pull-up').exercise.id, 'pull-up-negative', 'neue Nutzer starten ganz vorn')
   assert.equal(L.needsStepPins(pinned), false)
   for (const p of ix.progressions.values()) for (const s of p.steps) assert.ok(ix.exercises.has(s.exercise), s.exercise)
 })
@@ -624,11 +637,11 @@ test('Einstufung: nur höher, nie zurück; übernehmen setzt die Stufe', async (
   const data = JSON.parse(readFileSync(new URL('../src/seed/assessment.json', import.meta.url), 'utf8'))
   const placed = placement(data, catalog, { 'pull-ups': 16, dips: 0 })
   const changes = L.placementChanges(ix, state, placed)
-  assert.ok(changes.some(c => c.pid === 'pull-up' && c.to === 1))
+  assert.ok(changes.some(c => c.pid === 'pull-up' && c.to === 3), '16 Klimmzüge → mit Gewicht')
   assert.ok(changes.every(c => c.to > c.from), 'nie zurück')
   assert.equal(changes.some(c => c.pid === 'muscle-up-pull'), true, 'Muscle-up-Zug: 16 Klimmzüge → Stufe 3')
   const next = L.withPlacement(ix, state, changes)
-  assert.equal(L.currentStep(ix, next, 'pull-up').index, 1)
+  assert.equal(L.currentStep(ix, next, 'pull-up').exercise.id, 'pull-up-weighted')
   assert.deepEqual(L.placementChanges(ix, next, placed), [], 'danach nichts mehr zu tun')
 })
 

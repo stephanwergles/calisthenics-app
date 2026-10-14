@@ -949,12 +949,12 @@ export function musclesOf(exercise: ExerciseId, meta: ExerciseMeta): MuscleArea[
     case 'core':
       out.add('abs')
       if (has('l-sit', 'v-sit', 'manna', 'elbow-lever', 'crow')) out.add('arms')
-      if (has('flag') && !has('dragon')) out.add('upperBack').add('arms')
+      if (has('flag', 'side-lever') && !has('dragon')) out.add('upperBack').add('arms')
       break
     case 'isolation':
       if (has('curl', 'triceps')) out.add('arms')
       if (has('fly')) out.add('chest')
-      if (has('calf')) out.add('calf')
+      if (has('calf', 'tibialis')) out.add('calf')
       if (has('hang', 'skin-the-cat', 'scapula', 'dislocate', 'external-rotation', 'face-pull')) out.add('upperBack')
       if (has('wrist')) out.add('arms')
       break
@@ -1031,6 +1031,8 @@ export function withSkillReached(ix: Index, user: UserState, skill: Skill): User
 export const STEP_PINS: Record<ProgressionId, ExerciseId> = {
   'l-sit': 'l-sit-floor', handstand: 'handstand-wall', 'muscle-up-transition': 'muscle-up-band',
   'planche-advanced': 'adv-tuck-planche', scapula: 'scapula-shrug',
+  'pull-up': 'pull-up', dip: 'dip', 'horizontal-push': 'decline-push-up', 'split-squat': 'bulgarian-split-squat',
+  'one-arm-pull-up': 'one-arm-negative', row: 'body-row',
 }
 export const needsStepPins = (user: UserState) => Object.keys(STEP_PINS).some(pid => !user.current[pid])
 export function withStepPins(user: UserState): UserState {

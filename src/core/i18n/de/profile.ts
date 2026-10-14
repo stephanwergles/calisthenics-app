@@ -118,6 +118,8 @@ export const profile = {
       'v-sit': 'Wie L-Sit, aber die Beine steigen über die Waagerechte nach oben.',
       'ring-muscle-up': 'Muscle-up an den Ringen – mit falschem Griff und stabilem Übergang.',
       'press-handstand': 'Ohne Schwung aus dem Stand oder Sitz in den Handstand drücken.',
+      'korean-dip': 'Dip hinter der Stange – starke Schulterstreckung, Kraft für Übergänge.',
+      'side-lever': 'Seitlich waagerecht an der Stange – Vorstufe zur Human Flag.',
     },
   },
   equipment: {

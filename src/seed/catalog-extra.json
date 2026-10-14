@@ -1925,6 +1925,470 @@
     "Adduktoren",
     "seitlicher Bauch"
    ]
+  },
+  {
+   "id": "pull-up-negative",
+   "name": "Negative Klimmzüge",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Mit Sprung oder Kasten in die obere Position, Kinn über der Stange.",
+    "execution": "Aus der oberen Position so langsam wie möglich (3–5 s) bis in den gestreckten Hang absenken. Unten loslassen, wieder hochspringen.",
+    "faults": "Fallen statt absenken · Schultern zu den Ohren · unten nicht ganz strecken",
+    "scaling": "Leichter: kürzer absenken. Schwerer: 6–8 s, dann Band-Klimmzüge."
+   },
+   "media": {
+    "videoQuery": "negative pull ups"
+   },
+   "cues": [
+    "Langsam absenken",
+    "Brust zur Stange halten",
+    "Unten ganz strecken"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Bizeps",
+    "Unterarme"
+   ]
+  },
+  {
+   "id": "band-pull-up",
+   "name": "Klimmzüge mit Band",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Band über die Stange, ein Knie oder Fuß in die Schlaufe.",
+    "execution": "Saubere Klimmzüge mit voller Bewegung – das Band nimmt einen Teil des Gewichts ab. Fortschritt heißt dünneres Band.",
+    "faults": "Schwung aus dem Band · halbe Wiederholungen · Schultern hoch",
+    "scaling": "Leichter: stärkeres Band. Schwerer: dünneres Band, dann freie Klimmzüge."
+   },
+   "media": {
+    "videoQuery": "band assisted pull ups"
+   },
+   "cues": [
+    "Aus dem vollen Hang",
+    "Kinn über die Stange",
+    "Kontrolliert ablassen"
+   ],
+   "muscles": [
+    "Latissimus",
+    "Bizeps",
+    "oberer Rücken"
+   ]
+  },
+  {
+   "id": "bar-support-hold",
+   "name": "Stütz am Barren",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Am Barren oder an zwei Stühlen, Arme gestreckt im Stütz.",
+    "execution": "Schultern nach unten drücken, Brust leicht vor, Ellenbogen gestreckt. Halten – Gewöhnung von Schultern und Handgelenken für Dips.",
+    "faults": "Schultern sacken zu den Ohren · Ellenbogen gebeugt · Körper pendelt",
+    "scaling": "Leichter: Füße am Boden. Schwerer: länger halten, dann negative Dips."
+   },
+   "media": {
+    "videoQuery": "parallel bar support hold"
+   },
+   "cues": [
+    "Schultern weg von den Ohren",
+    "Arme gestreckt",
+    "Körper ruhig"
+   ],
+   "muscles": [
+    "Trizeps",
+    "Brust",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "dip-negative",
+   "name": "Negative Dips",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im Stütz am Barren, Arme gestreckt.",
+    "execution": "Langsam (3–5 s) absenken, bis die Schultern unter den Ellenbogen sind. Unten mit den Füßen abstellen und wieder in den Stütz.",
+    "faults": "Fallen lassen · zu flach · Schultern rollen nach vorn",
+    "scaling": "Leichter: weniger tief. Schwerer: länger absenken, dann freie Dips."
+   },
+   "media": {
+    "videoQuery": "negative dips"
+   },
+   "cues": [
+    "Langsam absenken",
+    "Ellenbogen nach hinten",
+    "Schultern tief"
+   ],
+   "muscles": [
+    "Trizeps",
+    "Brust",
+    "vordere Schulter"
+   ]
+  },
+  {
+   "id": "incline-push-up",
+   "name": "Schräge Liegestütze",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Hände auf einer Bank, Tisch oder Wand, Körper gestreckt.",
+    "execution": "Brust zur Kante absenken, Ellenbogen leicht am Körper, Körper bleibt eine Linie. Je tiefer die Hände, desto schwerer.",
+    "faults": "Hüfte hängt · Ellenbogen weit nach außen · halbe Bewegung",
+    "scaling": "Leichter: höhere Auflage. Schwerer: tiefer, dann Liegestütze am Boden."
+   },
+   "media": {
+    "videoQuery": "incline push ups beginner"
+   },
+   "cues": [
+    "Körper als Linie",
+    "Brust zur Kante",
+    "Ellenbogen 45°"
+   ],
+   "muscles": [
+    "Brust",
+    "Trizeps",
+    "vordere Schulter"
+   ]
+  },
+  {
+   "id": "push-up",
+   "name": "Liegestütze",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "In der Liegestützposition, Hände schulterbreit, Körper gestreckt.",
+    "execution": "Bis die Brust fast den Boden berührt absenken, Ellenbogen leicht am Körper, und wieder ganz hochdrücken.",
+    "faults": "Hüfte hängt oder ragt hoch · Kopf nach vorn · halbe Bewegung",
+    "scaling": "Leichter: schräg. Schwerer: Füße erhöht."
+   },
+   "media": {
+    "videoQuery": "perfect push up form"
+   },
+   "cues": [
+    "Körper fest wie ein Brett",
+    "Brust fast zum Boden",
+    "Oben ganz ausdrücken"
+   ],
+   "muscles": [
+    "Brust",
+    "Trizeps",
+    "vordere Schulter"
+   ]
+  },
+  {
+   "id": "cossack-squat",
+   "name": "Cossack Squat",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Breiter Stand, Füße leicht ausgedreht.",
+    "execution": "Zu einer Seite tief in die Kniebeuge sinken, das andere Bein bleibt gestreckt, Fußspitze hoch. Über das gebeugte Bein zurück und Seite wechseln.",
+    "faults": "Ferse hebt ab · Oberkörper kippt weit vor · Knie fällt nach innen",
+    "scaling": "Leichter: an einem Pfosten festhalten, weniger tief. Schwerer: tiefer, langsamer, mit Gewicht."
+   },
+   "media": {
+    "videoQuery": "cossack squat"
+   },
+   "cues": [
+    "Ferse am Boden",
+    "Knie über dem Fuß",
+    "Gestrecktes Bein Zehen hoch"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Adduktoren",
+    "Gesäß"
+   ]
+  },
+  {
+   "id": "sissy-squat",
+   "name": "Sissy Squat",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Aufrecht stehen, mit einer Hand leicht festhalten, auf den Fußballen.",
+    "execution": "Knie nach vorn schieben und den Körper als Linie von Knie bis Kopf nach hinten neigen, so tief es kontrolliert geht. Über die Oberschenkel zurück.",
+    "faults": "Hüfte knickt ein · zu schnell · Schmerz im Knie ignorieren",
+    "scaling": "Leichter: kleinerer Weg, stärker festhalten. Schwerer: tiefer, ohne Halten."
+   },
+   "media": {
+    "videoQuery": "sissy squat bodyweight"
+   },
+   "cues": [
+    "Hüfte gestreckt lassen",
+    "Knie langsam nach vorn",
+    "Nur schmerzfrei tief"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Hüftbeuger"
+   ]
+  },
+  {
+   "id": "dragon-pistol",
+   "name": "Dragon Pistol",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Auf einem Bein, das freie Bein hinter dem Standbein vorbei zur Seite.",
+    "execution": "Einbeinig tief absenken, das freie Bein kreuzt hinter dem Standbein und bleibt vom Boden. Aus der Tiefe wieder hoch.",
+    "faults": "Ferse hebt ab · Knie fällt nach innen · Oberkörper dreht",
+    "scaling": "Leichter: an einem Pfosten festhalten. Schwerer: langsamer, Pause unten."
+   },
+   "media": {
+    "videoQuery": "dragon pistol squat"
+   },
+   "cues": [
+    "Ferse fest am Boden",
+    "Knie über dem Fuß",
+    "Hüfte nach hinten-unten"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Gesäß",
+    "Adduktoren"
+   ]
+  },
+  {
+   "id": "tibialis-raise",
+   "name": "Tibialis Raises",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Mit dem Rücken an der Wand, Fersen etwa einen Fuß vor der Wand.",
+    "execution": "Die Fußspitzen so weit wie möglich anheben, kurz halten und langsam absenken. Stärkt das Schienbein – Schutz für Knie und Sprunggelenk.",
+    "faults": "Hüfte weg von der Wand · Schwung · halbe Bewegung",
+    "scaling": "Leichter: näher an die Wand. Schwerer: einbeinig, weiter weg."
+   },
+   "media": {
+    "videoQuery": "tibialis raise wall"
+   },
+   "cues": [
+    "Zehen ganz hoch",
+    "Langsam absenken",
+    "Rücken an der Wand"
+   ],
+   "muscles": [
+    "Schienbein",
+    "Sprunggelenk"
+   ]
+  },
+  {
+   "id": "spanish-squat",
+   "name": "Spanish Squat (isometrisch)",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Band um einen festen Pfosten und hinter die Kniekehlen, zurücklehnen.",
+    "execution": "Mit dem Band in den Kniekehlen in eine tiefe, aufrechte Kniebeuge sinken, Schienbeine senkrecht, und halten. Entlastet die Patellasehne und stärkt den Quadrizeps.",
+    "faults": "Knie schieben nach vorn · Oberkörper kippt · Band zu locker",
+    "scaling": "Leichter: weniger tief. Schwerer: tiefer, länger halten."
+   },
+   "media": {
+    "videoQuery": "spanish squat patellar tendon"
+   },
+   "cues": [
+    "Schienbeine senkrecht",
+    "Ins Band lehnen",
+    "Oberkörper aufrecht"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Patellasehne"
+   ]
+  },
+  {
+   "id": "reverse-nordic",
+   "name": "Reverse Nordic",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im aufrechten Kniestand, Füße fixiert oder frei, Körper gestreckt.",
+    "execution": "Mit geradem Körper von den Knien bis zum Kopf langsam nach hinten neigen, so weit es kontrolliert geht, und über die Oberschenkel zurück.",
+    "faults": "Hüfte knickt · zu weit ohne Kontrolle · Hohlkreuz",
+    "scaling": "Leichter: kleinerer Weg, Band nach vorn. Schwerer: weiter, langsamer."
+   },
+   "media": {
+    "videoQuery": "reverse nordic curl"
+   },
+   "cues": [
+    "Hüfte gestreckt",
+    "Langsam nach hinten",
+    "Quadrizeps zieht zurück"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Hüftbeuger"
+   ]
+  },
+  {
+   "id": "one-arm-hang",
+   "name": "Einarmiger Hang",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "An der Stange im Hang, dann eine Hand lösen.",
+    "execution": "Einarmig hängen, Schulter aktiv nach unten gezogen, Körper ruhig. Halten und die Seite wechseln – Sehnen und Griff für einarmige Klimmzüge.",
+    "faults": "Schulter passiv durchgehangen · Körper dreht stark · zu lang bei Schmerz",
+    "scaling": "Leichter: zweite Hand mit Handtuch leicht unterstützen. Schwerer: im gebeugten Arm halten."
+   },
+   "media": {
+    "videoQuery": "one arm dead hang"
+   },
+   "cues": [
+    "Schulter aktiv",
+    "Körper ruhig",
+    "Griff fest"
+   ],
+   "muscles": [
+    "Unterarme",
+    "Latissimus",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "table-row",
+   "name": "Rudern am Tisch",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Unter einem stabilen Tisch liegend, Hände an der Tischkante.",
+    "execution": "Brust zur Tischkante ziehen, Körper gestreckt, und kontrolliert ablassen. Horizontaler Zug ganz ohne Geräte.",
+    "faults": "Hüfte hängt · Schultern zu den Ohren · Tisch kippelt",
+    "scaling": "Leichter: Knie gebeugt. Schwerer: Beine gestreckt, Pause oben, dann Body Rows."
+   },
+   "media": {
+    "videoQuery": "table rows bodyweight"
+   },
+   "cues": [
+    "Körper gestreckt",
+    "Brust zur Kante",
+    "Schulterblätter zusammen"
+   ],
+   "muscles": [
+    "oberer Rücken",
+    "Latissimus",
+    "Bizeps"
+   ]
+  },
+  {
+   "id": "korean-dip-negative",
+   "name": "Korean Dip negativ",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Hinter einer Stange im Stütz, Stange hinter dem Gesäß, Arme gestreckt.",
+    "execution": "Langsam absenken, bis die Stange an der Hüfte bzw. am unteren Rücken ist – Schultern in Streckung. Unten mit den Füßen abstellen.",
+    "faults": "Fallen lassen · Schultern rollen nach vorn · zu tief ohne Kontrolle",
+    "scaling": "Leichter: weniger tief, Füße am Boden. Schwerer: langsamer, dann ganze Korean Dips."
+   },
+   "media": {
+    "videoQuery": "korean dip progression"
+   },
+   "cues": [
+    "Langsam absenken",
+    "Brust offen",
+    "Schulterblätter zusammen"
+   ],
+   "muscles": [
+    "Trizeps",
+    "vordere Schulter",
+    "Brust"
+   ]
+  },
+  {
+   "id": "korean-dip",
+   "name": "Korean Dips",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Hinter einer Stange im Stütz, Stange hinter dem Gesäß.",
+    "execution": "Absenken, bis die Stange am unteren Rücken ist, und wieder in den Stütz drücken. Starke Schulterstreckung – nur mit warmen Schultern.",
+    "faults": "Schultern rollen nach vorn · Schwung · Schmerz vorne in der Schulter",
+    "scaling": "Leichter: Negative. Schwerer: langsamer, Pause unten."
+   },
+   "media": {
+    "videoQuery": "korean dips"
+   },
+   "cues": [
+    "Brust offen halten",
+    "Stange am Körper",
+    "Kontrolliert drücken"
+   ],
+   "muscles": [
+    "Trizeps",
+    "vordere Schulter",
+    "Brust"
+   ]
+  },
+  {
+   "id": "tuck-side-lever",
+   "name": "Tuck Side Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "An einer senkrechten Stange oder seitlich an der Klimmzugstange, Griff übereinander.",
+    "execution": "Körper seitlich waagerecht halten, Knie angezogen, oberer Arm zieht, unterer drückt. Halten, Seiten wechseln.",
+    "faults": "Hüfte sinkt · Schultern verlieren Spannung · Körper dreht",
+    "scaling": "Leichter: kürzer halten. Schwerer: Beine strecken (Side Lever)."
+   },
+   "media": {
+    "videoQuery": "tuck side lever"
+   },
+   "cues": [
+    "Oberer Arm zieht",
+    "Unterer Arm drückt",
+    "Hüfte hoch"
+   ],
+   "muscles": [
+    "seitlicher Bauch",
+    "Latissimus",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "side-lever",
+   "name": "Side Lever",
+   "unit": "seconds",
+   "weighted": false,
+   "perSide": true,
+   "technique": {
+    "setup": "Wie der Tuck Side Lever, Beine gestreckt.",
+    "execution": "Den gestreckten Körper seitlich waagerecht halten. Eine Vorstufe der Human Flag mit hängendem statt gestütztem Unterarm.",
+    "faults": "Beine sinken · Hüfte knickt · Arme gebeugt",
+    "scaling": "Leichter: Beine gegrätscht. Schwerer: länger halten."
+   },
+   "media": {
+    "videoQuery": "side lever calisthenics"
+   },
+   "cues": [
+    "Körper als Linie",
+    "Hüfte nicht knicken",
+    "Spannung über die Seite"
+   ],
+   "muscles": [
+    "seitlicher Bauch",
+    "Latissimus",
+    "Schultern"
+   ]
   }
  ],
  "progressions": [
@@ -2753,6 +3217,104 @@
      }
     }
    ]
+  },
+  {
+   "id": "knees",
+   "name": "Knie stärken",
+   "region": "legs",
+   "steps": [
+    {
+     "exercise": "tibialis-raise",
+     "target": {
+      "label": "2 × 15–20",
+      "sets": 2,
+      "restSec": 45,
+      "unlockAt": 20,
+      "min": 15,
+      "max": 20
+     }
+    },
+    {
+     "exercise": "spanish-squat",
+     "target": {
+      "label": "3 × 30–45 s",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 45,
+      "min": 30,
+      "max": 45
+     }
+    },
+    {
+     "exercise": "reverse-nordic",
+     "target": {
+      "label": "3 × 6–10",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 10,
+      "min": 6,
+      "max": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "korean-dip",
+   "name": "Korean Dip",
+   "region": "push",
+   "steps": [
+    {
+     "exercise": "korean-dip-negative",
+     "target": {
+      "label": "3 × 3–5",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 5,
+      "min": 3,
+      "max": 5
+     }
+    },
+    {
+     "exercise": "korean-dip",
+     "target": {
+      "label": "3 × 3–6",
+      "sets": 3,
+      "restSec": 150,
+      "unlockAt": 6,
+      "min": 3,
+      "max": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "side-lever",
+   "name": "Side Lever",
+   "region": "core",
+   "steps": [
+    {
+     "exercise": "tuck-side-lever",
+     "target": {
+      "label": "4 × 5–10 s",
+      "sets": 4,
+      "restSec": 120,
+      "unlockAt": 10,
+      "min": 5,
+      "max": 10
+     }
+    },
+    {
+     "exercise": "side-lever",
+     "target": {
+      "label": "4 × 3–8 s",
+      "sets": 4,
+      "restSec": 150,
+      "unlockAt": 8,
+      "min": 3,
+      "max": 8
+     }
+    }
+   ]
   }
  ],
  "inserts": [
@@ -2926,6 +3488,168 @@
       "unlockAt": 15,
       "min": 10,
       "max": 15
+     }
+    }
+   ]
+  },
+  {
+   "progression": "pull-up",
+   "before": "pull-up",
+   "steps": [
+    {
+     "exercise": "pull-up-negative",
+     "target": {
+      "label": "4 × 3–5",
+      "sets": 4,
+      "restSec": 120,
+      "unlockAt": 5,
+      "min": 3,
+      "max": 5
+     }
+    },
+    {
+     "exercise": "band-pull-up",
+     "target": {
+      "label": "4 × 5–8",
+      "sets": 4,
+      "restSec": 120,
+      "unlockAt": 8,
+      "min": 5,
+      "max": 8
+     }
+    }
+   ]
+  },
+  {
+   "progression": "dip",
+   "before": "dip",
+   "steps": [
+    {
+     "exercise": "bar-support-hold",
+     "target": {
+      "label": "3 × 20–30 s",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 30,
+      "min": 20,
+      "max": 30
+     }
+    },
+    {
+     "exercise": "dip-negative",
+     "target": {
+      "label": "4 × 3–5",
+      "sets": 4,
+      "restSec": 120,
+      "unlockAt": 5,
+      "min": 3,
+      "max": 5
+     }
+    }
+   ]
+  },
+  {
+   "progression": "horizontal-push",
+   "before": "decline-push-up",
+   "steps": [
+    {
+     "exercise": "incline-push-up",
+     "target": {
+      "label": "3 × 8–15",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 15,
+      "min": 8,
+      "max": 15
+     }
+    },
+    {
+     "exercise": "push-up",
+     "target": {
+      "label": "3 × 8–20",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 20,
+      "min": 8,
+      "max": 20
+     }
+    }
+   ]
+  },
+  {
+   "progression": "split-squat",
+   "before": "bulgarian-split-squat",
+   "steps": [
+    {
+     "exercise": "cossack-squat",
+     "target": {
+      "label": "3 × 6–10",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 10,
+      "min": 6,
+      "max": 10
+     }
+    }
+   ]
+  },
+  {
+   "progression": "split-squat",
+   "steps": [
+    {
+     "exercise": "sissy-squat",
+     "target": {
+      "label": "3 × 6–12",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 12,
+      "min": 6,
+      "max": 12
+     }
+    },
+    {
+     "exercise": "dragon-pistol",
+     "target": {
+      "label": "3 × 3–5",
+      "sets": 3,
+      "restSec": 150,
+      "unlockAt": 5,
+      "min": 3,
+      "max": 5
+     }
+    }
+   ]
+  },
+  {
+   "progression": "one-arm-pull-up",
+   "before": "one-arm-negative",
+   "steps": [
+    {
+     "exercise": "one-arm-hang",
+     "target": {
+      "label": "3 × 10–20 s",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 20,
+      "min": 10,
+      "max": 20
+     }
+    }
+   ]
+  },
+  {
+   "progression": "row",
+   "before": "body-row",
+   "steps": [
+    {
+     "exercise": "table-row",
+     "target": {
+      "label": "3 × 8–12",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 12,
+      "min": 8,
+      "max": 12
      }
     }
    ]

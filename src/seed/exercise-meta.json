@@ -1812,6 +1812,251 @@
     "hip": 2,
     "shoulder": 1
    }
+  },
+  "pull-up-negative": {
+   "equipment": [
+    [
+     "bar"
+    ],
+    [
+     "rings"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 1,
+   "stress": {
+    "elbow": 1,
+    "shoulder": 1
+   }
+  },
+  "band-pull-up": {
+   "equipment": [
+    [
+     "bar",
+     "band"
+    ]
+   ],
+   "pattern": "vertical-pull",
+   "difficulty": 1,
+   "stress": {
+    "elbow": 1,
+    "shoulder": 1
+   }
+  },
+  "bar-support-hold": {
+   "equipment": [
+    [
+     "dip-bars"
+    ],
+    [
+     "parallettes"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 1,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1
+   }
+  },
+  "dip-negative": {
+   "equipment": [
+    [
+     "dip-bars"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 1,
+   "stress": {
+    "elbow": 1,
+    "shoulder": 1
+   }
+  },
+  "incline-push-up": {
+   "equipment": [
+    [
+     "box"
+    ],
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 1,
+   "stress": {
+    "wrist": 1
+   }
+  },
+  "push-up": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-push",
+   "difficulty": 1,
+   "stress": {
+    "wrist": 1
+   }
+  },
+  "cossack-squat": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 2,
+   "stress": {
+    "knee": 1,
+    "hip": 1,
+    "ankle": 1
+   }
+  },
+  "sissy-squat": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 3,
+   "stress": {
+    "knee": 2
+   }
+  },
+  "dragon-pistol": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 5,
+   "stress": {
+    "knee": 2,
+    "hip": 2,
+    "ankle": 2
+   }
+  },
+  "tibialis-raise": {
+   "equipment": [
+    [
+     "wall"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "spanish-squat": {
+   "equipment": [
+    [
+     "band"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 1,
+   "stress": {
+    "knee": 1
+   }
+  },
+  "reverse-nordic": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 2,
+   "stress": {
+    "knee": 1,
+    "hip": 1
+   }
+  },
+  "one-arm-hang": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "isolation",
+   "difficulty": 3,
+   "stress": {
+    "shoulder": 1,
+    "elbow": 1
+   }
+  },
+  "table-row": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "horizontal-pull",
+   "difficulty": 1,
+   "stress": {}
+  },
+  "korean-dip-negative": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 3,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 1,
+    "wrist": 1
+   }
+  },
+  "korean-dip": {
+   "equipment": [
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "vertical-push",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 2,
+    "wrist": 1
+   }
+  },
+  "tuck-side-lever": {
+   "equipment": [
+    [
+     "pole"
+    ],
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 4,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 1
+   }
+  },
+  "side-lever": {
+   "equipment": [
+    [
+     "pole"
+    ],
+    [
+     "bar"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 5,
+   "stress": {
+    "shoulder": 2,
+    "elbow": 1,
+    "back": 1
+   }
   }
  }
 }

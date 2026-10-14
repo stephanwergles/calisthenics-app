@@ -21,8 +21,15 @@ test('Einstufungs-Regeln zeigen nur auf existierende Leitern und Tests', () => {
 test('Einstufung: heutiges Level ergibt plausible Startstufen', () => {
   // 8–10 Klimmzüge, 20 Dips, kurzer L-Sit (CLAUDE.md)
   const cur = placement(assessment, catalog, { 'pull-ups': 9, dips: 20, 'push-ups': 30, hollow: 40, 'l-sit': 10, handstand: 30, pistol: 1, 'leg-raise': 10 })
-  assert.equal(cur['pull-up'], 0, 'unter 10 Klimmzügen noch ohne Gewicht')
-  assert.equal(cur.dip, 1, '20 Dips → mit Zusatzgewicht')
+  const at = (pid: string, i: number) => catalog.progressions.find(p => p.id === pid)!.steps[i].exercise
+  assert.equal(at('pull-up', cur['pull-up']), 'pull-up', 'unter 10 Klimmzügen noch ohne Gewicht')
+  assert.equal(at('dip', cur.dip), 'dip-weighted', '20 Dips → mit Zusatzgewicht')
+  assert.equal(at('horizontal-push', cur['horizontal-push']), 'ring-push-up')
+  const beginner = placement(assessment, catalog, { 'pull-ups': 0, dips: 3, 'push-ups': 8 })
+  assert.equal(at('pull-up', beginner['pull-up']), 'pull-up-negative', 'kein Klimmzug → Negative')
+  assert.equal(at('dip', beginner.dip), 'dip-negative')
+  assert.equal(at('horizontal-push', beginner['horizontal-push']), 'push-up')
+  assert.equal(at('row', beginner.row), 'table-row')
   assert.equal(cur['muscle-up-pull'], 0)
   assert.equal(catalog.progressions.find(p => p.id === 'l-sit')!.steps[cur['l-sit']].exercise, 'l-sit-floor', 'kurzer L-Sit → Boden-L-Sit (Tuck und einbeinig davor)')
   assert.equal(cur.pistol, 0, 'Pistol nur mit Hilfe → assistiert')
@@ -30,14 +37,14 @@ test('Einstufung: heutiges Level ergibt plausible Startstufen', () => {
 })
 
 test('Skill-Vorschläge: erfüllte Voraussetzungen zuerst, erreichte Skills ans Ende', () => {
-  const s = suggestSkills(skills, catalog, { 'pull-up': 1, dip: 1, hollow: 0 })
+  const s = suggestSkills(skills, catalog, { 'pull-up': 3, dip: 3, hollow: 0 })
   assert.equal(s[0].missing.length, 0, 'ganz oben: alle Voraussetzungen erfüllt')
   assert.equal(s[0].reached, false)
   const mu = s.find(x => x.skill === 'muscle-up')!
   assert.deepEqual(mu.missing, [])
   const hs = s.find(x => x.skill === 'handstand')!
   assert.ok(hs.missing.length === 1, 'Hollow Rocks fehlen')
-  const done = suggestSkills(skills, catalog, { pistol: 2, 'pull-up': 1, dip: 1 })
+  const done = suggestSkills(skills, catalog, { pistol: 2, 'pull-up': 3, dip: 3 })
   const firstReached = done.findIndex(x => x.reached)
   assert.ok(firstReached > 0 && done.slice(firstReached).every(x => x.reached), 'erreichte Skills am Ende')
   assert.ok(done.find(x => x.skill === 'pistol')!.reached)
@@ -46,7 +53,7 @@ test('Skill-Vorschläge: erfüllte Voraussetzungen zuerst, erreichte Skills ans 
 test('Skill-Vorschläge: schwere Skills ohne Voraussetzungen gelten nicht als „realistisch als Nächstes“', () => {
   const meta = json('exercise-meta.json').exercises
   // Fortgeschrittener: Klimmzüge und Dips mit Gewicht, L-Sit auf Parallettes
-  const s = suggestSkills(skills, catalog, { 'pull-up': 1, dip: 1, 'l-sit': 1 }, meta)
+  const s = suggestSkills(skills, catalog, { 'pull-up': 3, dip: 3, 'l-sit': 1 }, meta)
   const tier = (id: string) => s.find(x => x.skill === id)?.tier
   assert.notEqual(tier('human-flag'), 'next', 'Human Flag (Endstufe 5) ist für Niveau 3 kein nächster Schritt')
   assert.notEqual(tier('back-lever'), 'next')
@@ -55,7 +62,7 @@ test('Skill-Vorschläge: schwere Skills ohne Voraussetzungen gelten nicht als �
 
 test('Skill-Vorschläge: Ketten – Ring-Muscle-up erst nach dem Muscle-up, Klimmzüge mit Gewicht stecken im Muscle-up', () => {
   const meta = json('exercise-meta.json').exercises
-  const s = suggestSkills(skills, catalog, { 'pull-up': 1, dip: 1, 'muscle-up-pull': 1 }, meta)
+  const s = suggestSkills(skills, catalog, { 'pull-up': 3, dip: 3, 'muscle-up-pull': 1 }, meta)
   const ring = s.find(x => x.skill === 'ring-muscle-up')!
   assert.equal(ring.after, 'muscle-up', 'baut auf dem Muscle-up auf')
   assert.notEqual(ring.tier, 'next')

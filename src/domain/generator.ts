@@ -267,27 +267,29 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
     const r = resolve(p)
     return r && meta[r.ex.id] ? [{ p, r }] : []
   })
-  for (const d of days) {
-    for (let guard = 0; guard < 8 && minutesOf(d) < input.minutes * FILL; guard++) {
-      const here = plan.get(d)!
-      const pick = extras
-        // eine Leiter, die schon an einem anderen Tag steht, nur dann noch einmal, wenn sie zu einem
-        // Ziel gehört (L-Sit 2× pro Woche ja, Beinheben an allen drei Tagen nein)
-        .filter(x => (!used.has(x.p.id) || goalLadders.has(x.p.id)) && !here.some(c => c.progression.id === x.p.id))
-        .map(({ p, r }) => {
-          const m = meta[r.ex.id]
-          const c: Candidate = { progression: p, exercise: r.ex, meta: m, kind: 'base', reason: `Ergänzung: ${PATTERN_LABEL[m.pattern]}`,
-            sets: r.target.sets, minutes: slotMinutes(r.ex, r.target, r.target.sets) }
-          const score = (here.some(x => x.meta.pattern === m.pattern) ? -5 : 0) + (used.has(p.id) ? -3 : 0)
-            - Math.abs(m.difficulty - 3) - (m.pattern === 'isolation' ? 2 : 0) + (keep.has(p.id) ? 4 : 0)
-          return { c, score }
-        })
-        .filter(({ c }) => allowed(d, c) && !conflicts(d, c) && minutesOf(d) + c.minutes <= input.minutes && balanced(c.progression.region, c.sets))
-        .sort((a, b) => b.score - a.score)[0]
-      if (!pick) break
-      used.add(pick.c.progression.id)
-      here.push(pick.c)
-    }
+  // immer den leersten Tag zuerst – sonst nimmt der erste Tag alle passenden Ergänzungen und spätere bleiben kurz
+  const open = new Set(days)
+  for (let guard = 0; guard < 8 * days.length && open.size; guard++) {
+    const d = [...open].sort((x, y) => minutesOf(x) - minutesOf(y))[0]
+    if (minutesOf(d) >= input.minutes * FILL) { open.delete(d); continue }
+    const here = plan.get(d)!
+    const pick = extras
+      // eine Leiter, die schon an einem anderen Tag steht, nur dann noch einmal, wenn sie zu einem
+      // Ziel gehört (L-Sit 2× pro Woche ja, Beinheben an allen drei Tagen nein)
+      .filter(x => (!used.has(x.p.id) || goalLadders.has(x.p.id)) && !here.some(c => c.progression.id === x.p.id))
+      .map(({ p, r }) => {
+        const m = meta[r.ex.id]
+        const c: Candidate = { progression: p, exercise: r.ex, meta: m, kind: 'base', reason: `Ergänzung: ${PATTERN_LABEL[m.pattern]}`,
+          sets: r.target.sets, minutes: slotMinutes(r.ex, r.target, r.target.sets) }
+        const score = (here.some(x => x.meta.pattern === m.pattern) ? -5 : 0) + (used.has(p.id) ? -3 : 0)
+          - Math.abs(m.difficulty - 3) - (m.pattern === 'isolation' ? 2 : 0) + (keep.has(p.id) ? 4 : 0)
+        return { c, score }
+      })
+      .filter(({ c }) => allowed(d, c) && !conflicts(d, c) && minutesOf(d) + c.minutes <= input.minutes && balanced(c.progression.region, c.sets))
+      .sort((a, b) => b.score - a.score)[0]
+    if (!pick) { open.delete(d); continue }
+    used.add(pick.c.progression.id)
+    here.push(pick.c)
   }
 
   /* ── 3. Zeitbudget ── */

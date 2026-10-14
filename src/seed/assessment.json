@@ -53,6 +53,8 @@
    "progression": "pull-up",
    "test": "pull-ups",
    "thresholds": [
+    1,
+    5,
     10
    ]
   },
@@ -76,6 +78,7 @@
    "progression": "row",
    "test": "pull-ups",
    "thresholds": [
+    1,
     8
    ]
   },
@@ -83,6 +86,8 @@
    "progression": "dip",
    "test": "dips",
    "thresholds": [
+    1,
+    5,
     15
    ]
   },
@@ -97,6 +102,8 @@
    "progression": "horizontal-push",
    "test": "push-ups",
    "thresholds": [
+    5,
+    15,
     25
    ]
   },

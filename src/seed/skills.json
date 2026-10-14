@@ -14,11 +14,11 @@
    "prerequisites": [
     {
      "progression": "pull-up",
-     "minStep": 1
+     "minStep": 3
     },
     {
      "progression": "dip",
-     "minStep": 1
+     "minStep": 3
     }
    ]
   },
@@ -62,7 +62,8 @@
     "pistol"
    ],
    "support": [
-    "split-squat"
+    "split-squat",
+    "knees"
    ],
    "prerequisites": []
   },
@@ -79,7 +80,7 @@
    "prerequisites": [
     {
      "progression": "dip",
-     "minStep": 1
+     "minStep": 3
     }
    ]
   },
@@ -150,7 +151,7 @@
    "prerequisites": [
     {
      "progression": "pull-up",
-     "minStep": 1
+     "minStep": 3
     }
    ]
   },
@@ -235,7 +236,7 @@
    "prerequisites": [
     {
      "progression": "horizontal-push",
-     "minStep": 1
+     "minStep": 3
     }
    ]
   },
@@ -246,7 +247,8 @@
     "shrimp-squat"
    ],
    "support": [
-    "split-squat"
+    "split-squat",
+    "knees"
    ],
    "prerequisites": []
   },
@@ -263,7 +265,7 @@
    "prerequisites": [
     {
      "progression": "pull-up",
-     "minStep": 0
+     "minStep": 2
     },
     {
      "progression": "handstand",
@@ -305,7 +307,7 @@
     },
     {
      "progression": "pull-up",
-     "minStep": 1
+     "minStep": 3
     }
    ]
   },
@@ -379,6 +381,40 @@
     {
      "progression": "handstand",
      "minStep": 5
+    }
+   ]
+  },
+  {
+   "id": "korean-dip",
+   "name": "Korean Dip",
+   "targets": [
+    "korean-dip"
+   ],
+   "support": [
+    "dip",
+    "shoulder-prehab"
+   ],
+   "prerequisites": [
+    {
+     "progression": "dip",
+     "minStep": 2
+    }
+   ]
+  },
+  {
+   "id": "side-lever",
+   "name": "Side Lever",
+   "targets": [
+    "side-lever"
+   ],
+   "support": [
+    "side-plank",
+    "pull-up"
+   ],
+   "prerequisites": [
+    {
+     "progression": "pull-up",
+     "minStep": 2
     }
    ]
   }

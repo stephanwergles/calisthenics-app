@@ -66,6 +66,14 @@ const STEP_MOVES: { skill: string; progression: string; from: number; to: number
   { skill: 'freestanding-hspu', progression: 'vertical-push', from: 2, to: 3 },
   { skill: 'press-handstand', progression: 'handstand', from: 2, to: 5 },
   { skill: 'v-sit', progression: 'l-sit', from: 1, to: 3 },
+  // Platz 11–14: Einstiegsstufen vor Klimmzügen, Dips, Liegestützen
+  { skill: 'muscle-up', progression: 'pull-up', from: 1, to: 3 },
+  { skill: 'muscle-up', progression: 'dip', from: 1, to: 3 },
+  { skill: 'planche', progression: 'dip', from: 1, to: 3 },
+  { skill: 'typewriter', progression: 'pull-up', from: 1, to: 3 },
+  { skill: 'one-arm-push-up', progression: 'horizontal-push', from: 1, to: 3 },
+  { skill: 'human-flag', progression: 'pull-up', from: 0, to: 2 },
+  { skill: 'one-arm-pull-up', progression: 'pull-up', from: 1, to: 3 },
 ]
 let fixed = 0
 for (const sid of [...new Set(STEP_MOVES.map(m => m.skill))]) {
@@ -84,6 +92,10 @@ const THRESHOLD_MOVES: Record<string, { from: number[]; to: number[] }> = {
   'l-sit': { from: [20, 30], to: [5, 10, 20, 30] },
   handstand: { from: [45, 60], to: [15, 30, 45, 60] },
   'vertical-push': { from: [30, 60], to: [30, 45, 60] },
+  'pull-up': { from: [10], to: [1, 5, 10] },
+  dip: { from: [15], to: [1, 5, 15] },
+  'horizontal-push': { from: [25], to: [5, 15, 25] },
+  row: { from: [8], to: [1, 8] },
 }
 for (const [pid, m] of Object.entries(THRESHOLD_MOVES)) {
   const p = (await payload.find({ collection: 'progressions', where: { id: { equals: pid } }, limit: 1, depth: 0 })).docs[0] as { assessment?: { test?: string; thresholds?: number[] } } | undefined
@@ -94,6 +106,7 @@ for (const [pid, m] of Object.entries(THRESHOLD_MOVES)) {
 // neue Leitern als Unterstützung bestehender Skills (nur ergänzen, nie entfernen)
 const SUPPORT_ADDS: [string, string][] = [
   ['ring-muscle-up', 'ring-dip'], ['planche', 'wrists'], ['handstand', 'wrists'], ['nordic-curl', 'hip-hinge'], ['dragon-flag', 'rollout'],
+  ['pistol', 'knees'], ['shrimp-squat', 'knees'],
 ]
 for (const [sid, pid] of SUPPORT_ADDS) {
   const doc = (await payload.find({ collection: 'skills', where: { id: { equals: sid } }, limit: 1, depth: 0 })).docs[0] as { support?: unknown[] } | undefined
