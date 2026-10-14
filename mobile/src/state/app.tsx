@@ -90,8 +90,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (t.active) { openTraining(undefined); return }
     t.chooseWorkout(id); t.startSession(id); openTraining(undefined)
   }
+  /** seit dem Start eingetragen: Sätze und Runden-Ergebnisse */
+  const loggedSinceStart = () => {
+    if (!t.active) return 0
+    const id = L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout)
+    const s = L.live(t.sessions.find(x => x.id === id))
+    return (s?.sets.length ?? 0) - (t.active.before?.sets.length ?? 0) + (s?.circuits?.length ?? 0) - (t.active.before?.circuits?.length ?? 0)
+  }
   const finish = () => {
     if (!t.active) return
+    // nichts eingetragen: keine leere Erfolgsseite, Session einfach verwerfen
+    if (loggedSinceStart() <= 0) { discard(); return }
     const id = L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout)
     t.endSession(); rest.stop(); setRestView(null)
     router.dismissTo('/')
@@ -104,6 +113,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }
   const askEnd = async () => {
     if (!t.active) return
+    // noch nichts eingetragen: nur beenden oder weitermachen – es gibt nichts zu speichern
+    if (loggedSinceStart() <= 0) {
+      if (await ask({ title: tr('training.bar.stopTitle'), message: tr('training.bar.stopEmpty'), ok: tr('training.bar.stopEmptyOk'), cancel: tr('training.bar.stopContinue') })) discard()
+      return
+    }
     const choice = await choose({
       title: tr('training.bar.stopTitle'), message: tr('training.bar.stopMessage'), cancel: tr('training.bar.stopContinue'),
       options: [{ id: 'save', title: tr('training.bar.stopSave') }, { id: 'discard', title: tr('training.bar.stopDiscard'), destructive: true }],

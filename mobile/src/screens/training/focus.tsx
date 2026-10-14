@@ -111,7 +111,7 @@ export function AllDone() {
   return (
     <Animated.View entering={FadeIn.duration(200)} style={{ flex: 1, justifyContent: 'center', paddingHorizontal: GUTTER, paddingBottom: insets.bottom + 16, gap: space.lg }}>
       <Text variant="hero" style={{ fontSize: 72, lineHeight: 68 }} accessibilityRole="header">
-        {open.length ? tr('training.focus.roundsNow') : tr('training.strong')}<Text variant="hero" style={{ fontSize: 72, lineHeight: 68, color: color.accent }}>.</Text>
+        {open.length ? t.ix.workouts.get(t.workout)?.name ?? tr('circuit.section') : tr('training.strong')}<Text variant="hero" style={{ fontSize: 72, lineHeight: 68, color: color.accent }}>.</Text>
       </Text>
       {open.length
         ? open.map(c => <CircuitCard key={c.id} id={c.id} />)
