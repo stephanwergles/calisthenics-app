@@ -1,0 +1,63 @@
+/* Workouts als horizontale Leiste (Heute und Plan-Tab): je Workout eine Karte, davor „Neues Workout“,
+   auf Heute am Ende die Vorlagen. Heute startet ein Tipp das Training, im Plan-Tab öffnet er den Editor. */
+import { Pressable, ScrollView, View } from 'react-native'
+import { router } from 'expo-router'
+import * as L from '@lever/core/logic.ts'
+import { toast } from '@lever/core/toast.ts'
+import { t as tr, tn } from '@lever/core/i18n/index.ts'
+import { useApp } from '@/state/app'
+import { Button, color, font, GUTTER, Icon, type IconName, radius, SectionTitle, Text } from '@/ui'
+
+const CARD = { width: 168, minHeight: 132, padding: 14, gap: 6, borderRadius: radius.card, borderCurve: 'continuous' as const, borderWidth: 1 }
+
+export function WorkoutStrip({ mode }: { mode: 'start' | 'edit' }) {
+  const { t, startWorkout } = useApp()
+  const list = L.workoutsInWeekOrder(t.ix)
+  const tap = (id: string) => {
+    if (mode === 'edit') { router.push({ pathname: '/workouts/[id]', params: { id } }); return }
+    if (t.active && t.active.workout !== id) { toast(tr('home.workoutBusy')); return }
+    startWorkout(id)
+  }
+  return (
+    <View>
+      <SectionTitle title={tr('home.workouts')}
+        right={mode === 'start' ? <Button size="sm" variant="ghost" title={tr('home.workoutsMine')} icon="right" onPress={() => router.push('/workouts')} /> : undefined} />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -GUTTER }} contentContainerStyle={{ paddingHorizontal: GUTTER, gap: 10 }}>
+        <ActionCard icon="plus" title={tr('home.workoutNew')} sub={tr('home.workoutNewSub')} onPress={() => router.push({ pathname: '/workouts/[id]', params: { id: 'new' } })} />
+        {list.map(w => {
+          const today = w.id === t.workout
+          const days = L.plannedDays(t.ix, w.id).map(d => L.WEEKDAY_SHORT[d]).join(' · ')
+          return (
+            <Pressable key={w.id} accessibilityRole="button" onPress={() => tap(w.id)}
+              accessibilityLabel={mode === 'start' ? tr('home.workoutStart', { name: w.name }) : `${w.name}, ${days || tr('plan.view.noDay')}`}
+              style={({ pressed }) => ({ ...CARD, backgroundColor: color.card, borderColor: today && mode === 'start' ? color.accentLine : color.line, opacity: pressed ? 0.8 : 1 })}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text variant="eyebrow" numberOfLines={1} style={{ fontSize: 11, color: today && mode === 'start' ? color.accent : days ? color.accent : color.muted }}>
+                  {today && mode === 'start' ? tr('home.workoutToday') : days || tr('plan.view.noDay')}
+                </Text>
+                <Icon name={mode === 'start' ? 'play' : 'edit'} size={14} color={mode === 'start' ? color.accent : color.muted} />
+              </View>
+              <Text variant="title" style={{ fontSize: 19, lineHeight: 21 }} numberOfLines={2}>{w.name}</Text>
+              <Text variant="small" numberOfLines={2} style={{ flex: 1 }}>{w.focus}</Text>
+              <Text variant="small" style={{ fontFamily: font.bodySemi }}>{tn('home.workoutMeta', w.slots.length)}</Text>
+            </Pressable>
+          )
+        })}
+        {mode === 'start' && <ActionCard icon="grid" title={tr('home.workoutsMore')} sub={tr('home.workoutsMoreSub')}
+          onPress={() => router.push({ pathname: '/templates', params: { kind: 'workout' } })} />}
+      </ScrollView>
+    </View>
+  )
+}
+
+/** Karte mit gestricheltem Rand für eine Aktion (neu anlegen, Vorlagen) */
+function ActionCard({ icon, title, sub, onPress }: { icon: IconName; title: string; sub: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={`${title}, ${sub}`} onPress={onPress}
+      style={({ pressed }) => ({ ...CARD, borderStyle: 'dashed', borderColor: color.line, justifyContent: 'center', alignItems: 'center', opacity: pressed ? 0.8 : 1 })}>
+      <Icon name={icon} size={22} color={color.accent} />
+      <Text variant="title" style={{ fontSize: 17, textAlign: 'center' }}>{title}</Text>
+      <Text variant="small" style={{ textAlign: 'center' }}>{sub}</Text>
+    </Pressable>
+  )
+}

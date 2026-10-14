@@ -9,6 +9,7 @@ import * as L from '@lever/core/logic.ts'
 import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
 import { useApp } from '@/state/app'
+import { WorkoutStrip } from './workout-strip'
 import { TabHeader } from '@/navigation'
 import { ask, Button, Card, color, font, GUTTER, Icon, SectionTitle, space, Text, type IconName } from '@/ui'
 import { DAY_NAME, Rows } from './parts'
@@ -21,7 +22,6 @@ export function PlanTab() {
   const active = L.activePhases(t.state, t.today)
   const upcoming = (t.state.phases ?? []).filter(p => p.from > t.today)
   const today = L.weekdayOf(t.today)
-  const list = L.workoutsInWeekOrder(t.ix)
   const week = L.WEEK_ORDER.map(d => ({ d, w: t.ix.catalog.weekplan[d] ? t.ix.workouts.get(t.ix.catalog.weekplan[d]!) : undefined }))
   const days = week.filter(x => x.w).length
   const minutes = useMemo(() => {
@@ -95,23 +95,8 @@ export function PlanTab() {
           onPress: () => (w ? openWorkout(w.id) : router.push({ pathname: '/workouts/day', params: { day: d } })),
         }))} />
 
-        {/* Meine Workouts */}
-        <SectionTitle title={tr('plan.view.myWorkouts')}
-          right={<Button size="sm" variant="ghost" icon="plus" title={tr('plan.view.new')} onPress={() => openWorkout('new')} />} />
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-          {list.map(w => {
-            const planned = L.plannedDays(t.ix, w.id).map(x => L.WEEKDAY_SHORT[x]).join(' · ')
-            return (
-              <Card key={w.id} onPress={() => openWorkout(w.id)} label={`${w.name}, ${w.focus}, ${count(w.slots.length)}, ${planned || tr('plan.view.noDay')}`}
-                style={{ flexBasis: '47%', flexGrow: 1, gap: 4, minHeight: 112 }}>
-                <Text variant="title" style={{ fontSize: 20 }} numberOfLines={2}>{w.name}</Text>
-                <Text variant="small" numberOfLines={2}>{w.focus} · {count(w.slots.length)}</Text>
-                <View style={{ flex: 1 }} />
-                <Text variant="small" style={{ fontFamily: font.bodySemi, color: planned ? color.accent : color.muted }}>{planned || tr('plan.view.noDay')}</Text>
-              </Card>
-            )
-          })}
-        </View>
+        {/* Meine Workouts: Leiste wie auf Heute, Tippen öffnet den Editor */}
+        <WorkoutStrip mode="edit" />
 
         {/* Phasen */}
         <SectionTitle title={tr('plan.view.phases')} />

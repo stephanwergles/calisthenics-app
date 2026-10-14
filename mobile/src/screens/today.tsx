@@ -1,15 +1,15 @@
 /* Heute: die Woche auf einen Blick, das Workout des Tages als große Karte, darunter die Skills
    mit dem kürzesten Weg zur nächsten Stufe. (Web: src/client/components/HomeView.tsx) */
 import { useMemo } from 'react'
-import { Pressable, ScrollView, View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import { router } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
 import { catalogData } from '@lever/core/data.ts'
-import { toast } from '@lever/core/toast.ts'
 import { getLocale, intl, t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
+import { WorkoutStrip } from '@/screens/plan/workout-strip'
 import { HeaderButton } from '@/navigation'
-import { Button, Card, color, ExerciseStill, font, GUTTER, hasClip, Icon, radius, Ring, SectionTitle, space, Text, Wordmark } from '@/ui'
+import { Button, Card, color, ExerciseStill, font, GUTTER, hasClip, Icon, Ring, SectionTitle, space, Text, Wordmark } from '@/ui'
 
 export function Today() {
   const { t, slots, started, doneToday: done, start, openTraining } = useApp()
@@ -107,7 +107,7 @@ export function Today() {
         </Card>
 
         {/* Workouts: jedes Workout mit einem Tipp starten (auch außerhalb des Plan-Tags) */}
-        <WorkoutStrip />
+        <WorkoutStrip mode="start" />
 
         {/* Challenge: Einstieg in die Selbsttests, mit dem letzten Versuch */}
         <ChallengeCard />
@@ -175,42 +175,3 @@ function ChallengeCard() {
   )
 }
 
-/** Workouts als horizontale Leiste: Tippen startet sofort (Schnellstart), am Ende die Vorlagen */
-function WorkoutStrip() {
-  const { t, startWorkout } = useApp()
-  const list = L.workoutsInWeekOrder(t.ix)
-  const go = (id: string) => {
-    if (t.active && t.active.workout !== id) { toast(tr('home.workoutBusy')); return }
-    startWorkout(id)
-  }
-  const card = { width: 168, minHeight: 132, padding: 14, gap: 6, borderRadius: radius.card, borderCurve: 'continuous' as const, borderWidth: 1 }
-  return (
-    <View>
-      <SectionTitle title={tr('home.workouts')} right={<Button size="sm" variant="ghost" title={tr('home.workoutsAll')} icon="right" onPress={() => router.push('/workouts')} />} />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -GUTTER }} contentContainerStyle={{ paddingHorizontal: GUTTER, gap: 10 }}>
-        {list.map(w => {
-          const today = w.id === t.workout
-          const days = L.plannedDays(t.ix, w.id).map(d => L.WEEKDAY_SHORT[d]).join(' · ')
-          return (
-            <Pressable key={w.id} accessibilityRole="button" accessibilityLabel={tr('home.workoutStart', { name: w.name })} onPress={() => go(w.id)}
-              style={({ pressed }) => ({ ...card, backgroundColor: color.card, borderColor: today ? color.accentLine : color.line, opacity: pressed ? 0.8 : 1 })}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text variant="eyebrow" style={{ fontSize: 11, color: today ? color.accent : color.muted }} numberOfLines={1}>{today ? tr('home.workoutToday') : days || ' '}</Text>
-                <Icon name="play" size={14} color={color.accent} />
-              </View>
-              <Text variant="title" style={{ fontSize: 19, lineHeight: 21 }} numberOfLines={2}>{w.name}</Text>
-              <Text variant="small" numberOfLines={2} style={{ flex: 1 }}>{w.focus}</Text>
-              <Text variant="small" style={{ fontFamily: font.bodySemi }}>{tn('home.workoutMeta', w.slots.length)}</Text>
-            </Pressable>
-          )
-        })}
-        <Pressable accessibilityRole="button" accessibilityLabel={tr('home.workoutsMoreSub')} onPress={() => router.push({ pathname: '/templates', params: { kind: 'workout' } })}
-          style={({ pressed }) => ({ ...card, borderStyle: 'dashed', borderColor: color.line, justifyContent: 'center', alignItems: 'center', opacity: pressed ? 0.8 : 1 })}>
-          <Icon name="grid" size={22} color={color.accent} />
-          <Text variant="title" style={{ fontSize: 17 }}>{tr('home.workoutsMore')}</Text>
-          <Text variant="small" style={{ textAlign: 'center' }}>{tr('home.workoutsMoreSub')}</Text>
-        </Pressable>
-      </ScrollView>
-    </View>
-  )
-}
