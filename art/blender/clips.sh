@@ -10,6 +10,9 @@ snap=$(mktemp -d art/out/clips/.skripte.XXXX)       # Skriptstand einfrieren: Ä
 cp art/blender/lever.py art/blender/moves.py $snap/
 for ex in "$@"; do
   dir=art/out/clips/$ex; rm -rf $dir; mkdir -p $dir
+  # Abnahme vor dem Rendern: Gelenkgrenzen, Sprünge, Griff, Durchdringung (Regeln in lever.py, RULES)
+  verdict=$($BL -b $BLEND[1] --python $snap/lever.py -- check $ex $dir 2>&1 | grep "^PRUEFUNG")
+  if [[ $verdict != *" ok" && -z $FORCE ]]; then echo "$ex: nicht gerendert – $verdict"; continue; fi
   $BL -b $BLEND[1] --python $snap/lever.py -- clip $ex $dir > $dir.log 2>&1 || { echo "$ex: Blender-Fehler, siehe $dir.log"; continue }
   ffmpeg -y -loglevel error -f lavfi -i color=c=0x1a1a1a:s=800x600:r=24 -framerate 24 -i $dir/frame_%04d.png \
     -filter_complex "[0][1]overlay=shortest=1,format=yuv420p" \

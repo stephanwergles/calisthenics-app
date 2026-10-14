@@ -14,7 +14,7 @@ Gelenkpunkten aus Querschnitten des Modells, bindet den Körper per automatische
 und posiert über Gelenkwinkel in Weltachsen. Figur blickt nach -Y, +X = ihre linke Seite.
 """
 import bpy, math, os, sys
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Quaternion, Vector
 from mathutils.geometry import intersect_point_line
 
 args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else ["still", "pistol", "/tmp/lever"]
@@ -176,6 +176,7 @@ def rot(b, axis, deg):
     pb = PB[b]; h = pb.head.copy()
     pb.matrix = Matrix.Translation(h) @ Matrix.Rotation(math.radians(deg), 4, axis) @ Matrix.Translation(-h) @ pb.matrix
     upd()
+FLEXSIGN = {f"{b}.{n}" for b in ("shin", "forearm") for n in "LR"}   # Scharnier-Ketten (Knie, Ellbogen)
 HINGE = {}            # Scharniergelenke: Beugeachse im Knochenraum (gefüllt nach dem Skelettbau)
 def aim(b, d, local=False, hinge=None, prefer=None):
     """Knochen um seinen Kopf drehen, bis er in Richtung d zeigt (Welt, oder Körperraum mit local).
@@ -213,14 +214,33 @@ ORDER = (["pelvis", "spine", "chest", "neck", "head"]
          + [f"{b}.{n}" for b in ("clavicle", "arm", "forearm", "hand", "fingers", "thigh", "shin", "foot") for n in "LR"])
 reset()
 REST = {b: (PB[b].tail - PB[b].head).normalized() for b in ORDER}
-for n in "LR":                         # Beugeachse = seitliche Achse (X) in Ruhelage
-    for b in (f"shin.{n}", f"foot.{n}", f"forearm.{n}"):
-        HINGE[b] = PB[b].bone.matrix_local.to_3x3().inverted() @ X
+ORDER_ALL = ORDER[:5] + [f"{b}.{n}" for b in ("clavicle", "arm", "forearm", "hand", "fingers", "thigh", "shin", "foot") for n in "LR"]
 LEN = {b: (pb.tail - pb.head).length for b, pb in PB.items()}
 REACH = LEN["arm.L"] + LEN["forearm.L"]
 STRAIGHT = 0.985
 OVER = [0.0]          # größte Überdehnung eines IK-Ziels (Hand/Fuß erreicht ihr Ziel nicht) im Bild
+RULES = dict(gelenk=25, sprung=25, griff=0.025, eindringen=0.03, auflage=0.045)   # Grad, Grad je Bild, m, m, m
+RAW = []              # Gelenkverstöße der Rohpose im zuletzt gesetzten Bild (vor dem Begrenzen)
 
+def align_hinge(up, lo, a, t, fallback):
+    """Oberarm/Oberschenkel um seine Achse a drehen, bis die Scharnierachse von Ellbogen/Knie auf der Beugeebene
+    (a, t) senkrecht steht. Ist das Glied fast gestreckt, legt fallback (gewünschte Scharnierachse) die Drehung
+    fest – sonst wäre sie bei Armen über Kopf oder Beinen nach oben unbestimmt und klappte um 180° um."""
+    pu = PB[up]; R = rig.matrix_world.to_3x3() @ pu.matrix.to_3x3() @ pu.bone.matrix_local.to_3x3().inverted()
+    c = a.cross(t); fb = Vector(fallback).normalized(); fb = fb - a * fb.dot(a)
+    if fb.length < 1e-4: fb = c.copy()
+    fb.normalize()
+    # Gewicht der tatsächlichen Beugeebene: wächst mit der Beugung und nur, solange sie zur Wunschrichtung passt.
+    # Überstrecken (c gegen fb) wird nie durch 180°-Verdrehen „geheilt“ – so hing einmal ein Bein falsch herum.
+    cn = c.normalized() if c.length > 1e-6 else fb
+    wgt = min(max((c.length - 0.05) / 0.2, 0), 1) * min(max(cn.dot(fb) / 0.3, 0), 1)
+    want = cn * wgt + fb * (1 - wgt)
+    cur = R @ flex_axis_rest(lo)
+    cur, want = cur - a * cur.dot(a), want - a * want.dot(a)
+    if cur.length < 1e-4 or want.length < 1e-4: return
+    ang = math.atan2(a.dot(cur.cross(want)), cur.dot(want)); ap = to_pose(a); hd = pu.head.copy()
+    pu.matrix = Matrix.Translation(hd) @ Matrix.Rotation(ang, 4, ap) @ Matrix.Translation(-hd) @ pu.matrix
+    upd()
 def two_bone(up, lo, target, hint):
     """Analytische 2-Knochen-IK: Mittelgelenk in der Ebene zur Hinweisrichtung."""
     S = world(PB[up].head); a, b = LEN[up], LEN[lo]
@@ -229,7 +249,11 @@ def two_bone(up, lo, target, hint):
     x = (a * a - b * b + d * d) / (2 * d); y = math.sqrt(max(a * a - x * x, 0))
     h = Vector(hint); w = (h - u * h.dot(u)).normalized()
     E = S + u * x + w * y
-    aim(up, E - S); aim(lo, target - E)
+    aim(up, E - S)
+    if lo in FLEXSIGN:
+        PB[lo].matrix_basis = Matrix(); upd()                       # Unterschenkel/-arm neu aus der Ruhelage beugen
+        align_hinge(up, lo, (E - S).normalized(), (target - E).normalized(), -u.cross(w))
+    aim(lo, target - E)
 def spin(b, ref_bone, rest_n, want):
     """Knochen b um seine Achse drehen, bis die Normale rest_n (Ruhelage von ref_bone) Richtung want zeigt."""
     pb = PB[b]; axis = (pb.tail - pb.head).normalized(); rb = PB[ref_bone]
@@ -241,33 +265,148 @@ def spin(b, ref_bone, rest_n, want):
 PALM = {"L": (-1, 0, 0), "R": (1, 0, 0)}     # Handflächen-Normale in Ruhelage (zum Oberschenkel)
 def hand(n, s):
     """Hand an Weltpunkt: k = Fingerknöchel, hdir = Richtung Handgelenk→Knöchel (sonst Verlängerung
-    Schulter→Knöchel, wie beim Hängen), palm = Handflächen-Normale, curl = Fingerrichtung, hint = Ellbogen."""
+    Schulter→Knöchel, wie beim Hängen), palm = Handflächen-Normale, curl/flex = Finger, hint = Ellbogen.
+    Die Gelenkgrenzen gelten schon hier: Unterarm-Drehung wird begrenzt, und kann das Handgelenk die verlangte
+    Richtung nicht erreichen, kippt die Hand Richtung Unterarm (Knöchel bleiben am Ziel, das Handgelenk wandert)."""
     K = Vector(s["k"]); S = world(PB[f"arm.{n}"].head); u = (K - S).normalized()
-    if s.get("hdir") is not None: u = u.lerp(Vector(s["hdir"]).normalized(), s.get("hw", 1.0)).normalized()   # hw: Übergang Hängen → Stütz
-    W = K - u * LEN[f"hand.{n}"]
-    two_bone(f"arm.{n}", f"forearm.{n}", W, s["hint"])
-    # Unterarm-Drehung: die gewünschte Handflächen-Normale um dieselbe Drehung zurückführen, die die Hand aus
-    # der Unterarm-Verlängerung in ihre Richtung u bringt. Das ist eindeutig, auch wenn die Handfläche entlang
-    # des Unterarms zeigt (flache Hand am Boden, False Grip) – dort kippte die frühere Projektion.
-    fa = PB[f"forearm.{n}"]; ax = rig.matrix_world.to_3x3() @ (fa.tail - fa.head).normalized()
-    pw = Vector(s.get("palm", (0, -1, 0))).normalized(); pw = pw - u * pw.dot(u)
-    pw = pw.normalized() if pw.length > 0.15 else u.orthogonal().normalized()   # Handfläche fast entlang der Hand: ersatzweise
-    spin(f"forearm.{n}", f"hand.{n}", PALM[n], u.rotation_difference(ax) @ pw)   # erst Unterarm drehen, sonst schwenkt die Hand weg
-    # Handgelenk und Finger beugen um die Querachse der Hand (Unterarm × Handfläche) – ohne Drehung um die
-    # eigene Achse, sonst kippt die Hand, sobald die kürzeste Drehung die Seite wechselt.
-    def flex_axis(bone):
-        pb = PB[bone]; d = rig.matrix_world.to_3x3() @ (pb.tail - pb.head).normalized()
-        return d.cross(palm_normal(n))
-    aim(f"hand.{n}", K - world(PB[f"hand.{n}"].head), hinge=flex_axis(f"forearm.{n}"), prefer=palm_normal(n))
-    curl = s.get("curl", u)
-    if s.get("flex") is not None:          # Finger um festen Winkel zur Handfläche gebeugt (Griff, der mitdreht)
-        hb = PB[f"hand.{n}"]; hd = rig.matrix_world.to_3x3() @ (hb.tail - hb.head).normalized(); a = math.radians(s["flex"])
-        curl = hd * math.cos(a) + palm_normal(n) * math.sin(a)
-    aim(f"fingers.{n}", curl, hinge=flex_axis(f"hand.{n}"), prefer=palm_normal(n))
+    lim = JLIM["hand"]; fa = PB[f"forearm.{n}"]
+    for _ in range(3):                         # Griff ohne Vorgabe: Handgelenk möglichst gerade (Hand verlängert Unterarm)
+        two_bone(f"arm.{n}", f"forearm.{n}", K - u * LEN[f"hand.{n}"], s["hint"])
+        u = (K - world(fa.head)).normalized()
+    if s.get("hdir") is not None:              # Vorgabe stetig einblenden (hw: Übergang Hängen → Stütz)
+        u = u.lerp(Vector(s["hdir"]).normalized(), s.get("hw", 1.0)).normalized()
+    for it in range(1):
+        W = K - u * LEN[f"hand.{n}"]
+        two_bone(f"arm.{n}", f"forearm.{n}", W, s["hint"])
+        # Unterarm-Drehung: die gewünschte Handflächen-Normale um dieselbe Drehung zurückführen, die die Hand aus
+        # der Unterarm-Verlängerung in ihre Richtung u bringt (eindeutig, auch bei Handfläche entlang des Unterarms).
+        ax = rig.matrix_world.to_3x3() @ (fa.tail - fa.head).normalized()
+        th0 = math.degrees(ax.angle(u))
+        if th0 > 78:                           # mehr als ~80° Knick (beide Richtungen) vorab begrenzen; stetig
+            u = ax.slerp(u, 78 / th0).normalized(); W = K - u * LEN[f"hand.{n}"]
+            two_bone(f"arm.{n}", f"forearm.{n}", W, s["hint"]); ax = rig.matrix_world.to_3x3() @ (fa.tail - fa.head).normalized()
+        pw0 = Vector(s.get("palm", (0, -1, 0))).normalized(); pw = pw0 - u * pw0.dot(u)
+        cur_p = palm_normal(n); cur_p = (cur_p - u * cur_p.dot(u)).normalized()
+        # Liegt die gewünschte Handfläche fast entlang der Hand, ist sie unbestimmt: dann stetig die aktuelle behalten
+        pw = cur_p.slerp(pw.normalized(), min(max((pw.length - 0.05) / 0.25, 0), 1)) if pw.length > 1e-6 else cur_p
+        pw.normalize()
+        flex_goal = s.get("flex")
+        if flex_goal is None and s.get("curl") is not None:   # Fingerkrümmung aus der Wunschhaltung, nicht aus der Raumrichtung
+            cv = Vector(s["curl"]).normalized(); flex_goal = math.degrees(math.atan2(cv.dot(pw0 - u * pw0.dot(u)), cv.dot(u)))
+        want = u.rotation_difference(ax) @ pw
+        # Das Handgelenk beugt sich zur Handfläche hin oder von ihr weg, seitlich kaum: je stärker die Hand
+        # abknickt, desto mehr muss die Handfläche in der Knickebene liegen.
+        bend = u - ax * u.dot(ax); th = math.degrees(ax.angle(u))
+        if bend.length > 1e-4 and th > 5:   # stetig: liegt die Handfläche quer zur Knickebene, nicht hineinzwingen
+            c = bend.normalized().dot(want); pf = bend.normalized() * (1 if c >= 0 else -1)
+            wgt = min(1.0, (th - 5) / 25) * min(1.0, abs(c) / 0.35)
+            want = want.slerp(pf, wgt).normalized()
+        spin(f"forearm.{n}", f"hand.{n}", PALM[n], want)
+        clamp_joints([f"forearm.{n}"])        # Pro-/Supination begrenzen, bevor die Hand ausgerichtet wird
+        for hb_ in (f"hand.{n}", f"fingers.{n}"): PB[hb_].matrix_basis = Matrix()
+        upd()                                  # Hand aus der Ruhelage ausrichten: keine Restdrehung um die eigene Achse
+        aim(f"hand.{n}", K - world(PB[f"hand.{n}"].head))     # kleinste Drehung = Beugen/Abknicken ohne Verdrehen
+        ang = joint_angles(f"hand.{n}")
+        over = max(lim["flex"][0] - ang["flex"], ang["flex"] - lim["flex"][1], abs(ang["dev"]) - lim["dev"][1], 0)
+        if over < 1 or s.get("hdir") is None and it > 0: break
+        ax = rig.matrix_world.to_3x3() @ (fa.tail - fa.head).normalized(); tot = math.degrees(ax.angle(u))
+        if tot < 1: break
+        u = ax.slerp(u, max(0.0, (tot - over - 3) / tot)).normalized()   # Hand um den Überschuss zum Unterarm kippen
+    hb = PB[f"hand.{n}"]; hd = rig.matrix_world.to_3x3() @ (hb.tail - hb.head).normalized(); pn = palm_normal(n)
+    a = math.radians(flex_goal if flex_goal is not None else 0.0)   # Finger um festen Winkel zur Handfläche (dreht mit)
+    curl = hd * math.cos(a) + pn * math.sin(a)
+    # Finger: Beugewinkel in der Ebene (Hand, Handfläche) bestimmen, auf −60…170° begrenzen und als reine
+    # Scharnier-Drehung setzen – ohne „kürzeste Drehung“, die bei rückwärts zeigender Richtung umspringt.
+    side = hd.cross(pn).normalized(); curl = Vector(curl)
+    a = math.degrees(math.atan2(curl.dot(pn), curl.dot(hd)))
+    lo_, hi_ = JLIM["fingers"]["flex"]
+    if a < lo_: a = lo_ + (lo_ - a) / (lo_ + 180) * (hi_ - lo_)   # weit nach hinten gemeint = eingerollt; stetig
+    a = min(a, hi_)                                                # (bei ±180° treffen sich beide Äste)
+    fb = PB[f"fingers.{n}"]; fd = rig.matrix_world.to_3x3() @ (fb.tail - fb.head).normalized()
+    cur = math.degrees(math.atan2(fd.dot(pn), fd.dot(hd)))
+    hdp = fb.head.copy()
+    fb.matrix = Matrix.Translation(hdp) @ Matrix.Rotation(math.radians(a - cur), 4, to_pose(side)) @ Matrix.Translation(-hdp) @ fb.matrix
+    upd()
 def leg(n, s):
     """Bein an Weltpunkt: a = Sprunggelenk, hint = Knie, fdir = Fußrichtung (Welt)."""
     two_bone(f"thigh.{n}", f"shin.{n}", Vector(s["a"]), s["hint"])
     if s.get("fdir") is not None: aim(f"foot.{n}", s["fdir"])
+
+# ── Gelenkgrenzen: jede Pose wird gegen anatomische Bereiche geprüft ─────────
+# Winkel aus matrix_basis (Drehung gegenüber Ruhelage, relativ zum Elternknochen), in den Achsen der
+# Ruhelage: X = seitlich, Y = nach hinten, Z = oben. Vorzeichen für links; rechts wird X-Rotation gleich,
+# Y/Z gespiegelt. flex/side = Drehvektor-Anteile um die genannte Achse, twist = Drehung um die Knochenachse.
+# Beugeachse je Knochen (Welt in Ruhelage, linke Seite; rechts axial gespiegelt), positive Drehung = Beugen.
+FLEX_W = {"shin": X, "foot": X, "forearm": -X, "thigh": -X, "hand": Y, "fingers": Y,
+          "spine": X, "chest": X, "neck": X, "head": X}
+JLIM = {   # Knochen: {flex: Beugen, dev: seitlich (Abknicken/Abspreizen), tw: Drehung um die Knochenachse} in Grad
+    "shin":    {"flex": (-8, 165), "dev": (-15, 15), "tw": (-40, 40)},     # Knie beugt nur nach hinten
+    "foot":    {"flex": (-40, 70), "dev": (-35, 35), "tw": (-35, 35)},     # Sprunggelenk
+    "forearm": {"flex": (-8, 160), "dev": (-15, 15), "tw": (-100, 100)},   # Ellbogen beugt nur nach vorn; tw = Pro-/Supination
+    "hand":    {"flex": (-90, 85), "dev": (-40, 40), "tw": (-20, 20)},     # Handgelenk (Stütz: bis 90° gestreckt)
+    "fingers": {"flex": (-60, 150), "dev": (-20, 20), "tw": (-20, 20)},   # ein Knochen für alle Fingerglieder; flach unter Last überstreckt
+    "thigh":   {"flex": (-40, 150), "dev": (-35, 75), "tw": (-60, 60)},    # Hüfte; dev > 0: abspreizen
+    "spine":   {"flex": (-45, 60), "dev": (-40, 40), "tw": (-45, 45)},
+    "chest":   {"flex": (-45, 50), "dev": (-35, 35), "tw": (-45, 45)},
+    "neck":    {"flex": (-60, 60), "dev": (-40, 40), "tw": (-70, 70)},
+    "head":    {"flex": (-50, 50), "dev": (-35, 35), "tw": (-60, 60)},
+}
+def axial(v, b): return Vector((v.x, -v.y, -v.z)) if b.endswith(".R") else Vector(v)
+def flex_axis_rest(b):
+    """Beugeachse in Ruhelage (Armature-Raum), senkrecht auf den Knochen projiziert."""
+    pb = PB[b]; d = (pb.bone.tail_local - pb.bone.head_local).normalized()
+    if b.split(".")[0] in ("hand", "fingers"): a = d.cross(Vector(PALM[b[-1]]))   # Beugen zur Handfläche
+    else: a = axial(FLEX_W.get(b.split(".")[0], X), b)
+    a = a - d * a.dot(d)
+    return a.normalized()
+def joint_angles(b):
+    pb = PB[b]; M = pb.bone.matrix_local.to_3x3()
+    q = (M @ pb.matrix_basis.to_3x3() @ M.inverted()).to_quaternion()
+    d = (pb.bone.tail_local - pb.bone.head_local).normalized()
+    v = Vector((q.x, q.y, q.z)); p = d * v.dot(d)
+    tw = Quaternion((q.w, p.x, p.y, p.z)); tw = tw.normalized() if tw.magnitude > 1e-9 else Quaternion()
+    sw = q @ tw.inverted()
+    a = math.degrees(2 * math.atan2(Vector((tw.x, tw.y, tw.z)).dot(d), tw.w))
+    tw_deg = (a + 180) % 360 - 180
+    rv = sw.to_axis_angle(); r = rv[0] * math.degrees(rv[1])
+    f = flex_axis_rest(b); g = d.cross(f)
+    side = -1 if b.endswith(".R") else 1
+    dev = r.dot(g) * side
+    if b.split(".")[0] == "thigh": dev = -dev                # Hüfte: positiv = abspreizen
+    return {"flex": r.dot(f), "dev": dev, "tw": tw_deg * side}
+for n in "LR":                         # Beugeachse im Knochenraum (senkrecht zum Knochen)
+    for b in (f"shin.{n}", f"foot.{n}", f"forearm.{n}"):
+        HINGE[b] = PB[b].bone.matrix_local.to_3x3().inverted() @ flex_axis_rest(b)
+def clamp_joints(bones=None, tol=0.0):
+    """Jedes Gelenk (Eltern zuerst) in seinen Bereich holen: Beugen, seitlich und Drehung getrennt begrenzen."""
+    for b in bones or ORDER_ALL:
+        base = b.split(".")[0]
+        if base not in JLIM: continue
+        ang = joint_angles(b); lim = JLIM[base]
+        cl = {k: min(max(v, lim[k][0] - tol), lim[k][1] + tol) if k in lim else v for k, v in ang.items()}
+        if "tw" in lim and abs(ang["tw"]) > lim["tw"][1]:     # jenseits der Grenze stetig zurück zur Mitte falten:
+            hi = lim["tw"][1]; t = ang["tw"]                  # bei ±180° keine Kante, an der die Hand umspringt
+            cl["tw"] = math.copysign(hi * (180 - abs(t)) / (180 - hi), t)
+        if all(abs(cl[k] - ang[k]) < 1e-3 for k in ang): continue
+        pb = PB[b]; M = pb.bone.matrix_local.to_3x3(); d = (pb.bone.tail_local - pb.bone.head_local).normalized()
+        f = flex_axis_rest(b); g = d.cross(f); side = -1 if b.endswith(".R") else 1
+        dev = (-cl["dev"] if base == "thigh" else cl["dev"]) * side
+        r = f * cl["flex"] + g * dev
+        sw = Quaternion(r.normalized(), math.radians(r.length)) if r.length > 1e-6 else Quaternion()
+        tw = Quaternion(d, math.radians(cl["tw"] * side))
+        q = sw @ tw
+        pb.matrix_basis = (M.inverted() @ q.to_matrix() @ M).to_4x4()
+        upd()
+def joint_violations():
+    out = []
+    for pb in PB:
+        base = pb.name.split(".")[0]
+        if base not in JLIM: continue
+        ang = joint_angles(pb.name)
+        for k, (lo, hi) in JLIM[base].items():
+            v = ang[k]; over = max(lo - v, v - hi, 0)
+            if over > 0: out.append((over, pb.name, k, v))
+    return out
 
 PTS = {"shoulder": ("arm", "head"), "elbow": ("forearm", "head"), "wrist": ("hand", "head"), "knuckle": ("hand", "tail"),
        "fingertip": ("fingers", "tail"), "hip": ("thigh", "head"), "knee": ("shin", "head"), "ankle": ("foot", "head"),
@@ -450,16 +589,25 @@ def pose_key(k, limbs=True):
         for b, axis, deg in k["rots"]: rot(b, axis, deg)
     else:
         P = k.get("pose", {})
-        for b in ORDER: aim(b, P.get(b, REST[b]), local=True)
+        for b in ORDER:                    # Hand/Finger ohne Angabe folgen dem Unterarm (keine feste Raumrichtung)
+            if b in P or b.split(".")[0] not in ("hand", "fingers"): aim(b, P.get(b, REST[b]), local=True)
     W = k.get("wpose", {})
     for b in ORDER:                        # Eltern vor Kindern (gemischte dicts haben keine feste Reihenfolge)
         if b in W: aim(b, W[b])
+    if "rots" not in k:                    # Knie/Ellbogen aus Richtungs-Posen als echtes Scharnier nachstellen
+        for up, lo, ch in [(f"thigh.{n}", f"shin.{n}", f"foot.{n}") for n in "LR"] + [(f"arm.{n}", f"forearm.{n}", f"hand.{n}") for n in "LR"]:
+            dirs = {b: (world(PB[b].tail) - world(PB[b].head)).normalized() for b in (up, lo, ch)}
+            PB[lo].matrix_basis = Matrix(); upd()
+            body_h = rig.matrix_world.to_3x3() @ flex_axis_rest(lo)   # gestreckt: Scharnier wie im Stand
+            align_hinge(up, lo, dirs[up], dirs[lo], body_h); aim(lo, dirs[lo]); aim(ch, dirs[ch])
     for b, deg in k.get("twist", {}).items():   # Drehung um die eigene Knochenachse (Rumpfrotation)
         pb = PB[b]; rot(b, (pb.tail - pb.head).normalized(), deg)
     place(k)
     if limbs:
         for n, s in k.get("legs", {}).items(): leg(n, s)
         for n, s in k.get("hands", {}).items(): hand(n, s)
+        RAW[:] = joint_violations()        # Rohpose merken (Prüfung), dann anatomisch begrenzen
+        clamp_joints()
         for f in DYN: f()
         upd()
 
@@ -519,9 +667,20 @@ def curve(x, prof):
     x -= top
     if x < fall: return 1 - ease(x / fall)
     return 0.0
+def _hands_compatible(a, b):
+    """Hand-Vorgaben zweier Schlüssel angleichen, bevor gemischt wird: fehlt hdir auf einer Seite, gilt dort hw=0
+    (sonst springt die Handrichtung beim Wechsel des Schlüssel-Paars schlagartig)."""
+    a, b = dict(a), dict(b)
+    for n in set(a.get("hands", {})) & set(b.get("hands", {})):
+        ha, hb = dict(a["hands"][n]), dict(b["hands"][n])
+        for x, y in ((ha, hb), (hb, ha)):
+            if y.get("hdir") is not None and x.get("hdir") is None: x["hdir"] = y["hdir"]; x["hw"] = 0.0
+            elif y.get("hdir") is not None: x.setdefault("hw", 1.0); y.setdefault("hw", 1.0)
+        a["hands"] = {**a["hands"], n: ha}; b["hands"] = {**b["hands"], n: hb}
+    return a, b
 def key_at(keys, s):
     """s ∈ [0, len(keys)-1] → gemischte Schlüsselpose."""
-    i = min(int(s), len(keys) - 2); return mix(keys[i], keys[i + 1], s - i)
+    i = min(int(s), len(keys) - 2); a, b = _hands_compatible(keys[i], keys[i + 1]); return mix(a, b, s - i)
 
 # ── Bildausschnitt ──────────────────────────────────────────────────────────
 def frame_camera(view, pts, fit=0.86, lens=60, dist=None):
@@ -604,7 +763,8 @@ else:
     EX = EXERCISES[ARG]()
     keys = EX["keys"]
     for k in keys:                         # fehlende Knochen = Ruhelage, damit sich alle Schlüssel mischen lassen
-        if "rots" not in k: k["pose"] = {b: k.get("pose", {}).get(b, REST[b]) for b in ORDER}
+        if "rots" not in k: k["pose"] = {b: k.get("pose", {}).get(b, REST[b]) for b in ORDER
+                                         if b in k.get("pose", {}) or b.split(".")[0] not in ("hand", "fingers")}
         k.setdefault("rot", (0, 0, 0))
     frames = int(os.environ.get("LEVER_FRAMES") or EX.get("frames", 48)); prof = EX.get("timing", "pp")
     S_OF = [curve(i / frames, prof) * (len(keys) - 1) for i in range(frames)]
@@ -636,10 +796,13 @@ else:
         c = [float(x) for x in os.environ["LEVER_CAM"].split(",")]
         cam.location, target.location = Vector(c[:3]), Vector(c[3:])
     if MODE == "check":                    # ohne Rendern: Durchdringungen, Bodenkontakt, Reichweite pro Bild
-        worst = {}; prev = {}; jumps = {}
+        worst = {}; prev = {}; jumps = {}; gelenk = {}; griff = [0.0, 0]
         JB = [f"{b}.{n}" for b in ("forearm", "hand", "fingers", "shin", "foot") for n in "LR"]
         for i, s in enumerate(S_OF + S_OF[:1]):      # letztes Bild → erstes: auch die Loop-Naht prüfen
-            OVER[0] = 0.0; pose_key(key_at(keys, s))
+            OVER[0] = 0.0; kk_ = key_at(keys, s); pose_key(kk_)
+            for n, hs in kk_.get("hands", {}).items():     # Griff nach dem Begrenzen: Knöchel noch am Ziel?
+                miss = (pt(f"knuckle.{n}") - Vector(hs["k"])).length
+                if miss > griff[0]: griff[:] = [miss, i, n]
             for b in JB:                     # Drehsprung je Bild (Grad): zeigt kippende Hände/Füße
                 q = (rig.matrix_world @ PB[b].matrix).to_quaternion()
                 if b in prev:
@@ -647,6 +810,9 @@ else:
                     if a > jumps.get(b, (0, 0))[0]: jumps[b] = (a, i)
                 prev[b] = q
             if i == len(S_OF): break
+            for over, b, k, v in RAW:
+                key = f"{b}:{k}"
+                if over > gelenk.get(key, (0,))[0]: gelenk[key] = (over, i, v)
             P = mesh_np()
             row = {"boden": P[:, 2].min(), "reichweite": -OVER[0]}; where = {"boden": GROUPV[int(P[:, 2].argmin())]}
             for name, f, grip in COLL:
@@ -655,7 +821,20 @@ else:
             for kk, v in row.items():
                 if v < worst.get(kk, (9, 0))[0]: worst[kk] = (v, i, where.get(kk, ""))
             if os.environ.get("LEVER_DEBUG"): print("FRAME", i, {kk: round(v, 3) for kk, v in row.items()})
+        bad = sorted(gelenk.items(), key=lambda x: -x[1][0])
+        print("GRIFF", ARG, f"{griff[0] * 100:.1f}cm@{griff[1]}" + (f"({griff[2]})" if len(griff) > 2 else ""))
+        print("GELENK", ARG, "ok" if not bad else " ".join(f"{k}={v:.0f}°(+{o:.0f})@{i}" for k, (o, i, v) in bad[:6]))
         print("SPRUNG", ARG, " ".join(f"{b}={a:.0f}°@{i}" for b, (a, i) in sorted(jumps.items(), key=lambda x: -x[1][0])[:4]))
+        # Abnahme-Regeln: nur was alle erfüllt, wird gerendert (clips.sh bricht sonst ab)
+        fails = []
+        if bad and bad[0][1][0] > RULES["gelenk"]: fails.append(f"Gelenk {bad[0][0]} +{bad[0][1][0]:.0f}°")
+        jmax = max(jumps.items(), key=lambda x: x[1][0], default=(None, (0, 0)))
+        if jmax[1][0] > RULES["sprung"]: fails.append(f"Sprung {jmax[0]} {jmax[1][0]:.0f}°/Bild")
+        if griff[0] > RULES["griff"]: fails.append(f"Griff {griff[0] * 100:.1f} cm daneben")
+        for kk, (v, i_, w_) in worst.items():   # Hände/Füße auf Auflage: Weichteile geben nach, etwas mehr erlaubt
+            tol = RULES["auflage"] if w_.split(".")[0] in ("hand", "fingers", "foot") else RULES["eindringen"]
+            if kk != "reichweite" and v < -tol: fails.append(f"{kk} {v * 100:.1f} cm ({w_})")
+        print("PRUEFUNG", ARG, "ok" if not fails else "FEHLER " + "; ".join(fails))
         print("CHECK", ARG, " ".join(f"{kk}={v:+.3f}@{i}{'(' + w + ')' if w else ''}" for kk, (v, i, w) in worst.items()))
     elif MODE == "still":                  # jede Schlüsselpose als Bild: <übung>_k0.png …
         for i in range(len(keys)):
