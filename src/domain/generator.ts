@@ -261,6 +261,7 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
      zuerst, mittlere Schwierigkeit, Themen, Sehnen und Zug/Druck wie oben ── */
   // Ziel-Leitern anderer Skills (Planche, Muscle-up …) nur, wenn der Skill gewählt ist – oder die
   // Leiter schon im bisherigen Plan steht (Beinheben, L-Sit: Gewohntes nicht ohne Not streichen)
+  const goalLadders = new Set(skills.flatMap(sk => sk.targets))
   const otherSkills = new Set(data.skills.filter(sk => !input.skills.includes(sk.id)).flatMap(sk => sk.targets).filter(pid => !keep.has(pid)))
   const extras = catalog.progressions.filter(p => !otherSkills.has(p.id)).flatMap(p => {
     const r = resolve(p)
@@ -270,7 +271,9 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
     for (let guard = 0; guard < 8 && minutesOf(d) < input.minutes * FILL; guard++) {
       const here = plan.get(d)!
       const pick = extras
-        .filter(x => !here.some(c => c.progression.id === x.p.id))
+        // eine Leiter, die schon an einem anderen Tag steht, nur dann noch einmal, wenn sie zu einem
+        // Ziel gehört (L-Sit 2× pro Woche ja, Beinheben an allen drei Tagen nein)
+        .filter(x => (!used.has(x.p.id) || goalLadders.has(x.p.id)) && !here.some(c => c.progression.id === x.p.id))
         .map(({ p, r }) => {
           const m = meta[r.ex.id]
           const c: Candidate = { progression: p, exercise: r.ex, meta: m, kind: 'base', reason: `Ergänzung: ${PATTERN_LABEL[m.pattern]}`,

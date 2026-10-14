@@ -150,7 +150,7 @@ function Steps({ pid, label, current }: { pid: string; label?: string; current: 
         return (
           <Fragment key={s.ex.id}>
             {i > 0 && <View style={{ height: 0.5, backgroundColor: color.line, marginLeft: 62 }} />}
-            <Pressable accessibilityRole="button" onPress={() => openLadder(pid)}
+            <Pressable accessibilityRole="button" onPress={() => openLadder(pid, s.ex.id)}
               accessibilityLabel={tr('skills.stepA11y', { i: i + 1, name: s.ex.name, state: tr(`skills.stepState.${state}`) })}
               style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 12, paddingLeft: 16, paddingRight: 14, minHeight: 58,
                 backgroundColor: pressed ? 'rgba(255,255,255,0.06)' : state === 'now' ? color.accentDim : 'transparent' })}>
