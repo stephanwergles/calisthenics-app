@@ -85,3 +85,22 @@ export function Button({ title, icon, variant = 'secondary', size = 'md', onPres
 export function ButtonRow({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
   return <View style={[{ flexDirection: 'row', gap: 10 }, style]}>{children}</View>
 }
+
+/** Mehrere Icon-Aktionen in einer Glas-Kapsel, getrennt durch eine Haarlinie (z. B. Übungen | Stopp).
+    Jede Hälfte ist ein eigenes 44-pt-Ziel mit Label für VoiceOver. */
+export function IconCapsule({ items }: { items: { icon: IconName; label: string; onPress: () => void }[] }) {
+  return (
+    <View style={[{ flexDirection: 'row', alignItems: 'center', height: TAP, borderRadius: 999, borderCurve: 'continuous', overflow: 'hidden' }, SURFACE.secondary]}>
+      {items.map((it, i) => (
+        <View key={it.label} style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {i > 0 && <View style={{ width: 1, height: 20, backgroundColor: color.glassLine }} />}
+          <Pressable accessibilityRole="button" accessibilityLabel={it.label}
+            onPress={() => { platform().signals.haptic('tap'); it.onPress() }}
+            style={({ pressed }) => ({ width: 50, height: TAP, alignItems: 'center', justifyContent: 'center', backgroundColor: pressed ? 'rgba(255, 255, 255, 0.14)' : 'transparent' })}>
+            <Icon name={it.icon} size={18} color={color.text} />
+          </Pressable>
+        </View>
+      ))}
+    </View>
+  )
+}

@@ -15,7 +15,7 @@ import { useHoldTimer, type HoldTimer } from '@lever/core/useHoldTimer.ts'
 import { platform } from '@lever/core/platform.ts'
 import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
-import { Button, ButtonRow, color, CountdownRing, ExerciseMedia, font, GUTTER, Icon, radius, space, Text } from '@/ui'
+import { Button, ButtonRow, color, CountdownRing, ExerciseMedia, font, GUTTER, Icon, IconCapsule, radius, space, Text } from '@/ui'
 import { NoteInput, SetTiles } from './parts'
 
 const haptic = (k: 'tap' | 'success' = 'tap') => platform().signals.haptic(k)
@@ -61,8 +61,12 @@ export function FocusTop() {
                 style={{ fontFamily: font.display, fontSize: 20, color: color.text, fontVariant: ['tabular-nums'] }}>{duration}</Text>
             ) : null}
           </View>
-          <Button icon="list" label={tr('training.focus.allExercises')} onPress={openList} />
-          {t.active && <Button icon="stop" label={tr('training.bar.stop')} onPress={() => void askEnd()} />}
+          {t.active
+            ? <IconCapsule items={[
+                { icon: 'list', label: tr('training.focus.allExercises'), onPress: openList },
+                { icon: 'stop', label: tr('training.bar.stop'), onPress: () => void askEnd() },
+              ]} />
+            : <Button icon="list" label={tr('training.focus.allExercises')} onPress={openList} />}
         </View>
         {/* Fortschritt je Übung – antippbar; VoiceOver: wischen hoch/runter wechselt die Übung */}
         <View accessible accessibilityRole="adjustable" accessibilityLabel={tr('training.focus.exercises')}

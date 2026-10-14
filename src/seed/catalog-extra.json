@@ -2389,6 +2389,58 @@
     "Latissimus",
     "Schultern"
    ]
+  },
+  {
+   "id": "air-squat",
+   "name": "Kniebeugen",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Schulterbreiter Stand, Füße leicht ausgedreht, Arme vor dem Körper.",
+    "execution": "Hüfte nach hinten-unten, bis die Oberschenkel mindestens waagerecht sind, Fersen bleiben am Boden. Über die ganze Fußsohle wieder hochdrücken, oben Hüfte strecken.",
+    "faults": "Fersen heben ab · Knie fallen nach innen · Rücken rundet unten",
+    "scaling": "Leichter: auf eine Box setzen und aufstehen. Schwerer: Sprungkniebeugen, dann Pistol."
+   },
+   "media": {
+    "videoQuery": "bodyweight squat form"
+   },
+   "cues": [
+    "Fersen am Boden",
+    "Knie über den Zehen",
+    "Unten tief, oben ganz strecken"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Gesäß",
+    "Adduktoren"
+   ]
+  },
+  {
+   "id": "jump-squat",
+   "name": "Sprungkniebeugen",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Wie bei der Kniebeuge, Arme hinten zum Schwungholen.",
+    "execution": "Aus der tiefen Kniebeuge explosiv nach oben springen, Arme schwingen mit. Weich über den Vorfuß landen und direkt in die nächste Kniebeuge sinken.",
+    "faults": "Harte Landung auf den Fersen · Knie knicken nach innen · zu flach",
+    "scaling": "Leichter: Kniebeugen schnell nach oben, ohne Sprung. Schwerer: höher springen, Pause unten."
+   },
+   "media": {
+    "videoQuery": "jump squat form"
+   },
+   "cues": [
+    "Explosiv nach oben",
+    "Leise landen",
+    "Knie über den Zehen"
+   ],
+   "muscles": [
+    "Quadrizeps",
+    "Gesäß",
+    "Waden"
+   ]
   }
  ],
  "progressions": [
@@ -3312,6 +3364,35 @@
       "unlockAt": 8,
       "min": 3,
       "max": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "squat",
+   "name": "Kniebeuge",
+   "region": "legs",
+   "steps": [
+    {
+     "exercise": "air-squat",
+     "target": {
+      "label": "3 × 15–25",
+      "sets": 3,
+      "restSec": 60,
+      "unlockAt": 25,
+      "min": 15,
+      "max": 25
+     }
+    },
+    {
+     "exercise": "jump-squat",
+     "target": {
+      "label": "3 × 8–15",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 15,
+      "min": 8,
+      "max": 15
      }
     }
    ]

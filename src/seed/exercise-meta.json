@@ -2057,6 +2057,31 @@
     "elbow": 1,
     "back": 1
    }
+  },
+  "air-squat": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 1,
+   "stress": {
+    "knee": 1
+   }
+  },
+  "jump-squat": {
+   "equipment": [
+    [
+     "floor"
+    ]
+   ],
+   "pattern": "squat",
+   "difficulty": 2,
+   "stress": {
+    "knee": 2,
+    "ankle": 1
+   }
   }
  }
 }
