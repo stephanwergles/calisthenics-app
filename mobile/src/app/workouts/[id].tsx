@@ -54,7 +54,7 @@ function Editor({ w, first }: { w: Workout; first: boolean }) {
   }
   const slots = w.slots.flatMap(sl => {
     if (!t.ix.progressions.has(sl.progression)) return []
-    const step = L.currentStep(t.ix, t.state, sl.progression)
+    const step = L.slotStep(t.ix, t.state, sl)
     return [{ sl, step, sets: sl.sets ?? step.target.sets }]
   })
 
@@ -84,7 +84,7 @@ function Editor({ w, first }: { w: Workout; first: boolean }) {
         {!slots.length && <Text variant="muted">{tr('editor.empty')}</Text>}
         {slots.length > 0 && <Rows rows={slots.map(({ sl, step, sets }) => ({
           key: sl.progression, title: step.exercise.name, exercise: step.exercise,
-          subtitle: `${tn('editor.setsN', sets)} à ${step.target.label.replace(/^\d+\s*×\s*/, '')} · ${tr('editor.stage', { stage: step.index + 1, total: step.total })}`,
+          subtitle: `${tn('editor.setsN', sets)} à ${step.target.label.replace(/^\d+\s*×\s*/, '')} · ${step.fixed ? tr('editor.fixed') : tr('editor.stage', { stage: step.index + 1, total: step.total })}`,
           onPress: () => router.push({ pathname: '/workouts/slot', params: { id: w.id, pid: sl.progression } }),
         }))} />}
         <Button icon="plus" title={tr('editor.addExercise')} onPress={() => router.push({ pathname: '/workouts/add', params: { id: w.id } })} />

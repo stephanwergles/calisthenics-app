@@ -70,4 +70,10 @@ export const editor = {
   circuitPick: 'Übung wählen',
   circuitPickSub: 'Alle Übungen, auch leichtere und schwerere Stufen als deine aktuelle.',
   search: 'Suchen',
+  fixed: 'feste Übung',
+  stageHead: 'Stufe',
+  stageAuto: 'Mitwachsend ({name})',
+  stageAutoHint: 'Folgt deiner Leiter: Schaffst du die Stufe, kommt hier automatisch die nächste.',
+  stageFixedHint: 'Feste Übung: bleibt so, auch wenn du in der Leiter weiterkommst – zählt nicht fürs Freischalten.',
+  searchAll: 'Alle Übungen durchsuchen',
 }

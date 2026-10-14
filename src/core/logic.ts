@@ -151,6 +151,24 @@ export interface Step { index: number; total: number; exercise: Exercise; target
   nextTarget?: Target }
 /** Aktuelle Stufe einer Progression. Ohne Eintrag (oder wenn die Übung nicht mehr
     in der Progression steht) gilt die erste Stufe. */
+/** Stufe eines Slots: die feste Übung, wenn eine gesetzt ist (und noch in der Leiter steht),
+    sonst die aktuelle Stufe */
+export function slotStep(ix: Index, state: UserState, sl: { progression: ProgressionId; exercise?: ExerciseId }): Step & { fixed?: boolean } {
+  const p = ix.progressions.get(sl.progression)!
+  const at = sl.exercise ? p.steps.findIndex(s => s.exercise === sl.exercise) : -1
+  if (at < 0) return currentStep(ix, state, sl.progression)
+  return { ...currentStep(ix, { ...state, current: { ...state.current, [sl.progression]: sl.exercise! } }, sl.progression), fixed: true }
+}
+/** feste Stufe setzen (oder mit undefined wieder mitwachsen lassen); legt den Slot bei Bedarf an */
+export function withSlotExercise(ix: Index, w: Workout, pid: ProgressionId, exercise: ExerciseId | undefined): Workout {
+  const base = withSlot(ix, w, pid)
+  return reslot(ix, base, base.slots.map(sl => {
+    if (sl.progression !== pid) return sl
+    const { exercise: _old, ...rest } = sl
+    return exercise ? { ...rest, exercise } : rest
+  }))
+}
+
 export function currentStep(ix: Index, state: UserState, pid: ProgressionId): Step {
   const p = ix.progressions.get(pid)!
   const found = p.steps.findIndex(s => s.exercise === state.current[pid])
@@ -350,6 +368,8 @@ export interface SlotView {
   blockedBy?: string
   /** Ersatz für die ruhende Übung dieses Namens */
   substituteFor?: string
+  /** feste Stufe im Workout (wächst nicht mit) */
+  fixed?: boolean
 }
 
 /** Alles, was die Ansicht pro Slot braucht – in Trainingsreihenfolge */
@@ -358,7 +378,7 @@ export function workoutSlots(ix: Index, workout: WorkoutId, user: UserState, tod
   const phases = activePhases(user, date)
   const lighter = reentry(user, date)
   const view = (sl: DaySlot, substituteFor?: string): SlotView => {
-    const step = currentStep(ix, user, sl.progression)
+    const step = slotStep(ix, user, sl)
     const blockedBy = opts.meta ? phaseBlock(phases, opts.meta[step.exercise.id], step.exercise.id) ?? undefined : undefined
     const paused = user.paused.includes(sl.progression) || !!blockedBy
     const base = plannedSets(undefined, sl.progression, step.target, sl.sets)
@@ -368,7 +388,9 @@ export function workoutSlots(ix: Index, workout: WorkoutId, user: UserState, tod
       sets: setsOf(today, step.exercise.id),
       state: slotState(today, step.exercise.id, planned, paused),
       last: lastPerformance(sessions, step.exercise.id, date),
-      ready: !paused && !!step.next && readyToProgress(sessions, step.exercise.id, step.target, step.nextTarget),
+      // feste Stufe: kein Freischalten (die Leiter läuft woanders weiter)
+      ready: !paused && !step.fixed && !!step.next && readyToProgress(sessions, step.exercise.id, step.target, step.nextTarget),
+      ...(step.fixed ? { fixed: true } : {}),
     }
   }
   const slots = daySlots(ix, workout, today)
@@ -912,7 +934,7 @@ export function planDiff(ix: Index, user: UserState, next: Plan): DayDiff[] {
     if (!a && !b) return []
     const setsOf = (w: Workout | undefined, pid: ProgressionId) => {
       const sl = w?.slots.find(s => s.progression === pid)
-      return sl ? sl.sets ?? (ix.progressions.has(pid) ? currentStep(ix, user, pid).target.sets : 0) : 0
+      return sl ? sl.sets ?? (ix.progressions.has(pid) ? slotStep(ix, user, sl).target.sets : 0) : 0
     }
     const changes: DayDiff['changes'] = []
     for (const sl of b?.slots ?? []) {

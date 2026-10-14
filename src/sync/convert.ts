@@ -126,6 +126,7 @@ const isFlag = (v: any) => v === undefined || typeof v === 'boolean'
 const isSlot = (s: any) => !!s && isId(s.progression) && typeof s.block === 'string'
   && (s.sets === undefined || (Number.isInteger(s.sets) && s.sets >= 1 && s.sets <= 10))
   && (s.reason === undefined || (typeof s.reason === 'string' && s.reason.length <= 120))
+  && (s.exercise === undefined || isId(s.exercise))
 const isRoutine = (r: any) => !!r && isId(r.id) && typeof r.name === 'string' && r.name.length <= 200
 export function isPlan(p: any): p is Plan {
   return !!p && isId(p.id) && Number.isInteger(p.version) && typeof p.name === 'string' && p.name.length <= 80

@@ -686,3 +686,14 @@ test('Vorlagen: Plan auf deine Trainingstage, Workout als eigene Kopie', () => {
   assert.equal(w.id, 'core-finisher')
   assert.equal(w.slots.length, fin.workouts[0].slots.length)
 })
+
+test('Feste Übung im Workout: andere Stufe als die eigene, wächst nicht mit, schaltet nicht frei', () => {
+  const w = ix.workouts.get('push')!
+  const fixed = L.withSlotExercise(ix, w, 'horizontal-push', 'push-up')
+  const sl = fixed.slots.find(s => s.progression === 'horizontal-push')!
+  assert.equal(sl.exercise, 'push-up')
+  const st = L.slotStep(ix, { current: { 'horizontal-push': 'ring-push-up' }, paused: [] }, sl)
+  assert.equal(st.exercise.id, 'push-up'); assert.equal(st.fixed, true)
+  assert.equal(L.slotStep(ix, state, { progression: 'horizontal-push', exercise: 'gibt-es-nicht' }).fixed, undefined, 'unbekannte Übung → mitwachsend')
+  assert.equal(L.withSlotExercise(ix, fixed, 'horizontal-push', undefined).slots.find(s => s.progression === 'horizontal-push')!.exercise, undefined)
+})

@@ -75,8 +75,10 @@ export interface Workout {
   name: string;
   focus: string;
   /** Array-Reihenfolge = Trainingsreihenfolge. v1 brauchte dafür `ord`.
-      `sets` (nur im eigenen Plan) überschreibt die Satzzahl der Stufe. */
-  slots: { block: Block; progression: ProgressionId; sets?: number; reason?: string }[];
+      `sets` (nur im eigenen Plan) überschreibt die Satzzahl der Stufe. `exercise` (nur im eigenen
+      Plan) hält eine feste Stufe der Leiter, z. B. normale Liegestütze, obwohl die eigene Stufe
+      schon weiter ist – sie wächst nicht mit und schaltet nichts frei. */
+  slots: { block: Block; progression: ProgressionId; sets?: number; reason?: string; exercise?: ExerciseId }[];
   warmup: RoutineItem[];
   cooldown: RoutineItem[];
   /** nur im eigenen Plan: selbst angelegt (statt aus dem Katalog/Generator) */

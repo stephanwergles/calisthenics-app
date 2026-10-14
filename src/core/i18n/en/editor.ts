@@ -73,4 +73,10 @@ export const editor: Shape<typeof de> = {
   circuitPick: 'Choose exercise',
   circuitPickSub: 'All exercises, including easier and harder stages than your current one.',
   search: 'Search',
+  fixed: 'fixed exercise',
+  stageHead: 'Stage',
+  stageAuto: 'Grows with you ({name})',
+  stageAutoHint: 'Follows your ladder: once you master the stage, the next one appears here automatically.',
+  stageFixedHint: 'Fixed exercise: stays as is even when you progress on the ladder – doesn’t count towards unlocking.',
+  searchAll: 'Search all exercises',
 }
