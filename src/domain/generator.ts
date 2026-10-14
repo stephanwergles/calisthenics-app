@@ -8,6 +8,8 @@
    2. Auf Tage verteilen (schwerste Skills zuerst): Skill an den Tag mit der längsten Pause davor,
       Support/Voraussetzung zum Tag ihres Skills, gleiche Region zusammen, Zug und Druck möglichst
       getrennt; hart: keine hohe Belastung derselben Sehne an zwei Kalender-Folgetagen
+   Kontinuität: Leitern aus dem bisherigen Plan (input.keep) werden bei Grundmustern, Ausgleich und
+   Auffüllen bevorzugt – ein Vorschlag streicht nur, was Ziele oder Zeitbudget verlangen
    3. Volumen aus den Stufen-Zielen, ans Zeitbudget angepasst (erst Sätze kürzen, dann Ausgleich und
       Grundmuster streichen – Skills bleiben)
    4. Reihenfolge je Einheit: Skill, Kraft, Rumpf, Zubehör */
@@ -18,8 +20,9 @@ import type {
 
 export const WEEK: Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 export const BASE_PATTERNS: Pattern[] = ['vertical-pull', 'horizontal-pull', 'vertical-push', 'horizontal-push', 'squat', 'hinge', 'core']
-/** Tage bis zu diesem Anteil des Zeitbudgets auffüllen */
-const FILL = 0.75
+/** Tage bis zu diesem Anteil des Zeitbudgets auffüllen – die Minutenrechnung (slotMinutes) trifft
+    echte Einheiten gut (v1-Plan: 74–90 min gerechnet, ~90 min real), 75 % ließ ein Viertel ungenutzt */
+const FILL = 0.95
 const PATTERN_LABEL: Record<Pattern, string> = {
   'vertical-pull': 'Zug vertikal', 'horizontal-pull': 'Zug horizontal', 'vertical-push': 'Druck vertikal',
   'horizontal-push': 'Druck horizontal', squat: 'Kniebeuge', hinge: 'Hüftstreckung', core: 'Rumpf', isolation: 'Isolation',
@@ -111,6 +114,7 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
   /* ── 1. Slots sammeln ── */
   const used = new Set<string>()
   const candidates: Candidate[] = []
+  const keep = new Set(input.keep ?? [])
   const stepOf = (p: Progression) => Math.min(input.current[p.id] ?? 0, p.steps.length - 1)
   /** aktuelle Stufe, sonst die nächst-leichtere, zuletzt die nächst-schwerere mit vorhandenem Equipment
       (z. B. Negativ-Muscle-ups statt Muscle-ups mit Band, wenn kein Band da ist) */
@@ -154,7 +158,7 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
       .filter(p => !used.has(p.id))
       .map(p => ({ p, r: resolve(p) }))
       .filter(x => x.r && meta[x.r.ex.id]?.pattern === pattern)
-      .sort((a, b) => meta[a.r!.ex.id].difficulty - meta[b.r!.ex.id].difficulty)[0]
+      .sort((a, b) => Number(keep.has(b.p.id)) - Number(keep.has(a.p.id)) || meta[a.r!.ex.id].difficulty - meta[b.r!.ex.id].difficulty)[0]
     if (pick) add(pick.p.id, 'base', `Grundmuster: ${PATTERN_LABEL[pattern]}`)
     else warnings.push(`Grundmuster ${PATTERN_LABEL[pattern]}: keine Leiter mit dem vorhandenen Equipment`)
   }
@@ -168,7 +172,7 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
       .filter(p => p.region === need && !used.has(p.id))
       .map(p => ({ p, r: resolve(p) }))
       .filter(x => x.r)
-      .sort((a, b) => meta[a.r!.ex.id].difficulty - meta[b.r!.ex.id].difficulty)[0]
+      .sort((a, b) => Number(keep.has(b.p.id)) - Number(keep.has(a.p.id)) || meta[a.r!.ex.id].difficulty - meta[b.r!.ex.id].difficulty)[0]
     if (!pick) { warnings.push(`Ausgleich ${need === 'push' ? 'Druck' : 'Zug'}: keine weitere Leiter verfügbar`); break }
     add(pick.p.id, 'balance', `Ausgleich ${need === 'push' ? 'Druck' : 'Zug'}`)
   }
@@ -253,10 +257,11 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
     }
   }
 
-  /* ── 2c. Auffüllen: Tage unter ~75 % des Budgets mit passenden Leitern ergänzen – neue Muster
+  /* ── 2c. Auffüllen: Tage unter ~95 % des Budgets mit passenden Leitern ergänzen – neue Muster
      zuerst, mittlere Schwierigkeit, Themen, Sehnen und Zug/Druck wie oben ── */
-  // Ziel-Leitern anderer Skills (Planche, Muscle-up …) nur, wenn der Skill gewählt ist
-  const otherSkills = new Set(data.skills.filter(sk => !input.skills.includes(sk.id)).flatMap(sk => sk.targets))
+  // Ziel-Leitern anderer Skills (Planche, Muscle-up …) nur, wenn der Skill gewählt ist – oder die
+  // Leiter schon im bisherigen Plan steht (Beinheben, L-Sit: Gewohntes nicht ohne Not streichen)
+  const otherSkills = new Set(data.skills.filter(sk => !input.skills.includes(sk.id)).flatMap(sk => sk.targets).filter(pid => !keep.has(pid)))
   const extras = catalog.progressions.filter(p => !otherSkills.has(p.id)).flatMap(p => {
     const r = resolve(p)
     return r && meta[r.ex.id] ? [{ p, r }] : []
@@ -271,7 +276,7 @@ export function generatePlan(data: GeneratorData, input: GeneratorInput): Genera
           const c: Candidate = { progression: p, exercise: r.ex, meta: m, kind: 'base', reason: `Ergänzung: ${PATTERN_LABEL[m.pattern]}`,
             sets: r.target.sets, minutes: slotMinutes(r.ex, r.target, r.target.sets) }
           const score = (here.some(x => x.meta.pattern === m.pattern) ? -5 : 0) + (used.has(p.id) ? -3 : 0)
-            - Math.abs(m.difficulty - 3) - (m.pattern === 'isolation' ? 2 : 0)
+            - Math.abs(m.difficulty - 3) - (m.pattern === 'isolation' ? 2 : 0) + (keep.has(p.id) ? 4 : 0)
           return { c, score }
         })
         .filter(({ c }) => allowed(d, c) && !conflicts(d, c) && minutesOf(d) + c.minutes <= input.minutes && balanced(c.progression.region, c.sets))

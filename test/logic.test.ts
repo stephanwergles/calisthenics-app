@@ -401,6 +401,15 @@ test('Profil und Ziele: Standardwerte, höchstens fünf Ziele, Vorschläge, Fort
   assert.ok(mu.pid)
 })
 
+test('Kann ich schon: Ziel-Leitern auf die letzte Stufe, Skill erreicht', () => {
+  const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
+  const wd = skills.find((s: { id: string }) => s.id === 'weighted-dip')
+  const next = L.withSkillReached(ix, state, wd)
+  for (const pid of wd.targets) assert.equal(L.currentStep(ix, next, pid).next, undefined, `${pid} auf letzter Stufe`)
+  assert.equal(L.skillChoices(ix, next, skills).find(c => c.skill === 'weighted-dip')!.reached, true)
+  assert.equal(next.current['muscle-up-pull'], state.current['muscle-up-pull'], 'andere Leitern unverändert')
+})
+
 test('Zielvorschläge: ohne Ziele, Erreichtes und Mittrainiertes, mit konkreter Begründung', () => {
   const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
   const withMu: UserState = { ...state, profile: { ...L.profileOf(ix, state), goals: ['muscle-up'] } }

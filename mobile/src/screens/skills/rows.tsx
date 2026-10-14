@@ -34,21 +34,26 @@ const tapHaptic = () => platform().signals.haptic('tap')
 
 /** Kompakte Zeile in „Alle Skills“: Name (+ Ziel), Stand bzw. was fehlt, rechts Prozent + Balken */
 export function SkillRow({ card, full, onToggleGoal }: { card: L.SkillCard; full: boolean; onToggleGoal: (on: boolean) => void }) {
-  const later = !card.started && card.missing.length > 0
-  const sub = card.reached ? tr('skills.reached')
-    : card.started || !card.missing.length ? `${card.stage} · ${card.current}`
-    : tr('skills.missing', { list: card.missing.join(', ') })
-  const label = [card.skill.name, card.goal ? tr('skills.goalBadge') : '', sub, tr('skills.percentLabel', { n: pct(card.share) })].filter(Boolean).join(', ')
+  // noch gesperrt: Voraussetzung fehlt und nicht begonnen – Schloss + „Erst noch: …“ statt grauem Titel
+  const locked = !card.reached && !card.started && card.missing.length > 0
+  const sub = card.reached ? tr('skills.reachedSub')
+    : locked ? tr('skills.reason.missing', { list: card.missing.join(', ') })
+    : `${card.stage} · ${card.current}`
+  const label = [card.skill.name, card.goal ? tr('skills.goalBadge') : '', card.reached ? tr('skills.reachedBadge') : '', sub, tr('skills.percentLabel', { n: pct(card.share) })].filter(Boolean).join(', ')
   return (
     <Link href={{ pathname: '/skill/[id]', params: { id: card.skill.id } }} asChild onPress={tapHaptic}>
       <Link.Trigger>
         <Tap accessibilityLabel={label} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, paddingLeft: 16, paddingRight: 14, minHeight: 64 }}>
           <View style={{ flex: 1, gap: 3 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <Text variant="title" style={{ fontSize: 20, lineHeight: 22, color: later ? color.muted : color.text }}>{card.skill.name}</Text>
+              <Text variant="title" style={{ fontSize: 20, lineHeight: 22 }}>{card.skill.name}</Text>
               {card.goal && <Text variant="eyebrow" style={{ fontSize: 11, letterSpacing: 1.2 }}>{tr('skills.goalBadge')}</Text>}
+              {card.reached && <Text variant="eyebrow" style={{ fontSize: 11, letterSpacing: 1.2, color: color.text }}>{tr('skills.reachedBadge')}</Text>}
             </View>
-            <Text variant="small" numberOfLines={2}>{sub}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              {locked && <Icon name="lock" size={11} color={color.muted} />}
+              <Text variant="small" numberOfLines={2} style={{ flexShrink: 1 }}>{sub}</Text>
+            </View>
           </View>
           <View style={{ alignItems: 'flex-end', gap: 6, width: 58 }}>
             {card.reached
@@ -69,6 +74,8 @@ export function SkillRow({ card, full, onToggleGoal }: { card: L.SkillCard; full
 export function GoalCard({ id, name, share, stage, current, onRemove }: {
   id: string; name: string; share: number; stage: string; current: string; onRemove: () => void
 }) {
+  // erreichtes Ziel bleibt (weiter verfeinern), ist aber als erreicht erkennbar
+  const reached = share >= 1
   return (
     <Link href={{ pathname: '/skill/[id]', params: { id } }} asChild onPress={tapHaptic}>
       <Link.Trigger>
@@ -78,11 +85,13 @@ export function GoalCard({ id, name, share, stage, current, onRemove }: {
             backgroundColor: color.card, borderWidth: 1, borderColor: color.accentLine,
           }}>
           <Ring size={58} stroke={5} progress={share}>
-            <Text style={{ fontFamily: font.display, fontSize: 15, color: color.text }}>{tr('skills.percent', { n: pct(share) })}</Text>
+            {reached
+              ? <Icon name="check" size={22} color={color.accent} weight="bold" />
+              : <Text style={{ fontFamily: font.display, fontSize: 15, color: color.text }}>{tr('skills.percent', { n: pct(share) })}</Text>}
           </Ring>
           <View style={{ flex: 1, gap: 3 }}>
             <Text variant="title" style={{ fontSize: 21 }}>{name}</Text>
-            <Text variant="small" numberOfLines={2}>{stage} · {current}</Text>
+            <Text variant="small" numberOfLines={2}>{reached ? tr('skills.reachedSub') : `${stage} · ${current}`}</Text>
           </View>
           <Icon name="right" size={13} color={color.muted} />
         </Pressable>

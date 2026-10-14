@@ -268,6 +268,9 @@ export interface GeneratorInput {
   minutes: number;                // Budget je Einheit inkl. Warm-up
   /** aktuelle Stufe (0-basiert) je Progression; fehlt = 0 */
   current: Record<ProgressionId, number>;
+  /** Leitern aus dem bisherigen Plan: beim Auffüllen bevorzugt, damit ein Vorschlag nicht ohne Not
+      Gewohntes streicht (Kontinuität); fehlt = keine Vorliebe */
+  keep?: ProgressionId[];
 }
 
 export type SlotKind = "skill" | "support" | "prerequisite" | "base" | "balance";

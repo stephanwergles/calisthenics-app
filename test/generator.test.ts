@@ -129,3 +129,14 @@ test('mit Vorlage: jedes Slot-Thema passt (über alle Vorlagen und Profile)', ()
     }
   }
 })
+
+test('Kontinuität: Leitern des bisherigen Plans bleiben, Tage werden ans Budget gefüllt', () => {
+  const base: GeneratorInput = { skills: ['muscle-up', 'elbow-lever', 'pistol', 'handstand'], equipment: EQUIP, days: ['sun', 'mon', 'wed'], minutes: 90, current: {}, split: 'ppl-3' }
+  const keep = data.catalog.workouts.flatMap(w => w.slots.map(s => s.progression))
+  const without = generatePlan(data, base), withKeep = generatePlan(data, { ...base, keep })
+  const kept = (p: GeneratedPlan) => new Set(slots(p).map(s => s.progression).filter(pid => keep.includes(pid))).size
+  assert.ok(kept(withKeep) > kept(without), `mit keep ${kept(withKeep)}, ohne ${kept(without)}`)
+  // Beinheben gehört zu Toes-to-Bar (kein Ziel) – steht es im bisherigen Plan, darf es bleiben
+  assert.ok(slots(withKeep).some(s => s.progression === 'leg-raise'), 'Beinheben bleibt')
+  for (const d of withKeep.days) assert.ok(d.minutes >= 90 * 0.75, `${d.day}: nur ${d.minutes} min von 90`)
+})

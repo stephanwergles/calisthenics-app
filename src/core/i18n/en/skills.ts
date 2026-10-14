@@ -58,6 +58,12 @@ export const skills: Shape<typeof de> = {
   ideasHint: 'From your assessment and training – most realistic first.',
   goalsHowTo: 'Set a goal on a skill’s page (tap it) or right here in the suggestions.',
   addGoal: 'Set {name} as goal',
+  reachedBadge: 'Reached',
+  reachedSub: 'Done – keep refining it as a goal',
+  canDo: 'I can already do this',
+  canDoTitle: 'Already reached {name}?',
+  canDoMessage: 'Lever moves {list} to the last stage. You can always step back in the ladder.',
+  canDoOk: 'Mark as reached',
   reason: {
     missing: 'First: {list}',
     after: 'Builds on {name}',

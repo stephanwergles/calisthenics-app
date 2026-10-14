@@ -7,7 +7,8 @@ import * as L from '@lever/core/logic.ts'
 import { catalogData } from '@lever/core/data.ts'
 import { getLocale, t as tr } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
-import { Button, Card, color, ExerciseMedia, ExerciseStill, font, hasClip, Icon, Ring, SectionTitle, SheetScreen, Text } from '@/ui'
+import { ask, Button, Card, color, ExerciseMedia, ExerciseStill, font, hasClip, Icon, Ring, SectionTitle, SheetScreen, Text } from '@/ui'
+import { platform } from '@lever/core/platform.ts'
 import { Group, stepLine, useGoalToggle } from './shared'
 import { openLadder, ProgressionRow } from './rows'
 
@@ -31,6 +32,17 @@ export function SkillPage({ id }: { id: string }) {
     return { pid: x.progression, name, done, now: stepLine(t, x.progression).step.exercise.name }
   })
   const blocked = full && !card.goal
+  // schon gekonnt (z. B. Dips mit Gewicht): Ziel-Leitern direkt auf die letzte Stufe, nach Rückfrage
+  const markReached = async () => {
+    const ok = await ask({
+      title: tr('skills.canDoTitle', { name: sk.name }),
+      message: tr('skills.canDoMessage', { list: targets.map(x => x.name).join(', ') }),
+      ok: tr('skills.canDoOk'),
+    })
+    if (!ok) return
+    platform().signals.haptic('success')
+    t.setState(st => L.withSkillReached(t.ix, st, sk))
+  }
   const pct = Math.round(card.share * 100)
 
   return (
@@ -53,6 +65,7 @@ export function SkillPage({ id }: { id: string }) {
         <Button variant={card.goal ? 'secondary' : 'primary'} icon={card.goal ? 'minus' : blocked ? undefined : 'target'} disabled={blocked}
           title={card.goal ? tr('skills.removeGoal') : blocked ? tr('skills.goalsFull') : tr('skills.setGoal')}
           onPress={() => toggle(sk.id, !card.goal)} />
+        {!card.reached && <Button variant="ghost" icon="checkCircle" title={tr('skills.canDo')} onPress={() => void markReached()} />}
       </Card>
 
       {/* Weg zum Skill: Ziel-Progressionen mit Clip der aktuellen Stufe */}

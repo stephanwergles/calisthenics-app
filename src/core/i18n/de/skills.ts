@@ -55,6 +55,12 @@ export const skills = {
   ideasHint: 'Aus deiner Einstufung und deinem Training – realistischste zuerst.',
   goalsHowTo: 'Ein Ziel setzt du auf der Seite eines Skills (antippen) oder direkt bei den Vorschlägen.',
   addGoal: '{name} als Ziel wählen',
+  reachedBadge: 'Erreicht',
+  reachedSub: 'Geschafft – als Ziel weiter verfeinern',
+  canDo: 'Kann ich schon',
+  canDoTitle: '{name} schon erreicht?',
+  canDoMessage: 'Lever setzt {list} auf die letzte Stufe. Zurück geht es jederzeit in der Leiter.',
+  canDoOk: 'Als erreicht markieren',
   reason: {
     missing: 'Erst noch: {list}',
     after: 'Baut auf {name} auf',

@@ -68,6 +68,8 @@ export const plan: Shape<typeof de> = {
     sub: { one: 'For {goals} · {n} change', other: 'For {goals} · {n} changes' },
     intro: 'Based on your goals, training days, equipment and current level. Nothing changes until you accept – after that you can undo it in the plan.',
     kept: 'Stays: {names}',
+    budget: 'Based on {days} days of about {min} min – more time means more exercises per day.',
+    changeBudget: 'Change days & duration',
     title: 'Plan suggestion',
     accept: 'Accept · Plan v{n}',
     later: 'Later',

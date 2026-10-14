@@ -758,6 +758,8 @@ export function generatorInput(ix: Index, user: UserState, skills: Skill[], spli
   return {
     skills: p.goals, equipment: [...new Set([...p.equipment, 'floor', 'wall'])] as Equipment[], days: p.days, minutes: p.minutes,
     current: stepIndexes(ix, user),
+    // Leitern des aktuellen Plans (Wochenplan) – der Generator behält sie nach Möglichkeit
+    keep: [...new Set(Object.values(ix.catalog.weekplan).flatMap(id => (id ? ix.workouts.get(id)?.slots.map(s => s.progression) ?? [] : [])))],
     // gewählte Vorlage, solange sie zur Zahl der Tage passt – sonst die naheliegendste
     split: splits.find(t => t.id === p.split && t.themes.length === p.days.length)?.id ?? suggestSplits(splits, p.days.length, regions)[0]?.id,
   }
@@ -902,6 +904,16 @@ export function placementChanges(ix: Index, user: UserState, placed: Record<Prog
     const name = (i: number) => ix.exercises.get(p.steps[i].exercise)?.name ?? ''
     return [{ pid, ladder: progressionName(ix, pid), from: step.index, to, total: p.steps.length, fromName: step.exercise.name, toName: name(to) }]
   })
+}
+/** „Kann ich schon“: alle Ziel-Leitern eines Skills auf ihre letzte Stufe setzen (rückgängig über
+    die Leiter, eine Stufe zurück) – erspart das Freischalten Stufe für Stufe */
+export function withSkillReached(ix: Index, user: UserState, skill: Skill): UserState {
+  const current = { ...user.current }
+  for (const pid of skill.targets) {
+    const steps = ix.progressions.get(pid)?.steps
+    if (steps?.length) current[pid] = steps[steps.length - 1].exercise
+  }
+  return { ...user, current }
 }
 /** Einstufung übernehmen: aktuelle Stufe je Leiter setzen */
 export function withPlacement(ix: Index, user: UserState, changes: PlacementChange[]): UserState {
