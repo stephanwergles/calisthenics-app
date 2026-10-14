@@ -32,7 +32,7 @@ export const logic: Shape<typeof de> = {
   standingOneMore: 'still missing: 1 more session, all sets done',
   circuit: {
     defaultName: 'Rounds',
-    amrap: 'AMRAP {min} min',
+    amrap: 'Max rounds · {min} min',
     forTime: '{n} rounds for time',
     roundsN: { one: '{n} round', other: '{n} rounds' },
     roundsPlus: '{n} rounds + {reps}',

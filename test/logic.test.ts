@@ -518,7 +518,7 @@ test('Runden-Blöcke: anlegen, Regeln, Ergebnis, Vergleich, Volumen', () => {
   assert.equal(w1.circuits![0].name, 'Cindy', 'Name getrimmt')
   assert.equal(L.withCircuit(w1, { ...c, minutes: 25 }).circuits!.length, 1, 'ersetzt statt doppelt')
   assert.equal(L.withoutCircuit(w1, c.id).circuits!.length, 0)
-  assert.equal(L.fmtCircuitRule(c), 'AMRAP 20 min')
+  assert.equal(L.fmtCircuitRule(c), 'Max. Runden · 20 min')
   assert.equal(L.fmtCircuitRule({ ...c, mode: 'rounds', rounds: 5 }), '5 Runden auf Zeit')
   assert.match(L.fmtCircuitItems(ix, c), /^5 .+ · 10 .+ · 15 /)
   const r = { id: c.id, rounds: 14, reps: 7 }

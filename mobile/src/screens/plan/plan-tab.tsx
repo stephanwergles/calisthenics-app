@@ -10,11 +10,11 @@ import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
 import { useApp } from '@/state/app'
 import { WorkoutStrip } from './workout-strip'
+import { workoutSize } from './workouts'
 import { TabHeader } from '@/navigation'
 import { ask, Button, Card, color, font, GUTTER, Icon, SectionTitle, space, Text, type IconName } from '@/ui'
 import { DAY_NAME, Rows } from './parts'
 
-const count = (n: number) => tn('plan.exercises', n)
 const PHASE_ICON: Record<PhaseKind, IconName> = { pause: 'bed', vacation: 'airplane', injury: 'medical', equipment: 'dumbbell' }
 
 export function PlanTab() {
@@ -89,7 +89,7 @@ export function PlanTab() {
           key: d,
           title: w ? w.name : tr('plan.restDay'),
           off: !w,
-          subtitle: w ? `${DAY_NAME[d]} · ${w.focus && w.focus !== w.name ? `${w.focus} · ` : ''}${count(w.slots.length)}` : DAY_NAME[d],
+          subtitle: w ? `${DAY_NAME[d]} · ${w.focus && w.focus !== w.name ? `${w.focus} · ` : ''}${workoutSize(w)}` : DAY_NAME[d],
           tag: d === today ? tr('plan.view.today') : undefined,
           label: `${DAY_NAME[d]}: ${w ? w.name : tr('plan.restDay')}${d === today ? tr('plan.view.todaySuffix') : ''}`,
           onPress: () => (w ? openWorkout(w.id) : router.push({ pathname: '/workouts/day', params: { day: d } })),

@@ -8,6 +8,7 @@ import { catalogData } from '@lever/core/data.ts'
 import { getLocale, intl, t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
 import { WorkoutStrip } from '@/screens/plan/workout-strip'
+import { workoutSize } from '@/screens/plan/workouts'
 import { dayHref } from '@/screens/log/params'
 import { HeaderButton } from '@/navigation'
 import { Button, Card, color, ExerciseStill, font, GUTTER, hasClip, Icon, type IconName, radius, Ring, SectionTitle, space, Text, Wordmark } from '@/ui'
@@ -100,7 +101,7 @@ export function Today() {
           <View style={{ padding: 22, gap: 12 }}>
             <Text variant="eyebrow">{tr('home.heroLabel', { name: w.name })}{started ? tr('home.heroSets', { done: doneSets, total: sets }) : ''}</Text>
             <Text variant="display" style={{ fontSize: 44, lineHeight: 42 }}>{first}{more.length ? `\n${more.join(' · ')}` : ''}</Text>
-            {!started && <Text variant="muted">{tn('home.meta.exercises', active.length)} · {tn('home.meta.sets', sets)}{minutes ? tr('home.metaMinutes', { n: minutes }) : ''}</Text>}
+            {!started && <Text variant="muted">{[active.length || !L.circuitsOf(w).length ? `${tn('home.meta.exercises', active.length)} · ${tn('home.meta.sets', sets)}` : null, ...L.circuitsOf(w).map(L.fmtCircuitRule)].filter(Boolean).join(' · ')}{minutes ? tr('home.metaMinutes', { n: minutes }) : ''}</Text>}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {active.slice(0, 3).map(s => <Chip key={s.pid} text={s.step.exercise.name} />)}
               {active.length > 3 && <Chip text={`+${active.length - 3}`} muted />}
@@ -217,7 +218,7 @@ function DayBanner({ date, onClose }: { date: string; onClose: () => void }) {
     actions = [{ icon: 'right', title: tr('home.bannerView'), onPress: () => router.push(dayHref({ kind: 'activity', id: cardio[0].id })) }]
   } else if (planned && !past) {
     label = tr('home.bannerPlanned'); title = planned.focus
-    text = `${planned.name} · ${tn('home.meta.exercises', planned.slots.length)}`
+    text = `${planned.name} · ${workoutSize(planned)}`
     actions = [{ icon: 'right', title: tr('home.bannerOverview'), onPress: () => router.push({ pathname: '/workouts/[id]', params: { id: planned.id } }) }]
   } else if (planned) {
     label = tr('home.bannerMissed'); title = planned.focus; text = tr('history.restTextPast'); actions = [addCardio, doWorkout]

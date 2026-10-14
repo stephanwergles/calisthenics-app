@@ -10,7 +10,7 @@ import { toast } from '@lever/core/toast.ts'
 import { useApp } from '@/state/app'
 import { ask, Button, ButtonRow, DayPicker, SheetScreen, Text } from '@/ui'
 import { DAY_NAME, ModalToolbar, NameForm, Rows, Section, useIsFirst } from '@/screens/plan/parts'
-import { exerciseCount } from '@/screens/plan/workouts'
+import { workoutSize } from '@/screens/plan/workouts'
 
 export default function WorkoutScreen() {
   const { t } = useApp()
@@ -76,7 +76,7 @@ function Editor({ w, first }: { w: Workout; first: boolean }) {
         { title: tr('editor.rename'), icon: 'edit', onPress: rename },
         { title: tr('editor.delete'), icon: 'trash', destructive: true, onPress: () => void remove() },
       ]} />
-      <SheetScreen title={w.name} sub={`${w.focus} · ${exerciseCount(slots.length)}`}
+      <SheetScreen title={w.name} sub={[w.focus, workoutSize(w)].filter(Boolean).join(' · ')}
         footer={slots.length > 0 || L.circuitsOf(w).length > 0 ? <Button variant="primary" size="lg" icon="play" disabled={busy}
           title={t.active?.workout === w.id ? tr('home.ctaActive') : tr('editor.startNow')} onPress={start} /> : undefined}>
         <Section title={tr('editor.exercisesHead')} />

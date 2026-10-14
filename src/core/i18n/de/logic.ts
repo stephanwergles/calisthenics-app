@@ -29,7 +29,7 @@ export const logic = {
   standingOneMore: 'fehlt noch: 1 weitere Einheit, alle Sätze geschafft',
   circuit: {
     defaultName: 'Runden',
-    amrap: 'AMRAP {min} min',
+    amrap: 'Max. Runden · {min} min',
     forTime: '{n} Runden auf Zeit',
     roundsN: { one: '{n} Runde', other: '{n} Runden' },
     roundsPlus: '{n} Runden + {reps}',

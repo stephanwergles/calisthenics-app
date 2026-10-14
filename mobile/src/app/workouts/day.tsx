@@ -7,7 +7,7 @@ import { t as tr } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
 import { Choices, SheetScreen } from '@/ui'
 import { DAY_NAME, ModalToolbar, useIsFirst } from '@/screens/plan/parts'
-import { exerciseCount } from '@/screens/plan/workouts'
+import { workoutSize } from '@/screens/plan/workouts'
 
 const REST = '__rest'
 
@@ -22,7 +22,7 @@ export default function DayScreen() {
     router.back()
   }
   const items = [
-    ...L.workoutsInWeekOrder(t.ix).map(w => ({ id: w.id as string, title: w.name, sub: `${w.focus} · ${exerciseCount(w.slots.length)}`, on: current === w.id })),
+    ...L.workoutsInWeekOrder(t.ix).map(w => ({ id: w.id as string, title: w.name, sub: [w.focus, workoutSize(w)].filter(Boolean).join(' · '), on: current === w.id })),
     { id: REST, title: tr('editor.restDay'), on: !current },
   ]
   return (

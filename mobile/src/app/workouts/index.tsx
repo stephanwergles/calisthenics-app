@@ -7,7 +7,7 @@ import { t as tr } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
 import { Button, SheetScreen } from '@/ui'
 import { ModalToolbar, Rows, useIsFirst } from '@/screens/plan/parts'
-import { daysOf, exerciseCount } from '@/screens/plan/workouts'
+import { daysOf, workoutSize } from '@/screens/plan/workouts'
 
 export default function WorkoutsScreen() {
   const { t } = useApp()
@@ -20,7 +20,7 @@ export default function WorkoutsScreen() {
       <ModalToolbar close={first} />
       <SheetScreen title={tr('editor.myWorkouts')} sub={t.plan ? tr('editor.subOwn') : tr('editor.subDefault')}>
         <Rows rows={list.map(w => ({
-          key: w.id, title: w.name, subtitle: `${w.focus} · ${exerciseCount(w.slots.length)}`,
+          key: w.id, title: w.name, subtitle: [w.focus, workoutSize(w)].filter(Boolean).join(' · '),
           trailing: daysOf(t, w.id) || tr('editor.noDay'), onPress: () => open(w.id),
         }))} />
         <Button icon="plus" title={tr('editor.newWorkout')} onPress={() => open('new')} />

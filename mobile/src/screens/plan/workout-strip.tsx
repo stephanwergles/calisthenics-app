@@ -7,6 +7,7 @@ import * as L from '@lever/core/logic.ts'
 import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
 import { Button, color, font, GUTTER, Icon, type IconName, radius, SectionTitle, Text } from '@/ui'
+import { workoutSize } from './workouts'
 
 const CARD = { width: 168, minHeight: 132, padding: 14, gap: 6, borderRadius: radius.card, borderCurve: 'continuous' as const, borderWidth: 1 }
 
@@ -36,7 +37,7 @@ export function WorkoutStrip({ mode }: { mode: 'home' | 'plan' }) {
               </View>
               <Text variant="title" style={{ fontSize: 19, lineHeight: 21 }} numberOfLines={2}>{w.name}</Text>
               <Text variant="small" numberOfLines={2} style={{ flex: 1 }}>{w.focus}</Text>
-              <Text variant="small" style={{ fontFamily: font.bodySemi }}>{tn('home.workoutMeta', w.slots.length)}</Text>
+              <Text variant="small" numberOfLines={2} style={{ fontFamily: font.bodySemi }}>{workoutSize(w)}</Text>
             </Pressable>
           )
         })}
