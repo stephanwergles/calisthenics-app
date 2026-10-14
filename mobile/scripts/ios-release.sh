@@ -10,6 +10,7 @@ cd "$(dirname "$0")/.."
 export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8   # CocoaPods braucht UTF-8
 
 BUILD=$(date +%Y%m%d%H%M)
+export BUILD_NUMBER=$BUILD   # app.config.ts → CFBundleVersion der App
 OUT=build/release
 rm -rf "$OUT"
 

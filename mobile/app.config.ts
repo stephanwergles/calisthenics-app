@@ -21,6 +21,8 @@ const config: ExpoConfig = {
   ios: {
     bundleIdentifier: dev ? 'de.offected.lever.dev' : 'de.offected.lever',
     appleTeamId: '3498DS659A',
+    // Build-Nummer setzt scripts/ios-release.sh (Zeitstempel) – gilt für App und Widget-Erweiterung
+    buildNumber: process.env.BUILD_NUMBER ?? '1',
     supportsTablet: false,
     config: { usesNonExemptEncryption: false },
     infoPlist: { CFBundleDisplayName: dev ? 'Lever Dev' : 'Lever' },
