@@ -244,6 +244,10 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 - [ ] **Spontanes Workout:** einfach mal ein Training starten, ohne dass es der Plan-Tag ist – klar sichtbarer Einstieg (Heute/Plan), dann Auswahl: anderes Workout aus dem Plan, Vorlage oder „frei“ (Übungen nach Region/Muster aus deinen aktuellen Stufen zusammenstellen, Vorschlag vom Generator für die verfügbare Zeit). Klären, wie es den Wochenplan und Erholungsregeln (Sehnen-Folgetage) beeinflusst
 - [ ] Readiness-Check vor der Einheit (Schlaf/Energie/Gelenke, 3 Taps) → Tagesanpassung
 - [ ] Statistiken: Volumen-Trends, Zeit unter Spannung, Kraft-zu-Gewicht
+- [ ] **Gamification und Körper-Visualisierung** (Idee 14.10.2026, sobald es Nutzer gibt): Motivation über sichtbaren Fortschritt statt Punkte-Sammeln.
+  - Skills als Gerüst: erreichte Skills und Stufen schalten **Körper-Zustände** frei (z. B. „Zugkraft“, „Stütz“, „Balance“, „Rumpf“, „Beine“ je mit Stufen) – abgeleitet aus den Leitern, nicht aus Trainingsmenge
+  - **Visualisierung des Nutzers:** Figur aus der 3D-Pipeline (`art/`), die je nach Zustand sichtbar Stärken zeigt (Regionen aufgehellt, gemeisterte Skills als Pose), plus Verlauf „vorher/jetzt“
+  - Leitplanken: keine Belohnung für Volumen oder Serien um jeden Preis (Sehnenschutz, Pausen zählen nicht negativ), alles aus vorhandenen Daten (Stufen, Skills, Bestwerte)
 - [ ] KI-Unterstützung (Sprachmodell, immer als Vorschlag mit Bestätigung): Freitext → Phase/Verletzung, Erklärung der Skill-Vorschläge, Wochenrückblick aus Notizen
 - [ ] Plan selbst bleibt regelbasiert – kein ML für die Planung
 
