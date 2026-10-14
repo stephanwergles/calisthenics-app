@@ -36,7 +36,7 @@ jobs:
       NEXT_PUBLIC_SERVER_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: npm }
       - run: npm ci
       # nur für diesen Lauf – die CI-Datenbank ist nach dem Job weg
@@ -62,7 +62,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -96,7 +96,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with: { node-version: 22 }
       # schlägt erst bei „critical“ an: die bekannten „high“-Meldungen stecken nur in Build-Werkzeugen
       # (sass/braces, metro, node-forge in der Expo-CLI) und haben noch keinen Fix – siehe SECURITY.md
