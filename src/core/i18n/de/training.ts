@@ -56,6 +56,8 @@ export const training = {
   rest: {
     title: 'Pause',
     over: 'Pause vorbei',
+    notifyTitle: 'Pause vorbei',
+    notifyBody: 'Weiter mit dem nächsten Satz.',
     go: 'Los',
     goNow: 'Los!',
     of: 'von {time}',

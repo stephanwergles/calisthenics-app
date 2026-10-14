@@ -59,6 +59,8 @@ export const training: Shape<typeof de> = {
   rest: {
     title: 'Rest',
     over: 'Rest over',
+    notifyTitle: 'Rest over',
+    notifyBody: 'On to the next set.',
     go: 'Go',
     goNow: 'Go!',
     of: 'of {time}',

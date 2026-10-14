@@ -1,0 +1,167 @@
+/* Heute: die Woche auf einen Blick, das Workout des Tages als große Karte, darunter die Skills
+   mit dem kürzesten Weg zur nächsten Stufe. (Web: src/client/components/HomeView.tsx) */
+import { useMemo, useState } from 'react'
+import { Pressable, ScrollView, View } from 'react-native'
+import { router } from 'expo-router'
+import * as L from '@lever/core/logic.ts'
+import { getLocale, intl, t as tr, tn } from '@lever/core/i18n/index.ts'
+import { useApp } from '@/state/app'
+import { HeaderButton } from '@/navigation'
+import { Button, Card, color, ExerciseStill, font, GUTTER, hasClip, Icon, Ring, SectionTitle, space, Text, Wordmark } from '@/ui'
+
+export function Today() {
+  const { t, slots, started, doneToday: done, start, openTraining } = useApp()
+  const w = t.ix.workouts.get(t.workout)!
+  const [picking, setPicking] = useState(false)
+  const locale = getLocale()
+  const week = useMemo(() => L.weekStrip(t.ix, t.sessions, t.activities, t.today), [t.ix, t.sessions, t.activities, t.today, locale])
+  const streak = useMemo(() => L.streakWeeks(t.sessions, t.today, t.state.phases), [t.sessions, t.today, t.state.phases])
+  const minutes = useMemo(() => L.estimateMinutes(t.sessions, t.workout), [t.sessions, t.workout])
+  const skills = useMemo(() => L.nextSkills(t.ix, t.state, t.sessions), [t.ix, t.state, t.sessions, locale])
+  const resting = L.restingPhase(t.state, t.today)
+  const blocked = slots.filter(s => s.blockedBy)
+  const subs = slots.filter(s => s.substituteFor).length
+  const notice = resting ? tr('home.noticeResting', { phase: L.fmtPhase(resting) })
+    : blocked.length ? tn('home.noticeBlocked', blocked.length, { reasons: [...new Set(blocked.map(s => s.blockedBy))].join(', ') })
+      + (subs ? (subs === blocked.length ? tr('home.noticeSubsAll') : tr('home.noticeSubsSome', { n: subs })) : '.')
+    : L.reentry(t.state, t.today) ? tr('home.noticeReentry') : null
+
+  const active = slots.filter(s => s.state !== 'paused' && s.state !== 'skipped')
+  const sets = active.reduce((n, s) => n + s.planned, 0)
+  const doneSets = active.reduce((n, s) => n + Math.min(s.sets.length, s.planned), 0)
+  const [first, ...more] = w.focus.split(' · ')
+  const hero = (active.find(s => hasClip(s.step.exercise.id)) ?? active[0])?.step.exercise
+  const dateLabel = new Date(`${t.today}T12:00`).toLocaleDateString(intl(), { weekday: 'long', day: 'numeric', month: 'long' })
+  const cta = t.active ? tr('home.ctaActive') : done ? tr('home.ctaAgain') : started ? tr('home.ctaResume') : tr('home.ctaStart')
+  const onStart = t.active ? () => openTraining(undefined) : start
+  const syncError = !!t.sync.account && t.sync.phase === 'error'
+
+  return (
+    <>
+      <HeaderButton icon={syncError ? 'warning' : 'user'} label={tr('app.profileButton', { status: '' })} onPress={() => router.push('/profile')} />
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 40, gap: space.lg }}>
+        <Wordmark height={20} />
+
+        {/* Kopf: Datum, Titel, Serie */}
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+          <View style={{ flex: 1, gap: 6 }}>
+            <Text variant="small" style={{ fontFamily: font.bodySemi, textTransform: 'uppercase', letterSpacing: 1.6 }}>{dateLabel}</Text>
+            <Text variant="hero" accessibilityRole="header">
+              {done ? tr('home.titleDone') : t.active ? tr('home.titleActive') : tr('home.titleReady')}{'\n'}
+              <Text variant="hero" style={{ color: color.accent }}>{done ? tr('home.titleDoneAccent') : `${first}.`}</Text>
+            </Text>
+          </View>
+          {streak > 0 && (
+            <View style={{ alignItems: 'flex-end' }} accessible accessibilityLabel={`${streak} ${tn('home.streak', streak)}`}>
+              <Text variant="num" style={{ fontSize: 44, lineHeight: 44 }}>{streak}</Text>
+              <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', letterSpacing: 1.2, textAlign: 'right', maxWidth: 110 }}>{tn('home.streak', streak)}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Woche */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }} accessibilityLabel={tr('home.weekAria')}>
+          {week.map(d => (
+            <View key={d.date} style={{ alignItems: 'center', gap: 6 }} accessible
+              accessibilityLabel={`${d.label}${d.trained ? tr('home.dayTrained') : d.planned ? tr('home.dayPlanned') : ''}${d.cardio ? tr('home.dayCardio') : ''}${d.today ? tr('home.dayToday') : ''}`}>
+              <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', color: d.today ? color.text : color.muted }}>{d.label}</Text>
+              <View style={{
+                width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center',
+                backgroundColor: d.trained ? color.chalk : d.today ? color.accent : 'transparent',
+                borderWidth: d.trained || d.today ? 0 : d.planned ? 2 : 1, borderStyle: d.planned || d.trained || d.today ? 'solid' : 'dashed',
+                borderColor: d.planned ? color.accent : color.line,
+              }}>
+                {d.trained ? <Icon name="check" size={16} color={color.onAccent} weight="bold" />
+                  : <Text style={{ fontFamily: font.display, fontSize: 17, color: d.today ? color.onAccent : d.planned ? color.accent : color.muted }}>{Number(d.date.slice(8))}</Text>}
+              </View>
+              {d.cardio && <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: color.accent, marginTop: -2 }} />}
+            </View>
+          ))}
+        </View>
+
+        {notice && <Text variant="muted" accessibilityLiveRegion="polite" style={{ color: color.text, backgroundColor: color.accentDim, padding: 12, borderRadius: 14, overflow: 'hidden' }}>{notice}</Text>}
+
+        {/* Workout des Tages */}
+        <Card style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
+          {hero && <ExerciseStill exercise={hero} style={{ position: 'absolute', right: -10, top: 0, bottom: 0, width: '55%', opacity: 0.55 }} />}
+          <View style={{ padding: 22, gap: 12 }}>
+            <Text variant="eyebrow">{tr('home.heroLabel', { name: w.name })}{started ? tr('home.heroSets', { done: doneSets, total: sets }) : ''}</Text>
+            <Text variant="display" style={{ fontSize: 44, lineHeight: 42 }}>{first}{more.length ? `\n${more.join(' · ')}` : ''}</Text>
+            {!started && <Text variant="muted">{tn('home.meta.exercises', active.length)} · {tn('home.meta.sets', sets)}{minutes ? tr('home.metaMinutes', { n: minutes }) : ''}</Text>}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {active.slice(0, 3).map(s => <Chip key={s.pid} text={s.step.exercise.name} />)}
+              {active.length > 3 && <Chip text={`+${active.length - 3}`} muted />}
+            </View>
+            <View style={{ gap: 10, marginTop: 6 }}>
+              {done && t.todaySession
+                ? <Button variant="primary" size="lg" icon="trophy" title={tr('home.summary')} onPress={() => router.push({ pathname: '/summary/[id]', params: { id: t.todaySession!.id } })} />
+                : <Button variant="primary" size="lg" icon="play" title={cta} onPress={onStart} />}
+              {done && <Button icon="play" title={cta} onPress={onStart} />}
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <Button style={{ flex: 1 }} variant="secondary" icon="list" title={tr('home.exercises')} onPress={() => router.push('/exercises')} />
+                <Button style={{ flex: 1 }} variant="secondary" icon="down" title={tr('home.swap')} onPress={() => setPicking(p => !p)} />
+              </View>
+            </View>
+            {picking && (
+              <View style={{ gap: 8, marginTop: 4 }} accessibilityLabel={tr('home.pickAria')}>
+                {L.workoutsInWeekOrder(t.ix).map(x => {
+                  const on = x.id === t.workout
+                  return (
+                    <Pressable key={x.id} accessibilityRole="button" accessibilityState={{ selected: on }}
+                      onPress={() => { t.chooseWorkout(x.id); setPicking(false) }}
+                      style={({ pressed }) => ({ padding: 14, borderRadius: 16, borderWidth: 1, borderColor: on ? color.accentLine : color.line, backgroundColor: on ? color.accentDim : color.card2, opacity: pressed ? 0.8 : 1, gap: 2 })}>
+                      <Text variant="title" style={{ fontSize: 19 }}>{x.name}</Text>
+                      <Text variant="small">{x.focus}</Text>
+                      <Text variant="small" style={{ color: x.id === t.recommended ? color.accent : color.muted, fontFamily: font.bodySemi }}>
+                        {L.plannedDays(t.ix, x.id).map(d => L.WEEKDAY_SHORT[d]).join(' · ') || '—'}
+                      </Text>
+                    </Pressable>
+                  )
+                })}
+                <Button variant="ghost" icon="right" title={tr('home.manage')} onPress={() => { setPicking(false); router.navigate('/(tabs)/(plan)') }} />
+              </View>
+            )}
+          </View>
+        </Card>
+
+        {/* Nächste Skills */}
+        {skills.length > 0 && (
+          <View>
+            <SectionTitle title={tr('home.nextSkills')} right={<Button size="sm" variant="ghost" title={tr('home.allSkills')} icon="right" onPress={() => router.navigate('/(tabs)/(skills)')} />} />
+            <View style={{ gap: 10 }}>
+              {skills.map(s => {
+                const pct = Math.round(s.readiness * 100)
+                const prog = L.unlockProgress(t.sessions, s.step.exercise.id, s.step.target, s.step.nextTarget)
+                const ready = !!prog && prog.done >= prog.needed
+                return (
+                  <Card key={s.pid} active={ready} onPress={() => router.push({ pathname: '/progression/[pid]', params: { pid: s.pid } })}
+                    label={L.progressionName(t.ix, s.pid)} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                    <Ring size={52} stroke={5} progress={s.readiness}>
+                      {ready ? <Icon name="check" size={20} color={color.accent} weight="bold" /> : <Text style={{ fontFamily: font.display, fontSize: 14, color: color.text }}>{pct}%</Text>}
+                    </Ring>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text variant="title" style={{ fontSize: 19 }}>{L.progressionName(t.ix, s.pid)}</Text>
+                      <Text variant="small">{ready
+                        ? tr('home.readyFor', { name: s.step.next!.name })
+                        : tr('home.skillProgress', { exercise: s.step.exercise.name, stage: s.step.index + 1, total: s.step.total, done: prog?.done ?? 0 })}</Text>
+                    </View>
+                    {ready && <Button size="sm" variant="outline" title={tr('home.unlock')}
+                      onPress={() => t.setState(st => ({ ...st, current: { ...st.current, [s.pid]: s.step.next!.id } }))} />}
+                  </Card>
+                )
+              })}
+            </View>
+          </View>
+        )}
+      </ScrollView>
+    </>
+  )
+}
+
+function Chip({ text, muted }: { text: string; muted?: boolean }) {
+  return (
+    <View style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' }}>
+      <Text style={{ fontFamily: font.bodySemi, fontSize: 14, color: muted ? color.muted : color.text }}>{text}</Text>
+    </View>
+  )
+}

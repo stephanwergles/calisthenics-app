@@ -19,14 +19,21 @@ export function placement(data: AssessmentData, catalog: Catalog, results: Recor
 
 export interface SkillSuggestion { skill: SkillId; name: string; score: number; reached: boolean; missing: string[]
   /** grobe Einordnung für die Anzeige: realistisch als Nächstes / mit Vorarbeit / langfristig */
-  tier: 'next' | 'work' | 'long' }
+  tier: 'next' | 'work' | 'long'
+  /** Skills, deren Voraussetzungen diesen Skill schon enthalten (z. B. Klimmzüge mit Gewicht → Muscle-up) */
+  partOf: SkillId[]
+  /** noch nicht erreichter Skill, auf dem dieser aufbaut (z. B. Ring-Muscle-up → Muscle-up) */
+  after?: SkillId }
 
 /** Wie realistisch ist jeder Skill als Nächstes? Drei Teile:
     – Voraussetzungen erfüllt (40 %)
-    – Abstand der Endstufe zum eigenen Niveau (35 %): Niveau = schwerste Stufe, die man schon trainiert
-      (Index > 0); ohne Angaben Einsteiger (2). Je Schwierigkeitspunkt über dem Niveau ein Drittel weniger.
+    – Abstand der Endstufe zum eigenen Niveau (35 %): Niveau = Mittel der drei schwersten Stufen, die
+      man schon trainiert (Index > 0) – eine einzelne schwere Übung hebt es nicht allein; ohne Angaben
+      Einsteiger (2). Je Schwierigkeitspunkt über dem Niveau ein Drittel weniger.
     – Fortschritt in der Ziel-Leiter (25 %)
     Ohne den Abstand stünde jeder Skill ohne Voraussetzungen (Human Flag, Back Lever) bei 70 % „bereit“.
+    Baut ein Skill auf einem noch nicht erreichten anderen auf (seine Voraussetzung ist dessen
+    Ziel-Leiter, z. B. Ring-Muscle-up → Muscle-up), ist er höchstens „mit Vorarbeit“.
     Erreichte Skills (letzte Stufe aller Ziel-Leitern) stehen am Ende. */
 export function suggestSkills(skills: Skill[], catalog: Catalog, current: Record<ProgressionId, number>, meta: Record<string, ExerciseMeta> = catalog.meta ?? {}): SkillSuggestion[] {
   const steps = (pid: ProgressionId) => catalog.progressions.find(p => p.id === pid)?.steps ?? []
@@ -36,7 +43,9 @@ export function suggestSkills(skills: Skill[], catalog: Catalog, current: Record
   }
   const diff = (ex?: string) => (ex && meta[ex]?.difficulty) || 3
   const trained = Object.entries(current).filter(([, i]) => i > 0).map(([pid, i]) => diff(steps(pid)[Math.min(i, steps(pid).length - 1)]?.exercise))
-  const level = Math.max(2, ...trained)
+  const top = [...trained].sort((a, b) => b - a).slice(0, 3)
+  const level = top.length ? Math.max(2, top.reduce((a, b) => a + b, 0) / top.length) : 2
+  const reachedOf = (s: Skill) => s.targets.every(pid => (current[pid] ?? 0) >= steps(pid).length - 1)
   return skills.map((s): SkillSuggestion => {
     const pre = s.prerequisites.map(p => Math.min(1, ((current[p.progression] ?? 0) + 1) / (p.minStep + 1)))
     const preScore = pre.length ? pre.reduce((a, b) => a + b, 0) / pre.length : 1
@@ -44,11 +53,14 @@ export function suggestSkills(skills: Skill[], catalog: Catalog, current: Record
     const targetScore = target.length ? target.reduce((a, b) => a + b, 0) / target.length : 0
     const end = Math.max(...s.targets.map(pid => diff(steps(pid)[steps(pid).length - 1]?.exercise)))
     const gapScore = Math.max(0, 1 - Math.max(0, end - level) / 3)
-    const reached = s.targets.every(pid => (current[pid] ?? 0) >= steps(pid).length - 1)
+    const reached = reachedOf(s)
+    const preIds = new Set(s.prerequisites.map(p => p.progression))
+    const after = skills.find(o => o.id !== s.id && !reachedOf(o) && o.targets.some(pid => preIds.has(pid)))?.id
+    const partOf = skills.filter(o => o.id !== s.id && s.targets.every(pid => o.prerequisites.some(p => p.progression === pid))).map(o => o.id)
     const missing = s.prerequisites.filter(p => (current[p.progression] ?? 0) < p.minStep).map(p => name(p.progression, p.minStep))
     const score = Math.round((preScore * 0.4 + gapScore * 0.35 + targetScore * 0.25) * 100) / 100
-    const tier = !missing.length && gapScore >= 0.66 ? 'next' : score >= 0.5 ? 'work' : 'long'
-    return { skill: s.id, name: s.name, score, reached, missing, tier }
+    const tier = !missing.length && !after && gapScore >= 0.66 ? 'next' : score >= 0.5 ? 'work' : 'long'
+    return { skill: s.id, name: s.name, score, reached, missing, tier, partOf, ...(after ? { after } : {}) }
   }).sort((a, b) => Number(a.reached) - Number(b.reached) || b.score - a.score)
 }
 

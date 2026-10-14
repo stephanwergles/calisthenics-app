@@ -53,6 +53,15 @@ test('Skill-Vorschläge: schwere Skills ohne Voraussetzungen gelten nicht als �
   assert.ok(s.findIndex(x => x.skill === 'muscle-up') < s.findIndex(x => x.skill === 'human-flag'), 'Muscle-up vor Human Flag')
 })
 
+test('Skill-Vorschläge: Ketten – Ring-Muscle-up erst nach dem Muscle-up, Klimmzüge mit Gewicht stecken im Muscle-up', () => {
+  const meta = json('exercise-meta.json').exercises
+  const s = suggestSkills(skills, catalog, { 'pull-up': 1, dip: 1, 'muscle-up-pull': 1 }, meta)
+  const ring = s.find(x => x.skill === 'ring-muscle-up')!
+  assert.equal(ring.after, 'muscle-up', 'baut auf dem Muscle-up auf')
+  assert.notEqual(ring.tier, 'next')
+  assert.ok(s.find(x => x.skill === 'weighted-pull-up')!.partOf.includes('muscle-up'))
+})
+
 test('Split-Vorschläge passen zur Tageszahl', () => {
   assert.equal(suggestSplits(splits, 3, ['pull', 'push', 'core'])[0].id, 'ppl-3')
   assert.equal(suggestSplits(splits, 3, ['legs'])[0].id, 'full-3')
