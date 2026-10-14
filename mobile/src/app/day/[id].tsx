@@ -1,6 +1,4 @@
-/* Tag im Verlauf (Web: DaySheet) – Platzhalter, wird portiert */
-import { SheetScreen } from '@/ui'
+/* Tag im Verlauf – Param id: s:<sessionId> · a:<activityId> · e:<YYYY-MM-DD> (screens/log/params.ts) */
+import { Day } from '@/screens/log/day'
 
-export default function Screen() {
-  return <SheetScreen title="Tag" sub="In Arbeit" />
-}
+export default Day

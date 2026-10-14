@@ -10,7 +10,7 @@ import { color, md, sf } from '@/ui'
 export default function TabsLayout() {
   const { t, ps } = useApp()
   return (
-    <NativeTabs tintColor={color.accent} minimizeBehavior="onScrollDown" labelStyle={{ fontFamily: 'Barlow_600SemiBold' }}>
+    <NativeTabs tintColor={color.accent} badgeBackgroundColor={color.accent} badgeTextColor={color.onAccent} minimizeBehavior="onScrollDown" labelStyle={{ fontFamily: 'Barlow_600SemiBold' }}>
       {t.active ? (
         <NativeTabs.BottomAccessory>
           <Accessory />

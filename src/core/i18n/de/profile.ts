@@ -12,6 +12,10 @@ export const profile = {
   /* Konto & Sync */
   consentPaused: 'Abgleich pausiert: Für die Speicherung auf dem Server fehlt deine Einwilligung in die Gesundheitsdaten.',
   syncNow: 'Jetzt abgleichen',
+  accountRow: 'Konto',
+  signInRow: 'Anmelden',
+  signInRowSub: 'Sichern und zwischen Geräten abgleichen',
+  exportFailed: 'Export fehlgeschlagen: {msg}',
   signOut: 'Abmelden',
   signOutAsk: { title: 'Abmelden?', message: 'Die Daten bleiben auf diesem Gerät, werden aber nicht mehr abgeglichen.' },
   signInHint: 'Anmelden, damit Training und Einstellungen auf dem Server gesichert und zwischen Geräten abgeglichen werden.',
@@ -81,13 +85,17 @@ export const profile = {
 
   /* Profil-Seiten */
   goals: {
-    sub: 'Bis zu drei · {n} gewählt · sortiert nach „realistisch als Nächstes“',
+    sub: 'Bis zu fünf · {n} gewählt · sortiert nach „realistisch als Nächstes“',
     reached: 'erreicht',
     missing: 'fehlt noch: {list}',
     tier: { next: 'Realistisch als Nächstes', work: 'Mit etwas Vorarbeit', long: 'Langfristiges Ziel' },
     none: 'noch keine gewählt',
-    pickHint: 'Tippe an, was du lernen willst – bis zu drei. Lever baut deinen Plan darauf auf.',
-    full: 'Drei Ziele gewählt – nimm erst eins raus.',
+    pickHint: 'Tippe an, was du lernen willst – bis zu fünf. Lever baut deinen Plan darauf auf.',
+    full: 'Fünf Ziele gewählt – nimm erst eins raus.',
+    after: 'Nach {name}',
+    partOf: 'Steckt schon in {name}',
+    reachedGroup: 'Erreicht',
+    reachedHint: 'Schon geschafft – als Ziel nicht mehr nötig.',
     blurb: {
       'muscle-up': 'Aus dem Hang in einem Zug über die Stange – Klimmzug und Dip in einer Bewegung.',
       'handstand': 'Frei auf den Händen balancieren, Körper in einer Linie.',
@@ -139,6 +147,8 @@ export const profile = {
     auto: 'Lever entscheidet',
     autoSub: 'passend zu deinen Zielen',
     autoNow: 'passend zu deinen Zielen – derzeit {name}',
+    autoLater: 'Wählt den Aufbau, sobald du Ziele hast.',
+    weekAria: 'Woche: {list}',
     same: 'jede Einheit: {theme}',
     theme: { full: 'ganzer Körper', pull: 'Zug – Rücken, Bizeps', push: 'Druck – Brust, Schultern, Trizeps', lower: 'Beine', upper: 'Oberkörper' },
     none: 'keine Tage',

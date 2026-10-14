@@ -1,6 +1,4 @@
-/* Cardio/Aktivität (Web: ActivitySheet) – Platzhalter, wird portiert */
-import { SheetScreen } from '@/ui'
+/* Cardio/Aktivität anlegen, bearbeiten, löschen – Params: date, optional id, optional from=day */
+import { ActivityEditor } from '@/screens/log/activity'
 
-export default function Screen() {
-  return <SheetScreen title="Cardio" sub="In Arbeit" />
-}
+export default ActivityEditor

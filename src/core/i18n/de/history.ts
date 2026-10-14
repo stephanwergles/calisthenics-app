@@ -64,4 +64,13 @@ export const history = {
   colStep: 'Stufe',
   colSets: 'Sätze',
   sparkLabel: 'Summe der letzten {n} Einheiten: {values}',
+  /* Expo-App */
+  calendarAria: 'Kalender {month}',
+  withNote: 'mit Notiz',
+  setsAria: 'Sätze: {list}',
+  editActivity: 'Eintrag bearbeiten',
+  cardioEdit: 'Cardio bearbeiten',
+  notFound: 'Diesen Eintrag gibt es nicht mehr.',
+  tableAria: 'Alle Werte',
+  expandHint: 'Zeigt alle Werte',
 }

@@ -39,4 +39,5 @@ export const editor: Shape<typeof de> = {
   setsLess: 'Fewer sets',
   setsMore: 'More sets',
   dayQuestion: 'Which workout on this day?',
+  more: 'More',
 }

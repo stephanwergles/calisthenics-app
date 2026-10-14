@@ -4,7 +4,7 @@ import type {
   Activity, Catalog, Equipment, Exercise, ExerciseId, Plan, Profile, Progression, ProgressionId, Region, Session, SetLog,
   Skill, SkillId, Target, UserState, Weekday, Workout, WorkoutId, GeneratedPlan, GeneratorInput, SplitTemplate, Phase, PhaseKind, Tendon, ExerciseMeta, Template,
 } from '../domain/model.ts'
-import { usable } from '../domain/generator.ts'
+import { assignThemes, restDays, usable } from '../domain/generator.ts'
 import { suggestSkills, suggestSplits, type SkillSuggestion } from '../domain/assessment.ts'
 import { NOTE_MAX, REGIONS } from '../domain/model.ts'
 import { intl, t, tn, type Key } from './i18n/index.ts'
@@ -713,9 +713,11 @@ export function goalProgress(ix: Index, user: UserState, sessions: Session[], sk
   const lead = parts.reduce((a, b) => (b.share < a.share ? b : a), parts[0])
   return { share, pid: lead?.pid, current: lead?.step.exercise.name ?? '', stage: lead ? t('logic.stage', { i: lead.step.index + 1, n: lead.step.total }) : '' }
 }
-/** Ziel an/aus (höchstens drei) */
+/** höchstens so viele Ziele gleichzeitig (mehr verteilt der Generator nicht sinnvoll aufs Zeitbudget) */
+export const MAX_GOALS = 5
+/** Ziel an/aus (höchstens MAX_GOALS, das älteste fällt raus) */
 export function withGoal(p: Profile, skill: SkillId, on: boolean): Profile {
-  const goals = on ? [...new Set([...p.goals, skill])].slice(-3) : p.goals.filter(g => g !== skill)
+  const goals = on ? [...new Set([...p.goals, skill])].slice(-MAX_GOALS) : p.goals.filter(g => g !== skill)
   return { ...p, goals }
 }
 
@@ -733,6 +735,26 @@ export function generatorInput(ix: Index, user: UserState, skills: Skill[], spli
     // gewählte Vorlage, solange sie zur Zahl der Tage passt – sonst die naheliegendste
     split: splits.find(t => t.id === p.split && t.themes.length === p.days.length)?.id ?? suggestSplits(splits, p.days.length, regions)[0]?.id,
   }
+}
+
+/** Wochenvorschau einer Split-Vorlage: welcher Trainingstag (Mo zuerst) welches Thema bekommt –
+    dieselbe Zuordnung wie der Generator (assignThemes, Gewicht = Schwierigkeit der aktuellen Stufe
+    der Ziel-Leitern). Passt die Vorlage nicht zur Zahl der Tage: leer. */
+export function splitWeek(ix: Index, user: UserState, skills: Skill[], split: SplitTemplate, meta?: Record<string, ExerciseMeta>):
+  { day: Weekday; theme: SplitTemplate['themes'][number] }[] {
+  const p = profileOf(ix, user)
+  const rest = restDays(p.days)
+  const days = [...rest.keys()]
+  if (!days.length || split.themes.length !== days.length) return []
+  const m = meta ?? ix.catalog.meta ?? {}
+  const weights = [...new Set(p.goals.flatMap(g => skills.find(s => s.id === g)?.targets ?? []))].flatMap(pid => {
+    const prog = ix.progressions.get(pid)
+    if (!prog) return []
+    const step = currentStep(ix, user, pid)
+    return [{ region: (prog.region ?? 'core') as Region, weight: m[step.exercise.id]?.difficulty ?? 3 }]
+  })
+  const themeOf = assignThemes(split.themes, days, rest, weights)
+  return days.map(day => ({ day, theme: themeOf.get(day)! }))
 }
 
 /** Erzeugten Plan in einen Nutzerplan übersetzen. Keys `auto-<tag>` bleiben über Vorschläge hinweg

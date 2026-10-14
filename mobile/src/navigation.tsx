@@ -5,7 +5,7 @@
      Glas-Button von iOS, Titel steht im Inhalt (Display-Schrift)
    - CloseButton / HeaderButton: native Toolbar-Buttons (Glas) oben rechts */
 import { Platform } from 'react-native'
-import { router, Stack } from 'expo-router'
+import { router, Stack, useNavigation } from 'expo-router'
 import type { NativeStackNavigationOptions } from 'expo-router'
 import { t } from '@lever/core/i18n/index.ts'
 import { color } from '@/ui/theme'
@@ -30,6 +30,7 @@ export const modal = (): NativeStackNavigationOptions => ({
 export const stackScreenOptions: NativeStackNavigationOptions = {
   headerTransparent: true,
   headerShadowVisible: false,
+  title: '',
   headerTitle: '',
   headerBackButtonDisplayMode: 'minimal',
   headerTintColor: color.text,
@@ -49,4 +50,12 @@ export function HeaderButton({ icon, onPress, label, prominent }: { icon: IconNa
 /** Schließen (Modal ganz zu) */
 export function CloseButton({ onPress }: { onPress?: () => void }) {
   return <HeaderButton icon="close" label={t('common.close')} onPress={onPress ?? (() => router.dismiss())} />
+}
+
+/** Schließen nur, wenn die Seite die erste im Modal-Stack ist (direkt geöffnet, z. B. /profile/goals);
+    weiter hinten gibt es das native Zurück */
+export function CloseIfRoot() {
+  const nav = useNavigation()
+  if ((nav.getState()?.index ?? 0) !== 0) return null
+  return <CloseButton />
 }

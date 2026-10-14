@@ -102,7 +102,7 @@ export function GoalPicker({ t, onClose, parent, next }: { t: Training; onClose:
     .map(r => ({ region: r, items: tiles.filter(x => x.region === r) })).filter(g => g.items.length)
   const sub = tr('profile.goals.sub', { n: profile.goals.length })
   const toggle = (id: string, on: boolean) => {
-    if (on && profile.goals.length >= 3) { toast(tr('profile.goals.full')); return }
+    if (on && profile.goals.length >= L.MAX_GOALS) { toast(tr('profile.goals.full')); return }
     change(p => L.withGoal(p, id, on))
   }
   useNativeSheet(native ? {

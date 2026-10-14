@@ -1,6 +1,8 @@
-/* Skill-Seite (Web: SkillDetail) – Platzhalter, wird portiert */
-import { SheetScreen } from '@/ui'
+/* Skill-Seite (Web: SkillDetail) – Push im Skills-Tab */
+import { useLocalSearchParams } from 'expo-router'
+import { SkillPage } from '@/screens/skills/skill-page'
 
 export default function Screen() {
-  return <SheetScreen title="Skill" sub="In Arbeit" />
+  const { id } = useLocalSearchParams<{ id: string }>()
+  return <SkillPage id={String(id)} />
 }

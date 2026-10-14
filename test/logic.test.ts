@@ -380,7 +380,7 @@ test('Eigener Plan bearbeiten: Workout, Slots, Wochentage, Löschen', () => {
   assert.deepEqual(groups.map(g => g.label).slice(0, 2), ['Ziehen', 'Drücken'])
 })
 
-test('Profil und Ziele: Standardwerte, höchstens drei Ziele, Vorschläge, Fortschritt', () => {
+test('Profil und Ziele: Standardwerte, höchstens fünf Ziele, Vorschläge, Fortschritt', () => {
   const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
   const p = L.profileOf(ix, state)
   assert.deepEqual(p.goals, [])
@@ -388,8 +388,11 @@ test('Profil und Ziele: Standardwerte, höchstens drei Ziele, Vorschläge, Forts
   assert.equal(L.profileOf(ix, { ...state, profile: { ...p, minutes: 60 } }).minutes, 60, 'gespeichertes Profil gilt')
   let q = L.withGoal(p, 'muscle-up', true)
   q = L.withGoal(L.withGoal(L.withGoal(q, 'l-sit', true), 'handstand', true), 'pistol', true)
-  assert.deepEqual(q.goals, ['l-sit', 'handstand', 'pistol'], 'höchstens drei, das älteste fällt raus')
-  assert.deepEqual(L.withGoal(q, 'l-sit', false).goals, ['handstand', 'pistol'])
+  assert.deepEqual(q.goals, ['muscle-up', 'l-sit', 'handstand', 'pistol'], 'mehr als drei Ziele erlaubt')
+  q = L.withGoal(L.withGoal(q, 'planche', true), 'front-lever', true)
+  assert.equal(L.MAX_GOALS, 5)
+  assert.deepEqual(q.goals, ['l-sit', 'handstand', 'pistol', 'planche', 'front-lever'], 'höchstens fünf, das älteste fällt raus')
+  assert.deepEqual(L.withGoal(q, 'l-sit', false).goals, ['handstand', 'pistol', 'planche', 'front-lever'])
   const choices = L.skillChoices(ix, state, skills)
   assert.ok(choices.length >= 4)
   assert.ok(choices.every((c, i) => i === 0 || choices[i - 1].reached <= c.reached), 'erreichte am Ende')
@@ -423,6 +426,13 @@ test('Planvorschlag: Generator → Nutzerplan, Diff, gleicher Plan = kein Vorsch
   assert.ok(diff.some(d => d.changes.some(c => c.kind === 'neu')) && diff.some(d => d.changes.some(c => c.kind === 'raus')))
   const after = L.indexCatalog(L.effectiveCatalog(catalog, plan))
   assert.equal(L.samePlan(after, L.planFromGenerated(after, plan, g, input)), true, 'nach Übernahme kein neuer Vorschlag')
+  // Wochenvorschau je Split-Vorlage: dieselbe Zuordnung Tag → Thema wie der Generator
+  for (const split of splits.filter((x: { themes: unknown[] }) => x.themes.length === 3)) {
+    const week = L.splitWeek(ix, user, skills, split, meta)
+    const gen = generatePlan({ catalog, meta, skills, splits }, { ...input, split: split.id })
+    assert.deepEqual(week.map(w => [w.day, w.theme.name]), gen.days.map(d => [d.day, d.theme]), `Vorschau ${split.id} = Generator`)
+  }
+  assert.deepEqual(L.splitWeek(ix, user, skills, splits.find((x: { id: string }) => x.id === 'ul-2'), meta), [], 'falsche Zahl Tage → leer')
 })
 
 test('Phasen: Verletzung/Equipment lassen Übungen ruhen, Pause hält die Serie, Wiedereinstieg leichter', () => {

@@ -8,4 +8,5 @@ export const onboarding = {
   library: 'Fertigen Plan wählen',
   skip: 'Überspringen – Standardplan nutzen',
   suggest: 'Plan vorschlagen',
+  skipStep: 'Überspringen',
 }

@@ -67,4 +67,13 @@ export const history: Shape<typeof de> = {
   colStep: 'Stage',
   colSets: 'Sets',
   sparkLabel: 'Total of the last {n} sessions: {values}',
+  /* Expo app */
+  calendarAria: 'Calendar {month}',
+  withNote: 'with note',
+  setsAria: 'Sets: {list}',
+  editActivity: 'Edit entry',
+  cardioEdit: 'Edit cardio',
+  notFound: 'This entry no longer exists.',
+  tableAria: 'All values',
+  expandHint: 'Shows all values',
 }

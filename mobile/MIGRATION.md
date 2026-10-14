@@ -19,26 +19,26 @@ kommen aus dem gemeinsamen Kern `src/core` (Import `@lever/core/...`), nur die O
 |---|---|---|---|
 | Heute | `HomeView` | `(tabs)/(today)/index` → `screens/today.tsx` | ✅ |
 | Session-Leiste | `BottomBar` | `NativeTabs.BottomAccessory` → `components/session-bar.tsx` | ✅ |
-| Training (Fokus, Pause, Halte-Timer) | `FocusView`, `RestOverlay` | `training` | ☐ |
-| Satz erfassen | `SetSheet` | `set` | ☐ |
-| Technik & Optionen | `ExerciseSheet` | `exercise` | ☐ |
-| Übungsplan heute | `PlanSheet` (WorkoutView) | `exercises` | ☐ |
-| Zusammenfassung | `SummaryOverlay` | `summary/[id]` | ☐ |
-| Plan-Tab | `PlanView` | `(tabs)/(plan)/index` | ☐ |
-| Phasen | `PhaseSheet` | `phase` | ☐ |
-| Planvorschlag | `SuggestionSheet` | `suggestion` | ☐ |
-| Vorlagen | `TemplatesSheet` | `templates/*` | ☐ |
-| Meine Workouts / Editor | `PlanEditor` | `workouts/*` | ☐ |
-| Skills-Tab, Skill-Seite | `SkillsView`, `SkillDetail` | `(tabs)/(skills)/index`, `skill/[id]` | ☐ |
-| Progressions-Leiter | `SkillSheet` | `progression/[pid]` | ☐ |
-| Log (Kalender, Verlauf, Fortschritt) | `HistoryView` | `(tabs)/(log)/index` | ☐ |
-| Tag im Verlauf | `DaySheet` | `day/[id]` | ☐ |
-| Cardio | `ActivitySheet` | `activity` | ☐ |
-| Profil (Ziele, Ausrüstung, Tage, Einstufung, Sprache, Feedback, Konto, Daten) | `ProfileSheet`, `ProfileParts`, `DataView` | `profile/*` | ☐ |
-| Onboarding | `Onboarding` | `onboarding/*` | ☐ |
-| Gesundheits-Hinweis / Einwilligung | `ConsentGate` | `consent`, `screens/gates.tsx` | ☐ |
+| Training (Fokus, Pause, Halte-Timer) | `FocusView`, `RestOverlay` | `training` | ✅ |
+| Satz erfassen | `SetSheet` | `set` | ✅ |
+| Technik & Optionen | `ExerciseSheet` | `exercise` | ✅ |
+| Übungsplan heute | `PlanSheet` (WorkoutView) | `exercises` | ✅ |
+| Zusammenfassung | `SummaryOverlay` | `summary/[id]` | ✅ |
+| Plan-Tab | `PlanView` | `(tabs)/(plan)/plan` | ✅ |
+| Phasen | `PhaseSheet` | `phase` | ✅ |
+| Planvorschlag | `SuggestionSheet` | `suggestion` | ✅ |
+| Vorlagen | `TemplatesSheet` | `templates/*` | ✅ |
+| Meine Workouts / Editor | `PlanEditor` | `workouts/*` | ✅ |
+| Skills-Tab, Skill-Seite | `SkillsView`, `SkillDetail` | `(tabs)/(skills)/skills`, `skill/[id]` | ✅ |
+| Progressions-Leiter | `SkillSheet` | `progression/[pid]` | ✅ |
+| Log (Kalender, Verlauf, Fortschritt) | `HistoryView` | `(tabs)/(log)/log` | ✅ |
+| Tag im Verlauf | `DaySheet` | `day/[id]` | ✅ |
+| Cardio | `ActivitySheet` | `activity` | ✅ |
+| Profil (Ziele, Ausrüstung, Tage, Einstufung, Sprache, Feedback, Konto, Daten) | `ProfileSheet`, `ProfileParts`, `DataView` | `profile/*` | ✅ |
+| Onboarding | `Onboarding` | `onboarding/*` | ✅ |
+| Gesundheits-Hinweis / Einwilligung | `ConsentGate` | `consent`, `screens/gates.tsx` | ✅ |
 
-## Feedback, das in der Expo-App umgesetzt wird (14.10.)
+## Feedback, das in der Expo-App umgesetzt wird (14.10.) – umgesetzt
 
 - Ring-Muscle-up erscheint als „realistisch“, obwohl der Muscle-up noch nicht erreicht ist → Voraussetzung „Muscle-up erreicht“ in den Skill-Daten; Niveau nicht an der schwersten Einzelübung messen
 - Erreichte Skills (z. B. Dips mit Gewicht, freigeschaltet) nicht mehr als Ziel anbieten → eigene Gruppe „Erreicht“
@@ -46,7 +46,13 @@ kommen aus dem gemeinsamen Kern `src/core` (Import `@lever/core/...`), nur die O
 - Mehr als drei Ziele zulassen (Grenze über das Zeitbudget statt fester Zahl)
 - Pistol in der Einstufung: echte Radio-Buttons
 - Wochenaufbau: statt Erklärtext eine Vorschau der konkreten Woche je Option (was an welchem Tag drankommt)
-- Sheet-Inhalt skaliert beim Öffnen (Capacitor) → mit nativen Expo-Sheets erledigt, prüfen
+- Sheet-Inhalt skaliert beim Öffnen (Capacitor) → mit nativen Expo-Sheets erledigt
+
+## Offen
+
+- Android: Material-Icons sind hinterlegt, aber ungetestet; `Stack.Toolbar` braucht dort Bild-Icons
+- Umstieg: Expo-App per `npm run release:ios` zu TestFlight (ersetzt die Capacitor-App, gleiche Bundle-ID) – danach `ios/`, Capacitor-Pakete und `src/client/native.ts` entfernen
+- Live Activity für den Pausen-Timer (Sperrbildschirm/Dynamic Island)
 
 ## Regeln
 

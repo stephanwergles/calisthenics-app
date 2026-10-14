@@ -11,6 +11,7 @@ const BG = '#101010'
 const config: ExpoConfig = {
   name: dev ? 'Lever Dev' : 'Lever',
   slug: 'lever',
+  owner: 'offected',
   version: '2.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
@@ -19,6 +20,7 @@ const config: ExpoConfig = {
   backgroundColor: BG,
   ios: {
     bundleIdentifier: dev ? 'de.offected.lever.dev' : 'de.offected.lever',
+    appleTeamId: '3498DS659A',
     supportsTablet: false,
     config: { usesNonExemptEncryption: false },
     infoPlist: { CFBundleDisplayName: dev ? 'Lever Dev' : 'Lever' },
@@ -41,6 +43,7 @@ const config: ExpoConfig = {
   ],
   experiments: { typedRoutes: true, reactCompiler: true },
   extra: {
+    eas: { projectId: '993ef6ae-3e63-4ab5-8ac0-8ff909413a80' },
     /** Server für Anmeldung und Sync */
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://calisthenics.apps.blank-studio.de',
   },

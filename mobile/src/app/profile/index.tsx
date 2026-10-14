@@ -1,6 +1,6 @@
-/* Profil (Web: ProfileSheet) – Platzhalter, wird portiert */
-import { SheetScreen } from '@/ui'
+/* Profil (Modal mit eigenem Stack, Push-Seiten mit Glas-Zurück) – Inhalt in screens/profile/home.tsx */
+import { ProfileHome } from '@/screens/profile/home'
 
 export default function Screen() {
-  return <SheetScreen title="Profil" sub="In Arbeit" />
+  return <ProfileHome />
 }

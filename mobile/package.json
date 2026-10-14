@@ -54,7 +54,8 @@
     "android": "expo run:android",
     "media": "node scripts/media.js",
     "typecheck": "tsc --noEmit",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "release:ios": "bash scripts/ios-release.sh"
   },
   "private": true
 }

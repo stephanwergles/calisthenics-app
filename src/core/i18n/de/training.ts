@@ -52,6 +52,8 @@ export const training = {
     saveSet: 'Satz speichern',
     inPosition: 'In Position',
     hold: 'Halten!',
+    position: 'Übung {i} von {n}: {name}',
+    duration: 'Trainingsdauer {time}',
   },
   rest: {
     title: 'Pause',
@@ -65,6 +67,9 @@ export const training = {
     nextSet: 'Satz {set} von {planned}',
     nextSub: '{name} · Ziel {target}',
     back: 'Zurück zur Übung, Timer läuft weiter',
+    less: '15 Sekunden weniger',
+    more: '30 Sekunden mehr',
+    remaining: 'Noch {time}',
   },
   summary: {
     label: 'Trainingsabschluss',
@@ -122,5 +127,6 @@ export const training = {
     adjust: 'Heute anpassen',
     notePlaceholder: 'z. B. schlecht geschlafen, Schulter links zwickt',
     progress: 'Sätze erledigt',
+    stateDone: 'erledigt',
   },
 }

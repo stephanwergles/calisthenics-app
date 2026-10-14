@@ -44,3 +44,6 @@ example
 
 # generiert (scripts/media.js)
 src/media/clips.generated.ts
+
+# Release-Builds
+build/

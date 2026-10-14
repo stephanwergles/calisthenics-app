@@ -36,4 +36,5 @@ export const editor = {
   setsLess: 'Sätze verringern',
   setsMore: 'Sätze erhöhen',
   dayQuestion: 'Welches Workout an diesem Tag?',
+  more: 'Mehr',
 }

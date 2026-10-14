@@ -55,6 +55,8 @@ export const training: Shape<typeof de> = {
     saveSet: 'Save set',
     inPosition: 'Get in position',
     hold: 'Hold!',
+    position: 'Exercise {i} of {n}: {name}',
+    duration: 'Workout time {time}',
   },
   rest: {
     title: 'Rest',
@@ -68,6 +70,9 @@ export const training: Shape<typeof de> = {
     nextSet: 'Set {set} of {planned}',
     nextSub: '{name} · Target {target}',
     back: 'Back to exercise, timer keeps running',
+    less: '15 seconds less',
+    more: '30 seconds more',
+    remaining: '{time} left',
   },
   summary: {
     label: 'Workout summary',
@@ -125,5 +130,6 @@ export const training: Shape<typeof de> = {
     adjust: 'Adjust today',
     notePlaceholder: 'e.g. slept badly, left shoulder twinges',
     progress: 'Sets done',
+    stateDone: 'done',
   },
 }

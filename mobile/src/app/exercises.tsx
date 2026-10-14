@@ -1,6 +1,2 @@
-/* Übungsplan heute (Web: PlanSheet) – Platzhalter, wird portiert */
-import { SheetScreen } from '@/ui'
-
-export default function Screen() {
-  return <SheetScreen title="Übungen" sub="In Arbeit" />
-}
+/* Übungsplan heute (Web: PlanSheet) – Param from=training, wenn aus dem Training geöffnet */
+export { PlanScreen as default } from '@/screens/training/plan'

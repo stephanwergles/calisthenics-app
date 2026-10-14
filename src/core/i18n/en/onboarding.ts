@@ -11,4 +11,5 @@ export const onboarding: Shape<typeof de> = {
   library: 'Pick a ready-made plan',
   skip: 'Skip – use the default plan',
   suggest: 'Suggest a plan',
+  skipStep: 'Skip',
 }

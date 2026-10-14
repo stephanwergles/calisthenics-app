@@ -290,7 +290,7 @@ function Goals({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
     const skill = SKILLS.find(s => s.id === id)
     return skill ? [{ skill, p: L.goalProgress(t.ix, t.state, t.sessions, skill) }] : []
   })
-  const next = L.skillChoices(t.ix, t.state, SKILLS, catalogData(t.ix.catalog).meta).find(c => !c.reached && !profile.goals.includes(c.skill))
+  const next = L.skillChoices(t.ix, t.state, SKILLS, catalogData(t.ix.catalog).meta).find(c => !c.reached && !profile.goals.includes(c.skill) && !c.partOf.some(g => profile.goals.includes(g)))
   const nextSkill = next && SKILLS.find(s => s.id === next.skill)
   const full = profile.goals.length >= 3
   return (
@@ -315,7 +315,7 @@ function Goals({ t, onOpen }: { t: Training; onOpen: (pid: string) => void }) {
         <div className="card sk-next">
           <span className="h-date">{tr('skills.nextUp')}</span>
           <b className="display">{next.name}</b>
-          <p>{next.missing.length ? tr('skills.nextMissing', { list: next.missing.join(', ') }) : tr('skills.nextReady', { n: Math.round(next.score * 100) })}</p>
+          <p>{next.missing.length ? tr('skills.nextMissing', { list: next.missing.join(', ') }) : tr(`profile.goals.tier.${next.tier}`)}</p>
           <button className="btn btn-primary btn-block" disabled={full} onClick={() => change(pr => L.withGoal(pr, next.skill, true))}>
             {full ? tr('skills.goalsFull') : tr('skills.setGoal')}
           </button>

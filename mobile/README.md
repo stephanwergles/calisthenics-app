@@ -1,56 +1,27 @@
-# Welcome to your Expo app 👋
+# Lever – Expo-App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Nativer Client (iOS, später Android) für Lever. Backend, Admin und Sync laufen weiter über die
+Next/Payload-Instanz im Repo-Root; Fachlogik, Zustand und Texte kommen aus `../src/core`.
+Stand der Portierung und offene Punkte: [MIGRATION.md](MIGRATION.md).
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Entwickeln
 
 ```bash
-npm run reset-project
+npm install                 # eigene Abhängigkeiten (kein Workspace)
+npm run ios                 # Development-Build bauen und im Simulator starten
+npx expo start              # nur Metro (Build schon installiert)
+npm run typecheck
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- `APP_VARIANT=development` → eigene App „Lever Dev“ (`de.offected.lever.dev`), läuft neben der Store-App.
+- Server: `EXPO_PUBLIC_API_URL` (Standard: Live-Instanz). Lokal z. B. `EXPO_PUBLIC_API_URL=http://localhost:3000`.
+- CocoaPods braucht eine UTF-8-Locale (`LANG=en_US.UTF-8`).
+- Expo SDK 58 (Beta, React Native 0.88-rc) – nötig für den Scene-Lebenszyklus des iOS-27-SDK; `.npmrc` setzt `legacy-peer-deps` wegen der RC-Version.
 
-### Other setup steps
+## Veröffentlichen
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npm run release:ios         # prebuild → Archiv → Upload zu TestFlight (Xcode-Konto, Team 3498DS659A)
+```
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+EAS-Projekt: `@offected/lever` (für Cloud-Builds/Updates bei Bedarf, `eas.json`).

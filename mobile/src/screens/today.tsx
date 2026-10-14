@@ -118,7 +118,7 @@ export function Today() {
                     </Pressable>
                   )
                 })}
-                <Button variant="ghost" icon="right" title={tr('home.manage')} onPress={() => { setPicking(false); router.navigate('/(tabs)/(plan)') }} />
+                <Button variant="ghost" icon="right" title={tr('home.manage')} onPress={() => { setPicking(false); router.navigate('/plan') }} />
               </View>
             )}
           </View>
@@ -127,7 +127,7 @@ export function Today() {
         {/* Nächste Skills */}
         {skills.length > 0 && (
           <View>
-            <SectionTitle title={tr('home.nextSkills')} right={<Button size="sm" variant="ghost" title={tr('home.allSkills')} icon="right" onPress={() => router.navigate('/(tabs)/(skills)')} />} />
+            <SectionTitle title={tr('home.nextSkills')} right={<Button size="sm" variant="ghost" title={tr('home.allSkills')} icon="right" onPress={() => router.navigate('/skills')} />} />
             <View style={{ gap: 10 }}>
               {skills.map(s => {
                 const pct = Math.round(s.readiness * 100)
