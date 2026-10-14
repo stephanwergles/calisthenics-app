@@ -171,6 +171,18 @@ export function workoutsInWeekOrder(ix: Index): Workout[] {
 
 const trained = (s: Session) => s.sets.length > 0 || s.durationSec !== undefined
 
+/** Workouts für die Schnellauswahl: das heutige zuerst, dann nach letzter Einheit (neueste zuerst),
+    nie trainierte in Wochenreihenfolge – höchstens n */
+export function recentWorkouts(ix: Index, sessions: Session[], today: WorkoutId, n = 5): Workout[] {
+  const last = new Map<WorkoutId, string>()
+  for (const s of sessions) if (!s.deleted && trained(s) && (last.get(s.workout) ?? '') < s.date) last.set(s.workout, s.date)
+  const order = workoutsInWeekOrder(ix)
+  return [...order].sort((a, b) =>
+    Number(b.id === today) - Number(a.id === today)
+    || (last.get(b.id) ?? '').localeCompare(last.get(a.id) ?? '')
+    || order.indexOf(a) - order.indexOf(b)).slice(0, n)
+}
+
 /** Empfehlung: laut Wochenplan; an freien Tagen das Workout mit der längsten Pause */
 export function recommendWorkout(ix: Index, sessions: Session[], date: string): WorkoutId {
   const planned = ix.catalog.weekplan[weekdayOf(date)]

@@ -27,6 +27,7 @@ export const editor = {
   empty: 'Noch leer – füge die erste Übung hinzu.',
   stage: 'Stufe {stage}/{total}',
   weekdays: 'Wochentage',
+  startNow: 'Training starten',
   instead: 'statt {name}',
   takenHint: 'Schon belegt – antippen ersetzt dort: {list}',
   weekdaysHint: 'Tippe die Tage an, an denen dieses Workout dran ist.',

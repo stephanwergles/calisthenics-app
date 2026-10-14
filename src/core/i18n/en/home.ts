@@ -39,6 +39,7 @@ export const home: Shape<typeof de> = {
   nextSkills: 'Next skills',
   workouts: 'Workouts',
   workoutsMine: 'My workouts',
+  workoutsAllN: 'All {n}',
   workoutNew: 'New workout',
   workoutNewSub: 'Pick your own exercises',
   workoutsMore: 'Templates',

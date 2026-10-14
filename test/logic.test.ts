@@ -493,6 +493,12 @@ test('Katalog-Ausbau: neue Stufen, Verweise per Übung, bestehende Nutzer behalt
   for (const p of ix.progressions.values()) for (const s of p.steps) assert.ok(ix.exercises.has(s.exercise), s.exercise)
 })
 
+test('Schnellauswahl Workouts: heutiges zuerst, dann zuletzt trainierte, höchstens n', () => {
+  const ss = [sess('2026-10-01', 'legs', [['pistol-squat', [5]]]), sess('2026-10-05', 'pull', [['pull-up', [8]]])]
+  assert.deepEqual(L.recentWorkouts(ix, ss, 'push').map(w => w.id), ['push', 'pull', 'legs'])
+  assert.deepEqual(L.recentWorkouts(ix, ss, 'push', 2).map(w => w.id), ['push', 'pull'])
+})
+
 test('Kann ich schon: Ziel-Leitern auf die letzte Stufe, Skill erreicht', () => {
   const skills = JSON.parse(readFileSync(new URL('../src/seed/skills.json', import.meta.url), 'utf8')).skills
   const wd = skills.find((s: { id: string }) => s.id === 'weighted-dip')

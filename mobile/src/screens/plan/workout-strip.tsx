@@ -1,41 +1,40 @@
-/* Workouts als horizontale Leiste (Heute und Plan-Tab): je Workout eine Karte, davor „Neues Workout“,
-   auf Heute am Ende die Vorlagen. Heute startet ein Tipp das Training, im Plan-Tab öffnet er den Editor. */
+/* Workouts als horizontale Leiste (Heute und Plan-Tab): vorn „Neues Workout“, dann höchstens fünf
+   Workouts (heutiges zuerst, dann zuletzt trainierte), bei mehr eine Karte „Alle“ zum Sheet; auf Heute
+   am Ende die Vorlagen. Ein Tipp öffnet die Übersicht des Workouts – gestartet wird dort. */
 import { Pressable, ScrollView, View } from 'react-native'
 import { router } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
-import { toast } from '@lever/core/toast.ts'
 import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
 import { Button, color, font, GUTTER, Icon, type IconName, radius, SectionTitle, Text } from '@/ui'
 
 const CARD = { width: 168, minHeight: 132, padding: 14, gap: 6, borderRadius: radius.card, borderCurve: 'continuous' as const, borderWidth: 1 }
 
-export function WorkoutStrip({ mode }: { mode: 'start' | 'edit' }) {
-  const { t, startWorkout } = useApp()
-  const list = L.workoutsInWeekOrder(t.ix)
-  const tap = (id: string) => {
-    if (mode === 'edit') { router.push({ pathname: '/workouts/[id]', params: { id } }); return }
-    if (t.active && t.active.workout !== id) { toast(tr('home.workoutBusy')); return }
-    startWorkout(id)
-  }
+const MAX = 5
+
+export function WorkoutStrip({ mode }: { mode: 'home' | 'plan' }) {
+  const { t } = useApp()
+  const all = L.workoutsInWeekOrder(t.ix)
+  const list = L.recentWorkouts(t.ix, t.sessions, t.workout, MAX)
+  const open = (id: string) => router.push({ pathname: '/workouts/[id]', params: { id } })
   return (
     <View>
       <SectionTitle title={tr('home.workouts')}
-        right={mode === 'start' ? <Button size="sm" variant="ghost" title={tr('home.workoutsMine')} icon="right" onPress={() => router.push('/workouts')} /> : undefined} />
+        right={<Button size="sm" variant="ghost" title={tr('home.workoutsMine')} icon="right" onPress={() => router.push('/workouts')} />} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -GUTTER }} contentContainerStyle={{ paddingHorizontal: GUTTER, gap: 10 }}>
         <ActionCard icon="plus" title={tr('home.workoutNew')} sub={tr('home.workoutNewSub')} onPress={() => router.push({ pathname: '/workouts/[id]', params: { id: 'new' } })} />
         {list.map(w => {
           const today = w.id === t.workout
           const days = L.plannedDays(t.ix, w.id).map(d => L.WEEKDAY_SHORT[d]).join(' · ')
           return (
-            <Pressable key={w.id} accessibilityRole="button" onPress={() => tap(w.id)}
-              accessibilityLabel={mode === 'start' ? tr('home.workoutStart', { name: w.name }) : `${w.name}, ${days || tr('plan.view.noDay')}`}
-              style={({ pressed }) => ({ ...CARD, backgroundColor: color.card, borderColor: today && mode === 'start' ? color.accentLine : color.line, opacity: pressed ? 0.8 : 1 })}>
+            <Pressable key={w.id} accessibilityRole="button" onPress={() => open(w.id)}
+              accessibilityLabel={`${w.name}, ${today ? tr('home.workoutToday') : days || tr('plan.view.noDay')}`}
+              style={({ pressed }) => ({ ...CARD, backgroundColor: color.card, borderColor: today ? color.accentLine : color.line, opacity: pressed ? 0.8 : 1 })}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text variant="eyebrow" numberOfLines={1} style={{ fontSize: 11, color: today && mode === 'start' ? color.accent : days ? color.accent : color.muted }}>
-                  {today && mode === 'start' ? tr('home.workoutToday') : days || tr('plan.view.noDay')}
+                <Text variant="eyebrow" numberOfLines={1} style={{ fontSize: 11, color: today || days ? color.accent : color.muted }}>
+                  {today ? tr('home.workoutToday') : days || tr('plan.view.noDay')}
                 </Text>
-                <Icon name={mode === 'start' ? 'play' : 'edit'} size={14} color={mode === 'start' ? color.accent : color.muted} />
+                <Icon name="right" size={13} color={color.muted} />
               </View>
               <Text variant="title" style={{ fontSize: 19, lineHeight: 21 }} numberOfLines={2}>{w.name}</Text>
               <Text variant="small" numberOfLines={2} style={{ flex: 1 }}>{w.focus}</Text>
@@ -43,7 +42,8 @@ export function WorkoutStrip({ mode }: { mode: 'start' | 'edit' }) {
             </Pressable>
           )
         })}
-        {mode === 'start' && <ActionCard icon="grid" title={tr('home.workoutsMore')} sub={tr('home.workoutsMoreSub')}
+        {all.length > list.length && <ActionCard icon="list" title={tr('home.workoutsAllN', { n: all.length })} sub={tr('home.workoutsMine')} onPress={() => router.push('/workouts')} />}
+        {mode === 'home' && <ActionCard icon="grid" title={tr('home.workoutsMore')} sub={tr('home.workoutsMoreSub')}
           onPress={() => router.push({ pathname: '/templates', params: { kind: 'workout' } })} />}
       </ScrollView>
     </View>

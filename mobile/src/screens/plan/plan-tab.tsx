@@ -96,7 +96,7 @@ export function PlanTab() {
         }))} />
 
         {/* Meine Workouts: Leiste wie auf Heute, Tippen öffnet den Editor */}
-        <WorkoutStrip mode="edit" />
+        <WorkoutStrip mode="plan" />
 
         {/* Phasen */}
         <SectionTitle title={tr('plan.view.phases')} />

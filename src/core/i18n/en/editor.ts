@@ -30,6 +30,7 @@ export const editor: Shape<typeof de> = {
   empty: 'Still empty – add your first exercise.',
   stage: 'Stage {stage}/{total}',
   weekdays: 'Weekdays',
+  startNow: 'Start workout',
   instead: 'instead of {name}',
   takenHint: 'Already taken – tapping replaces: {list}',
   weekdaysHint: 'Tap the days this workout is on.',

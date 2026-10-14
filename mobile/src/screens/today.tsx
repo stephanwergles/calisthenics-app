@@ -107,7 +107,7 @@ export function Today() {
         </Card>
 
         {/* Workouts: jedes Workout mit einem Tipp starten (auch außerhalb des Plan-Tags) */}
-        <WorkoutStrip mode="start" />
+        <WorkoutStrip mode="home" />
 
         {/* Challenge: Einstieg in die Selbsttests, mit dem letzten Versuch */}
         <ChallengeCard />

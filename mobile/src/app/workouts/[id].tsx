@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router'
 import type { Weekday, Workout } from '@lever/domain/model.ts'
 import * as L from '@lever/core/logic.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
+import { toast } from '@lever/core/toast.ts'
 import { useApp } from '@/state/app'
 import { ask, Button, ButtonRow, DayPicker, SheetScreen, Text } from '@/ui'
 import { DAY_NAME, ModalToolbar, NameForm, Rows, Section, useIsFirst } from '@/screens/plan/parts'
@@ -35,7 +36,14 @@ export default function WorkoutScreen() {
 }
 
 function Editor({ w, first }: { w: Workout; first: boolean }) {
-  const { t } = useApp()
+  const { t, startWorkout } = useApp()
+  // Training direkt aus der Übersicht starten: Modal schließen, dann starten (läuft schon eins: Hinweis)
+  const busy = !!t.active && t.active.workout !== w.id
+  const start = () => {
+    if (busy) { toast(tr('home.workoutBusy')); return }
+    router.dismissAll()
+    startWorkout(w.id)
+  }
   const weekplan = t.ix.catalog.weekplan
   const other = (d: Weekday) => (weekplan[d] && weekplan[d] !== w.id ? t.ix.workouts.get(weekplan[d]!)?.name : undefined)
   const setDay = (d: Weekday, on: boolean) => t.editPlan(p => L.withDay(p, d, on ? w.id : undefined))
@@ -63,7 +71,9 @@ function Editor({ w, first }: { w: Workout; first: boolean }) {
         { title: tr('editor.rename'), icon: 'edit', onPress: rename },
         { title: tr('editor.delete'), icon: 'trash', destructive: true, onPress: () => void remove() },
       ]} />
-      <SheetScreen title={w.name} sub={`${w.focus} · ${exerciseCount(slots.length)}`}>
+      <SheetScreen title={w.name} sub={`${w.focus} · ${exerciseCount(slots.length)}`}
+        footer={slots.length > 0 ? <Button variant="primary" size="lg" icon="play" disabled={busy}
+          title={t.active?.workout === w.id ? tr('home.ctaActive') : tr('editor.startNow')} onPress={start} /> : undefined}>
         <Section title={tr('editor.exercisesHead')} />
         {!slots.length && <Text variant="muted">{tr('editor.empty')}</Text>}
         {slots.length > 0 && <Rows rows={slots.map(({ sl, step, sets }) => ({
