@@ -6,7 +6,7 @@ Bitte nicht als öffentliches Issue, sondern über [GitHub Security Advisories](
 
 ## Was der Server tut
 
-- **Anmeldung:** Payload sperrt ein Konto nach 5 Fehlversuchen für 10 Minuten. Zusätzlich bremst `src/collections/Users.ts` je IP (Login 20 / 15 min, „Passwort vergessen“ 5 / h). Konten legen nur Admins an.
+- **Anmeldung:** Payload sperrt ein Konto nach 5 Fehlversuchen für 10 Minuten. Zusätzlich bremst `src/collections/Users.ts` je IP (Login 20 / 15 min, „Passwort vergessen“ 5 / h, Registrierung 5 / h, Apple 20 / 15 min). Registrierung ist offen: Rolle immer `athlete`, Anmeldung erst nach Bestätigung der E-Mail (`auth.verify`, „bestätigt“ setzen nur Admins und die Apple-Anmeldung), Passwort mindestens 8 Zeichen. Sign in with Apple (`src/sync/apple.ts`) prüft das Apple-Token gegen Apples Schlüssel (Aussteller, Bundle-IDs, Ablauf); die Apple-Kennung (`appleSub`) setzt nur der Server.
 - **Sitzungen:** Token 60 Tage gültig, serverseitig gespeichert (`useSessions`) – Abmelden widerruft das Token sofort, Konto löschen alle.
 - **Rechte:** Katalog nur Admins schreibbar, Nutzerdaten nur für die eigene Person (`src/access.ts`). Local-API-Aufrufe mit Nutzereingaben immer `overrideAccess: false`. `npm run check:access` prüft das gegen eine echte Datenbank – in der CI bei jedem Push.
 - **Sync** (`/api/sync`): 30 Anfragen pro Minute und Person, höchstens 8 MB und 2000 Dokumente je Liste, jedes Dokument wird vor dem Schreiben geprüft (`src/sync/convert.ts`).

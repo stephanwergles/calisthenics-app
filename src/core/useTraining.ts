@@ -261,6 +261,9 @@ export function useTraining() {
   /* ── Ändern (immer lokal + Postausgang) ───────────────────────────────── */
 
   const putSession = useCallback((s: Session) => {
+    // Ref sofort mitführen: Aktionen direkt danach (Beenden nach dem Speichern der Runden) sehen
+    // sonst noch den Stand vor dem nächsten Render und hielten die Einheit für leer
+    sessionsRef.current = new Map(sessionsRef.current).set(s.id, s)
     setSessions(prev => new Map(prev).set(s.id, s))
     void db.get().put('sessions', s)
     markDirty('sessions', s.id)
@@ -397,9 +400,8 @@ export function useTraining() {
     if (who.id != null) await db.get().kvSet('owner', String(who.id))
   }, [wipeLocal])
 
-  /** Anmelden; mit Einwilligung (Häkchen im Formular) wird sie am Konto gespeichert und sofort abgeglichen */
-  const signIn = useCallback(async (email: string, password: string, healthConsent = false) => {
-    const who = await api.login(email, password)
+  /** nach jeder Anmeldung: Gerät übernehmen, Einwilligung (Häkchen im Formular) am Konto speichern, abgleichen */
+  const afterLogin = useCallback(async (who: api.Who, healthConsent: boolean) => {
     await claimDevice(who)
     meta.current.account = who; void db.get().kvSet('account', who)
     if (healthConsent && who.id != null) {
@@ -409,6 +411,14 @@ export function useTraining() {
     setSync(s => ({ ...s, account: who, consentMissing: false }))
     await runSync()
   }, [runSync, claimDevice])
+  /** Anmelden mit E-Mail und Passwort */
+  const signIn = useCallback(async (email: string, password: string, healthConsent = false) => {
+    await afterLogin(await api.login(email, password), healthConsent)
+  }, [afterLogin])
+  /** Sign in with Apple (identityToken aus dem nativen Dialog) */
+  const signInWithApple = useCallback(async (identityToken: string, healthConsent = false) => {
+    await afterLogin(await api.appleLogin(identityToken), healthConsent)
+  }, [afterLogin])
 
   /** Einwilligung nachträglich geben (angemeldet, z. B. nach einem Update mit neuer Textfassung) */
   const acceptHealthConsent = useCallback(async () => {
@@ -463,7 +473,9 @@ export function useTraining() {
     loaded, persistent, today, ix, sessions: sessionList, activities, state, active, workout, recommended, restDay,
     todaySession, updateToday, setState, chooseWorkout, clearChoice, restDayChosen, startSession, prepareAgain, cancelAgain, endSession,
     addActivity, removeActivity, removeSession, discardSession, importV1, exportData,
-    sync, syncNow: runSync, signIn, signOut, deleteAccount,
+    /** aktueller Stand einer Einheit – auch direkt nach einer Änderung, vor dem nächsten Render */
+    getSession: (id: string) => sessionsRef.current.get(id),
+    sync, syncNow: runSync, signIn, signInWithApple, register: api.register, forgotPassword: api.forgotPassword, signOut, deleteAccount,
     consent, acceptHealthConsent, acceptDisclaimer,
     plan, savePlan, editPlan, baseCatalog: catalog,
   }

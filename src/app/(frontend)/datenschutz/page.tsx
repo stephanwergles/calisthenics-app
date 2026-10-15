@@ -25,6 +25,14 @@ export default function Datenschutz() {
         ausdrücklichen Einwilligung (Art. 9 Abs. 2 lit. a DSGVO), die Konto-Daten zur Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO).
         Gespeichert werden Textfassung und Zeitpunkt deiner Einwilligung.</p>
 
+      <h2>Anmeldung mit Apple</h2>
+      <p>Meldest du dich mit „Mit Apple anmelden“ an, übermittelt Apple uns eine Kennung deiner Apple-ID und deine
+        E-Mail-Adresse (auf Wunsch eine anonyme Weiterleitungsadresse von Apple). Wir speichern beides nur zur Anmeldung.</p>
+
+      <h2>E-Mails</h2>
+      <p>Bestätigungs- und Passwort-Mails versenden wir über [Resend, Inc., USA – Auftragsverarbeitung, Standardvertragsklauseln].
+        Dabei werden deine E-Mail-Adresse und der Inhalt der Mail übermittelt.</p>
+
       <h2>Server</h2>
       <p>[Hosting-Anbieter, Standort/Land, Auftragsverarbeitungsvertrag]. Verbindungen sind per HTTPS verschlüsselt.
         Server-Protokolle (IP-Adresse, Zeitpunkt, angefragte Adresse) werden [Dauer] aufbewahrt.</p>

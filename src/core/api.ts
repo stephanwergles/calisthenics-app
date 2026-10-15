@@ -8,7 +8,10 @@ import { platform } from './platform.ts'
 const getToken = () => platform().api.getToken()
 const setToken = (t: string | null) => platform().api.setToken(t)
 
-export class AuthError extends Error {}
+export class AuthError extends Error {
+  status: number
+  constructor(msg: string, status = 401) { super(msg); this.status = status }
+}
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const token = await getToken()
@@ -17,7 +20,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `JWT ${token}` } : {}), ...(init?.headers ?? {}) },
   })
-  if (res.status === 401 || res.status === 403) throw new AuthError('Nicht angemeldet')
+  if (res.status === 401 || res.status === 403) throw new AuthError('Nicht angemeldet', res.status)
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error(data?.errors?.[0]?.message ?? data?.error ?? `Fehler ${res.status}`)
   return data as T
@@ -43,7 +46,36 @@ export async function login(email: string, password: string): Promise<Who> {
     if (r.token) await setToken(r.token)
     return who(r.user)
   } catch (e) {
-    if (e instanceof AuthError) throw new Error('E-Mail oder Passwort stimmt nicht.')
+    // 403 = Konto noch nicht bestätigt (Payload „UnverifiedEmail“), 401 = falsch oder gesperrt
+    if (e instanceof AuthError) throw new Error(e.status === 403 ? UNVERIFIED : 'E-Mail oder Passwort stimmt nicht.')
+    throw e
+  }
+}
+export const UNVERIFIED = 'Bitte bestätige zuerst deine E-Mail-Adresse – der Link steht in der Mail von Lever.'
+
+/** Konto anlegen – angemeldet wird erst nach Klick auf den Bestätigungslink (Mail) */
+export async function register(email: string, password: string): Promise<void> {
+  try {
+    await call('/api/users', { method: 'POST', body: JSON.stringify({ email, password }) })
+  } catch (e) {
+    // Payload meldet eine vergebene Adresse als ungültiges Feld „email“
+    if (/email/i.test((e as Error).message)) throw new Error('Für diese E-Mail-Adresse gibt es schon ein Konto. Melde dich an oder setze das Passwort zurück.')
+    throw e
+  }
+}
+
+/** Mail mit Link zum neuen Passwort – antwortet immer gleich, auch ohne Konto (verrät nichts) */
+export const forgotPassword = (email: string) =>
+  call('/api/users/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }).then(() => undefined)
+
+/** Sign in with Apple: Apple-Token gegen ein Lever-Token tauschen (Konto wird bei Bedarf angelegt) */
+export async function appleLogin(identityToken: string): Promise<Who> {
+  try {
+    const r = await call<{ user: ServerUser; token: string }>('/api/auth/apple', { method: 'POST', body: JSON.stringify({ identityToken }) })
+    await setToken(r.token)
+    return who(r.user)
+  } catch (e) {
+    if (e instanceof AuthError) throw new Error('Die Anmeldung mit Apple hat nicht geklappt. Bitte versuche es noch einmal.')
     throw e
   }
 }

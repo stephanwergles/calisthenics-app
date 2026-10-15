@@ -216,6 +216,7 @@ export interface Session {
 export interface User {
   id: number;
   role: 'athlete' | 'admin';
+  appleSub?: string | null;
   consent?: {
     healthVersion?: string | null;
     healthAt?: string | null;
@@ -280,6 +281,8 @@ export interface User {
   salt?: string | null;
   hash?: string | null;
   resetPasswordRequestedAt?: string | null;
+  _verified?: boolean | null;
+  _verificationToken?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
@@ -1013,6 +1016,7 @@ export interface TemplatesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   role?: T;
+  appleSub?: T;
   consent?:
     | T
     | {
@@ -1037,6 +1041,8 @@ export interface UsersSelect<T extends boolean = true> {
   salt?: T;
   hash?: T;
   resetPasswordRequestedAt?: T;
+  _verified?: T;
+  _verificationToken?: T;
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:

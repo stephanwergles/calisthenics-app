@@ -25,6 +25,8 @@ const config: ExpoConfig = {
     buildNumber: process.env.BUILD_NUMBER ?? '1',
     supportsTablet: false,
     config: { usesNonExemptEncryption: false },
+    // Sign in with Apple (Capability/Entitlement; der Server prüft das Token: POST /api/auth/apple)
+    usesAppleSignIn: true,
     infoPlist: { CFBundleDisplayName: dev ? 'Lever Dev' : 'Lever' },
   },
   android: {
@@ -41,6 +43,7 @@ const config: ExpoConfig = {
     ['expo-audio', { microphonePermission: false }],
     'expo-video',
     'expo-sharing',
+    'expo-apple-authentication',
     ['expo-notifications', { color: '#D4FF3A' }],
     // Live Activity (Sperrbildschirm/Dynamic Island) – das Layout registriert src/live/session-activity.tsx zur Laufzeit
     ['expo-widgets', {}],

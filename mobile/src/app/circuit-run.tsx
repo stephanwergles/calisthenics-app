@@ -78,6 +78,8 @@ function Run({ c }: { c: Circuit }) {
   // Speichern: ist danach nichts mehr offen (keine Übung, kein weiterer Runden-Block), endet das
   // Training gleich mit – sonst liefe die Session weiter und man müsste sie extra beenden
   const save = () => {
+    // Ergebnis noch einmal sicher schreiben (die Wirkung oben kann bei schnellem Tippen nachhinken)
+    t.updateToday(s => L.withCircuitResult(s, resultOf()))
     toast(tr('circuit.saved'), 'success')
     const more = L.circuitsOf(t.ix.workouts.get(t.workout)).some(x => x.id !== c.id && !L.circuitResultOf(t.todaySession, x.id))
     if (t.active && !more && !L.upNext(slots, undefined)) finish()

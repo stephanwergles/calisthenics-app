@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { resendAdapter } from '@payloadcms/email-resend'
 import { de } from '@payloadcms/translations/languages/de'
 import { en } from '@payloadcms/translations/languages/en'
 import path from 'path'
@@ -20,6 +21,7 @@ import { Workouts } from './collections/Workouts'
 import { WeekPlan } from './globals/WeekPlan'
 import { syncHandler } from './sync/endpoint'
 import { deleteAccountHandler } from './sync/account'
+import { appleSignInHandler } from './sync/apple'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -37,12 +39,22 @@ export default buildConfig({
   endpoints: [
     { path: '/sync', method: 'post', handler: syncHandler },
     { path: '/account/delete', method: 'post', handler: deleteAccountHandler },
+    { path: '/auth/apple', method: 'post', handler: appleSignInHandler },
   ],
   // Die native App braucht kein CORS (kein Browser-Ursprung) – nur die eigene Seite
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),
   // weder App noch Admin-Panel nutzen GraphQL – weniger Angriffsfläche
   graphQL: { disable: true },
   secret: process.env.PAYLOAD_SECRET || '',
+  // Mails (Bestätigung, Passwort vergessen) über Resend; ohne Schlüssel (lokal, CI) schreibt Payload
+  // sie nur ins Log
+  ...(process.env.RESEND_API_KEY ? {
+    email: resendAdapter({
+      apiKey: process.env.RESEND_API_KEY,
+      defaultFromAddress: process.env.MAIL_FROM || 'lever@blank-studio.de',
+      defaultFromName: 'Lever',
+    }),
+  } : {}),
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URL || '' },

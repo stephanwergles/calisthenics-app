@@ -110,7 +110,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const loggedSinceStart = () => {
     if (!t.active) return 0
     const id = activeSessionId(t.active)
-    const s = L.live(t.sessions.find(x => x.id === id))
+    const s = L.live(t.getSession(id))
     return (s?.sets.length ?? 0) - (t.active.before?.sets.length ?? 0) + (s?.circuits?.length ?? 0) - (t.active.before?.circuits?.length ?? 0)
   }
   const finish = () => {

@@ -42,7 +42,22 @@ try {
 
   const others = await payload.find({ ...as, collection: 'users', depth: 0, pagination: false })
   results.push(['sieht nur sich selbst', others.docs.length === 1 && others.docs[0].id === athlete.id])
-  await expectDenied('Person anlegen verweigert', () => payload.create({ ...as, collection: 'users', data: { email: `x${email}`, password: 'x'.repeat(12) } as never }))
+  // Registrierung: offen, aber ohne Admin-Rolle und nicht an der Mail-Bestätigung vorbei
+  const anon = { req: {} as PayloadRequest, overrideAccess: false } as const
+  const signup = await payload.create({ ...anon, collection: 'users', disableVerificationEmail: true, data: { email: `signup-${email}`, password: 'x'.repeat(12), role: 'admin', _verified: true } as never })
+  const fresh = await payload.findByID({ collection: 'users', id: signup.id, depth: 0, showHiddenFields: true })
+  results.push(['Registrierung ohne Konto erlaubt', !!signup.id])
+  results.push(['Registrierung: Rolle bleibt athlete', fresh.role === 'athlete'])
+  results.push(['Registrierung: nicht vorab bestätigt', !(fresh as { _verified?: boolean })._verified])
+  await expectDenied('Anmelden vor der Bestätigung verweigert', () => payload.login({ collection: 'users', data: { email: `signup-${email}`, password: 'x'.repeat(12) } }))
+  const viaAthlete = await payload.create({ ...as, collection: 'users', disableVerificationEmail: true, data: { email: `y${email}`, password: 'x'.repeat(12), _verified: true } as never })
+  const viaFresh = await payload.findByID({ collection: 'users', id: viaAthlete.id, depth: 0, showHiddenFields: true })
+  results.push(['angemeldet anlegen: nicht vorab bestätigt', !(viaFresh as { _verified?: boolean })._verified])
+  await payload.update({ ...as, collection: 'users', id: athlete.id, data: { appleSub: 'x' } as never }).catch(() => undefined)
+  const noApple = await payload.findByID({ collection: 'users', id: athlete.id, depth: 0 })
+  results.push(['Apple-Kennung selbst setzen wirkungslos', !(noApple as { appleSub?: string }).appleSub])
+  await payload.delete({ collection: 'users', id: signup.id })
+  await payload.delete({ collection: 'users', id: viaAthlete.id })
 
   // was der Sync-Endpunkt mit den Rechten der Person tut, muss weiter gehen
   const w = await payload.find({ ...as, collection: 'workouts', limit: 1, depth: 0 })
