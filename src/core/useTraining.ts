@@ -419,6 +419,15 @@ export function useTraining() {
   const resetPassword = useCallback(async (token: string, password: string) => {
     await afterLogin(await api.resetPassword(token, password), false)
   }, [afterLogin])
+  /** Apple-ID an das angemeldete Konto hängen / wieder lösen (Profil) */
+  const setAppleLink = useCallback(async (identityToken: string | null) => {
+    if (identityToken) await api.linkApple(identityToken); else await api.unlinkApple()
+    const acc = meta.current.account
+    if (!acc) return
+    const next = { ...acc, apple: !!identityToken }
+    meta.current.account = next; void db.get().kvSet('account', next)
+    setSync(s => ({ ...s, account: next }))
+  }, [])
   /** Sign in with Apple (identityToken aus dem nativen Dialog) */
   const signInWithApple = useCallback(async (identityToken: string, healthConsent = false) => {
     await afterLogin(await api.appleLogin(identityToken), healthConsent)
@@ -479,7 +488,7 @@ export function useTraining() {
     addActivity, removeActivity, removeSession, discardSession, importV1, exportData,
     /** aktueller Stand einer Einheit – auch direkt nach einer Änderung, vor dem nächsten Render */
     getSession: (id: string) => sessionsRef.current.get(id),
-    sync, syncNow: runSync, signIn, signInWithApple, register: api.register, forgotPassword: api.forgotPassword, verifyEmail: api.verifyEmail, resetPassword, signOut, deleteAccount,
+    sync, syncNow: runSync, signIn, signInWithApple, register: api.register, forgotPassword: api.forgotPassword, verifyEmail: api.verifyEmail, resetPassword, setAppleLink, signOut, deleteAccount,
     consent, acceptHealthConsent, acceptDisclaimer,
     plan, savePlan, editPlan, baseCatalog: catalog,
   }

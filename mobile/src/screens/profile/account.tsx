@@ -1,6 +1,7 @@
 /* Konto & Sync: abgemeldet der Anmeldebereich (screens/auth), angemeldet Status, Abgleich,
    Abmelden, Konto löschen. */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import * as AppleAuthentication from 'expo-apple-authentication'
 import { HEALTH_CONSENT } from '@lever/core/consent.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
@@ -51,6 +52,7 @@ export function AccountPage({ gate }: { gate?: boolean } = {}) {
           </Card>
         )}
         {err && <Text variant="muted" style={{ color: color.danger }} accessibilityLiveRegion="polite">{err}</Text>}
+        <AppleLink />
         <ListGroup rows={[{ title: tr('profile.signOut'), icon: 'signOut', onPress: () => void signOut() }]} />
         <ListGroup rows={[{ title: tr('profile.deleteAccount'), icon: 'trash', danger: true, onPress: () => void confirmDeleteAccount(t) }]} />
       </SheetScreen>
@@ -58,4 +60,33 @@ export function AccountPage({ gate }: { gate?: boolean } = {}) {
   }
 
   return <SignInScreen gate={gate} />
+}
+
+/** Apple-ID mit dem Konto verknüpfen: danach führt „Mit Apple fortfahren“ hierher – auch mit
+    verborgener E-Mail-Adresse (die Apple sonst als neues Konto behandeln würde) */
+function AppleLink() {
+  const { t } = useApp()
+  const [available, setAvailable] = useState(false)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => { void AppleAuthentication.isAvailableAsync().then(setAvailable).catch(() => setAvailable(false)) }, [])
+  if (!available || !t.sync.account) return null
+  const linked = !!t.sync.account.apple
+  const run = async (fn: () => Promise<void>, done: string) => {
+    setBusy(true)
+    try { await fn(); toast(done, 'success') } catch (e) { if ((e as { code?: string }).code !== 'ERR_REQUEST_CANCELED') toast((e as Error).message, 'error') } finally { setBusy(false) }
+  }
+  const link = () => run(async () => {
+    const cred = await AppleAuthentication.signInAsync({ requestedScopes: [AppleAuthentication.AppleAuthenticationScope.EMAIL] })
+    if (!cred.identityToken) throw Object.assign(new Error(''), { code: 'ERR_REQUEST_CANCELED' })
+    await t.setAppleLink(cred.identityToken)
+  }, tr('profile.appleLinked'))
+  const unlink = async () => {
+    if (!await ask({ title: tr('profile.appleUnlinkAsk.title'), message: tr('profile.appleUnlinkAsk.message'), ok: tr('profile.appleUnlink'), destructive: true })) return
+    await run(() => t.setAppleLink(null), tr('profile.appleUnlinked'))
+  }
+  return (
+    <ListGroup rows={[linked
+      ? { title: tr('profile.appleRow'), subtitle: tr('profile.appleRowLinked'), icon: 'apple', trailing: busy ? '…' : tr('profile.appleUnlink'), onPress: () => void unlink() }
+      : { title: tr('profile.appleLink'), subtitle: tr('profile.appleLinkSub'), icon: 'apple', trailing: busy ? '…' : undefined, onPress: () => void link() }]} />
+  )
 }

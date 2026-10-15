@@ -1,5 +1,5 @@
 import { APIError, type CollectionConfig } from 'payload'
-import { adminField, adminPanel, isAdmin, selfOrAdmin } from '../access'
+import { adminField, adminPanel, isAdmin, selfOrAdmin, selfOrAdminField } from '../access'
 import { clientIp, createLimiter } from '../sync/rateLimit'
 
 /* Bremse je IP gegen Passwort-Raten über viele Konten hinweg (je Konto sperrt Payload selbst nach
@@ -90,7 +90,7 @@ export const Users: CollectionConfig = {
     {
       // Sign in with Apple: stabile Kennung der Apple-ID – nur der Server setzt sie (POST /api/auth/apple)
       name: 'appleSub', type: 'text', unique: true, index: true, label: 'Apple-ID (Kennung)',
-      access: { create: () => false, update: () => false, read: adminField },
+      access: { create: () => false, update: () => false, read: selfOrAdminField },
       admin: { readOnly: true, position: 'sidebar' },
     },
     {

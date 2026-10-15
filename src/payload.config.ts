@@ -21,7 +21,7 @@ import { Workouts } from './collections/Workouts'
 import { WeekPlan } from './globals/WeekPlan'
 import { syncHandler } from './sync/endpoint'
 import { deleteAccountHandler } from './sync/account'
-import { appleSignInHandler } from './sync/apple'
+import { appleLinkHandler, appleSignInHandler, appleUnlinkHandler } from './sync/apple'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -40,6 +40,8 @@ export default buildConfig({
     { path: '/sync', method: 'post', handler: syncHandler },
     { path: '/account/delete', method: 'post', handler: deleteAccountHandler },
     { path: '/auth/apple', method: 'post', handler: appleSignInHandler },
+    { path: '/auth/apple/link', method: 'post', handler: appleLinkHandler },
+    { path: '/auth/apple/unlink', method: 'post', handler: appleUnlinkHandler },
   ],
   // Die native App braucht kein CORS (kein Browser-Ursprung) – nur die eigene Seite
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),

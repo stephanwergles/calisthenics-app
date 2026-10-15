@@ -12,6 +12,7 @@ const ICONS = {
   skills: { ios: 'point.3.connected.trianglepath.dotted', android: 'hub' },
   history: { ios: 'clock.arrow.circlepath', android: 'history' },
   user: { ios: 'person.crop.circle', android: 'account_circle' },
+  apple: { ios: 'apple.logo', android: 'account_circle' },
   calendar: { ios: 'calendar', android: 'calendar_month' },
   play: { ios: 'play.fill', android: 'play_arrow' },
   stop: { ios: 'stop.fill', android: 'stop' },

@@ -26,9 +26,9 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   return data as T
 }
 
-export interface Who { email: string; id?: number | string; healthConsent?: string | null }
-type ServerUser = { email: string; id: number | string; consent?: { healthVersion?: string | null } }
-const who = (u: ServerUser): Who => ({ email: u.email, id: u.id, healthConsent: u.consent?.healthVersion ?? null })
+export interface Who { email: string; id?: number | string; healthConsent?: string | null; /** Apple-ID verknüpft */ apple?: boolean }
+type ServerUser = { email: string; id: number | string; consent?: { healthVersion?: string | null }; appleSub?: string | null }
+const who = (u: ServerUser): Who => ({ email: u.email, id: u.id, healthConsent: u.consent?.healthVersion ?? null, apple: !!u.appleSub })
 
 export async function me(): Promise<Who | null> {
   if (platform().api.tokenAuth && !(await getToken())) return null
@@ -80,6 +80,11 @@ export async function resetPassword(token: string, password: string): Promise<Wh
   }
 }
 export const LINK_INVALID = 'Der Link ist abgelaufen oder wurde schon benutzt.'
+
+/** Apple-ID mit dem angemeldeten Konto verknüpfen bzw. lösen */
+export const linkApple = (identityToken: string) =>
+  call('/api/auth/apple/link', { method: 'POST', body: JSON.stringify({ identityToken }) }).then(() => undefined)
+export const unlinkApple = () => call('/api/auth/apple/unlink', { method: 'POST' }).then(() => undefined)
 
 /** Mail mit Link zum neuen Passwort – antwortet immer gleich, auch ohne Konto (verrät nichts) */
 export const forgotPassword = (email: string) =>

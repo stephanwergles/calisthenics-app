@@ -18,6 +18,8 @@ export const adminPanel = ({ req }: { req: PayloadRequest }) => isAdminUser(req)
 
 /** Feld nur für Admins änderbar (z. B. die Rolle – sonst macht sich jede:r selbst zum Admin) */
 export const adminField: FieldAccess = ({ req }) => isAdminUser(req)
+/** Feld am Personen-Dokument: lesen nur die Person selbst und Admins */
+export const selfOrAdminField: FieldAccess = ({ req, id, doc }) => isAdminUser(req) || (!!userOf(req) && String(userOf(req)!.id) === String(id ?? doc?.id))
 
 /** Person-Dokument: die eigene Person, Admins alle */
 export const selfOrAdmin: Access = ({ req }) => {
