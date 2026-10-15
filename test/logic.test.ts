@@ -706,3 +706,12 @@ test('Zusammenfassung: Wiederholungen aus Runden-Blöcken zählen mit', () => {
   assert.equal(L.sessionSummary(ix2, [s], s).reps, 150, '5 Runden × 30')
   assert.deepEqual(L.withoutCircuitResult(s, c.id).circuits, [])
 })
+
+test('mehrere Einheiten desselben Workouts am Tag: -2, -3 …, gelöschte zählen nicht', () => {
+  const a = L.emptySession('2026-10-15', 'pull')
+  assert.equal(L.sessionId('2026-10-15', 'pull', 2), '2026-10-15-pull-2')
+  assert.deepEqual(L.latestSessionId([], '2026-10-15', 'pull'), { id: '2026-10-15-pull', n: 1 })
+  const b = { ...a, id: L.sessionId('2026-10-15', 'pull', 2) }
+  assert.deepEqual(L.latestSessionId([a, b], '2026-10-15', 'pull'), { id: '2026-10-15-pull-2', n: 2 })
+  assert.deepEqual(L.latestSessionId(new Map([[a.id, a], [b.id, { ...b, deleted: true }]]), '2026-10-15', 'pull'), { id: '2026-10-15-pull', n: 1 })
+})

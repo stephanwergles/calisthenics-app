@@ -103,7 +103,10 @@ const isNum = (v: unknown) => typeof v === 'number' && Number.isFinite(v)
 export { NOTE_MAX }
 const isNote = (v: any) => v === undefined || (typeof v === 'string' && v.length <= NOTE_MAX)
 export function isSession(s: any): s is Session {
-  return !!s && isId(s.id) && isDate(s.date) && isId(s.workout) && s.id === `${s.date}-${s.workout}`
+  if (!s || !isId(s.id) || !isDate(s.date) || !isId(s.workout)) return false
+  // Datum + Workout, ein weiteres Mal am selben Tag mit „-2“ … „-49“
+  const base = `${s.date}-${s.workout}`
+  return (s.id === base || (s.id.startsWith(`${base}-`) && /^([2-9]|[1-4]\d)$/.test(s.id.slice(base.length + 1))))
     && Array.isArray(s.sets) && s.sets.length <= 300
     && s.sets.every((x: any) => x && isId(x.exercise) && isId(x.progression) && isNum(x.set) && isNum(x.value) && isNote(x.note))
     && isNote(s.note) && (s.deleted === undefined || typeof s.deleted === 'boolean')

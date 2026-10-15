@@ -18,7 +18,8 @@ export function WorkoutStrip({ mode }: { mode: 'home' | 'plan' }) {
   // am Ruhetag ist kein Workout „heute“ (t.workout ist dann nur der Vorschlag für „Doch trainieren“)
   const todayId = t.restDay ? '' : t.workout
   const list = L.recentWorkouts(t.ix, t.sessions, todayId, MAX)
-  const open = (id: string) => router.push({ pathname: '/workouts/[id]', params: { id } })
+  // von Heute: nur ansehen und starten (Bearbeiten über das Menü); im Plan-Tab gleich bearbeiten
+  const open = (id: string) => router.push({ pathname: '/workouts/[id]', params: { id, ...(mode === 'home' ? { view: '1' } : {}) } })
   return (
     <View>
       <SectionTitle title={tr('home.workouts')}

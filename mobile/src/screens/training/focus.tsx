@@ -117,8 +117,9 @@ export function AllDone() {
         ? open.map(c => <CircuitCard key={c.id} id={c.id} />)
         : <Text variant="muted" style={{ fontSize: 17, lineHeight: 24 }}>{tr('training.focus.allDone')}</Text>}
       <View style={{ gap: 10, marginTop: space.md }}>
-        {t.active && <Button variant="primary" size="lg" icon="check" title={tr('training.focus.finish')} onPress={finish} />}
-        <Button variant={t.active ? 'secondary' : 'primary'} size={t.active ? 'md' : 'lg'} icon="list" title={tr('training.focus.allExercises')} onPress={openList} />
+        {/* offene Runden sind die Hauptaktion – Beenden dann nur als Nebenaktion */}
+        {t.active && <Button variant={open.length ? 'ghost' : 'primary'} size={open.length ? 'md' : 'lg'} icon="check" title={tr('training.focus.finish')} onPress={finish} />}
+        {!open.length && <Button variant={t.active ? 'secondary' : 'primary'} size={t.active ? 'md' : 'lg'} icon="list" title={tr('training.focus.allExercises')} onPress={openList} />}
       </View>
     </Animated.View>
   )

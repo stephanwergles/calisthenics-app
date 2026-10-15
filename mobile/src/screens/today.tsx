@@ -14,7 +14,7 @@ import { HeaderButton } from '@/navigation'
 import { Button, Card, color, ExerciseStill, font, GUTTER, hasClip, Icon, type IconName, radius, Ring, SectionTitle, space, Text, Wordmark } from '@/ui'
 
 export function Today() {
-  const { t, slots, started, doneToday: done, start, openTraining } = useApp()
+  const { t, slots, started, doneToday: done, start, startWorkout, openTraining } = useApp()
   const w = t.ix.workouts.get(t.workout)!
   const locale = getLocale()
   // ausgewählter Tag der Wochenleiste (wie im Log): zeigt ein Banner; heute = keins
@@ -111,7 +111,8 @@ export function Today() {
               {done && t.todaySession
                 ? <Button variant="primary" size="lg" icon="trophy" title={tr('home.summary')} onPress={() => router.push({ pathname: '/summary/[id]', params: { id: t.todaySession!.id } })} />
                 : <Button variant="primary" size="lg" icon="play" title={cta} onPress={onStart} />}
-              {done && <Button icon="play" title={cta} onPress={onStart} />}
+              {/* erledigt: läuft die Session noch, zurück ins Training; sonst dasselbe Workout als neue Einheit */}
+              {done && <Button icon="play" title={cta} onPress={t.active ? onStart : () => startWorkout(t.workout, true)} />}
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <Button style={{ flex: 1 }} variant="secondary" icon="list" title={tr('home.exercises')} onPress={() => router.push('/exercises')} />
                 <Button style={{ flex: 1 }} variant="secondary" icon="swap" title={tr('home.swap')} onPress={() => router.push('/swap')} />
@@ -219,7 +220,7 @@ function DayBanner({ date, onClose }: { date: string; onClose: () => void }) {
   } else if (planned && !past) {
     label = tr('home.bannerPlanned'); title = planned.focus
     text = `${planned.name} · ${workoutSize(planned)}`
-    actions = [{ icon: 'right', title: tr('home.bannerOverview'), onPress: () => router.push({ pathname: '/workouts/[id]', params: { id: planned.id } }) }]
+    actions = [{ icon: 'right', title: tr('home.bannerOverview'), onPress: () => router.push({ pathname: '/workouts/[id]', params: { id: planned.id, view: '1' } }) }]
   } else if (planned) {
     label = tr('home.bannerMissed'); title = planned.focus; text = tr('history.restTextPast'); actions = [addCardio, doWorkout]
   } else {

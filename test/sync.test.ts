@@ -84,6 +84,9 @@ test('Aktivität und Trainingsstand', () => {
 test('Eingaben vom Gerät werden geprüft', () => {
   assert.ok(C.isSession(session))
   assert.equal(C.isSession({ ...session, id: '2026-09-30-push' }), false, 'ID passt nicht zu Datum/Workout')
+  assert.ok(C.isSession({ ...session, id: `${session.id}-2` }), 'zweite Einheit desselben Workouts am Tag')
+  assert.equal(C.isSession({ ...session, id: `${session.id}-1` }), false, 'erste Einheit hat keinen Zusatz')
+  assert.equal(C.isSession({ ...session, id: `${session.id}-2`, sets: 'x' }), false, 'Zusatz hebt die übrigen Prüfungen nicht auf')
   assert.equal(C.isSession({ ...session, date: '30.09.2026', id: '30.09.2026-pull' }), false)
   assert.equal(C.isSession({ ...session, sets: [{ exercise: 'x', progression: 'y', set: '1', value: 5 }] }), false)
   assert.equal(C.isSession({ ...session, skipped: ['<script>'] }), false)

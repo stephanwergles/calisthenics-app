@@ -4,7 +4,7 @@
 import { createContext, use, useEffect, useMemo, useState } from 'react'
 import { router } from 'expo-router'
 import * as L from '@lever/core/logic.ts'
-import { useTraining, type Training } from '@lever/core/useTraining.ts'
+import { useTraining, activeSessionId, type Training } from '@lever/core/useTraining.ts'
 import { usePlanSuggestion, type PlanSuggestion } from '@lever/core/usePlanSuggestion.ts'
 import { useRestTimer, type RestTimer } from '@lever/core/useRestTimer.ts'
 import { catalogData } from '@lever/core/data.ts'
@@ -34,7 +34,8 @@ export interface App {
   /** Session starten und Training öffnen */
   start: () => void
   /** beliebiges Workout wählen, starten und öffnen (Schnellstart) */
-  startWorkout: (id: string) => void
+  /** again: dasselbe Workout heute noch einmal als neue Einheit */
+  startWorkout: (id: string, again?: boolean) => void
   /** Training öffnen (optional auf eine Übung) */
   openTraining: (pid?: string) => void
   /** Session beenden → Zusammenfassung */
@@ -78,22 +79,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   )
   const focus = picked && slots.some(s => s.pid === picked) ? picked : L.firstOpen(slots.map(s => ({ pid: s.pid, state: s.state })))
   const focusSlot = slots.find(s => s.pid === focus)
-  const started = !!t.active || (t.todaySession?.sets.length ?? 0) > 0
-  const doneToday = started && !L.upNext(slots, undefined)
+  const started = !!t.active || (t.todaySession?.sets.length ?? 0) > 0 || (t.todaySession?.circuits?.length ?? 0) > 0
+  // erledigt: alle Leiter-Übungen und alle Runden-Blöcke (reine Runden-Workouts: nicht schon beim Start)
+  const doneToday = started && !L.upNext(slots, undefined) && L.circuitsOf(t.ix.workouts.get(t.workout)).every(c => L.circuitResultOf(t.todaySession, c.id))
 
   // Sperrbildschirm & Dynamic Island: laufende Session mit Pausen-Countdown
   useSessionActivity(t, rest, slots, focus)
 
   const openTraining = (pid?: string) => { setPicked(pid); router.navigate('/training') }
   const start = () => { t.startSession(); openTraining(undefined) }
-  const startWorkout = (id: string) => {
+  const startWorkout = (id: string, again = false) => {
     if (t.active) { openTraining(undefined); return }
-    t.chooseWorkout(id); t.startSession(id); openTraining(undefined)
+    t.chooseWorkout(id); t.startSession(id, { again }); openTraining(undefined)
   }
   /** seit dem Start eingetragen: Sätze und Runden-Ergebnisse */
   const loggedSinceStart = () => {
     if (!t.active) return 0
-    const id = L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout)
+    const id = activeSessionId(t.active)
     const s = L.live(t.sessions.find(x => x.id === id))
     return (s?.sets.length ?? 0) - (t.active.before?.sets.length ?? 0) + (s?.circuits?.length ?? 0) - (t.active.before?.circuits?.length ?? 0)
   }
@@ -101,7 +103,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!t.active) return
     // nichts eingetragen: keine leere Erfolgsseite, Session einfach verwerfen
     if (loggedSinceStart() <= 0) { discard(); return }
-    const id = L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout)
+    const id = activeSessionId(t.active)
     t.endSession(); rest.stop(); setRestView(null)
     router.dismissTo('/')
     router.push({ pathname: '/summary/[id]', params: { id } })
@@ -125,7 +127,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (choice === 'save') finish()
     if (choice !== 'discard') return
     // Sätze seit dem Start – nur dann lohnt eine zweite Rückfrage
-    const id = L.sessionId(L.localDate(new Date(t.active.start)), t.active.workout)
+    const id = activeSessionId(t.active)
     const n = (L.live(t.sessions.find(s => s.id === id))?.sets.length ?? 0) - (t.active.before?.sets.length ?? 0)
     if (n > 0 && !await ask({ title: tr('training.bar.discardTitle'), message: tn('training.bar.discardMessage', n), ok: tr('training.bar.discardOk'), destructive: true })) return
     discard()

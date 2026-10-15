@@ -31,7 +31,15 @@ export function localDate(d = new Date()): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 export const weekdayOf = (date: string): Weekday => WEEKDAYS[new Date(`${date}T12:00`).getDay()]
-export const sessionId = (date: string, workout: WorkoutId) => `${date}-${workout}`
+/** Einheit-ID: Datum + Workout; dasselbe Workout ein weiteres Mal am selben Tag bekommt „-2“, „-3“ … */
+export const sessionId = (date: string, workout: WorkoutId, n = 1) => (n > 1 ? `${date}-${workout}-${n}` : `${date}-${workout}`)
+/** jüngste Einheit dieses Workouts an diesem Tag (höchste Nummer, gelöschte zählen nicht) */
+export function latestSessionId(sessions: Map<string, Session> | Session[], date: string, workout: WorkoutId): { id: string; n: number } {
+  const has = (id: string) => { const s = sessions instanceof Map ? sessions.get(id) : sessions.find(x => x.id === id); return !!s && !s.deleted }
+  let n = 1
+  while (n < 50 && has(sessionId(date, workout, n + 1))) n++
+  return { id: sessionId(date, workout, n), n }
+}
 
 /* ── Katalog ─────────────────────────────────────────────────────────────── */
 

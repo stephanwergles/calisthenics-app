@@ -9,7 +9,7 @@ export const home: Shape<typeof de> = {
   noticeSubsSome: ' – {n}× substitute planned.',
   noticeReentry: 'Easing back in after the break: one set less per exercise this week.',
   ctaActive: 'Keep training',
-  ctaAgain: 'One more round',
+  ctaAgain: 'Train again',
   ctaResume: 'Resume workout',
   ctaStart: 'Start workout',
   titleDone: 'Today',

@@ -1,6 +1,7 @@
 /* Workout bearbeiten: Übungen (Tipp → Sätze/Reihenfolge), Übung hinzufügen, Wochentage,
    Umbenennen, Löschen. id = „new“: erst den Namen, dann weiter in den Editor des neuen Workouts.
    (Web: PlanEditor → WorkoutEditor, NameSheet) */
+import { useState } from 'react'
 import { View } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import type { Weekday, Workout } from '@lever/domain/model.ts'
@@ -14,7 +15,7 @@ import { workoutSize } from '@/screens/plan/workouts'
 
 export default function WorkoutScreen() {
   const { t } = useApp()
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { id, view } = useLocalSearchParams<{ id: string; view?: string }>()
   const first = useIsFirst()
   if (id === 'new') {
     return (
@@ -32,17 +33,26 @@ export default function WorkoutScreen() {
   }
   const w = t.ix.workouts.get(id)
   if (!w || w.archived) return <><ModalToolbar close={first} /><SheetScreen title={tr('editor.myWorkouts')} /></>
-  return <Editor w={w} first={first} />
+  return <Editor w={w} first={first} view={view === '1'} />
 }
 
-function Editor({ w, first }: { w: Workout; first: boolean }) {
+/** view: aus dem Start-Flow (Home) geöffnet – nur ansehen und starten; Bearbeiten über das Menü */
+function Editor({ w, first, view }: { w: Workout; first: boolean; view: boolean }) {
   const { t, startWorkout } = useApp()
+  const [editing, setEditing] = useState(!view)
+  // heute schon erledigt (und nicht mehr laufend): Zusammenfassung statt erneut starten
+  const todayId = L.latestSessionId(t.sessions, t.today, w.id).id
+  const todayS = L.live(t.sessions.find(s => s.id === todayId))
+  const doneToday = !!todayS && L.isTrained(todayS) && t.active?.workout !== w.id
+    && !L.upNext(L.workoutSlots(t.ix, w.id, t.state, todayS, t.sessions, t.today), undefined)
+    && L.circuitsOf(w).every(c => L.circuitResultOf(todayS, c.id))
+  const summary = () => { router.dismissAll(); router.push({ pathname: '/summary/[id]', params: { id: todayId } }) }
   // Training direkt aus der Übersicht starten: Modal schließen, dann starten (läuft schon eins: Hinweis)
   const busy = !!t.active && t.active.workout !== w.id
-  const start = () => {
+  const start = (again = false) => {
     if (busy) { toast(tr('home.workoutBusy')); return }
     router.dismissAll()
-    startWorkout(w.id)
+    startWorkout(w.id, again)
   }
   const weekplan = t.ix.catalog.weekplan
   const other = (d: Weekday) => (weekplan[d] && weekplan[d] !== w.id ? t.ix.workouts.get(weekplan[d]!)?.name : undefined)
@@ -73,32 +83,40 @@ function Editor({ w, first }: { w: Workout; first: boolean }) {
   return (
     <>
       <ModalToolbar close={first} menuLabel={tr('editor.more')} menu={[
+        ...(editing ? [] : [{ title: tr('editor.edit'), icon: 'adjust' as const, onPress: () => setEditing(true) }]),
         { title: tr('editor.rename'), icon: 'edit', onPress: rename },
         { title: tr('editor.delete'), icon: 'trash', destructive: true, onPress: () => void remove() },
       ]} />
       <SheetScreen title={w.name} sub={[w.focus, workoutSize(w)].filter(Boolean).join(' · ')}
-        footer={slots.length > 0 || L.circuitsOf(w).length > 0 ? <Button variant="primary" size="lg" icon="play" disabled={busy}
-          title={t.active?.workout === w.id ? tr('home.ctaActive') : tr('editor.startNow')} onPress={start} /> : undefined}>
+        footer={doneToday
+          ? <View style={{ gap: 10 }}>
+            <Button variant="primary" size="lg" icon="play" disabled={busy} title={tr('home.ctaAgain')} onPress={() => start(true)} />
+            <Button variant="secondary" icon="trophy" title={tr('editor.doneToday')} onPress={summary} />
+          </View>
+          : slots.length > 0 || L.circuitsOf(w).length > 0 ? <Button variant="primary" size="lg" icon="play" disabled={busy}
+            title={t.active?.workout === w.id ? tr('home.ctaActive') : tr('editor.startNow')} onPress={() => start()} /> : undefined}>
         <Section title={tr('editor.exercisesHead')} />
-        <Text variant="small">{tr('editor.exercisesHint')}</Text>
+        {editing && <Text variant="small">{tr('editor.exercisesHint')}</Text>}
         {!slots.length && <Text variant="muted">{tr('editor.empty')}</Text>}
         {slots.length > 0 && <Rows rows={slots.map(({ sl, step, sets }) => ({
           key: sl.progression, title: step.exercise.name, exercise: step.exercise,
           subtitle: `${tn('editor.setsN', sets)} à ${step.target.label.replace(/^\d+\s*×\s*/, '')} · ${step.fixed ? tr('editor.fixed') : tr('editor.stage', { stage: step.index + 1, total: step.total })}`,
-          onPress: () => router.push({ pathname: '/workouts/slot', params: { id: w.id, pid: sl.progression } }),
+          onPress: editing ? () => router.push({ pathname: '/workouts/slot', params: { id: w.id, pid: sl.progression } }) : undefined,
         }))} />}
-        <Button icon="plus" title={tr('editor.addExercise')} onPress={() => router.push({ pathname: '/workouts/add', params: { id: w.id } })} />
+        {editing && <Button icon="plus" title={tr('editor.addExercise')} onPress={() => router.push({ pathname: '/workouts/add', params: { id: w.id } })} />}
 
         {/* Runden-Blöcke (z. B. Cindy): feste Übungen, unabhängig von den Leiterstufen */}
-        <Section title={tr('editor.circuits')} />
-        <Text variant="small">{tr('editor.circuitsHint')}</Text>
+        {(editing || L.circuitsOf(w).length > 0) && <Section title={tr('editor.circuits')} />}
+        {editing && <Text variant="small">{tr('editor.circuitsHint')}</Text>}
         {L.circuitsOf(w).length > 0 && <Rows rows={L.circuitsOf(w).map(c => ({
           key: c.id, title: L.fmtCircuitRule(c), icon: 'sync' as const, iconTile: true,
           subtitle: L.fmtCircuitItems(t.ix, c),
-          onPress: () => router.push({ pathname: '/workouts/circuit', params: { id: w.id, cid: c.id } }),
+          onPress: editing ? () => router.push({ pathname: '/workouts/circuit', params: { id: w.id, cid: c.id } }) : undefined,
         }))} />}
-        <Button icon="plus" title={tr('editor.addCircuit')} onPress={() => router.push({ pathname: '/workouts/circuit', params: { id: w.id, cid: 'new' } })} />
+        {editing && <Button icon="plus" title={tr('editor.addCircuit')} onPress={() => router.push({ pathname: '/workouts/circuit', params: { id: w.id, cid: 'new' } })} />}
+        {!editing && <Button variant="ghost" icon="adjust" title={tr('editor.edit')} onPress={() => setEditing(true)} />}
 
+        {editing && <>
         <Section title={tr('editor.weekdays')} />
         <DayPicker onToggle={(d, on) => void setDay(d as Weekday, on)} items={L.WEEK_ORDER.map(d => ({
           id: d, short: L.WEEKDAY_SHORT[d], long: DAY_NAME[d], on: weekplan[d] === w.id,
@@ -114,6 +132,7 @@ function Editor({ w, first }: { w: Workout; first: boolean }) {
             <Button style={{ flex: 1 }} variant="danger" icon="trash" title={tr('editor.delete')} onPress={() => void remove()} />
           </ButtonRow>
         </View>
+        </>}
       </SheetScreen>
     </>
   )

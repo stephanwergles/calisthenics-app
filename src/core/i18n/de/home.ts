@@ -6,7 +6,7 @@ export const home = {
   noticeSubsSome: ' – {n}× Ersatz eingeplant.',
   noticeReentry: 'Wiedereinstieg nach der Pause: diese Woche je Übung ein Satz weniger.',
   ctaActive: 'Weiter trainieren',
-  ctaAgain: 'Noch eine Runde',
+  ctaAgain: 'Nochmal trainieren',
   ctaResume: 'Training fortsetzen',
   ctaStart: 'Training starten',
   titleDone: 'Heute',

@@ -22,8 +22,12 @@ const db = { get: () => platform().db }
 export const bundledCatalog = catalogJson as unknown as Catalog
 
 export interface ActiveSession { start: number; workout: WorkoutId
+  /** Einheit, in die diese Session schreibt (fehlt bei älteren Ständen: Datum + Workout) */
+  id?: string
   /** Stand der Einheit beim Start – „Abbrechen“ stellt ihn wieder her (lokal, wird nicht synchronisiert) */
   before?: Session }
+/** Einheit der laufenden Session */
+export const activeSessionId = (a: ActiveSession) => a.id ?? L.sessionId(L.localDate(new Date(a.start)), a.workout)
 export interface SyncStatus {
   account: api.Who | null | undefined   // undefined = noch unbekannt (z. B. offline gestartet)
   /** angemeldet, aber ohne Einwilligung in die Gesundheitsdaten – Abgleich pausiert */
@@ -245,7 +249,9 @@ export function useTraining() {
       .sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))[0]
     return known(active?.workout) ?? known(started?.workout) ?? recommended
   }, [ix, choice, today, sessionList, active, recommended])
-  const todaySession = L.live(sessions.get(L.sessionId(today, workout)))
+  // heutige Einheit: die laufende Session, sonst die jüngste dieses Workouts von heute (ein zweites Mal am Tag = „-2“)
+  const currentId = active && active.workout === workout ? activeSessionId(active) : L.latestSessionId(sessions, today, workout).id
+  const todaySession = L.live(sessions.get(currentId))
   /** heute laut Wochenplan kein Training – solange nichts gewählt, begonnen oder trainiert wurde */
   const restDay = useMemo(() => !ix.catalog.weekplan[L.weekdayOf(today)] && choice?.date !== today && !active
     && !sessionList.some(s => s.date === today && s.sets.length), [ix, today, choice, active, sessionList])
@@ -259,9 +265,9 @@ export function useTraining() {
   }, [markDirty])
 
   const updateToday = useCallback((fn: (s: Session) => Session) => {
-    const id = L.sessionId(today, workout)
-    putSession(fn(L.live(sessionsRef.current.get(id)) ?? L.emptySession(today, workout)))
-  }, [today, workout, putSession])
+    const id = active && active.workout === workout ? activeSessionId(active) : L.latestSessionId(sessionsRef.current, today, workout).id
+    putSession(fn(L.live(sessionsRef.current.get(id)) ?? { ...L.emptySession(today, workout), id }))
+  }, [today, workout, active, putSession])
 
   const setState = useCallback((fn: (s: UserState) => UserState) => {
     const next = { ...fn(stateRef.current), updatedAt: Date.now() }
@@ -280,18 +286,21 @@ export function useTraining() {
     && !sessionList.some(s => s.date === today && s.sets.length), [ix, today, choice, active, sessionList])
 
   /** Session starten – optional für ein anderes Workout als das gewählte (Schnellstart auf Heute) */
-  const startSession = useCallback((w?: WorkoutId) => {
+  const startSession = useCallback((w?: WorkoutId, opts: { again?: boolean } = {}) => {
     if (active) return
     const wk = w ?? workout
-    const before = L.live(sessionsRef.current.get(L.sessionId(L.localDate(), wk)))
-    const a: ActiveSession = { start: Date.now(), workout: wk, ...(before ? { before } : {}) }
+    // again: dasselbe Workout heute noch einmal – neue, eigene Einheit statt die erledigte fortzusetzen
+    const latest = L.latestSessionId(sessionsRef.current, L.localDate(), wk)
+    const id = opts.again && sessionsRef.current.get(latest.id) ? L.sessionId(L.localDate(), wk, latest.n + 1) : latest.id
+    const before = L.live(sessionsRef.current.get(id))
+    const a: ActiveSession = { start: Date.now(), workout: wk, id, ...(before ? { before } : {}) }
     setActive(a); void db.get().kvSet('active', a)
   }, [active, workout])
 
   /** Abbrechen: Session endet ohne Zeitgutschrift, Sätze seit dem Start werden verworfen */
   const discardSession = useCallback(() => {
     if (!active) return
-    const id = L.sessionId(L.localDate(new Date(active.start)), active.workout)
+    const id = activeSessionId(active)
     const s = L.discardedSession(sessionsRef.current.get(id), active.before)
     if (s) putSession(s)
     setActive(null); void db.get().kvSet('active', undefined)
@@ -302,8 +311,8 @@ export function useTraining() {
     if (!active) return
     const seconds = (Date.now() - active.start) / 1000
     if (seconds >= 60) {
-      const date = L.localDate(new Date(active.start)), id = L.sessionId(date, active.workout)
-      putSession(L.withDuration(L.live(sessionsRef.current.get(id)) ?? L.emptySession(date, active.workout), seconds))
+      const date = L.localDate(new Date(active.start)), id = activeSessionId(active)
+      putSession(L.withDuration(L.live(sessionsRef.current.get(id)) ?? { ...L.emptySession(date, active.workout), id }, seconds))
     }
     setActive(null); void db.get().kvSet('active', undefined)
   }, [active, putSession])
@@ -313,7 +322,7 @@ export function useTraining() {
     const s = sessionsRef.current.get(id)
     if (!s || s.deleted) return
     putSession(L.deletedSession(s))
-    if (active && L.sessionId(L.localDate(new Date(active.start)), active.workout) === id) { setActive(null); void db.get().kvSet('active', undefined) }
+    if (active && activeSessionId(active) === id) { setActive(null); void db.get().kvSet('active', undefined) }
   }, [active, putSession])
 
   const addActivity = useCallback((a: Activity) => {

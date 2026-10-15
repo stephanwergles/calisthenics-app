@@ -79,4 +79,6 @@ export const editor: Shape<typeof de> = {
   stageAutoHint: 'Follows your ladder: once you master the stage, the next one appears here automatically.',
   stageFixedHint: 'Fixed exercise: stays as is even when you progress on the ladder – doesn’t count towards unlocking.',
   searchAll: 'Search all exercises',
+  edit: 'Edit',
+  doneToday: 'Done today – summary',
 }
