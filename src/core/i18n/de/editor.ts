@@ -22,6 +22,8 @@ export const editor = {
   subOwn: 'Dein Plan · Änderungen gelten ab sofort',
   subDefault: 'Noch der Standardplan – deine erste Änderung macht ihn zu deinem',
   myWorkouts: 'Meine Workouts',
+  pickTitle: 'Workout wählen',
+  pickSub: 'Antippen zum Ansehen und Starten',
   week: 'Woche',
   exercisesHead: 'Übungen nacheinander',
   exercisesHint: 'Jede Übung mit mehreren Sätzen und Pause dazwischen. Die Wiederholungen je Satz kommen aus deiner Stufe.',

@@ -25,6 +25,8 @@ export const editor: Shape<typeof de> = {
   subOwn: 'Your plan · changes apply right away',
   subDefault: 'Still the default plan – your first change makes it yours',
   myWorkouts: 'My workouts',
+  pickTitle: 'Choose a workout',
+  pickSub: 'Tap to view and start',
   week: 'Week',
   exercisesHead: 'Exercises one after another',
   exercisesHint: 'Each exercise with several sets and rest in between. Reps per set come from your stage.',

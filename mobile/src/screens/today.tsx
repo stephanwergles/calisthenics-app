@@ -205,7 +205,7 @@ function DayBanner({ date, onClose }: { date: string; onClose: () => void }) {
   type Action = { icon: IconName; title: string; onPress: () => void; primary?: boolean }
   const addCardio: Action = { icon: 'plus', title: tr('history.restAddCardio'), onPress: () => router.push({ pathname: '/activity', params: { date } }) }
   // „Workout machen“ heißt jetzt trainieren – die Liste der Workouts, gestartet wird dort
-  const doWorkout: Action = { icon: 'play', title: tr('home.bannerWorkout'), onPress: () => router.push('/workouts') }
+  const doWorkout: Action = { icon: 'play', title: tr('home.bannerWorkout'), onPress: () => router.push({ pathname: '/workouts', params: { pick: '1' } }) }
   let label: string, title: string, text: string | null, actions: Action[]
   if (session) {
     const w = t.ix.workouts.get(session.workout)
@@ -265,7 +265,7 @@ function RestCard() {
           <Button style={{ flex: 1 }} icon="flame" title={tr('home.restChallenge')} onPress={() => router.push('/challenges')} />
         </View>
         {/* frei wählen: Liste der Workouts, gestartet wird in der Übersicht */}
-        <Button icon="play" title={tr('home.restPick')} onPress={() => router.push('/workouts')} />
+        <Button icon="play" title={tr('home.restPick')} onPress={() => router.push({ pathname: '/workouts', params: { pick: '1' } })} />
       </View>
     </Card>
   )
