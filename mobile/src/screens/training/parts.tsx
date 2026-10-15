@@ -1,6 +1,6 @@
 /* Bausteine des Trainings-Bereichs (Fokus, Satz-Sheet, Übungsplan, Abschluss): Gerüst für
    Form-Sheets mit Glas-Hintergrund, Satz-Kacheln, Notizfeld, Checklisten-Gruppe, Übungszeile. */
-import { useState } from 'react'
+import { useState, type ComponentRef, type Ref } from 'react'
 import { Pressable, ScrollView, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
@@ -34,7 +34,7 @@ export function FormSheet({ title, sub, children, footer }: {
 }
 
 /** Mehrzeiliges Notizfeld (Satz, Einheit) */
-export function NoteInput({ label, style, ...rest }: TextInputProps & { label: string; style?: StyleProp<ViewStyle> }) {
+export function NoteInput({ label, style, ...rest }: TextInputProps & { label: string; style?: StyleProp<ViewStyle>; ref?: Ref<ComponentRef<typeof TextInput>> }) {
   return (
     <View style={[{ gap: 6 }, style]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
