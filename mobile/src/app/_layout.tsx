@@ -88,6 +88,8 @@ function Root({ fonts }: { fonts: boolean }) {
           <Stack.Screen name="signin" options={{ animation: 'fade', gestureEnabled: false }} />
         </Stack.Protected>
         <Stack.Screen name="consent" options={{ ...modal(), gestureEnabled: false }} />
+        {/* Konto-Links aus den Mails (Universal Links) – mit und ohne Konto erreichbar */}
+        <Stack.Screen name="konto" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
       </Stack>
       <Gates />
       <Toaster />

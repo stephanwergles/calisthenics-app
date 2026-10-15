@@ -27,6 +27,9 @@ const config: ExpoConfig = {
     config: { usesNonExemptEncryption: false },
     // Sign in with Apple (Capability/Entitlement; der Server prüft das Token: POST /api/auth/apple)
     usesAppleSignIn: true,
+    // Universal Links: Konto-Mails (/konto/…) öffnen die App – Gegenstück: /.well-known/apple-app-site-association
+    // (Entwicklungs-App: mode=developer umgeht Apples Zwischenspeicher)
+    associatedDomains: [`applinks:${new URL(process.env.EXPO_PUBLIC_API_URL ?? 'https://calisthenics.apps.blank-studio.de').host}${dev ? '?mode=developer' : ''}`],
     infoPlist: { CFBundleDisplayName: dev ? 'Lever Dev' : 'Lever' },
   },
   android: {

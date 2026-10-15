@@ -415,6 +415,10 @@ export function useTraining() {
   const signIn = useCallback(async (email: string, password: string, healthConsent = false) => {
     await afterLogin(await api.login(email, password), healthConsent)
   }, [afterLogin])
+  /** neues Passwort aus dem Mail-Link – danach angemeldet */
+  const resetPassword = useCallback(async (token: string, password: string) => {
+    await afterLogin(await api.resetPassword(token, password), false)
+  }, [afterLogin])
   /** Sign in with Apple (identityToken aus dem nativen Dialog) */
   const signInWithApple = useCallback(async (identityToken: string, healthConsent = false) => {
     await afterLogin(await api.appleLogin(identityToken), healthConsent)
@@ -475,7 +479,7 @@ export function useTraining() {
     addActivity, removeActivity, removeSession, discardSession, importV1, exportData,
     /** aktueller Stand einer Einheit – auch direkt nach einer Änderung, vor dem nächsten Render */
     getSession: (id: string) => sessionsRef.current.get(id),
-    sync, syncNow: runSync, signIn, signInWithApple, register: api.register, forgotPassword: api.forgotPassword, signOut, deleteAccount,
+    sync, syncNow: runSync, signIn, signInWithApple, register: api.register, forgotPassword: api.forgotPassword, verifyEmail: api.verifyEmail, resetPassword, signOut, deleteAccount,
     consent, acceptHealthConsent, acceptDisclaimer,
     plan, savePlan, editPlan, baseCatalog: catalog,
   }

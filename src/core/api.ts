@@ -64,6 +64,23 @@ export async function register(email: string, password: string): Promise<void> {
   }
 }
 
+/** Bestätigungslink aus der Mail (Universal Link in die App) */
+export const verifyEmail = (token: string) =>
+  call(`/api/users/verify/${encodeURIComponent(token)}`, { method: 'POST' }).then(() => undefined)
+    .catch((e: Error) => { throw new Error(e instanceof AuthError ? LINK_INVALID : e.message) })
+
+/** neues Passwort aus dem Mail-Link setzen – Payload meldet dabei gleich an */
+export async function resetPassword(token: string, password: string): Promise<Who> {
+  try {
+    const r = await call<{ user: ServerUser; token?: string }>('/api/users/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) })
+    if (r.token) await setToken(r.token)
+    return who(r.user)
+  } catch (e) {
+    throw new Error(e instanceof AuthError || /token/i.test((e as Error).message) ? LINK_INVALID : (e as Error).message)
+  }
+}
+export const LINK_INVALID = 'Der Link ist abgelaufen oder wurde schon benutzt.'
+
 /** Mail mit Link zum neuen Passwort – antwortet immer gleich, auch ohne Konto (verrät nichts) */
 export const forgotPassword = (email: string) =>
   call('/api/users/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }).then(() => undefined)
