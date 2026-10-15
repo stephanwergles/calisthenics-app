@@ -24,7 +24,10 @@ export default function SuggestionScreen() {
   const profile = L.profileOf(t.ix, t.state)
   const goals = profile.goals.map(g => catalogData(t.ix.catalog).skills.find(x => x.id === g)?.name ?? g).join(', ')
   const version = t.plan?.version ?? 0
-  const head = (d: L.DayDiff) => `${DAY_NAME[d.day]} · ${d.before ?? tr('plan.restDay')} → ${d.after ?? tr('plan.restDay')}`
+  // vorher → nachher nur, wo es ein Vorher gibt; neuer Trainingstag: nur das Workout
+  const head = (d: L.DayDiff) => d.before
+    ? `${DAY_NAME[d.day]} · ${d.before} → ${d.after ?? tr('plan.restDay')}`
+    : `${DAY_NAME[d.day]} · ${d.after ?? tr('plan.restDay')}`
   const kept = (d: L.DayDiff) => d.changes.filter(c => c.kind === 'bleibt').map(c => c.name)
   const accept = () => { ps.accept(); router.back() }
   const later = () => { ps.dismiss(); router.back() }

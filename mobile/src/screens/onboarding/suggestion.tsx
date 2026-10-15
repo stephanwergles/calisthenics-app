@@ -20,12 +20,16 @@ export function OnboardingSuggestion() {
       footer={<Button variant="primary" size="lg" icon="check" title={tr('common.done')} onPress={finish} />} />
   )
   const goals = L.profileOf(t.ix, t.state).goals.map(g => catalogData(t.ix.catalog).skills.find(x => x.id === g)?.name ?? g).join(', ')
-  const head = (d: L.DayDiff) => `${L.WEEKDAY_LONG[d.day]} · ${d.before ?? tr('plan.restDay')} → ${d.after ?? tr('plan.restDay')}`
+  // neuer Plan (vorher keiner): nur „Montag · Upper“ – vorher → nachher erst, wenn es ein Vorher gibt
+  const fresh = !t.plan
+  const head = (d: L.DayDiff) => fresh || !d.before
+    ? `${L.WEEKDAY_LONG[d.day]} · ${d.after ?? tr('plan.restDay')}`
+    : `${L.WEEKDAY_LONG[d.day]} · ${d.before} → ${d.after ?? tr('plan.restDay')}`
   const kept = (d: L.DayDiff) => d.changes.filter(c => c.kind === 'bleibt').map(c => c.name)
   return (
-    <SheetScreen title={tr('plan.suggestion.title')} sub={tn('plan.suggestion.sub', s.changes, { goals })}
+    <SheetScreen title={tr('plan.suggestion.title')} sub={fresh ? tr('plan.suggestion.subNew', { goals }) : tn('plan.suggestion.sub', s.changes, { goals })}
       footer={<>
-        <Button variant="primary" size="lg" icon="check" title={tr('plan.suggestion.accept', { n: (t.plan?.version ?? 0) + 1 })} onPress={() => { ps.accept(); finish() }} />
+        <Button variant="primary" size="lg" icon="check" title={fresh ? tr('plan.suggestion.acceptNew') : tr('plan.suggestion.accept', { n: (t.plan?.version ?? 0) + 1 })} onPress={() => { ps.accept(); finish() }} />
         <Button variant="secondary" title={tr('plan.suggestion.later')} onPress={() => { ps.dismiss(); finish() }} />
       </>}>
       <Text variant="muted">{tr('plan.suggestion.intro')}</Text>
@@ -35,7 +39,7 @@ export function OnboardingSuggestion() {
         return (
           <View key={d.day} style={{ gap: 8 }}>
             <SectionTitle title={head(d)} style={{ marginBottom: 0 }} />
-            {rows.length > 0 && <ListGroup rows={rows.map(c => ({ title: c.name, subtitle: c.detail, trailing: tr(KIND[c.kind]) }))} />}
+            {rows.length > 0 && <ListGroup rows={rows.map(c => ({ title: c.name, subtitle: c.detail, trailing: fresh ? undefined : tr(KIND[c.kind]) }))} />}
             {kept(d).length > 0 && <Text variant="small" style={{ fontFamily: font.body }}>{tr('plan.suggestion.kept', { names: kept(d).join(', ') })}</Text>}
           </View>
         )

@@ -916,17 +916,16 @@ export function splitWeek(ix: Index, user: UserState, skills: Skill[], split: Sp
     Bisherige Workouts bleiben erhalten (eigene aktiv, andere als gelöscht markiert – Verlauf). */
 export function planFromGenerated(ix: Index, base: Plan, g: GeneratedPlan, input: GeneratorInput): Plan {
   const regionsOf = (pids: ProgressionId[]) => new Set(pids.map(pid => ix.progressions.get(pid)?.region).filter(Boolean))
-  const names = new Map<string, number>()
   const workouts: Workout[] = g.days.map(d => {
     const slots = d.slots.map(s => ({ block: s.block, progression: s.progression, sets: s.sets, reason: s.reason }))
     const mine = regionsOf(slots.map(s => s.progression))
     const like = [...ix.workouts.values()].filter(w => !w.custom && w.warmup.length)
       .map(w => ({ w, n: [...regionsOf(w.slots.map(s => s.progression))].filter(r => mine.has(r)).length }))
       .sort((a, b) => b.n - a.n)[0]?.w
-    const theme = d.theme ?? t('logic.fullBody')
-    const n = (names.get(theme) ?? 0) + 1; names.set(theme, n)
+    // schlicht „Upper“, „Lower“, „Ganzkörper“ – auch wenn es zwei davon gibt; unterschieden werden sie
+    // über den Wochentag, nicht über angehängte Buchstaben
     return {
-      id: `auto-${d.day}`, name: g.days.filter(x => (x.theme ?? t('logic.fullBody')) === theme).length > 1 ? `${theme} ${String.fromCharCode(64 + n)}` : theme,
+      id: `auto-${d.day}`, name: d.theme ?? t('logic.fullBody'),
       focus: focusOf(ix, slots), slots, warmup: like ? structuredClone(like.warmup) : [], cooldown: like ? structuredClone(like.cooldown) : [],
     }
   })

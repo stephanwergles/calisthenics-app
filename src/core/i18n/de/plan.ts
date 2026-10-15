@@ -64,6 +64,8 @@ export const plan = {
     kind: { new: 'neu', out: 'raus', sets: 'Sätze' },
     sub: { one: 'Für {goals} · {n} Änderung', other: 'Für {goals} · {n} Änderungen' },
     intro: 'Aus deinen Zielen, Trainingstagen, deiner Ausrüstung und deinem Stand. Nichts ändert sich, bevor du übernimmst – danach lässt es sich im Plan rückgängig machen.',
+    subNew: 'Für {goals}',
+    acceptNew: 'Plan übernehmen',
     kept: 'Bleibt: {names}',
     budget: 'Gerechnet mit {days} Tagen à ca. {min} min – je mehr Zeit, desto mehr Übungen pro Tag.',
     changeBudget: 'Tage & Dauer ändern',
