@@ -21,6 +21,7 @@ export const profile = {
   signOutUnsynced: { title: 'Noch nicht abgeglichen', message: '{n} Änderungen konnten nicht hochgeladen werden (offline?). Beim Abmelden gehen sie verloren.', ok: 'Trotzdem abmelden' },
   gateTitle: 'Willkommen bei Lever',
   gateSub: 'Melde dich an – dein Training wird gesichert und auf all deinen Geräten abgeglichen.',
+  appleFailed: 'Die Anmeldung mit Apple hat nicht geklappt. Bitte versuche es noch einmal.',
   orEmail: 'oder mit E-Mail',
   register: 'Konto erstellen',
   registering: 'Lege an …',

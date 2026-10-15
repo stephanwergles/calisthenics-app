@@ -10,7 +10,7 @@ import * as WebBrowser from 'expo-web-browser'
 import { HEALTH_CONSENT, PRIVACY_URL } from '@lever/core/consent.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
-import { Button, Choices, color, SheetScreen, Text, TextLink } from '@/ui'
+import { ask, Button, Choices, color, SheetScreen, Text, TextLink } from '@/ui'
 import { useApp } from '@/state/app'
 import { Field } from '@/screens/profile/parts'
 import { skipSignIn } from '@/screens/gates'
@@ -35,25 +35,36 @@ function Consent({ agree, onChange, error }: { agree: boolean; onChange: (on: bo
 }
 
 /** nativer Apple-Knopf (Gestaltung von Apple vorgegeben) und Trenner zur E-Mail */
-function AppleSignIn({ signUp, agree, onNeedAgree, onError }: { signUp?: boolean; agree: boolean; onNeedAgree: () => void; onError: (msg: string) => void }) {
+function AppleSignIn({ signUp, agree, onAgree }: { signUp?: boolean; agree: boolean; onAgree: () => void }) {
   const { t } = useApp()
   const [ok, setOk] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
   useEffect(() => { void AppleAuthentication.isAvailableAsync().then(setOk).catch(() => setOk(false)) }, [])
   if (!ok) return null
   const press = async () => {
-    if (!agree) { onNeedAgree(); return }
+    // ohne Häkchen: Einwilligung im Dialog erfragen (nicht das E-Mail-Formular prüfen), dann weiter zu Apple
+    if (!agree) {
+      if (!await ask({ title: HEALTH_CONSENT.title, message: HEALTH_CONSENT.text, ok: HEALTH_CONSENT.ok })) return
+      onAgree()
+    }
+    setErr(null)
     try {
       const cred = await AppleAuthentication.signInAsync({
         requestedScopes: [AppleAuthentication.AppleAuthenticationScope.EMAIL, AppleAuthentication.AppleAuthenticationScope.FULL_NAME],
       })
-      if (cred.identityToken) await t.signInWithApple(cred.identityToken, agree)
-    } catch (x) { if (!isCanceled(x)) onError((x as Error).message) }
+      if (cred.identityToken) await t.signInWithApple(cred.identityToken, true)
+    } catch (x) {
+      if (isCanceled(x)) return
+      // Apples eigene Meldungen sind englisch und nichtssagend („unknown reason“) – Server-Fehler (deutsch) durchreichen
+      setErr((x as { code?: string }).code?.startsWith('ERR_REQUEST') ? tr('profile.appleFailed') : (x as Error).message)
+    }
   }
   return (
     <View style={{ gap: 16 }}>
       <AppleAuthentication.AppleAuthenticationButton style={{ height: 52 }} cornerRadius={26}
         buttonType={signUp ? AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP : AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
         buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE} onPress={() => void press()} />
+      {err ? <Text variant="small" style={{ color: color.danger }} accessibilityLiveRegion="polite">{err}</Text> : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }} accessible={false}>
         <View style={{ flex: 1, height: 1, backgroundColor: color.line }} />
         <Text variant="small">{tr('profile.orEmail')}</Text>
@@ -99,7 +110,7 @@ export function SignInScreen({ gate = true }: { gate?: boolean }) {
       <SheetScreen title={gate ? tr('profile.gateTitle') : tr('profile.signIn')}
         sub={`${t.sync.phase === 'offline' ? tr('profile.offlineSignIn') : ''}${gate ? tr('profile.gateSub') : tr('profile.signInHint')}`}
         footer={<Button variant="primary" size="lg" busy={busy} title={busy ? tr('profile.signingIn') : tr('profile.signIn')} onPress={() => void submit()} />}>
-        <AppleSignIn agree={agree} onNeedAgree={() => setTried(true)} onError={setErr} />
+        <AppleSignIn agree={agree} onAgree={() => setAgree(true)} />
         <Field label={tr('profile.email')} value={email} onChangeText={setEmail} error={emailErr}
           keyboardType="email-address" textContentType="username" autoComplete="email" autoCapitalize="none" autoCorrect={false}
           returnKeyType="next" submitBehavior="submit" onSubmitEditing={() => pwRef.current?.focus()} />
@@ -141,7 +152,7 @@ export function RegisterScreen() {
   return (
     <SheetScreen title={tr('profile.registerTitle')} sub={tr('profile.registerSub')}
       footer={<Button variant="primary" size="lg" busy={busy} title={busy ? tr('profile.registering') : tr('profile.register')} onPress={() => void submit()} />}>
-      <AppleSignIn signUp agree={agree} onNeedAgree={() => setTried(true)} onError={setErr} />
+      <AppleSignIn signUp agree={agree} onAgree={() => setAgree(true)} />
       <Field label={tr('profile.email')} value={email} onChangeText={setEmail} error={emailErr}
         keyboardType="email-address" textContentType="username" autoComplete="email" autoCapitalize="none" autoCorrect={false}
         returnKeyType="next" submitBehavior="submit" onSubmitEditing={() => pwRef.current?.focus()} />

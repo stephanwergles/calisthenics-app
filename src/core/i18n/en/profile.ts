@@ -23,6 +23,7 @@ export const profile: Shape<typeof de> = {
   signOutUnsynced: { title: 'Not synced yet', message: '{n} changes could not be uploaded (offline?). They will be lost when you sign out.', ok: 'Sign out anyway' },
   gateTitle: 'Welcome to Lever',
   gateSub: 'Sign in – your training is backed up and synced across all your devices.',
+  appleFailed: 'Signing in with Apple didn’t work. Please try again.',
   orEmail: 'or with email',
   register: 'Create account',
   registering: 'Creating …',
