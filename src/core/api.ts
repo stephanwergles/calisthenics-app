@@ -86,6 +86,10 @@ export const linkApple = (identityToken: string) =>
   call('/api/auth/apple/link', { method: 'POST', body: JSON.stringify({ identityToken }) }).then(() => undefined)
 export const unlinkApple = () => call('/api/auth/apple/unlink', { method: 'POST' }).then(() => undefined)
 
+/** Bestätigungsmail erneut senden – antwortet immer gleich (verrät nicht, ob es das Konto gibt) */
+export const resendVerification = (email: string) =>
+  call('/api/auth/resend-verification', { method: 'POST', body: JSON.stringify({ email }) }).then(() => undefined)
+
 /** Mail mit Link zum neuen Passwort – antwortet immer gleich, auch ohne Konto (verrät nichts) */
 export const forgotPassword = (email: string) =>
   call('/api/users/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }).then(() => undefined)

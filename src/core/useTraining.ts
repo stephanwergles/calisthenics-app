@@ -488,7 +488,7 @@ export function useTraining() {
     addActivity, removeActivity, removeSession, discardSession, importV1, exportData,
     /** aktueller Stand einer Einheit – auch direkt nach einer Änderung, vor dem nächsten Render */
     getSession: (id: string) => sessionsRef.current.get(id),
-    sync, syncNow: runSync, signIn, signInWithApple, register: api.register, forgotPassword: api.forgotPassword, verifyEmail: api.verifyEmail, resetPassword, setAppleLink, signOut, deleteAccount,
+    sync, syncNow: runSync, signIn, signInWithApple, register: api.register, forgotPassword: api.forgotPassword, resendVerification: api.resendVerification, verifyEmail: api.verifyEmail, resetPassword, setAppleLink, signOut, deleteAccount,
     consent, acceptHealthConsent, acceptDisclaimer,
     plan, savePlan, editPlan, baseCatalog: catalog,
   }

@@ -8,6 +8,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import * as WebBrowser from 'expo-web-browser'
 import { HEALTH_CONSENT, PRIVACY_URL } from '@lever/core/consent.ts'
+import { UNVERIFIED } from '@lever/core/api.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import { toast } from '@lever/core/toast.ts'
 import { ask, Button, Choices, color, SheetScreen, Text, TextLink } from '@/ui'
@@ -104,6 +105,11 @@ export function SignInScreen({ gate = true }: { gate?: boolean }) {
     finally { setBusy(false) }
   }
 
+  const resend = async () => {
+    try { await t.resendVerification(email.trim()); setErr(null); toast(tr('profile.resendSent', { email: email.trim() }), 'success') }
+    catch (x) { setErr((x as Error).message) }
+  }
+
   return (
     <>
       <HeaderText title={tr('profile.signUp')} onPress={() => router.push('/signin/register')} />
@@ -119,6 +125,7 @@ export function SignInScreen({ gate = true }: { gate?: boolean }) {
           trailing={<TextLink title={tr('profile.forgot')} label={tr('profile.forgotTitle')} onPress={() => router.push({ pathname: '/signin/forgot', params: { email } })} />}
           secureTextEntry textContentType="password" autoComplete="current-password" autoCapitalize="none" autoCorrect={false}
           returnKeyType="go" onSubmitEditing={() => void submit()} />
+        {err === UNVERIFIED && <TextLink title={tr('profile.resendVerification')} onPress={() => void resend()} />}
         <Consent agree={agree} onChange={setAgree} error={consentErr} />
         {__DEV__ && gate && <Button variant="ghost" title={tr('profile.gateDevSkip')} onPress={skipSignIn} />}
       </SheetScreen>

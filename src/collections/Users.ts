@@ -46,6 +46,15 @@ export const Users: CollectionConfig = {
       if (typeof pw === 'string' && pw.length < MIN_PASSWORD) throw new APIError(`Das Passwort braucht mindestens ${MIN_PASSWORD} Zeichen`, 400)
       return args
     }],
+    // Neues Passwort über den Link aus der Mail belegt die Adresse genauso wie der Bestätigungslink –
+    // sonst blieben Konten ohne angekommene Bestätigungsmail gesperrt (Payload lehnt deren Tokens ab)
+    afterOperation: [async ({ operation, result, req }) => {
+      const id = operation === 'resetPassword' ? (result as { user?: { id?: number | string; _verified?: boolean } })?.user : undefined
+      if (id?.id != null && !id._verified) {
+        await req.payload.update({ collection: 'users', id: id.id, data: { _verified: true } as never, overrideAccess: true, depth: 0, context: { verifiedBySystem: true }, req })
+      }
+      return result
+    }],
     // Erste Person einer leeren Datenbank (Admin-Panel „Ersten Benutzer anlegen“) wird Admin
     beforeChange: [async ({ req, operation, data }) => {
       if (operation === 'create') {

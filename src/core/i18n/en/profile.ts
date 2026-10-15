@@ -45,6 +45,8 @@ export const profile: Shape<typeof de> = {
   appleUnlink: 'Unlink',
   appleUnlinked: 'Apple ID unlinked',
   appleUnlinkAsk: { title: 'Unlink Apple ID?', message: 'You’ll then sign in with email and password only. If this account has no password yet, set one first via “Forgot password”.' },
+  resendVerification: 'Resend confirmation email',
+  resendSent: 'If there’s an unconfirmed account for {email}, the email is on its way.',
   orEmail: 'or with email',
   register: 'Create account',
   registering: 'Creating …',

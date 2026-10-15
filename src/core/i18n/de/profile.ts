@@ -43,6 +43,8 @@ export const profile = {
   appleUnlink: 'Lösen',
   appleUnlinked: 'Apple-ID gelöst',
   appleUnlinkAsk: { title: 'Apple-ID lösen?', message: 'Danach meldest du dich nur noch mit E-Mail und Passwort an. Hast du für dieses Konto noch kein Passwort, lege vorher über „Passwort vergessen“ eins fest.' },
+  resendVerification: 'Bestätigungsmail erneut senden',
+  resendSent: 'Gibt es ein unbestätigtes Konto für {email}, ist die Mail unterwegs.',
   orEmail: 'oder mit E-Mail',
   register: 'Konto erstellen',
   registering: 'Lege an …',

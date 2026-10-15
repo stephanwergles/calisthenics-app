@@ -22,6 +22,7 @@ import { WeekPlan } from './globals/WeekPlan'
 import { syncHandler } from './sync/endpoint'
 import { deleteAccountHandler } from './sync/account'
 import { appleLinkHandler, appleSignInHandler, appleUnlinkHandler } from './sync/apple'
+import { resendVerificationHandler } from './sync/verification'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -42,6 +43,7 @@ export default buildConfig({
     { path: '/auth/apple', method: 'post', handler: appleSignInHandler },
     { path: '/auth/apple/link', method: 'post', handler: appleLinkHandler },
     { path: '/auth/apple/unlink', method: 'post', handler: appleUnlinkHandler },
+    { path: '/auth/resend-verification', method: 'post', handler: resendVerificationHandler },
   ],
   // Die native App braucht kein CORS (kein Browser-Ursprung) – nur die eigene Seite
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),
