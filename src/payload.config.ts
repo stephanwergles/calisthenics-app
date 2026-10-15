@@ -51,7 +51,7 @@ export default buildConfig({
   ...(process.env.RESEND_API_KEY ? {
     email: resendAdapter({
       apiKey: process.env.RESEND_API_KEY,
-      defaultFromAddress: process.env.MAIL_FROM || 'lever@blank-studio.de',
+      defaultFromAddress: process.env.MAIL_FROM || 'lever@updates.blank-studio.de',
       defaultFromName: 'Lever',
     }),
   } : {}),
