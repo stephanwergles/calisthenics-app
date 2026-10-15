@@ -715,3 +715,9 @@ test('mehrere Einheiten desselben Workouts am Tag: -2, -3 …, gelöschte zähle
   assert.deepEqual(L.latestSessionId([a, b], '2026-10-15', 'pull'), { id: '2026-10-15-pull-2', n: 2 })
   assert.deepEqual(L.latestSessionId(new Map([[a.id, a], [b.id, { ...b, deleted: true }]]), '2026-10-15', 'pull'), { id: '2026-10-15-pull', n: 1 })
 })
+
+test('Löschen/Verwerfen einer zweiten Einheit am Tag trifft genau diese, nicht die erste', () => {
+  const second = { ...L.emptySession('2026-10-15', 'cindy'), id: L.sessionId('2026-10-15', 'cindy', 2), sets: [] }
+  assert.equal(L.deletedSession(second).id, '2026-10-15-cindy-2')
+  assert.equal(L.discardedSession(second, undefined)?.id, '2026-10-15-cindy-2')
+})

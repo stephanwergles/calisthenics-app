@@ -44,6 +44,8 @@ export interface App {
   askEnd: () => Promise<void>
   /** Training verwerfen (mit Rückfrage, wenn schon etwas eingetragen ist) */
   askDiscard: () => Promise<void>
+  /** Training ohne Rückfrage verwerfen */
+  discard: () => void
   /** Pausen-Screen: null = zu, sonst Rückmeldung zum gespeicherten Satz ('' = ohne) */
   restView: string | null
   setRestView: (v: string | null) => void
@@ -148,7 +150,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const value: App = {
     t, ps, rest, locale, localeChoice, changeLocale, slots, focus, focusSlot, pick: setPicked,
-    started, doneToday, start, startWorkout, openTraining, finish, askEnd, askDiscard, restView, setRestView,
+    started, doneToday, start, startWorkout, openTraining, finish, askEnd, askDiscard, discard, restView, setRestView,
   }
   return <Ctx value={value}>{children}</Ctx>
 }

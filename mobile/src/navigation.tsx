@@ -1,5 +1,5 @@
 /* Navigation: Präsentationsarten und Header-Bausteine an einer Stelle.
-   - formSheet: Aufgabe mit Detents (Satz erfassen, Phase, Cardio) – Hintergrund Liquid Glass (iOS 26)
+   - formSheet: Aufgabe mit Detents (Satz erfassen, Phase, Cardio) – Glas nur angedeutet (SHEET_BG)
    - modal: großes Sheet (iOS pageSheet), darin ggf. eigener Stack mit Push-Seiten
    - stackScreenOptions: Push-Seiten mit transparentem nativen Header → Zurück ist der echte
      Glas-Button von iOS, Titel steht im Inhalt (Display-Schrift)
@@ -11,11 +11,15 @@ import { t } from '@lever/core/i18n/index.ts'
 import { color, font } from '@/ui/theme'
 import { sf, type IconName } from '@/ui/icon'
 
+/** Sheet-Hintergrund: fast deckend – bei reinem Glas schien z. B. der Volt-Button dahinter durch
+    und nahm Knöpfen im Sheet den Kontrast */
+export const SHEET_BG = Platform.OS === 'ios' ? 'rgba(26, 26, 26, 0.9)' : color.card
+
 export const formSheet = (detents: number[] = [0.6, 1]): NativeStackNavigationOptions => ({
   presentation: 'formSheet',
   sheetGrabberVisible: true,
   sheetAllowedDetents: detents,
-  contentStyle: { backgroundColor: Platform.OS === 'ios' ? 'transparent' : color.card },
+  contentStyle: { backgroundColor: SHEET_BG },
   headerShown: false,
 })
 

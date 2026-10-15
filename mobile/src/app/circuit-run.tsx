@@ -30,7 +30,7 @@ export default function CircuitRunRoute() {
 }
 
 function Run({ c }: { c: Circuit }) {
-  const { t, slots, finish } = useApp()
+  const { t, slots, finish, discard: discardTraining } = useApp()
   const insets = useSafeAreaInsets()
   const [phase, setPhase] = useState<Phase>('prep')
   const [now, setNow] = useState(Date.now())
@@ -66,7 +66,13 @@ function Run({ c }: { c: Circuit }) {
     if (phase === 'result') t.updateToday(s => L.withCircuitResult(s, resultOf()))
   }, [phase, reps]) // eslint-disable-line react-hooks/exhaustive-deps
   const discard = () => {
-    t.updateToday(s => (before.current ? L.withCircuitResult(s, before.current) : L.withoutCircuitResult(s, c.id)))
+    // war das Ergebnis der einzige Eintrag seit dem Start, wird das ganze Training verworfen –
+    // sonst liefe die Session leer weiter
+    const s = t.todaySession, b = t.active?.before
+    const others = (s?.circuits ?? []).filter(x => x.id !== c.id).length - (b?.circuits ?? []).filter(x => x.id !== c.id).length
+    const sets = (s?.sets.length ?? 0) - (b?.sets.length ?? 0)
+    if (t.active && !before.current && sets <= 0 && others <= 0) { discardTraining(); return }
+    t.updateToday(x => (before.current ? L.withCircuitResult(x, before.current) : L.withoutCircuitResult(x, c.id)))
     router.back()
   }
   // Speichern: ist danach nichts mehr offen (keine Übung, kein weiterer Runden-Block), endet das

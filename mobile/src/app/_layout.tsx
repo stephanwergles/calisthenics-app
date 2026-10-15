@@ -4,7 +4,6 @@ import { useEffect } from 'react'
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
-import { Platform } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { useFonts } from 'expo-font'
 import { Barlow_400Regular, Barlow_500Medium, Barlow_600SemiBold, Barlow_700Bold } from '@expo-google-fonts/barlow'
@@ -14,7 +13,7 @@ import {
 import { AppProvider, useApp } from '@/state/app'
 import { Gates, useSignedIn } from '@/screens/gates'
 import { color, Toaster } from '@/ui'
-import { formSheet, modal, modalWithHeader } from '@/navigation'
+import { formSheet, modal, modalWithHeader, SHEET_BG } from '@/navigation'
 
 void SplashScreen.preventAutoHideAsync()
 
@@ -81,7 +80,7 @@ function Root({ fonts }: { fonts: boolean }) {
           {/* Stufen setzt app/log-set.tsx nach Messung des Inhalts; Glas nur angedeutet, damit die Bedienelemente Kontrast haben */}
           <Stack.Screen name="log-set" options={{ presentation: 'formSheet', sheetAllowedDetents: [0.42, 0.62], sheetExpandsWhenScrolledToEdge: false,
             sheetLargestUndimmedDetentIndex: 'last', sheetGrabberVisible: true, gestureEnabled: false, headerShown: false,
-            contentStyle: { backgroundColor: Platform.OS === 'ios' ? 'rgba(26, 26, 26, 0.9)' : color.card } }} />
+            contentStyle: { backgroundColor: SHEET_BG } }} />
           <Stack.Screen name="circuit-run" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
           <Stack.Screen name="onboarding" options={{ ...modal(), gestureEnabled: false }} />
         </Stack.Protected>
