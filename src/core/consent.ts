@@ -6,7 +6,7 @@ import { t } from './i18n/index.ts'
 
 export const HEALTH_CONSENT_VERSION = '2026-10-13'
 export const DISCLAIMER_VERSION = '2026-10-13'
-export const PRIVACY_URL = 'https://calisthenics.apps.blank-studio.de/datenschutz'
+export const PRIVACY_URL = 'https://lever.offected.com/datenschutz'
 
 export const DISCLAIMER = {
   get title() { return t('profile.disclaimer.title') },

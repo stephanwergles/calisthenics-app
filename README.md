@@ -126,7 +126,7 @@ Migrationsdateien committen – der Server führt beim Deploy genau diese aus.
 
 ## Deployment (Ploi, Server blank-apps)
 
-Live unter **https://calisthenics.apps.blank-studio.de** (Admin unter `/admin`).
+Live unter **https://lever.offected.com** (Admin unter `/admin`; die alte Adresse calisthenics.apps.blank-studio.de bleibt als Alias für ältere App-Builds).
 So ist die Site eingerichtet – beim Neuaufsetzen genauso:
 
 1. **Datenbank** `calisthenics` (Postgres) auf blank-apps.
@@ -137,7 +137,7 @@ So ist die Site eingerichtet – beim Neuaufsetzen genauso:
    ```
    DATABASE_URL=postgres://<db-user>:<db-passwort>@127.0.0.1:5432/calisthenics
    PAYLOAD_SECRET=<openssl rand -hex 32>
-   NEXT_PUBLIC_SERVER_URL=https://calisthenics.apps.blank-studio.de
+   NEXT_PUBLIC_SERVER_URL=https://lever.offected.com
    ```
    Port **5432** (nicht 5433 aus der lokalen Vorlage). Kein `NODE_ENV=production`
    setzen – sonst fehlen beim Build die Dev-Abhängigkeiten (TypeScript).

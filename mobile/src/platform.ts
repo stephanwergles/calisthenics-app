@@ -128,7 +128,7 @@ export const mobilePlatform: Platform = {
   },
   systemLanguage: () => getLocales()[0]?.languageTag ?? 'de',
   api: {
-    base: () => (Constants.expoConfig?.extra?.apiUrl as string | undefined) ?? 'https://calisthenics.apps.blank-studio.de',
+    base: () => (Constants.expoConfig?.extra?.apiUrl as string | undefined) ?? 'https://lever.offected.com',
     credentials: 'omit',
     tokenAuth: true,
     getToken: () => SecureStore.getItemAsync(TOKEN),

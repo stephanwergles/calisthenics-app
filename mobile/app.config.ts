@@ -29,7 +29,7 @@ const config: ExpoConfig = {
     usesAppleSignIn: true,
     // Universal Links: Konto-Mails (/konto/…) öffnen die App – Gegenstück: /.well-known/apple-app-site-association
     // (Entwicklungs-App: mode=developer umgeht Apples Zwischenspeicher)
-    associatedDomains: [`applinks:${new URL(process.env.EXPO_PUBLIC_API_URL ?? 'https://calisthenics.apps.blank-studio.de').host}${dev ? '?mode=developer' : ''}`],
+    associatedDomains: [`applinks:${new URL(process.env.EXPO_PUBLIC_API_URL ?? 'https://lever.offected.com').host}${dev ? '?mode=developer' : ''}`],
     infoPlist: { CFBundleDisplayName: dev ? 'Lever Dev' : 'Lever' },
   },
   android: {
@@ -55,7 +55,7 @@ const config: ExpoConfig = {
   extra: {
     eas: { projectId: '993ef6ae-3e63-4ab5-8ac0-8ff909413a80' },
     /** Server für Anmeldung und Sync */
-    apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://calisthenics.apps.blank-studio.de',
+    apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'https://lever.offected.com',
   },
 }
 
