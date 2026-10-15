@@ -52,7 +52,9 @@ export interface Index {
 /** Katalog mit dem eigenen Plan überlagert: dessen Workouts und Wochenplan statt der aus dem Katalog.
     Slots mit Leitern, die der Katalog nicht (mehr) kennt, fallen weg. Ohne Plan: der Katalog unverändert. */
 export function effectiveCatalog(catalog: Catalog, plan: Plan | null | undefined): Catalog {
-  if (!plan || !plan.workouts.length) return catalog
+  // ohne eigenen Plan: Katalog-Workouts ohne Wochentage – der Wochenplan im Katalog ist der
+  // Rhythmus aus v1 und gehört niemandem sonst; Tage entstehen erst im Onboarding bzw. Plan
+  if (!plan || !plan.workouts.length) return catalog.weekplan && Object.keys(catalog.weekplan).length ? { ...catalog, weekplan: {} } : catalog
   const known = new Set(catalog.progressions.map(p => p.id))
   return { ...catalog, workouts: plan.workouts.map(w => ({ ...w, slots: w.slots.filter(s => known.has(s.progression)) })), weekplan: plan.weekplan }
 }
@@ -64,11 +66,20 @@ export function progressionName(ix: Index, pid: ProgressionId): string {
   return p.name ?? ix.exercises.get(p.steps[p.steps.length - 1]?.exercise)?.name ?? pid
 }
 
-/** Plan aus dem Katalog als Ausgangspunkt für eigene Änderungen (gleiche Workouts, gleicher Wochenplan) */
+/** Plan aus dem Katalog als Ausgangspunkt für eigene Änderungen (gleiche Workouts, noch keine Tage) */
 export const planFromCatalog = (catalog: Catalog): Plan => ({
   id: 'main', version: 1, name: 'Mein Plan', source: 'catalog',
-  workouts: structuredClone(catalog.workouts), weekplan: { ...catalog.weekplan },
+  workouts: structuredClone(catalog.workouts), weekplan: {},
 })
+/** Katalog-Workouts auf die gewählten Trainingstage verteilen (der Reihe nach, bei mehr Tagen als
+    Workouts wieder von vorn) – Onboarding ohne Ziele */
+export function planForDays(catalog: Catalog, days: Weekday[]): Plan {
+  const plan = planFromCatalog(catalog)
+  const order = [...days].sort((a, b) => WEEK_ORDER.indexOf(a) - WEEK_ORDER.indexOf(b))
+  const ws = plan.workouts.filter(w => !w.archived)
+  if (ws.length) order.forEach((d, i) => { plan.weekplan[d] = ws[i % ws.length].id })
+  return plan
+}
 
 /* ── Eigener Plan bearbeiten (jede Änderung ergibt einen neuen Plan, gespeichert wird in useTraining) ── */
 

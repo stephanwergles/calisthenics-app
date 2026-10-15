@@ -258,9 +258,11 @@ function RestCard() {
   return (
     <Card style={{ gap: 12, padding: 22 }}>
       <Text variant="eyebrow">{tr('home.restLabel')}</Text>
-      <Text variant="display" style={{ fontSize: 34, lineHeight: 34 }}>{tr('history.restTitle')}</Text>
-      <Text variant="muted">{tr('history.restText')}</Text>
+      <Text variant="display" style={{ fontSize: 34, lineHeight: 34 }}>{t.plan ? tr('history.restTitle') : tr('home.noPlanTitle')}</Text>
+      <Text variant="muted">{t.plan ? tr('history.restText') : tr('home.noPlanText')}</Text>
       <View style={{ gap: 10, marginTop: 6 }}>
+        {/* noch kein eigener Plan (Onboarding übersprungen): keine Trainingstage – Plan anlegen anbieten */}
+        {!t.plan && <Button variant="primary" size="lg" icon="arrowRight" title={tr('home.createPlan')} onPress={() => router.push('/onboarding')} />}
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <Button style={{ flex: 1 }} icon="walk" title={tr('home.restCardio')} onPress={() => router.push({ pathname: '/activity', params: { date: t.today } })} />
           <Button style={{ flex: 1 }} icon="flame" title={tr('home.restChallenge')} onPress={() => router.push('/challenges')} />

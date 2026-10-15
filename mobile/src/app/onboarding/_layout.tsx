@@ -9,6 +9,6 @@ import { markOnboarded } from '@/screens/onboarding/state'
 
 export default function Layout() {
   const { t } = useApp()
-  useEffect(() => { if (t.plan) markOnboarded() }, [t.plan])
+  useEffect(() => { if (t.plan) markOnboarded(t) }, [t.plan]) // eslint-disable-line react-hooks/exhaustive-deps
   return <Stack screenOptions={stackScreenOptions} />
 }

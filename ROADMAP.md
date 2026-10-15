@@ -188,6 +188,7 @@ Zeitpunkt: parallel zu 3.1 möglich (dort geht es um Katalog und Server), **fert
 - [x] **Eigene Workouts:** Name, Leitern mit Satzzahl, Reihenfolge, Wochentage (Heute → „Anderes Workout“ → „Workouts verwalten“, `PlanEditor.tsx`); löschen = `archived` (Verlauf behält den Namen). Offen: feste Übung ohne Leiter, Wdh.-Bereich/Pause je Slot
 - [x] **Tagesanpassung:** Übungen für eine Einheit hinzufügen/weglassen (`sessions.adjust`), danach „Als neues Workout speichern“ (Übungsplan → „Heute anpassen“)
 - [x] Onboarding: Willkommen → Kurztest → Ziele → Equipment → Tage & Dauer → Planvorschlag mit Begründung je Übung (`Onboarding.tsx`, ein Sheet mit Push-Seiten; nur bei frischer Installation, jeder Schritt überspringbar). Offen: Sprache (mit i18n)
+  - 15.10.2026: Onboarding pro **Konto** statt pro Gerät (nach dem ersten Abgleich, wenn das Konto weder Einheiten noch Profil noch Plan hat); ohne eigenen Plan **keine vorbelegten Wochentage** mehr (der Katalog-Wochenplan war der v1-Rhythmus des Entwicklers) – Home bietet „Plan erstellen“; ohne Ziele verteilt das Onboarding die Standard-Workouts auf die gewählten Tage (`planForDays`)
 - [ ] Apple Health / Health Connect (Android): Workouts speichern
 - [ ] **TestFlight, geschlossene Beta** mit 5–10 Fortgeschrittenen
 - [x] Feedback-Kanal in der App: Profil → Feedback senden (Fehler/Idee/Sonstiges) → Collection `feedback`; anlegen nur angemeldet, lesen/Status nur Admins (Admin → Betrieb → Feedback), Konto löschen entfernt es mit

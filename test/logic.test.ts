@@ -297,11 +297,15 @@ test('Freischalten: Sätze mit Zusatzgewicht zählen ab dem Mindestwert der näc
   assert.equal(L.unlockReadiness(weighted, 'dip', target, next), 1)
 })
 
-test('Eigener Plan: ohne Plan gilt der Katalog, mit Plan dessen Workouts und Wochenplan', () => {
-  assert.equal(L.effectiveCatalog(catalog, null), catalog, 'ohne Plan unverändert')
+test('Eigener Plan: ohne Plan gilt der Katalog ohne Wochentage, mit Plan dessen Workouts und Wochenplan', () => {
+  assert.deepEqual(L.effectiveCatalog(catalog, null).workouts, catalog.workouts, 'ohne Plan die Katalog-Workouts')
+  assert.deepEqual(L.effectiveCatalog(catalog, null).weekplan, {}, 'ohne Plan keine Tage (der Katalog-Rhythmus gehört niemandem)')
   const plan = L.planFromCatalog(catalog)
   assert.deepEqual(L.effectiveCatalog(catalog, plan).workouts, catalog.workouts, 'Kopie des Katalogs = gleicher Plan')
-  assert.deepEqual(L.effectiveCatalog(catalog, plan).weekplan, catalog.weekplan)
+  assert.deepEqual(plan.weekplan, {}, 'Kopie ohne Tage')
+  const days = L.planForDays(catalog, ['fri', 'mon', 'wed', 'sat'])
+  const ids = catalog.workouts.filter(w => !w.archived).map(w => w.id)
+  assert.deepEqual(days.weekplan, { mon: ids[0], wed: ids[1 % ids.length], fri: ids[2 % ids.length], sat: ids[3 % ids.length] }, 'Workouts der Reihe nach auf die Tage')
   plan.workouts[0].name = 'geändert'
   assert.notEqual(catalog.workouts[0].name, 'geändert', 'Kopie, keine Referenz')
   const own = { ...plan, workouts: [{ ...plan.workouts[0], id: 'mein-tag', slots: [...plan.workouts[0].slots, { block: 'strength' as const, progression: 'gibt-es-nicht' }] }], weekplan: { thu: 'mein-tag' } }
