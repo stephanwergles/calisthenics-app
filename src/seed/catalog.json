@@ -6834,7 +6834,7 @@
   "workouts": [
     {
       "id": "pull",
-      "name": "Tag A",
+      "name": "Pull",
       "focus": "Pull · Muscle-up",
       "slots": [
         {
@@ -6938,7 +6938,7 @@
     },
     {
       "id": "push",
-      "name": "Tag B",
+      "name": "Push",
       "focus": "Push · L-Sit",
       "slots": [
         {
@@ -7042,7 +7042,7 @@
     },
     {
       "id": "legs",
-      "name": "Tag C",
+      "name": "Lower",
       "focus": "Beine · Core",
       "slots": [
         {

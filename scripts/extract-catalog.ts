@@ -109,6 +109,8 @@ const PROGRESSION_IDS: Record<string, string> = {
   "2-4": "leg-raise", "2-5": "hollow", "2-6": "side-plank", "2-7": "hang",
 };
 const WORKOUT_IDS = ["pull", "push", "legs"];
+// Namen in v2 nach Inhalt statt „Tag A/B/C“ (v1 behält seine Namen in index.html)
+const WORKOUT_NAMES = ["Pull", "Push", "Lower"];
 const BLOCKS: Record<string, Block> = { Skill: "skill", Kraft: "strength", Core: "core", "Zubehör": "accessory", Extra: "extra" };
 const WEEKDAYS: Weekday[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
@@ -157,7 +159,7 @@ const workouts: Workout[] = PLAN.map((day: any, di: number) => {
     }) });
   });
   return {
-    id: WORKOUT_IDS[di], name: day.name, focus: day.sub,
+    id: WORKOUT_IDS[di], name: WORKOUT_NAMES[di] ?? day.name, focus: day.sub,
     slots: order.map((si: number) => ({ block: BLOCKS[day.slots[si].block], progression: PROGRESSION_IDS[`${di}-${si}`] })),
     warmup: routine(ROUTINES[di].warm, "warm"), cooldown: routine(ROUTINES[di].cool, "cool"),
   };
