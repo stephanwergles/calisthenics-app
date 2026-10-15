@@ -89,20 +89,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useSessionActivity(t, rest, slots, focus)
 
   const openTraining = (pid?: string) => { setPicked(pid); router.navigate('/training') }
-  // reines Runden-Workout (z. B. Cindy): nach dem Start direkt in den Runden-Timer, statt die Runden
-  // im Training noch einmal starten zu müssen – außer die Einheit hat schon ein Ergebnis
-  const enter = (id: string, fresh: boolean) => {
-    openTraining(undefined)
+  // reines Runden-Workout (z. B. Cindy): die Session (Uhr, Mini-Player) beginnt erst mit der ersten
+  // Runde (CircuitCard) – vorher ist nur die Übersicht offen, sonst liefe das Training schon, bevor es losgeht
+  const circuitsOnly = (id: string) => {
     const w = t.ix.workouts.get(id)
-    const ladder = (w?.slots ?? []).some(sl => t.ix.progressions.has(sl.progression))
-    const first = L.circuitsOf(w)[0]
-    const done = !fresh && !!t.todaySession && t.workout === id && !!L.circuitResultOf(t.todaySession, first?.id ?? '')
-    if (first && !ladder && !done) setTimeout(() => router.push({ pathname: '/circuit-run', params: { cid: first.id } }), 450)
+    return L.circuitsOf(w).length > 0 && !(w?.slots ?? []).some(sl => t.ix.progressions.has(sl.progression))
   }
-  const start = () => { const fresh = !t.todaySession; t.startSession(); enter(t.workout, fresh) }
+  const start = () => { if (!circuitsOnly(t.workout)) t.startSession(); openTraining(undefined) }
   const startWorkout = (id: string, again = false) => {
     if (t.active) { openTraining(undefined); return }
-    t.chooseWorkout(id); t.startSession(id, { again }); enter(id, again || t.workout !== id || !t.todaySession)
+    t.chooseWorkout(id)
+    // „Nochmal trainieren“ braucht die neue Einheit sofort, sonst stünde dort die erledigte
+    if (again || !circuitsOnly(id)) t.startSession(id, { again })
+    openTraining(undefined)
   }
   /** seit dem Start eingetragen: Sätze und Runden-Ergebnisse */
   const loggedSinceStart = () => {
