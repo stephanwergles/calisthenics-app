@@ -101,9 +101,9 @@ export function FocusTop() {
   )
 }
 
-/** Alles erledigt: Training beenden oder zurück zur Übersicht */
+/** Alles erledigt: Training beenden (oder verwerfen) oder zurück zur Übersicht */
 export function AllDone() {
-  const { t, finish } = useApp()
+  const { t, finish, askDiscard } = useApp()
   const insets = useSafeAreaInsets()
   // Runden-Blöcke kommen nach den Leiter-Übungen: offene zuerst anbieten
   const circuits = L.circuitsOf(t.ix.workouts.get(t.workout))
@@ -120,6 +120,7 @@ export function AllDone() {
         {/* offene Runden sind die Hauptaktion – Beenden dann nur als Nebenaktion */}
         {t.active && <Button variant={open.length ? 'ghost' : 'primary'} size={open.length ? 'md' : 'lg'} icon="check" title={tr('training.focus.finish')} onPress={finish} />}
         {!open.length && <Button variant={t.active ? 'secondary' : 'primary'} size={t.active ? 'md' : 'lg'} icon="list" title={tr('training.focus.allExercises')} onPress={openList} />}
+        {t.active && <Button variant="ghost" icon="trash" title={tr('training.focus.discard')} onPress={() => void askDiscard()} />}
       </View>
     </Animated.View>
   )

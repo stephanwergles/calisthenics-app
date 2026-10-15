@@ -42,6 +42,8 @@ export interface App {
   finish: () => void
   /** Beenden mit Wahl: speichern oder verwerfen (Rückfrage); weiter trainieren = nichts */
   askEnd: () => Promise<void>
+  /** Training verwerfen (mit Rückfrage, wenn schon etwas eingetragen ist) */
+  askDiscard: () => Promise<void>
   /** Pausen-Screen: null = zu, sonst Rückmeldung zum gespeicherten Satz ('' = ohne) */
   restView: string | null
   setRestView: (v: string | null) => void
@@ -117,7 +119,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!t.active) return
     // noch nichts eingetragen: nur beenden oder weitermachen – es gibt nichts zu speichern
     if (loggedSinceStart() <= 0) {
-      if (await ask({ title: tr('training.bar.stopTitle'), message: tr('training.bar.stopEmpty'), ok: tr('training.bar.stopEmptyOk'), cancel: tr('training.bar.stopContinue') })) discard()
+      if (await ask({ title: tr('training.bar.stopTitle'), message: tr('training.bar.stopEmpty'), ok: tr('training.bar.stopEmptyOk'), cancel: tr('training.bar.stopContinue'), destructive: true })) discard()
       return
     }
     const choice = await choose({
@@ -125,17 +127,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       options: [{ id: 'save', title: tr('training.bar.stopSave') }, { id: 'discard', title: tr('training.bar.stopDiscard'), destructive: true }],
     })
     if (choice === 'save') finish()
-    if (choice !== 'discard') return
-    // Sätze seit dem Start – nur dann lohnt eine zweite Rückfrage
-    const id = activeSessionId(t.active)
-    const n = (L.live(t.sessions.find(s => s.id === id))?.sets.length ?? 0) - (t.active.before?.sets.length ?? 0)
+    if (choice === 'discard') await askDiscard()
+  }
+  /** Training verwerfen – mit Rückfrage, sobald seit dem Start etwas eingetragen ist */
+  const askDiscard = async () => {
+    if (!t.active) return
+    const n = loggedSinceStart()
     if (n > 0 && !await ask({ title: tr('training.bar.discardTitle'), message: tn('training.bar.discardMessage', n), ok: tr('training.bar.discardOk'), destructive: true })) return
     discard()
   }
 
   const value: App = {
     t, ps, rest, locale, localeChoice, changeLocale, slots, focus, focusSlot, pick: setPicked,
-    started, doneToday, start, startWorkout, openTraining, finish, askEnd, restView, setRestView,
+    started, doneToday, start, startWorkout, openTraining, finish, askEnd, askDiscard, restView, setRestView,
   }
   return <Ctx value={value}>{children}</Ctx>
 }
