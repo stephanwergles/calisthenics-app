@@ -30,7 +30,7 @@ export default function CircuitRunRoute() {
 }
 
 function Run({ c }: { c: Circuit }) {
-  const { t } = useApp()
+  const { t, slots, finish } = useApp()
   const insets = useSafeAreaInsets()
   const [phase, setPhase] = useState<Phase>('prep')
   const [now, setNow] = useState(Date.now())
@@ -54,7 +54,7 @@ function Run({ c }: { c: Circuit }) {
   }, [phase])
   useEffect(() => {
     if (phase === 'prep' && now >= prepEnd) { setStart(Date.now()); signals().haptic('success'); setPhase('run') }
-    if (phase === 'run' && end && now >= end) finish()
+    if (phase === 'run' && end && now >= end) finishRun()
   }, [now]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const elapsed = start ? (now - start) / 1000 : 0
@@ -69,7 +69,15 @@ function Run({ c }: { c: Circuit }) {
     t.updateToday(s => (before.current ? L.withCircuitResult(s, before.current) : L.withoutCircuitResult(s, c.id)))
     router.back()
   }
-  const finish = () => {
+  // Speichern: ist danach nichts mehr offen (keine Übung, kein weiterer Runden-Block), endet das
+  // Training gleich mit – sonst liefe die Session weiter und man müsste sie extra beenden
+  const save = () => {
+    toast(tr('circuit.saved'), 'success')
+    const more = L.circuitsOf(t.ix.workouts.get(t.workout)).some(x => x.id !== c.id && !L.circuitResultOf(t.todaySession, x.id))
+    if (t.active && !more && !L.upNext(slots, undefined)) finish()
+    else router.back()
+  }
+  const finishRun = () => {
     if (phase !== 'run') return
     signals().alarm(); signals().haptic('warning')
     setTime(Math.round((Date.now() - start) / 1000))
@@ -79,7 +87,7 @@ function Run({ c }: { c: Circuit }) {
     if (phase !== 'run') return
     const next = rounds + 1
     signals().haptic('success'); setRounds(next)
-    if (!amrap && next >= target) finish()
+    if (!amrap && next >= target) finishRun()
   }
   const undo = () => { if (phase === 'run' && rounds > 0) { signals().haptic('tap'); setRounds(rounds - 1) } }
   const close = async () => {
@@ -103,7 +111,7 @@ function Run({ c }: { c: Circuit }) {
             onMinus={() => setReps(Math.max(0, reps - 1))} onPlus={() => setReps(Math.min(perRound - 1, reps + 1))} />}
         </View>
         <View style={{ gap: 10 }}>
-          <Button variant="primary" size="lg" icon="check" title={tr('circuit.save')} onPress={() => { toast(tr('circuit.saved'), 'success'); router.back() }} />
+          <Button variant="primary" size="lg" icon="check" title={tr('circuit.save')} onPress={save} />
           <Button variant="ghost" title={tr('challenge.discard')} onPress={discard} />
         </View>
       </View>
@@ -155,7 +163,7 @@ function Run({ c }: { c: Circuit }) {
         <ButtonRow>
           <Button size="lg" icon="undo" title="−1" label={tr('circuit.undo')} onPress={undo} />
           <Button variant="primary" size="lg" icon="check" title={tr('circuit.roundDone')} onPress={roundDone} style={{ flex: 1 }} />
-          {amrap && <Button size="lg" icon="stop" label={tr('circuit.stop')} onPress={finish} />}
+          {amrap && <Button size="lg" icon="stop" label={tr('circuit.stop')} onPress={finishRun} />}
         </ButtonRow>
       )}
     </View>

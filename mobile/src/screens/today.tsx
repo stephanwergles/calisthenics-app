@@ -50,7 +50,8 @@ export function Today() {
         <View style={{ marginTop: -44, height: 22, justifyContent: 'center', alignSelf: 'flex-start' }}><Wordmark height={20} /></View>
         {/* Kopf: Datum, Titel, Serie */}
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
-          <View style={{ flex: 1, gap: 6 }}>
+          {/* Abstand inkl. Platz für Umlaut-Punkte der ersten Titelzeile (ragen über die enge Zeilenhöhe) */}
+          <View style={{ flex: 1, gap: 14 }}>
             <Text variant="small" style={{ fontFamily: font.bodySemi, textTransform: 'uppercase', letterSpacing: 1.6 }}>{dateLabel}</Text>
             <Text variant="hero" accessibilityRole="header">
               {done ? tr('home.titleDone') : t.active ? tr('home.titleActive') : t.restDay ? tr('home.titleRest') : tr('home.titleReady')}{'\n'}
