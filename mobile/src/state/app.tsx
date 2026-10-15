@@ -101,8 +101,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const startWorkout = (id: string, again = false) => {
     if (t.active) { openTraining(undefined); return }
     t.chooseWorkout(id)
-    // „Nochmal trainieren“ braucht die neue Einheit sofort, sonst stünde dort die erledigte
-    if (again || !circuitsOnly(id)) t.startSession(id, { again })
+    // Runden-Workout: Session erst mit der ersten Runde; „Nochmal trainieren“ wird dafür vorgemerkt
+    if (!circuitsOnly(id)) t.startSession(id, { again })
+    else if (again) t.prepareAgain(id)
     openTraining(undefined)
   }
   /** seit dem Start eingetragen: Sätze und Runden-Ergebnisse */

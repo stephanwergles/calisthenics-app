@@ -251,7 +251,9 @@ export function useTraining() {
   }, [ix, choice, today, sessionList, active, recommended])
   // heutige Einheit: die laufende Session, sonst die jüngste dieses Workouts von heute (ein zweites Mal am Tag = „-2“)
   const currentId = active && active.workout === workout ? activeSessionId(active) : L.latestSessionId(sessions, today, workout).id
-  const todaySession = L.live(sessions.get(currentId))
+  // „Nochmal trainieren“ vorgemerkt, Session noch nicht gestartet (Runden-Workout): leere Einheit zeigen
+  const [againFor, setAgainFor] = useState<WorkoutId | null>(null)
+  const todaySession = !active && againFor === workout ? undefined : L.live(sessions.get(currentId))
   /** heute laut Wochenplan kein Training – solange nichts gewählt, begonnen oder trainiert wurde */
   const restDay = useMemo(() => !ix.catalog.weekplan[L.weekdayOf(today)] && choice?.date !== today && !active
     && !sessionList.some(s => s.date === today && s.sets.length), [ix, today, choice, active, sessionList])
@@ -290,12 +292,17 @@ export function useTraining() {
     if (active) return
     const wk = w ?? workout
     // again: dasselbe Workout heute noch einmal – neue, eigene Einheit statt die erledigte fortzusetzen
+    const again = opts.again || againFor === wk
+    setAgainFor(null)
     const latest = L.latestSessionId(sessionsRef.current, L.localDate(), wk)
-    const id = opts.again && sessionsRef.current.get(latest.id) ? L.sessionId(L.localDate(), wk, latest.n + 1) : latest.id
+    const id = again && sessionsRef.current.get(latest.id) ? L.sessionId(L.localDate(), wk, latest.n + 1) : latest.id
     const before = L.live(sessionsRef.current.get(id))
     const a: ActiveSession = { start: Date.now(), workout: wk, id, ...(before ? { before } : {}) }
     setActive(a); void db.get().kvSet('active', a)
-  }, [active, workout])
+  }, [active, workout, againFor])
+  /** „Nochmal trainieren“ vormerken, ohne die Session zu starten (startet mit der ersten Runde) */
+  const prepareAgain = useCallback((w: WorkoutId) => setAgainFor(w), [])
+  const cancelAgain = useCallback(() => setAgainFor(null), [])
 
   /** Abbrechen: Session endet ohne Zeitgutschrift, Sätze seit dem Start werden verworfen */
   const discardSession = useCallback(() => {
@@ -454,7 +461,7 @@ export function useTraining() {
 
   return {
     loaded, persistent, today, ix, sessions: sessionList, activities, state, active, workout, recommended, restDay,
-    todaySession, updateToday, setState, chooseWorkout, clearChoice, restDayChosen, startSession, endSession,
+    todaySession, updateToday, setState, chooseWorkout, clearChoice, restDayChosen, startSession, prepareAgain, cancelAgain, endSession,
     addActivity, removeActivity, removeSession, discardSession, importV1, exportData,
     sync, syncNow: runSync, signIn, signOut, deleteAccount,
     consent, acceptHealthConsent, acceptDisclaimer,

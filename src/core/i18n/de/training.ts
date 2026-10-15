@@ -20,7 +20,6 @@ export const training = {
     allExercises: 'Alle Übungen',
     allDone: 'Alle Übungen erledigt oder übersprungen. In der Übersicht warten Cool-down und deine Notiz zur Einheit.',
     finish: 'Training beenden',
-    discard: 'Training verwerfen',
     allLogged: { one: '{n} Satz erfasst: {sets}', other: 'Alle {n} Sätze erfasst: {sets}' },
     technique: 'Technik',
     movement: 'Bewegung: {name}',

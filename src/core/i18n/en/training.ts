@@ -22,7 +22,6 @@ export const training: Shape<typeof de> = {
     allExercises: 'All exercises',
     allDone: 'All exercises done or skipped. Your cool-down and session note are waiting in the overview.',
     finish: 'Finish workout',
-    discard: 'Discard workout',
     allLogged: { one: '{n} set logged: {sets}', other: 'All {n} sets logged: {sets}' },
     technique: 'Technique',
     movement: 'Movement: {name}',

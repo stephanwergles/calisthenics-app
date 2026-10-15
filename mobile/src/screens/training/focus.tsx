@@ -14,7 +14,7 @@ import { useNow } from '@lever/core/useNow.ts'
 import { platform } from '@lever/core/platform.ts'
 import { t as tr, tn } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
-import { Button, color, ExerciseMedia, ExerciseStill, font, GUTTER, Icon, radius, sf, space, Text } from '@/ui'
+import { Button, ButtonRow, color, ExerciseMedia, ExerciseStill, font, GUTTER, Icon, radius, sf, space, Text } from '@/ui'
 import { setSheet, useSetSheet } from '@/state/set-sheet'
 
 const haptic = (k: 'tap' | 'success' = 'tap') => platform().signals.haptic(k)
@@ -116,11 +116,19 @@ export function AllDone() {
       {open.length
         ? open.map(c => <CircuitCard key={c.id} id={c.id} />)
         : <Text variant="muted" style={{ fontSize: 17, lineHeight: 24 }}>{tr('training.focus.allDone')}</Text>}
+      {/* alles erledigt: Beenden ist die Hauptaktion, darunter Übungen | Verwerfen nebeneinander.
+          Offene Runden: die Runden-Karte ist die Hauptaktion, Beenden | Verwerfen als Nebenaktionen */}
       <View style={{ gap: 10, marginTop: space.md }}>
-        {/* offene Runden sind die Hauptaktion – Beenden dann nur als Nebenaktion */}
-        {t.active && <Button variant={open.length ? 'ghost' : 'primary'} size={open.length ? 'md' : 'lg'} icon="check" title={tr('training.focus.finish')} onPress={finish} />}
-        {!open.length && <Button variant={t.active ? 'secondary' : 'primary'} size={t.active ? 'md' : 'lg'} icon="list" title={tr('training.focus.allExercises')} onPress={openList} />}
-        {t.active && <Button variant="ghost" icon="trash" title={tr('training.focus.discard')} onPress={() => void askDiscard()} />}
+        {t.active && !open.length && <Button variant="primary" size="lg" icon="check" title={tr('training.focus.finish')} onPress={finish} />}
+        {!t.active && !open.length && <Button variant="primary" size="lg" icon="list" title={tr('training.focus.allExercises')} onPress={openList} />}
+        {t.active && (
+          <ButtonRow>
+            {open.length
+              ? <Button variant="secondary" icon="check" title={tr('training.bar.stopOk')} onPress={finish} style={{ flex: 1 }} />
+              : <Button variant="secondary" icon="list" title={tr('home.exercises')} onPress={openList} style={{ flex: 1 }} />}
+            <Button variant="danger" icon="trash" title={tr('training.bar.stopDiscard')} onPress={() => void askDiscard()} style={{ flex: 1 }} />
+          </ButtonRow>
+        )}
       </View>
     </Animated.View>
   )

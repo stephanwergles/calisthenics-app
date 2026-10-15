@@ -11,7 +11,10 @@ import { AllDone, FocusExercise, FocusTop } from '@/screens/training/focus'
 import { RestScreen } from '@/screens/training/rest'
 
 export default function TrainingScreen() {
-  const { slots, focusSlot, rest, restView } = useApp()
+  const { t, slots, focusSlot, rest, restView } = useApp()
+  // verlassen, ohne zu starten: vorgemerktes „Nochmal trainieren“ verfällt (Home zeigt wieder „erledigt“)
+  const cancelAgain = t.cancelAgain
+  useEffect(() => () => cancelAgain(), [cancelAgain])
   const restShown = restView !== null && (rest.running || rest.ringing)
   const index = focusSlot ? slots.findIndex(s => s.pid === focusSlot.pid) : -1
   // natives Erfassungs-Sheet (app/log-set.tsx): offen, solange eine Übung im Fokus ist und keine
