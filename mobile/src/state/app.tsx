@@ -89,10 +89,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useSessionActivity(t, rest, slots, focus)
 
   const openTraining = (pid?: string) => { setPicked(pid); router.navigate('/training') }
-  const start = () => { t.startSession(); openTraining(undefined) }
+  // reines Runden-Workout (z. B. Cindy): nach dem Start direkt in den Runden-Timer, statt die Runden
+  // im Training noch einmal starten zu müssen – außer die Einheit hat schon ein Ergebnis
+  const enter = (id: string, fresh: boolean) => {
+    openTraining(undefined)
+    const w = t.ix.workouts.get(id)
+    const ladder = (w?.slots ?? []).some(sl => t.ix.progressions.has(sl.progression))
+    const first = L.circuitsOf(w)[0]
+    const done = !fresh && !!t.todaySession && t.workout === id && !!L.circuitResultOf(t.todaySession, first?.id ?? '')
+    if (first && !ladder && !done) setTimeout(() => router.push({ pathname: '/circuit-run', params: { cid: first.id } }), 450)
+  }
+  const start = () => { const fresh = !t.todaySession; t.startSession(); enter(t.workout, fresh) }
   const startWorkout = (id: string, again = false) => {
     if (t.active) { openTraining(undefined); return }
-    t.chooseWorkout(id); t.startSession(id, { again }); openTraining(undefined)
+    t.chooseWorkout(id); t.startSession(id, { again }); enter(id, again || t.workout !== id || !t.todaySession)
   }
   /** seit dem Start eingetragen: Sätze und Runden-Ergebnisse */
   const loggedSinceStart = () => {
