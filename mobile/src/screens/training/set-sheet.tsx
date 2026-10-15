@@ -1,7 +1,7 @@
 /* Erfassung im nativen Sheet (Route log-set): Satz-Kacheln, großer Zähler, Zusatzgewicht,
    Halte-Timer, Speichern, Notiz. Vorbelegung wie im Satz-Sheet; Speichern startet die Pause. */
 import { useEffect, useRef, useState, type ComponentRef } from 'react'
-import { Keyboard, ScrollView, TextInput, View, type LayoutChangeEvent } from 'react-native'
+import { Keyboard, ScrollView, View, type LayoutChangeEvent } from 'react-native'
 import * as L from '@lever/core/logic.ts'
 import { useHoldTimer, type HoldTimer } from '@lever/core/useHoldTimer.ts'
 import { platform } from '@lever/core/platform.ts'
@@ -12,11 +12,10 @@ import { Button, ButtonRow, color, CountdownRing, font, GUTTER, Icon, radius, Te
 import { NoteInput, SetTiles } from './parts'
 
 const haptic = (k: 'tap' | 'success' = 'tap') => platform().signals.haptic(k)
-const MINI_FLOAT = 28
 
 /** Inhalt des nativen Erfassungs-Sheets, von oben nach unten so gestapelt, wie das Sheet beim
-    Hochziehen aufgeht: Satz-Kacheln (kleine Stufe) · Zähler und Aktionen (Erfassung) · Notiz zum Satz
-    mit den Werten vom letzten Mal (oberste Stufe). Die Höhen der Stufen misst es selbst. */
+    Hochziehen aufgeht: Satz-Kacheln, Zähler und Aktionen (Erfassung) · Notiz zum Satz mit den Werten
+    vom letzten Mal (hochgezogen). Die Höhen der Stufen misst es selbst. */
 export function SetSheetContent({ slot }: { slot: L.SlotView }) {
   const { t } = useApp()
   const { sel } = useSetSheet()
@@ -33,25 +32,20 @@ export function SetSheetContent({ slot }: { slot: L.SlotView }) {
   // über dem unteren Rand schwebt)
   const bottom = 14
   const [edges, setEdges] = useState<[number, number, number]>([0, 0, 0])
-  const edge = (i: 0 | 1 | 2) => (e: LayoutChangeEvent) => {
+  const edge = (i: 1 | 2) => (e: LayoutChangeEvent) => {
     const y = Math.round(e.nativeEvent.layout.y + e.nativeEvent.layout.height)
     setEdges(old => (Math.abs(old[i] - y) > 1 ? (old.map((v, j) => (j === i ? y : v)) as [number, number, number]) : old))
   }
   const withNote = setNo !== null
   useEffect(() => {
-    if (!edges[0] || !edges[1] || (withNote && !edges[2])) return
-    // kleine Stufe: iOS lässt das Sheet dort weiter über dem Rand schweben und rechnet den unteren Sicherheitsabstand nicht ein
-    const d = [edges[0] + 4 + bottom + MINI_FLOAT, edges[1] + bottom, ...(withNote ? [edges[2] + 4 + bottom] : [])]
+    if (!edges[1] || (withNote && !edges[2])) return
+    const d = [edges[1] + bottom, ...(withNote ? [edges[2] + 4 + bottom] : [])]
     const cur = setSheet.get().detents
     if (d.length !== cur.length || d.some((v, i) => Math.abs(v - cur[i]) > 1)) setSheet.set({ detents: d })
   }, [edges, withNote, bottom])
 
-  // ganz hochgezogen: Notiz bekommt den Fokus; wieder kleiner: Tastatur weg
-  const noteRef = useRef<ComponentRef<typeof TextInput>>(null)
-  useEffect(() => {
-    if (sel === 2 && withNote) { const id = setTimeout(() => noteRef.current?.focus(), 250); return () => clearTimeout(id) }
-    Keyboard.dismiss()
-  }, [sel, withNote])
+  // hochgezogen zeigt die Notiz, die Tastatur kommt erst mit Tipp ins Feld; wieder runter: Tastatur weg
+  useEffect(() => { if (sel === 0) Keyboard.dismiss() }, [sel])
 
   // Tastatur für die Notiz: hebt iOS das Sheet nicht weit genug an (wenig Platz), rückt der Inhalt
   // das Notizfeld über die Tastatur; Tipps auf „Satz speichern“ gehen trotzdem durch
@@ -67,7 +61,7 @@ export function SetSheetContent({ slot }: { slot: L.SlotView }) {
     <ScrollView ref={scroll} style={{ flex: 1 }} scrollEnabled={kb} automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false} accessibilityLabel={tr('training.focus.logSet')}
       contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: 22, paddingBottom: 4, gap: 12 }}>
-      <View onLayout={edge(0)}><SetTiles slot={slot} setNo={setNo} /></View>
+      <SetTiles slot={slot} setNo={setNo} />
       <View onLayout={edge(1)}>
         {slot.state === 'skipped' || slot.state === 'paused' ? (
           <View style={{ gap: 10, paddingBottom: 6 }}>
@@ -86,7 +80,7 @@ export function SetSheetContent({ slot }: { slot: L.SlotView }) {
       {withNote && (
         <View onLayout={edge(2)} style={{ gap: 10, paddingTop: 6 }}>
           {last && <Text variant="small">{tr('training.focus.lastTime', { sets: last })}</Text>}
-          <NoteInput ref={noteRef} label={tr('training.focus.noteSet', { set: setNo })} value={note} onChangeText={setNote}
+          <NoteInput label={tr('training.focus.noteSet', { set: setNo })} value={note} onChangeText={setNote}
             placeholder={tr('training.focus.noteSetPlaceholder')} />
         </View>
       )}

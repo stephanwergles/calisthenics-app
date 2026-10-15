@@ -46,12 +46,13 @@ function Editor({ w, first, view }: { w: Workout; first: boolean; view: boolean 
   const doneToday = !!todayS && L.isTrained(todayS) && t.active?.workout !== w.id
     && !L.upNext(L.workoutSlots(t.ix, w.id, t.state, todayS, t.sessions, t.today), undefined)
     && L.circuitsOf(w).every(c => L.circuitResultOf(todayS, c.id))
-  const summary = () => { router.dismissAll(); router.push({ pathname: '/summary/[id]', params: { id: todayId } }) }
+  // ganz schließen (auch die Liste darunter, z. B. aus „Doch trainieren“), dann weiter
+  const summary = () => { router.dismissTo('/'); router.push({ pathname: '/summary/[id]', params: { id: todayId } }) }
   // Training direkt aus der Übersicht starten: Modal schließen, dann starten (läuft schon eins: Hinweis)
   const busy = !!t.active && t.active.workout !== w.id
   const start = (again = false) => {
     if (busy) { toast(tr('home.workoutBusy')); return }
-    router.dismissAll()
+    router.dismissTo('/')
     startWorkout(w.id, again)
   }
   const weekplan = t.ix.catalog.weekplan

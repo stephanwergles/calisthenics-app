@@ -79,7 +79,7 @@ function Root({ fonts }: { fonts: boolean }) {
           {/* Erfassung als echtes iOS-Sheet: Höhe nach Inhalt, Training dahinter bleibt bedienbar,
               nicht wegwischbar (öffnet/schließt das Training selbst) */}
           {/* Stufen setzt app/log-set.tsx nach Messung des Inhalts; Glas nur angedeutet, damit die Bedienelemente Kontrast haben */}
-          <Stack.Screen name="log-set" options={{ presentation: 'formSheet', sheetAllowedDetents: [0.14, 0.42, 0.62], sheetInitialDetentIndex: 1,
+          <Stack.Screen name="log-set" options={{ presentation: 'formSheet', sheetAllowedDetents: [0.42, 0.62], sheetExpandsWhenScrolledToEdge: false,
             sheetLargestUndimmedDetentIndex: 'last', sheetGrabberVisible: true, gestureEnabled: false, headerShown: false,
             contentStyle: { backgroundColor: Platform.OS === 'ios' ? 'rgba(26, 26, 26, 0.9)' : color.card } }} />
           <Stack.Screen name="circuit-run" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
