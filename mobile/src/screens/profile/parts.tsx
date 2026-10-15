@@ -8,18 +8,27 @@ import { Button, color, ExerciseStill, font, GUTTER, Icon, radius, Text, type Ic
 import type { Next } from './shared'
 
 /** Textfeld mit Beschriftung darüber (Fläche = anfassbar) */
-export function Field({ label, style, multiline, ref, ...rest }: Omit<TextInputProps, 'ref'> & { label: string; ref?: React.Ref<TextInputInstance> }) {
+/** Eingabefeld mit Beschriftung; optional rechts neben der Beschriftung ein Link (z. B. „Vergessen?“),
+    darunter Hinweis (grau) bzw. Fehler (rot, Rand rot) – Rückmeldung direkt am Feld */
+export function Field({ label, style, multiline, ref, trailing, hint, error, ...rest }: Omit<TextInputProps, 'ref'> & {
+  label: string; ref?: React.Ref<TextInputInstance>; trailing?: React.ReactNode; hint?: string | null; error?: string | null
+}) {
   return (
     <View style={{ gap: 6 }}>
-      <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', letterSpacing: 0.6, fontSize: 12 }}>{label}</Text>
-      <TextInput ref={ref} accessibilityLabel={label} placeholderTextColor={color.muted} keyboardAppearance="dark"
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <Text variant="small" style={{ fontFamily: font.bodyBold, textTransform: 'uppercase', letterSpacing: 0.6, fontSize: 12 }}>{label}</Text>
+        {trailing}
+      </View>
+      <TextInput ref={ref} accessibilityLabel={label} accessibilityHint={error ?? hint ?? undefined} placeholderTextColor={color.muted} keyboardAppearance="dark"
         selectionColor={color.accent} multiline={multiline}
         style={[{
           minHeight: multiline ? 140 : 50, paddingHorizontal: 16, paddingVertical: multiline ? 14 : 0,
-          backgroundColor: color.card, borderWidth: 1, borderColor: color.line, borderRadius: radius.lg, borderCurve: 'continuous',
+          backgroundColor: color.card, borderWidth: 1, borderColor: error ? color.danger : color.line, borderRadius: radius.lg, borderCurve: 'continuous',
           color: color.text, fontFamily: font.body, fontSize: 17, textAlignVertical: multiline ? 'top' : 'center',
         }, style]}
         {...rest} />
+      {error ? <Text variant="small" style={{ color: color.danger }} accessibilityLiveRegion="polite">{error}</Text>
+        : hint ? <Text variant="small">{hint}</Text> : null}
     </View>
   )
 }

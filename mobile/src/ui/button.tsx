@@ -85,3 +85,14 @@ export function Button({ title, icon, variant = 'secondary', size = 'md', onPres
 export function ButtonRow({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
   return <View style={[{ flexDirection: 'row', gap: 10 }, style]}>{children}</View>
 }
+
+/** Text-Link in Volt für Wege im Fluss („Vergessen?“, „Datenschutzerklärung lesen“) – bewusst ohne
+    Fläche, damit er neben Feldern nicht wie ein weiterer Knopf wirkt; Tippfläche ≥ 44 pt über hitSlop */
+export function TextLink({ title, onPress, label }: { title: string; onPress: () => void; label?: string }) {
+  return (
+    <Pressable onPress={() => { platform().signals.haptic('tap'); onPress() }} accessibilityRole="link" accessibilityLabel={label ?? title}
+      hitSlop={{ top: 12, bottom: 12, left: 10, right: 10 }} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+      <Text style={{ fontFamily: font.bodySemi, fontSize: 15, lineHeight: 20, color: color.accent }}>{title}</Text>
+    </Pressable>
+  )
+}
