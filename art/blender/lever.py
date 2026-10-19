@@ -1036,6 +1036,40 @@ else:
             pose_key(keys[i])
             if CAM: frame_camera(view, mesh_np()[::5], fit, lens, dist=CAM["d"])
             render(os.path.join(OUT, f"{ARG}_k{i}.png"))
+    elif MODE == "gltf":                   # Echtzeit-3D: Figur + Geräte + Skelett-Animation (gleiche Bilder wie der Clip) als .glb
+        lv = int(os.environ.get("LEVER_GLTF_SUBDIV", 1))
+        for m in body.modifiers:
+            if m.type == "MULTIRES": m.levels = m.render_levels = min(lv, m.total_levels)
+        scene.render.fps = 24; scene.frame_start, scene.frame_end = 0, len(S_OF)
+        for pb in PB: pb.rotation_mode = "QUATERNION"
+        props = [o for o in scene.objects if o.type == "MESH" and o is not body and o not in eyes
+                 and not getattr(o, "is_shadow_catcher", False)]   # Geräte (auch mitbewegte)
+        for o in props: o.rotation_mode = "QUATERNION"
+        # Erst alle Bilder posieren und merken, dann schlüsseln: eine vorhandene Aktion würde beim Auswerten
+        # (Bildwechsel/Update) die frisch gesetzte Pose wieder überschreiben
+        frames = []
+        for s in S_OF + S_OF[:1]:                     # letztes Bild = erstes: nahtloser Loop
+            pose_key(key_at(keys, s))
+            frames.append((rig.location.copy(), rig.rotation_euler.copy(),
+                           {pb.name: pb.matrix_basis.decompose() for pb in PB},
+                           {o.name: o.matrix_world.decompose() for o in props}))
+        for o in props: o.parent = None
+        for i, (rl, rr, bones, objs) in enumerate(frames):
+            rig.location, rig.rotation_euler = rl, rr
+            rig.keyframe_insert("location", frame=i); rig.keyframe_insert("rotation_euler", frame=i)
+            for pb in PB:
+                pb.location, pb.rotation_quaternion, pb.scale = bones[pb.name]
+                for path in ("location", "rotation_quaternion", "scale"): pb.keyframe_insert(path, frame=i)
+            for o in props:
+                o.location, o.rotation_quaternion, o.scale = objs[o.name]
+                for path in ("location", "rotation_quaternion", "scale"): o.keyframe_insert(path, frame=i)
+        for o in list(scene.objects):          # Licht, Kamera und Schattenfänger-Boden baut der Viewer selbst
+            if o.type in ("LIGHT", "CAMERA") or getattr(o, "is_shadow_catcher", False): bpy.data.objects.remove(o, do_unlink=True)
+        path = os.path.join(OUT, f"{ARG}.glb")
+        bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_apply=True, export_animations=True,
+                                  export_force_sampling=True, export_frame_range=True, export_anim_single_armature=True,
+                                  export_yup=True)
+        print("GLTF", path, os.path.getsize(path), "Bytes")
     elif MODE == "clip":
         for i, s in enumerate(S_OF):
             pose_key(key_at(keys, s))
