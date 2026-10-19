@@ -2492,6 +2492,35 @@
     "shoulder": 2,
     "back": 2
    }
+  },
+  "tuck-pull-through": {
+   "equipment": [
+    [
+     "parallettes"
+    ],
+    [
+     "dip-bars"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 2,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1
+   }
+  },
+  "l-sit-pull-through": {
+   "equipment": [
+    [
+     "parallettes"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 4,
+   "stress": {
+    "wrist": 1,
+    "shoulder": 1
+   }
   }
  }
 }

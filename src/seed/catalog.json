@@ -487,7 +487,7 @@
     },
     {
       "id": "v-sit-prep",
-      "name": "L-Sit Pull-Throughs / V-Sit-Anbahnung",
+      "name": "V-Sit-Anbahnung",
       "unit": "seconds",
       "weighted": false,
       "perSide": false,
@@ -4532,6 +4532,60 @@
         "Waden",
         "Bauch"
       ]
+    },
+    {
+      "id": "tuck-pull-through",
+      "name": "Pull-Through angehockt",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Stütz auf Parallettes, Arme gestreckt, Schultern tief, Beine hinten gestreckt wie im Liegestütz.",
+        "execution": "Knie zur Brust ziehen und die Füße zwischen den Händen nach vorn durchschwingen bis in einen Tuck- bzw. L-Sit; kurz halten und auf demselben Weg zurück nach hinten in den Stütz. Eine Wiederholung = einmal vor und zurück.",
+        "faults": "Füße schleifen am Boden · Arme beugen · Schultern sacken zu den Ohren",
+        "scaling": "Leichter: höhere Parallettes, Füße dürfen kurz absetzen. Schwerer: Beine gestreckt (L-Sit Pull-Through)."
+      },
+      "media": {
+        "videoQuery": "tuck pull through parallettes"
+      },
+      "cues": [
+        "In die Griffe drücken, Schultern tief",
+        "Knie eng zur Brust",
+        "Kontrolliert durch, nicht reißen"
+      ],
+      "muscles": [
+        "Bauch",
+        "Hüftbeuger",
+        "Schultern",
+        "Trizeps"
+      ]
+    },
+    {
+      "id": "l-sit-pull-through",
+      "name": "L-Sit Pull-Through",
+      "unit": "reps",
+      "weighted": false,
+      "perSide": false,
+      "technique": {
+        "setup": "Im Stütz auf Parallettes, Arme gestreckt, Beine hinten gestreckt.",
+        "execution": "Die gestreckten Beine aus dem Stütz zwischen den Händen nach vorn ziehen, ohne den Boden zu berühren, und im L-Sit ankommen; kurz halten und mit gestreckten Beinen zurück nach hinten. Die Hüfte steigt dabei hoch über die Griffe.",
+        "faults": "Beine beugen sich beim Durchziehen · Schwung statt Kompression · Füße streifen den Boden",
+        "scaling": "Leichter: angehockt (Pull-Through angehockt). Schwerer: langsamer, am Boden statt auf Parallettes."
+      },
+      "media": {
+        "videoQuery": "l sit pull through"
+      },
+      "cues": [
+        "Hüfte hoch über die Griffe",
+        "Beine gestreckt und eng",
+        "Im L-Sit ankommen"
+      ],
+      "muscles": [
+        "Bauch",
+        "Hüftbeuger",
+        "Schultern",
+        "Trizeps"
+      ]
     }
   ],
   "progressions": [
@@ -6901,6 +6955,35 @@
             "unlockAt": 10,
             "min": 5,
             "max": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "pull-through",
+      "name": "Pull-Through",
+      "region": "core",
+      "steps": [
+        {
+          "exercise": "tuck-pull-through",
+          "target": {
+            "label": "3 × 5–10",
+            "sets": 3,
+            "restSec": 90,
+            "unlockAt": 10,
+            "min": 5,
+            "max": 10
+          }
+        },
+        {
+          "exercise": "l-sit-pull-through",
+          "target": {
+            "label": "3 × 3–8",
+            "sets": 3,
+            "restSec": 120,
+            "unlockAt": 8,
+            "min": 3,
+            "max": 8
           }
         }
       ]

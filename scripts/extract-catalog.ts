@@ -111,6 +111,9 @@ const PROGRESSION_IDS: Record<string, string> = {
 const WORKOUT_IDS = ["pull", "push", "legs"];
 // Namen in v2 nach Inhalt statt „Tag A/B/C“ (v1 behält seine Namen in index.html)
 const WORKOUT_NAMES = ["Pull", "Push", "Lower"];
+// Übungsnamen in v2 korrigiert (v1 behält seine): „L-Sit Pull-Throughs / V-Sit-Anbahnung“ beschrieb nur die
+// V-Sit-Anbahnung – der Pull-Through ist eine eigene Übung (catalog-extra: l-sit-pull-through)
+const EXERCISE_NAMES: Record<string, string> = { "v-sit-prep": "V-Sit-Anbahnung" };
 const BLOCKS: Record<string, Block> = { Skill: "skill", Kraft: "strength", Core: "core", "Zubehör": "accessory", Extra: "extra" };
 const WEEKDAYS: Weekday[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
@@ -149,7 +152,7 @@ const workouts: Workout[] = PLAN.map((day: any, di: number) => {
       if (!id) throw new Error(`Keine Übungs-ID für „${l.name}“`);
       positions[lvl ? `${di}-${si}@${lvl}` : `${di}-${si}`] = id;
       if (!exercises.has(id)) exercises.set(id, {
-        id, name: l.name, unit: l.opts?.t ? "seconds" : "reps", weighted: !!l.opts?.w,
+        id, name: EXERCISE_NAMES[id] ?? l.name, unit: l.opts?.t ? "seconds" : "reps", weighted: !!l.opts?.w,
         perSide: /Seite/.test(l.reps),
         technique: { setup: l.pos, execution: l.exec, faults: l.fehler, scaling: l.reg ?? "" },
         media: { sketch: l.svg, videoQuery: l.query },
