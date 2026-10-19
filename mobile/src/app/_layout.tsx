@@ -55,7 +55,9 @@ function Root({ fonts }: { fonts: boolean }) {
           {/* Training: Vollbild, nach unten wegwischbar (minimieren); Session-Leiste bleibt als Mini-Player */}
           {/* Kopf-Optionen fest hier, nicht erst in der Ansicht – sonst steht beim Start kurz der
               Routenname im undurchsichtigen Kopf und alles springt */}
-          <Stack.Screen name="training" options={{ presentation: 'fullScreenModal', gestureEnabled: true, gestureDirection: 'vertical',
+          {/* getId: immer dieselbe Instanz – der Link aus der Live Activity (lever://training, z. B. beim
+              Entsperren) und der Wiedereinstieg nach dem Start legten sonst ein zweites Training darüber */}
+          <Stack.Screen name="training" getId={() => 'training'} options={{ presentation: 'fullScreenModal', gestureEnabled: true, gestureDirection: 'vertical',
             headerShown: true, headerTransparent: true, headerShadowVisible: false, title: '', headerTitle: () => null, headerBackVisible: false }} />
           {/* Aufgaben-Sheets */}
           <Stack.Screen name="set" options={formSheet([0.62, 1])} />
