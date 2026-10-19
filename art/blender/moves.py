@@ -1175,7 +1175,11 @@ def jump_squat():
     tall = dict(rot=(4, 0, 0), pose={**up_arms, "neck": (0, -0.05, 1)}, place=("pin", "pelvis", (0, 0.02, 0.97)),
                 legs=squat_feet(0.16, (0, -0.55, -0.85), 0.11, 0.35))                            # auf den Zehenspitzen
     air = dict(tall, place=("pin", "pelvis", (0, 0.02, 1.2)), legs=squat_feet(0.36, (0, -0.45, -0.9), 0.11, 0.35))
-    return dict(keys=[down, tall, air], view=(-55, 8), timing="pp")
+    # Arme schwingen VOR dem Körper nach oben: von hinten-unten nach oben sind es über 180°, ohne Zwischenpose
+    # nähme die Mischung den kürzeren Weg seitlich (T-Pose) oder über den Rücken
+    swing = dict(rot=(18, 0, 0), pose={**sym({"arm.L": (0.1, -1, 0.1), "forearm.L": (0.08, -1, 0.2)}), "neck": (0, -0.05, 1)},
+                 place=("pin", "pelvis", (0, 0.13, 0.72)), legs=squat_feet())
+    return dict(keys=[down, swing, tall, air], view=(-55, 8), timing="pp")
 
 # ── Grundübungen (31, nach free-exercise-db) ────────────────────────────────
 def chin_up():
@@ -1420,11 +1424,11 @@ def broad_jump():
     return dict(keys=[load, push, air], view=(-15, 8))
 def tuck_jump():
     """Aus der Hocke hochspringen und die Knie zur Brust ziehen."""
-    ex = jump_squat(); down, tall, air = ex["keys"]
+    ex = jump_squat(); down, swing, tall, air = ex["keys"]
     tuck = dict(air, rot=(8, 0, 0), pose={**sym({"arm.L": (0.12, -0.85, 0.1), "forearm.L": (0.02, -0.85, 0.5)}), "neck": (0, -0.1, 1)},
                 place=("pin", "pelvis", (0, 0.02, 1.2)),
                 legs={"L": foot(0.13, 0.0, 0.88, (0, -0.6, -0.8), (0, -1, 0.8)), "R": foot(-0.13, 0.0, 0.88, (0, -0.6, -0.8), (0, -1, 0.8))})
-    return dict(ex, keys=[down, tall, tuck], view=(-20, 8), tempo=18)   # explosiv: Hocke → Streckung → Knie zur Brust in 1 s
+    return dict(ex, keys=[down, swing, tall, tuck], view=(-20, 8))
 def jumping_jack():
     """Im Sprung Beine grätschen und Arme seitlich über den Kopf (und zurück)."""
     def key(w, arm, z):
