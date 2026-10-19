@@ -181,8 +181,11 @@ def front_lever(): return front_lever_ex(STRAIGHT_LEGS)
 GERMAN = sym({**STRAIGHT_LEGS, "clavicle.L": (1, -0.1, 0.3), "neck": (0, -0.15, 1), "thigh.L": (0, -0.15, -1)})
 def skin_keys():                            # Hang → kopfüber gehockt → German Hang
     return [hang0(), com_hang(-180, TUCKED), com_hang(-330, GERMAN)]
-def german_hang(): return lever_ex(skin_keys()[1:])          # aus der Umkehr langsam hinein und zurück
-def skin_the_cat(): return dict(lever_ex(skin_keys(), timing="pp"), tempo=19)   # 330° Drehung in 2 s: Füße schneller
+# DEEP: Übungen, bei denen die tiefe Schulterstreckung selbst trainiert wird (Dips, German Hang, Skin the Cat,
+# Korean Dip) – Ausnahme von der Schulterregel (RULES["schulter"]), Grad zusätzlich zur Toleranz
+DEEP = dict(schulter=45)
+def german_hang(): return dict(lever_ex(skin_keys()[1:]), **DEEP)          # aus der Umkehr langsam hinein und zurück
+def skin_the_cat(): return dict(lever_ex(skin_keys(), timing="pp"), tempo=19, **DEEP)   # 330° Drehung in 2 s: Füße schneller
 def back_lever_ex(pose): return lever_ex([com_hang(-180, TUCKED), com_hang(-270, pose)])   # aus der Umkehr
 def tuck_back_lever(): return back_lever_ex(TUCKED)
 def adv_tuck_back_lever(): return back_lever_ex(ADV_TUCK)
@@ -233,7 +236,7 @@ def dip_keys(h, gap):
     return [hang_sz(top), bot]
 def dip():
     h, gap = 1.25, 0.25; pbars(h, gap)
-    return dict(keys=dip_keys(h, gap), view=(-38, 8))
+    return dict(keys=dip_keys(h, gap), view=(-38, 8), **DEEP)
 def dip_weighted():
     ex = dip(); belt_plate(); return ex
 def russian_dip():
@@ -248,7 +251,7 @@ def russian_dip():
     S = E + Vector((0, -0.75, 0.66)).normalized() * LEN["arm.L"]                  # Oberarm schräg nach vorn oben
     hands = {n: dict(v, hdir=(0, -1, -0.35), palm=(-0.3 if n == "L" else 0.3, 0, -1)) for n, v in hands.items()}   # Hand in Verlängerung des aufliegenden Unterarms
     fore = dict(rot=(-4, 0, 0), pose={**SUPPORT, **DIP_LEGS}, place=("hang", dict(sz=S.z - K.z, dy=S.y - K.y)), hands=hands)
-    return dict(keys=[top, bot, fore], view=(-38, 8))
+    return dict(keys=[top, bot, fore], view=(-38, 8), **DEEP)
 def straight_bar_dip():
     """Stütz auf der geraden Stange, Ellbogen gerade nach hinten (seitlich ausweichende Ellbogen knicken die Hand ab)."""
     H = 1.42; bar(H, half=0.6)
@@ -435,7 +438,8 @@ def side_plank_rotation():
                  place=("pin", "elbow.L", (0, 0, 0.06)))
         solve(k, 1, 55, 89, lambda k: min(pt("ankle.L").z, pt("ankle.R").z), 0.11)
         return k
-    return dict(keys=[key((-1, 0, 0.15), 0, 0), key((0.9, 0.3, 0.35), -30, 0)], view=(-90, 12))
+    # Der obere Arm fädelt VOR der Brust unter dem Körper durch (Arm nach vorn, −Y) – mit +Y schwang er über den Rücken
+    return dict(keys=[key((-1, 0, 0.15), 0, 0), key((0.8, -0.5, 0.2), -30, 0)], view=(-90, 12), arme="vorn")
 
 # ── Einarmiger Liegestütz ───────────────────────────────────────────────────
 def archer_push_up():
@@ -836,7 +840,7 @@ def ring_dip_ex(out):
     bot = dict(ring_sup_key(RSUP_H, rot=22, out=out, sz=0.1, dy=-0.07))
     bot["pose"] = {**bot["pose"], **sym({"clavicle.L": (1, 0.15, 0.05)}), **DIP_LEGS}
     top["pose"] = {**top["pose"], **DIP_LEGS}
-    return ring_ex([top, bot], H=RSUP_H, view=(-35, 8))
+    return ring_ex([top, bot], H=RSUP_H, view=(-35, 8), **DEEP)
 def ring_dip(): return ring_dip_ex(0.0)
 def rto_dip(): return ring_dip_ex(1.0)
 
@@ -1083,7 +1087,7 @@ def korean_dip_ex(timing):
     top = dict(rot=(8, 0, 0), pose={**SUPPORT, **sit}, place=("hang", dict(ext=STRAIGHT, up=True, dy=-0.16)), hands=hands((0.1, 1, -0.2)))
     bot = dict(rot=(30, 0, 0), pose={**SUPPORT, **sit, **sym({"clavicle.L": (1, 0.15, 0.1)})},
                place=("hang", dict(sz=0.05, dy=-0.3)), hands=hands((0.1, 1, 0.3)))
-    return dict(keys=[hang_sz(top), bot], view=(-82, 8), timing=timing)   # seitlich: Stange hinter dem Gesäß sichtbar
+    return dict(keys=[hang_sz(top), bot], view=(-82, 8), timing=timing, **DEEP)   # seitlich: Stange hinter dem Gesäß sichtbar
 def korean_dip(): return korean_dip_ex("pp")
 def korean_dip_negative(): return korean_dip_ex("fast")
 
@@ -1165,7 +1169,7 @@ def air_squat():
     return dict(keys=[up, down], view=(-55, 8))
 def jump_squat():
     """Tiefe Hocke mit Armen hinten → explosiv hoch, Füße verlassen den Boden, Arme schwingen nach oben."""
-    back = sym({"arm.L": (0.08, 0.6, -0.8), "forearm.L": (0.06, 0.55, -0.83)})
+    back = sym({"arm.L": (0.08, 0.3, -0.95), "forearm.L": (0.06, 0.28, -0.96)})   # Schwung holen: Arme schräg hinter der Hüfte, nicht waagerecht nach hinten
     up_arms = sym({"arm.L": (0.12, -0.25, 1), "forearm.L": (0.1, -0.2, 1)})
     down = dict(rot=(32, 0, 0), pose={**back, "neck": (0, -0.05, 1)}, place=("pin", "pelvis", (0, 0.24, 0.47)), legs=squat_feet())
     tall = dict(rot=(4, 0, 0), pose={**up_arms, "neck": (0, -0.05, 1)}, place=("pin", "pelvis", (0, 0.02, 0.97)),
@@ -1197,7 +1201,7 @@ def bench_dip():
     up = dict(rot=(-4, 0, 0), pose={}, place=("pin", "pelvis", (0, -0.02, h)), hands=hands, legs=feet)
     solve(up, set_place(2, 2), h - 0.2, h + 0.3, m_arm(), STRAIGHT)
     low = dict(up); solve(low, set_place(2, 2), 0.05, up["place"][2][2], lambda k: pt("shoulder").z, h + 0.1)
-    return dict(keys=[up, low], view=(-35, 12))
+    return dict(keys=[up, low], view=(-35, 12), **DEEP)
 def front_plank():
     """Unterarmstütz: Ellbogen unter den Schultern, Körper eine Linie von Kopf bis Ferse (Hüfte erst etwas hoch, dann gerade)."""
     arms = sym({"arm.L": (0.04, 0, -1), "forearm.L": (-0.1, -1, 0), "hand.L": (-0.1, -1, -0.05)})
@@ -1248,15 +1252,21 @@ def dead_bug():
                            **mirror_legs(leg_angles(18, 0, ankle=20))})
     return dict(keys=[base, ext], timing="slow", view=(-25, 18))
 def russian_twist():
-    """Sitz mit zurückgelehntem Oberkörper, Füße am Boden: Oberkörper dreht, beide Hände zum Boden neben die Hüfte."""
+    """Sitz mit zurückgelehntem Oberkörper, Füße am Boden: Oberkörper dreht, beide Hände zum Boden neben die Hüfte.
+    Die Drehung kommt aus dem Rumpf, die Arme bleiben vor der Brust (arme="vorn")."""
     feet = bent_feet(-0.5, 0.12)
     def key(s):                                       # s = +1: zur linken Seite (+X), −1: zur rechten
-        h = lambda dx, dy, dz: dict(k=(s * (0.32 + dx), -0.02 + dy, 0.1 + dz), palm=(0, 0, -1), flex=10,
-                                    hint=(s * 0.6, 0.5, 0.2))
-        return lying(-45, {"spine": (0, -0.12, 1), "chest": (0, -0.15, 1), "neck": (0, -0.55, 1), "head": (0, -0.6, 1), **legs(70, 95)},
-                     legs=feet, twist={"spine": s * 18, "chest": s * 28}, hands={"L": h(0, 0, 0), "R": h(-0.1, -0.04, 0.14)} if s > 0
-                     else {"R": h(0, 0, 0), "L": h(-0.1, -0.04, 0.14)})                # gegenüberliegende Hand liegt darüber
-    return dict(keys=[key(1), key(-1)], view=(-45, 18), tempo=20)   # Arme pendeln zweimal quer über den Körper in 2 s
+        k = lying(-45, {"spine": (0, -0.12, 1), "chest": (0, -0.15, 1), "neck": (0, -0.55, 1), "head": (0, -0.6, 1), **legs(45, 0),
+                      **sym({"arm.L": (0.1, -1, 0.2), "forearm.L": (0.1, -1, 0.2)})},
+                  legs=feet, twist={"spine": s * 20, "chest": s * 34})   # Arme/Beine nur zum Aufsetzen nach vorn (sonst sitzt das Gesäß in der Luft)
+        pose_key(k, limbs=False); H = pt("hip.L" if s >= 0 else "hip.R")   # Ziel an der gedrehten Figur: neben und vor der Hüfte
+        h = lambda n, dx, dy, dz: dict(k=(H.x + s * (0.2 + dx), H.y - 0.12 + dy, 0.16 + dz), palm=(0, 0, -1), flex=10,
+                                       hint=(0.6 if n == "L" else -0.6, 0.5, 0.2))   # Ellbogen bleibt auf seiner Seite (kein Umklappen)
+        a, c = ("L", "R") if s > 0 else ("R", "L")
+        k["hands"] = {a: h(a, 0, 0, 0), c: h(c, -0.08, -0.04, 0.12)}       # gegenüberliegende Hand liegt darüber
+        if s == 0: k["hands"] = symh(dict(k=(0.06, -0.3, 0.4), palm=(0, 0, -1), flex=10, hint=(0.6, 0.5, 0.2)))   # Mitte: Hände vor dem Bauch
+        return k
+    return dict(keys=[key(1), key(0), key(-1)], view=(-60, 20), arme="vorn")
 def flutter_kick():
     """Rückenlage, gestreckte Beine knapp über dem Boden abwechselnd klein auf und ab."""
     arms = {"wpose": sym({"arm.L": (0.2, -0.98, 0.0), "forearm.L": (0.18, -1, 0.0), "hand.L": (0.18, -1, 0.0)})}
@@ -1414,7 +1424,7 @@ def tuck_jump():
     tuck = dict(air, rot=(8, 0, 0), pose={**sym({"arm.L": (0.12, -0.85, 0.1), "forearm.L": (0.02, -0.85, 0.5)}), "neck": (0, -0.1, 1)},
                 place=("pin", "pelvis", (0, 0.02, 1.2)),
                 legs={"L": foot(0.13, 0.0, 0.88, (0, -0.6, -0.8), (0, -1, 0.8)), "R": foot(-0.13, 0.0, 0.88, (0, -0.6, -0.8), (0, -1, 0.8))})
-    return dict(ex, keys=[down, tall, tuck], view=(-20, 8))
+    return dict(ex, keys=[down, tall, tuck], view=(-20, 8), tempo=18)   # explosiv: Hocke → Streckung → Knie zur Brust in 1 s
 def jumping_jack():
     """Im Sprung Beine grätschen und Arme seitlich über den Kopf (und zurück)."""
     def key(w, arm, z):
@@ -1431,6 +1441,50 @@ def high_knees():
         return dict(rot=(4, 0, 0), pose=arms, place=("pin", "pelvis", (0, 0.04, 0.9)), legs={"L": up, "R": sup} if s > 0 else {"L": sup, "R": up})
     return dict(keys=[key(1), key(-1)], view=(-30, 8))
 
+# ── Ab-Roller ───────────────────────────────────────────────────────────────
+AB_R = 0.09                                         # Radius des Rads, Griffe auf Achshöhe
+def ab_wheel():
+    """Ab-Roller: Rad mit durchgehender Achse und zwei Griffen; rollt mit den Händen (Mitte der Knöchel) mit."""
+    wheel = cyl((-0.035, 0, AB_R), (0.035, 0, AB_R), AB_R, RUBBER)
+    hub = cyl((-0.045, 0, AB_R), (0.045, 0, AB_R), 0.03, STEEL)
+    grips = [cyl((s * 0.07, 0, AB_R), (s * 0.18, 0, AB_R), 0.017, RUBBER, verts=24) for s in (1, -1)]
+    axle = cyl((-0.07, 0, AB_R), (0.07, 0, AB_R), 0.011, STEEL, verts=16)
+    parts = [wheel, hub, axle] + grips
+    def upd():
+        y = (pt("knuckle.L").y + pt("knuckle.R").y) / 2 + 0.024
+        for o in parts: o.location.y = y
+    DYN.append(upd)
+def ab_hands(y):
+    """Obergriff an den Griffen: Knöchel vorn-oben auf dem Griff, Handfläche zur Achse."""
+    return symh(dict(k=(0.125, y - 0.024, AB_R + 0.022), palm=(0, 0.8, -0.6), curl=(0, 0.5, -1), bar=("x", 1), hint=(0.5, 0.5, 0.0)))
+AB_REACH = 0.97                                     # Arme fast gestreckt (Anteil an Arm + Hand)
+def ab_wheel_y(k):
+    """Wo das Rad steht, damit die Arme aus der Schulterhöhe des Schlüssels gerade bis zum Griff reichen."""
+    pose_key(k, limbs=False); S = pt("shoulder"); L = AB_REACH * (REACH + LEN["hand.L"])
+    dz = S.z - (AB_R + 0.022); return S.y - math.sqrt(max(L * L - dz * dz, 0.0))
+def ab_wheel_rollout():
+    """Kniend: Hüfte etwas zurück, Arme senkrecht → ausrollen, bis Oberschenkel, Rumpf und Arme fast eine Linie sind."""
+    box((0, 0.2, 0.025), (0.5, 0.75, 0.05), coll="polster"); ab_wheel()
+    shins = sym({"shin.L": (0, 1, -0.02), "foot.L": (0, 1, -0.45)})
+    hz = AB_R + 0.022; L = AB_REACH * (REACH + LEN["hand.L"])
+    def key(lean, thigh):
+        return dict(rot=(lean, 0, 0), pose={"neck": (0, -0.2, 1), "head": (0, -0.3, 1), "spine": (0, -0.08, 1)},
+                    wpose={**shins, **sym({"thigh.L": thigh})}, place=("pin", "knee", (0, 0, 0.12)))
+    k0 = key(50, (0.02, -0.25, -1)); solve(k0, 0, 20, 85, lambda k: pt("shoulder").z, hz + L)   # Arme senkrecht unter den Schultern
+    k1 = key(71, (0.02, 0.88, -0.48))                                                         # fast gestreckt, Becken eingerollt
+    for k in (k0, k1): k["hands"] = ab_hands(ab_wheel_y(k))
+    return dict(keys=[k0, k1], timing="slow", view=(-15, 10))
+def ab_wheel_rollout_standing():
+    """Stehend mit gestreckten Beinen: aus der tiefen Vorbeuge ausrollen, bis der Körper fast parallel zum Boden ist."""
+    ab_wheel()
+    fold = dict(rot=(120, 0, 0), pose={"neck": (0, -0.2, 1)}, place=("pin", "pelvis", (0, 0.12, 0.8)),
+                legs={"L": foot(0.12, 0), "R": foot(-0.12, 0)})
+    fold["hands"] = ab_hands(-0.32); solve(fold, 0, 95, 150, m_arm(), 0.97)
+    pose_key(fold); T = pt("toe")
+    ext = dict(rot=(76, 0, 0), pose={**PUSH, "spine": (0, -0.05, 1)}, place=("pin", "toe", (0, T.y, 0.065)))   # auf den Zehen (etwas höher: beim Abrollen sinkt der Fuß sonst ein)
+    ext["hands"] = ab_hands(ab_wheel_y(ext))
+    return dict(keys=[fold, as_targets(ext)], view=(-15, 10))
+
 NEW_EXERCISES = {
     "ring-support-hold": ring_support_hold, "rto-support-hold": rto_support_hold, "ring-dip": ring_dip, "rto-dip": rto_dip,
     "tuck-l-sit": tuck_l_sit, "one-leg-l-sit": one_leg_l_sit, "wall-walk": wall_walk, "wall-shoulder-tap": wall_shoulder_tap,
@@ -1446,6 +1500,7 @@ NEW_EXERCISES = {
     "reverse-nordic": reverse_nordic, "one-arm-hang": one_arm_hang, "table-row": table_row,
     "korean-dip-negative": korean_dip_negative, "korean-dip": korean_dip, "tuck-side-lever": tuck_side_lever, "side-lever": side_lever,
     "air-squat": air_squat, "jump-squat": jump_squat,
+    "ab-wheel-rollout": ab_wheel_rollout, "ab-wheel-rollout-standing": ab_wheel_rollout_standing,
     "chin-up": chin_up, "wide-push-up": wide_push_up, "diamond-push-up": diamond_push_up, "clap-push-up": clap_push_up, "bench-dip": bench_dip, "front-plank": front_plank, "crunch": crunch, "reverse-crunch": reverse_crunch, "sit-up": sit_up, "v-up": v_up, "dead-bug": dead_bug, "russian-twist": russian_twist, "flutter-kick": flutter_kick, "superman": superman, "reverse-lunge": reverse_lunge, "walking-lunge": walking_lunge, "split-jump": split_jump, "glute-bridge": glute_bridge, "wall-sit": wall_sit, "step-up": step_up, "calf-raise": calf_raise, "squat-thrust": squat_thrust, "burpee": burpee, "mountain-climber": mountain_climber, "jumping-jack": jumping_jack, "high-knees": high_knees, "bear-crawl": bear_crawl, "inchworm": inchworm, "skater-jump": skater_jump, "broad-jump": broad_jump, "tuck-jump": tuck_jump,
 }
 

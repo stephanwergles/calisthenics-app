@@ -232,7 +232,7 @@ STRAIGHT = 0.985
 OVER = [0.0]          # größte Überdehnung eines IK-Ziels (Hand/Fuß erreicht ihr Ziel nicht) im Bild
 # gelenk: Grad über der Gelenkgrenze · sprung: Grad je Bild (Sprung und Kippen) · griff, selbst, eindringen, auflage: m
 # symmetrie: Grad links ↔ rechts
-RULES = dict(gelenk=25, sprung=15, griff=0.03, selbst=0.05, symmetrie=8, eindringen=0.03, auflage=0.045)
+RULES = dict(gelenk=25, sprung=15, griff=0.03, selbst=0.05, symmetrie=8, eindringen=0.03, auflage=0.045, schulter=15)
 RAW = []              # Gelenkverstöße der Rohpose im zuletzt gesetzten Bild (vor dem Begrenzen)
 HINGE_OUT = {}        # Scharnierachsen (Körperraum) der zuletzt gesetzten Pose, je Unterarm/Unterschenkel
 
@@ -482,6 +482,19 @@ def symmetry_gap():
             d = abs(aL[k] - aR[k]); d = min(d, 360 - d)
             if d > g[0]: g = (d, f"{base}:{k}")
     return g
+# Schulter: wie weit der Oberarm hinter die Brustebene geht (Streckung bzw. horizontale Abduktion nach hinten).
+# Grenze hängt von der Armhöhe ab – hängend ~55°, waagerecht ~35°, über Kopf ~15° (Rumpf misst, nicht die Welt:
+# Drehung soll aus dem Rumpf kommen, nicht aus einer überstreckten Schulter). Ausnahme je Übung: EX["schulter"]
+# (zusätzliche Grad, begründet), strenger: EX["arme"] = "vorn" (Grenze 0°, z. B. Russian Twist, Side Plank Rotation).
+SHOULDER_BEHIND = ((-1.0, 55.0), (0.0, 35.0), (1.0, 15.0))
+def shoulder_behind(n):
+    """(Grad hinter der Brustebene, erlaubte Grad) für den Oberarm der Seite n."""
+    pc = PB["chest"]; Rc = rig.matrix_world.to_3x3() @ (pc.matrix.to_3x3() @ pc.bone.matrix_local.to_3x3().inverted())
+    front, up = (Rc @ Vector((0, -1, 0))).normalized(), (Rc @ Vector((0, 0, 1))).normalized()
+    a = (pt(f"elbow.{n}") - pt(f"shoulder.{n}")).normalized()
+    behind = math.degrees(math.asin(max(-1.0, min(1.0, -a.dot(front)))))
+    u = max(-1.0, min(1.0, a.dot(up))); (u0, l0), (u1, l1) = (SHOULDER_BEHIND[0], SHOULDER_BEHIND[1]) if u < 0 else SHOULDER_BEHIND[1:]
+    return behind, l0 + (l1 - l0) * (u - u0) / (u1 - u0)
 def joint_violations():
     out = []
     for pb in PB:
@@ -943,7 +956,7 @@ else:
         cam.location, target.location = Vector(c[:3]), Vector(c[3:])
     if MODE == "check":                    # ohne Rendern: Durchdringungen, Bodenkontakt, Reichweite pro Bild
         worst = {}; prev = {}; gelenk = {}; griff = [0.0, 0]; steps = {}
-        selbst = [0.0, 0, ""]; symm = [0.0, 0, ""]
+        selbst = [0.0, 0, ""]; symm = [0.0, 0, ""]; schulter = [-99.0, 0, ""]
         # Symmetrie nur prüfen, wenn die Schlüsselposen selbst beidseitig gleich sind (Archer, Pistol … sind es nicht)
         key_sym = 0.0
         for kk_ in keys:
@@ -967,6 +980,10 @@ else:
             if ov[0] > selbst[0]: selbst[:] = [ov[0], i, ov[1]]
             sg = symmetry_gap()
             if sg[0] > symm[0]: symm[:] = [sg[0], i, sg[1]]
+            for n in "LR":                   # Oberarm hinter dem Rumpf (Schulter überstreckt)
+                bh, lim_ = shoulder_behind(n)
+                if EX.get("arme") == "vorn": lim_ = 0.0   # Rotationsübungen: Arme bleiben vor der Brust, die Drehung macht der Rumpf
+                if bh - lim_ > schulter[0]: schulter[:] = [bh - lim_, i, f"arm.{n} {bh:.0f}° hinter (Grenze {lim_:.0f}°)"]
             for over, b, k, v in RAW:
                 key = f"{b}:{k}"
                 if over > gelenk.get(key, (0,))[0]: gelenk[key] = (over, i, v)
@@ -999,6 +1016,9 @@ else:
         tmax = max(twists.items(), key=lambda x: x[1][0], default=(None, (0, 0)))
         if tmax[1][0] > EX.get("tempo", RULES["sprung"]): fails.append(f"Kippen {tmax[0]} {tmax[1][0]:.0f}° je Bild @{tmax[1][1]}")
         if griff[0] > RULES["griff"]: fails.append(f"Griff {griff[0] * 100:.1f} cm daneben")
+        print("SCHULTER", ARG, f"{schulter[0]:+.0f}°@{schulter[1]} {schulter[2]}")      # Abstand zur Grenze (negativ = Reserve)
+        if schulter[0] > RULES["schulter"] + EX.get("schulter", 0):   # schulter: begründete Ausnahme (Skin the Cat, Back Lever …)
+            fails.append(f"Schulter +{schulter[0]:.0f}° @{schulter[1]} ({schulter[2]})")
         for kk, (v, i_, w_) in worst.items():   # Hände/Füße auf Auflage: Weichteile geben nach, etwas mehr erlaubt
             tol = RULES["auflage"] if w_.split(".")[0] in ("hand", "fingers", "foot") else RULES["eindringen"]
             if kk != "reichweite" and v < -tol: fails.append(f"{kk} {v * 100:.1f} cm ({w_})")
