@@ -1217,3 +1217,25 @@ export function workoutFocus(ix: Index, w: Workout): string {
   const pids = [...ix.progressions.values()].filter(p => p.steps.some(s => ex.has(s.exercise))).map(p => ({ progression: p.id }))
   return pids.length ? focusOf(ix, pids) : w.name
 }
+
+/** Suche über alle Leitern: Treffer je Stufe (Übungsname) bzw. Leitername – ohne Groß/Klein und
+    Umlaute; aktuelle Stufe zuerst, höchstens 30 */
+export function searchLadders(ix: Index, user: UserState, query: string): { pid: ProgressionId; exercise: Exercise; index: number; total: number; current: boolean }[] {
+  const norm = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss')
+  const q = norm(query.trim())
+  if (!q) return []
+  const out: { pid: ProgressionId; exercise: Exercise; index: number; total: number; current: boolean; score: number }[] = []
+  for (const p of ix.progressions.values()) {
+    const cur = currentStep(ix, user, p.id).exercise.id
+    const ladderHit = norm(progressionName(ix, p.id)).includes(q)
+    p.steps.forEach((st, index) => {
+      const ex = ix.exercises.get(st.exercise)
+      if (!ex) return
+      const hit = norm(ex.name).includes(q)
+      if (!hit && !(ladderHit && ex.id === cur)) return
+      out.push({ pid: p.id, exercise: ex, index, total: p.steps.length, current: ex.id === cur, score: (norm(ex.name).startsWith(q) ? 0 : 1) + (ex.id === cur ? 0 : 0.5) })
+    })
+  }
+  return out.sort((a, b) => a.score - b.score || a.exercise.name.localeCompare(b.exercise.name)).slice(0, 30)
+    .map(({ score: _s, ...r }) => r)
+}

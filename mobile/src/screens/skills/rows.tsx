@@ -106,9 +106,9 @@ export function GoalCard({ id, name, share, stage, current, onRemove }: {
 export const openLadder = (pid: string, step?: string) => { tapHaptic(); router.push({ pathname: '/progression/[pid]', params: step ? { pid, step } : { pid } }) }
 
 /** Zeile einer Progression (Grundlagen, Unterstützung): öffnet die Leiter als Modal; optional mit Standbild */
-export function ProgressionRow({ pid, name, sub, exercise }: { pid: string; name: string; sub: string; exercise?: Exercise }) {
+export function ProgressionRow({ pid, name, sub, exercise, step }: { pid: string; name: string; sub: string; exercise?: Exercise; step?: string }) {
   return (
-    <Tap accessibilityLabel={`${name}, ${sub}`} onPress={() => openLadder(pid)}
+    <Tap accessibilityLabel={`${name}, ${sub}`} onPress={() => openLadder(pid, step)}
       style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: exercise ? 10 : 13, paddingLeft: exercise ? 10 : 16, paddingRight: 14, minHeight: 58 }}>
       {exercise && <ExerciseStill exercise={exercise} size={22} style={{ width: 56, height: 56, borderRadius: 12, borderCurve: 'continuous' }} />}
       <View style={{ flex: 1, gap: 3 }}>

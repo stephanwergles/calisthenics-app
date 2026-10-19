@@ -725,3 +725,12 @@ test('Löschen/Verwerfen einer zweiten Einheit am Tag trifft genau diese, nicht 
   assert.equal(L.deletedSession(second).id, '2026-10-15-cindy-2')
   assert.equal(L.discardedSession(second, undefined)?.id, '2026-10-15-cindy-2')
 })
+
+test('Leiter-Suche: findet Übungen auch in Ergänzungs-Leitern, ohne Umlaute/Groß-Klein', () => {
+  const ix = L.indexCatalog(catalog)
+  const user = { current: {}, paused: [] } as unknown as Parameters<typeof L.searchLadders>[1]
+  const hits = L.searchLadders(ix, user, 'bulgarian')
+  assert.ok(hits.some(h => /bulgarian/i.test(h.exercise.name)), 'Bulgarian Split Squat gefunden')
+  assert.ok(L.searchLadders(ix, user, 'KLIMMZUGE').length > 0 || L.searchLadders(ix, user, 'klimmzüge').length > 0)
+  assert.deepEqual(L.searchLadders(ix, user, '   '), [])
+})

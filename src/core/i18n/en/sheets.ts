@@ -37,6 +37,7 @@ export const sheets: Shape<typeof de> = {
     skip: 'Skip today',
     resume: 'Resume',
     pause: 'Pause indefinitely',
+    ladder: 'See all stages',
     next: 'Next: {name}',
     prev: 'Back: {name}',
   },

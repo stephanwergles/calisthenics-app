@@ -78,10 +78,19 @@ export function CloseIfRoot() {
 
 /** Kopf der Tab-Seiten: großer iOS-Titel (Barlow Condensed), der beim Scrollen klein und sticky
     wird, rechts der Profil-Button. Die ScrollView muss das erste Element der Seite sein. */
-export function TabHeader({ title, syncError }: { title: string; syncError?: boolean }) {
+export function TabHeader({ title, syncError, search }: {
+  title: string; syncError?: boolean
+  /** native Suchleiste unter dem großen Titel */
+  search?: { placeholder: string; onChange: (q: string) => void }
+}) {
   return (
     <>
       <Stack.Screen options={{
+        ...(search ? { headerSearchBarOptions: {
+          placeholder: search.placeholder, hideWhenScrolling: false, autoCapitalize: 'none' as const,
+          onChangeText: (e: { nativeEvent: { text: string } }) => search.onChange(e.nativeEvent.text),
+          onCancelButtonPress: () => search.onChange(''),
+        } } : {}),
         title: title.toUpperCase(),
         headerTitle: title.toUpperCase(),
         headerLargeTitleEnabled: true,

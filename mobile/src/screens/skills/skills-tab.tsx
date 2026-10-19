@@ -30,10 +30,20 @@ export function SkillsTab() {
   const basics = tree.filter(p => !inSkill.has(p.pid))
   const started = cards.filter(c => c.started).length
   const syncError = !!t.sync.account && t.sync.phase === 'error'
+  // Suche über alle Leitern und ihre Stufen – auch Übungen, die nur als Ergänzung in Skills stecken
+  const [query, setQuery] = useState('')
+  const hits = useMemo(() => L.searchLadders(t.ix, t.state, query), [t.ix, t.state, query])
 
   return (
     <>
-      <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 40, gap: space.md }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="automatic" keyboardDismissMode="on-drag"
+        contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 40, gap: space.md }}>
+        {query.trim() ? (
+          hits.length
+            ? <Group>{hits.map(h => <ProgressionRow key={`${h.pid}-${h.exercise.id}`} pid={h.pid} step={h.exercise.id} exercise={h.exercise}
+                name={h.exercise.name} sub={`${L.progressionName(t.ix, h.pid)} · ${tr('logic.stage', { i: h.index + 1, n: h.total })}${h.current ? tr('skills.searchCurrent') : ''}`} />)}</Group>
+            : <Text variant="muted">{tr('skills.searchEmpty', { q: query.trim() })}</Text>
+        ) : <>
         <View style={{ gap: 6, marginBottom: space.sm }}>
           <Text variant="small" style={{ fontFamily: font.bodySemi, textTransform: 'uppercase', letterSpacing: 1.6 }}>{tr('skills.count', { n: cards.length, started })}</Text>
         </View>
@@ -56,8 +66,9 @@ export function SkillsTab() {
             </Group>
           </>
         )}
+        </>}
       </ScrollView>
-      <TabHeader title={tr('skills.title')} syncError={syncError} />
+      <TabHeader title={tr('skills.title')} syncError={syncError} search={{ placeholder: tr('skills.searchPlaceholder'), onChange: setQuery }} />
     </>
   )
 }

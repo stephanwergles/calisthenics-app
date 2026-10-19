@@ -43,6 +43,9 @@ export default function ExerciseRoute() {
           onPress={() => void WebBrowser.openBrowserAsync(`https://www.youtube.com/results?search_query=${encodeURIComponent(video)}`)} />
       )}
       <View style={{ gap: 10, marginTop: 8 }}>
+        {/* alle Stufen dieser Leiter (auch wenn sie nur als Ergänzung in einem Skill steckt) */}
+        {step.total > 1 && <Button icon="list" block title={tr('sheets.exercise.ladder')}
+          onPress={() => router.push({ pathname: '/progression/[pid]', params: { pid: slot.pid, step: ex.id } })} />}
         {step.next && <Button variant="outline" icon="up" block title={tr('sheets.exercise.next', { name: step.next.name })} onPress={done(() => setStep(step.next!.id))} />}
         {step.prev && <Button icon="lower" block title={tr('sheets.exercise.prev', { name: step.prev.name })} onPress={done(() => setStep(step.prev!.id))} />}
         {slot.state === 'skipped'

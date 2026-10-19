@@ -34,6 +34,7 @@ export const sheets = {
     skip: 'Heute überspringen',
     resume: 'Wieder aufnehmen',
     pause: 'Dauerhaft pausieren',
+    ladder: 'Alle Stufen ansehen',
     next: 'Weiter: {name}',
     prev: 'Zurück: {name}',
   },
