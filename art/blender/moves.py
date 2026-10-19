@@ -1485,6 +1485,33 @@ def ab_wheel_rollout_standing():
     ext["hands"] = ab_hands(ab_wheel_y(ext))
     return dict(keys=[fold, as_targets(ext)], view=(-15, 10))
 
+# ── Pull-Through auf Parallettes ────────────────────────────────────────────
+def pull_through(straight):
+    """Stütz mit Füßen hinten am Boden → Hüfte hoch → Beine zwischen den Händen nach vorn → Tuck-Sit bzw. L-Sit.
+    Alle Schlüssel an der Schulter verankert (sie bleibt über den Händen), Beine über Gelenkwinkel."""
+    h = 0.3 if straight else 0.17                         # gestreckt: hohe Parallettes, sonst passen die Beine nicht durch
+    parallettes(0.25, 0.0, h); hands = pbar_grip(h, 0.25, (0.2, 1, 0))
+    def at_shoulder(k): pose_key(k, limbs=False); k["place"] = ("pin", "shoulder", tuple(pt("shoulder"))); return k
+    pl = dict(rot=(72, 0, 0), pose=PUSH, place=("pin", "toe", (0, 0.9, 0.035)), hands=hands)
+    for _ in range(3):                                    # Füße hinten am Boden, Schultern über den Händen, Arme gestreckt
+        pose_key(pl, limbs=False); T = pl["place"][2]
+        pl["place"] = ("pin", "toe", (0, T[1] - pt("shoulder").y, 0.035)); solve(pl, 0, 35, 89, m_arm(), STRAIGHT)
+    pl = at_shoulder(pl)
+    end = dict(rot=(0, 0, 0), pose=LSIT if straight else {**LSIT, **TUCK_SIT}, place=("pin", "hip", (0, 0.03, 0.4)), hands=hands)
+    solve(end, set_place(2, 2), 0.2, 1.3, m_arm(), STRAIGHT); end = at_shoulder(end)
+    S = (0, -0.06, h + 0.1 + 0.97 * REACH)                # Schultern etwas vor den Händen, Arme gestreckt
+    lean = {"spine": (0, -0.3, 1), "chest": (0, -0.15, 1), "neck": (0, -0.3, 1), "head": (0, -0.45, 1)}
+    # Erst die Hüfte hoch (Füße lösen sich hinten vom Boden), dann die Beine durchziehen – sonst schwingen sie durch den Boden
+    if straight:
+        up = dict(rot=(88, 0, 0), pose={**lean, **legs(50, 0, ankle=40)}, place=("pin", "shoulder", S), hands=hands)
+        comp = dict(rot=(100, 0, 0), pose={**lean, **legs(148, 0, ankle=40)}, place=("pin", "shoulder", S), hands=hands)
+    else:
+        up = dict(rot=(78, 0, 0), pose={**lean, **legs(60, 95, ankle=40)}, place=("pin", "shoulder", S), hands=hands)
+        comp = dict(rot=(85, 0, 0), pose={**lean, **legs(135, 150, ankle=40)}, place=("pin", "shoulder", S), hands=hands)
+    return dict(keys=[pl, up, comp, end], timing=(0.4, 0.2, 0.4), view=(-20, 10))
+def tuck_pull_through(): return pull_through(False)
+def l_sit_pull_through(): return pull_through(True)
+
 NEW_EXERCISES = {
     "ring-support-hold": ring_support_hold, "rto-support-hold": rto_support_hold, "ring-dip": ring_dip, "rto-dip": rto_dip,
     "tuck-l-sit": tuck_l_sit, "one-leg-l-sit": one_leg_l_sit, "wall-walk": wall_walk, "wall-shoulder-tap": wall_shoulder_tap,
@@ -1500,6 +1527,7 @@ NEW_EXERCISES = {
     "reverse-nordic": reverse_nordic, "one-arm-hang": one_arm_hang, "table-row": table_row,
     "korean-dip-negative": korean_dip_negative, "korean-dip": korean_dip, "tuck-side-lever": tuck_side_lever, "side-lever": side_lever,
     "air-squat": air_squat, "jump-squat": jump_squat,
+    "tuck-pull-through": tuck_pull_through, "l-sit-pull-through": l_sit_pull_through,
     "ab-wheel-rollout": ab_wheel_rollout, "ab-wheel-rollout-standing": ab_wheel_rollout_standing,
     "chin-up": chin_up, "wide-push-up": wide_push_up, "diamond-push-up": diamond_push_up, "clap-push-up": clap_push_up, "bench-dip": bench_dip, "front-plank": front_plank, "crunch": crunch, "reverse-crunch": reverse_crunch, "sit-up": sit_up, "v-up": v_up, "dead-bug": dead_bug, "russian-twist": russian_twist, "flutter-kick": flutter_kick, "superman": superman, "reverse-lunge": reverse_lunge, "walking-lunge": walking_lunge, "split-jump": split_jump, "glute-bridge": glute_bridge, "wall-sit": wall_sit, "step-up": step_up, "calf-raise": calf_raise, "squat-thrust": squat_thrust, "burpee": burpee, "mountain-climber": mountain_climber, "jumping-jack": jumping_jack, "high-knees": high_knees, "bear-crawl": bear_crawl, "inchworm": inchworm, "skater-jump": skater_jump, "broad-jump": broad_jump, "tuck-jump": tuck_jump,
 }
