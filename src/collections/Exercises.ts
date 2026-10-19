@@ -5,7 +5,7 @@ import { slugId } from './fields'
 const EQUIPMENT = [
   { label: 'Stange', value: 'bar' }, { label: 'Ringe', value: 'rings' }, { label: 'Parallettes', value: 'parallettes' },
   { label: 'Barren', value: 'dip-bars' }, { label: 'Band', value: 'band' }, { label: 'Box', value: 'box' },
-  { label: 'Zusatzgewicht', value: 'weight' }, { label: 'Senkrechte Stange / Sprossenwand', value: 'pole' },
+  { label: 'Zusatzgewicht', value: 'weight' }, { label: 'Senkrechte Stange / Sprossenwand', value: 'pole' }, { label: 'Ab-Roller', value: 'ab-wheel' },
   { label: 'Boden', value: 'floor' }, { label: 'Wand', value: 'wall' },
 ]
 const PATTERNS = [

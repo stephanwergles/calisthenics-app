@@ -2466,6 +2466,32 @@
     "knee": 2,
     "ankle": 2
    }
+  },
+  "ab-wheel-rollout": {
+   "equipment": [
+    [
+     "ab-wheel"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 3,
+   "stress": {
+    "shoulder": 1,
+    "back": 1
+   }
+  },
+  "ab-wheel-rollout-standing": {
+   "equipment": [
+    [
+     "ab-wheel"
+    ]
+   ],
+   "pattern": "core",
+   "difficulty": 5,
+   "stress": {
+    "shoulder": 2,
+    "back": 2
+   }
   }
  }
 }

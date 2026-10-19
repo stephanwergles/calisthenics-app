@@ -5,7 +5,7 @@ export const logic = {
   region: { pull: 'Ziehen', push: 'Drücken', core: 'Rumpf', legs: 'Beine', other: 'Weitere' },
   regionDetail: { pull: 'Rücken, Bizeps, Griff', push: 'Brust, Schultern, Trizeps', core: 'Bauch, Hüftbeuger', legs: 'Oberschenkel, Gesäß, Waden', other: '' },
   block: { skill: 'Skill', strength: 'Kraft', core: 'Core', accessory: 'Zubehör', extra: 'Extra' },
-  equipment: { bar: 'Stange', rings: 'Ringe', parallettes: 'Parallettes', 'dip-bars': 'Barren', band: 'Band', box: 'Box', weight: 'Zusatzgewicht', pole: 'Senkrechte Stange' },
+  equipment: { bar: 'Stange', rings: 'Ringe', parallettes: 'Parallettes', 'dip-bars': 'Barren', band: 'Band', box: 'Box', weight: 'Zusatzgewicht', pole: 'Senkrechte Stange', 'ab-wheel': 'Ab-Roller' },
   phase: { pause: 'Pause / krank', vacation: 'Urlaub', injury: 'Verletzung', equipment: 'Equipment fehlt' },
   muscle: { chest: 'Brust', upperBack: 'Oberer Rücken & Lat', arms: 'Oberarm (Bizeps, Trizeps)', abs: 'Bauch', thigh: 'Oberschenkel & Gesäß', calf: 'Wade' },
   tendon: { shoulder: 'Schulter', elbow: 'Ellenbogen', wrist: 'Hand & Handgelenk', back: 'Unterer Rücken', hip: 'Hüfte', knee: 'Knie', ankle: 'Fuß & Sprunggelenk' },

@@ -26,9 +26,12 @@ export function PlanScreen() {
   const w = t.ix.workouts.get(t.workout)!
   const today = t.todaySession
 
-  // aus dem Training: Fokus setzen und zurück; sonst Liste schließen und Training öffnen
+  // aus dem Training: Fokus setzen und zurück; läuft ein Training (Home), dorthin; sonst nur ansehen –
+  // ein Tipp auf eine Übung darf kein Training starten
   const openFocus = (pid: string) => {
-    if (inTraining) { pick(pid); router.back() } else { router.back(); openTraining(pid) }
+    if (inTraining) { pick(pid); router.back() }
+    else if (t.active) { router.back(); openTraining(pid) }
+    else router.push({ pathname: '/exercise', params: { pid } })
   }
   const onStart = t.active ? undefined : () => {
     if (inTraining) { t.startSession(); router.back() } else { router.back(); start() }

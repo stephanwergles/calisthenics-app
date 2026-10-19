@@ -12,6 +12,7 @@ import { toast } from './toast.ts'
 import { getLocale, t as tr } from './i18n/index.ts'
 import { platform } from './platform.ts'
 
+const WEEK_DAYS = L.WEEK_ORDER
 const DISMISSED = 'lever-suggestion-dismissed'
 const PREVIOUS = 'lever-plan-previous'
 const read = (k: string) => platform().prefs.get(k)
@@ -32,7 +33,12 @@ export function usePlanSuggestion(t: Training) {
     const plan = L.planFromGenerated(t.ix, t.plan ?? L.planFromCatalog(t.baseCatalog), g, input)
     if (L.samePlan(t.ix, plan)) return null
     const diff = L.planDiff(t.ix, t.state, plan)
-    return { plan, diff, warnings: g.warnings, changes: diff.reduce((n, d) => n + d.changes.filter(c => c.kind !== 'bleibt').length, 0) }
+    const changes = diff.reduce((n, d) => n + d.changes.filter(c => c.kind !== 'bleibt').length, 0)
+    // gleiche Übungen und Sätze je Tag, nur andere Reihenfolge (z. B. direkt nach dem Übernehmen,
+    // weil der Generator den aktuellen Plan als Ausgangspunkt nimmt) – das ist kein Vorschlag
+    const sameDays = WEEK_DAYS.every(d => !!t.ix.catalog.weekplan[d] === !!plan.weekplan[d])
+    if (!changes && sameDays) return null
+    return { plan, diff, warnings: g.warnings, changes }
   }, [sig, t.ix, getLocale()]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const dismiss = () => { write(DISMISSED, sig); setDismissed(sig) }

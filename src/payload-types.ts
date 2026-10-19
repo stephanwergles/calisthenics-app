@@ -367,7 +367,19 @@ export interface Exercise {
     alternatives?:
       | {
           items?:
-            | ('bar' | 'rings' | 'parallettes' | 'dip-bars' | 'band' | 'box' | 'weight' | 'pole' | 'floor' | 'wall')[]
+            | (
+                | 'bar'
+                | 'rings'
+                | 'parallettes'
+                | 'dip-bars'
+                | 'band'
+                | 'box'
+                | 'weight'
+                | 'pole'
+                | 'ab-wheel'
+                | 'floor'
+                | 'wall'
+              )[]
             | null;
           id?: string | null;
         }[]
@@ -606,7 +618,7 @@ export interface Template {
   days?: number | null;
   minutes: number;
   description: string;
-  equipment?: ('bar' | 'rings' | 'parallettes' | 'dip-bars' | 'band' | 'box' | 'weight' | 'pole')[] | null;
+  equipment?: ('bar' | 'rings' | 'parallettes' | 'dip-bars' | 'band' | 'box' | 'weight' | 'pole' | 'ab-wheel')[] | null;
   /**
    * Im App-Format (wie im Plan): id, name, focus, slots [{ block, progression, sets }], warmup, cooldown
    */

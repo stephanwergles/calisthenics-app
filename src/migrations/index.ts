@@ -24,6 +24,7 @@ import * as migration_20261014_172238_session_circuits from './20261014_172238_s
 import * as migration_20261014_184946_pattern_conditioning from './20261014_184946_pattern_conditioning';
 import * as migration_20261015_100622_registration from './20261015_100622_registration';
 import * as migration_20261015_170000_rename_standard_workouts from './20261015_170000_rename_standard_workouts';
+import * as migration_20261019_173010_equipment_ab_wheel from './20261019_173010_equipment_ab_wheel';
 
 export const migrations = [
   {
@@ -149,11 +150,16 @@ export const migrations = [
   {
     up: migration_20261015_100622_registration.up,
     down: migration_20261015_100622_registration.down,
-    name: '20261015_100622_registration'
+    name: '20261015_100622_registration',
   },
   {
     up: migration_20261015_170000_rename_standard_workouts.up,
     down: migration_20261015_170000_rename_standard_workouts.down,
     name: '20261015_170000_rename_standard_workouts',
+  },
+  {
+    up: migration_20261019_173010_equipment_ab_wheel.up,
+    down: migration_20261019_173010_equipment_ab_wheel.down,
+    name: '20261019_173010_equipment_ab_wheel'
   },
 ];

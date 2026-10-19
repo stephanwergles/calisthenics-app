@@ -281,7 +281,7 @@ export interface Dataset {
 
 /* ── v3-Prototyp: Training aus Skills (Generator, src/domain/generator.ts) ── */
 
-export type Equipment = "bar" | "rings" | "parallettes" | "dip-bars" | "band" | "box" | "weight" | "pole" | "floor" | "wall";
+export type Equipment = "bar" | "rings" | "parallettes" | "dip-bars" | "band" | "box" | "weight" | "pole" | "ab-wheel" | "floor" | "wall";
 /** kleines, festes Set an Bewegungsmustern – Grundlage für ausgeglichene Pläne */
 export type Pattern = "vertical-pull" | "horizontal-pull" | "vertical-push" | "horizontal-push" | "squat" | "hinge" | "core" | "isolation" | "conditioning";
 export type Tendon = "wrist" | "elbow" | "shoulder" | "knee" | "hip" | "back" | "ankle";

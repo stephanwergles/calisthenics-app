@@ -811,7 +811,7 @@ export function monthStats(sessions: Session[], activities: Activity[], month: s
 /* ── Profil, Ziele, Skill-Vorschläge ─────────────────────────────────────── */
 
 export const EQUIPMENT_LABEL: Record<Exclude<Equipment, 'floor' | 'wall'>, string> =
-  labels(['bar', 'rings', 'parallettes', 'dip-bars', 'band', 'box', 'weight', 'pole'] as const, k => `logic.equipment.${k}`)
+  labels(['bar', 'rings', 'parallettes', 'dip-bars', 'band', 'box', 'weight', 'pole', 'ab-wheel'] as const, k => `logic.equipment.${k}`)
 /** Profil, solange keins gespeichert ist: keine Ziele, alle Geräte, Tage aus dem Wochenplan */
 export function profileOf(ix: Index, user: UserState): Profile {
   return user.profile ?? {

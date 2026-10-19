@@ -11,7 +11,7 @@ import { blurb, useProfile, type Next } from './shared'
 /** Bild je Gerät: Übung, die es zeigt; ohne Übung ein Symbol */
 const GEAR_ART: Partial<Record<Equipment, string>> = {
   bar: 'pull-up', rings: 'ring-push-up', parallettes: 'l-sit-parallettes', 'dip-bars': 'dip', band: 'nordic-curl-band',
-  box: 'pike-push-up-elevated', weight: 'dip-weighted', pole: 'vertical-flag',
+  box: 'pike-push-up-elevated', weight: 'dip-weighted', pole: 'vertical-flag', 'ab-wheel': 'ab-wheel-rollout',
 }
 
 export function EquipmentPage({ next }: { next?: Next }) {

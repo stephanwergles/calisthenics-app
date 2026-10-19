@@ -8,7 +8,7 @@ export const logic: Shape<typeof de> = {
   region: { pull: 'Pull', push: 'Push', core: 'Core', legs: 'Legs', other: 'More' },
   regionDetail: { pull: 'Back, biceps, grip', push: 'Chest, shoulders, triceps', core: 'Abs, hip flexors', legs: 'Thighs, glutes, calves', other: '' },
   block: { skill: 'Skill', strength: 'Strength', core: 'Core', accessory: 'Accessory', extra: 'Extra' },
-  equipment: { bar: 'Bar', rings: 'Rings', parallettes: 'Parallettes', 'dip-bars': 'Dip bars', band: 'Band', box: 'Box', weight: 'Weights', pole: 'Vertical pole' },
+  equipment: { bar: 'Bar', rings: 'Rings', parallettes: 'Parallettes', 'dip-bars': 'Dip bars', band: 'Band', box: 'Box', weight: 'Weights', pole: 'Vertical pole', 'ab-wheel': 'Ab wheel' },
   phase: { pause: 'Break / sick', vacation: 'Vacation', injury: 'Injury', equipment: 'Missing equipment' },
   muscle: { chest: 'Chest', upperBack: 'Upper back & lats', arms: 'Upper arm (biceps, triceps)', abs: 'Abs', thigh: 'Thigh & glutes', calf: 'Calf' },
   tendon: { shoulder: 'Shoulder', elbow: 'Elbow', wrist: 'Hand & wrist', back: 'Lower back', hip: 'Hip', knee: 'Knee', ankle: 'Foot & ankle' },

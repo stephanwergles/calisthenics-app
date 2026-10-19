@@ -179,6 +179,7 @@ export const profile: Shape<typeof de> = {
       'box': 'Box, bench or chair – to elevate and spot.',
       'weight': 'Weight vest or belt – extra load for pull-ups and dips.',
       'pole': 'Vertical pole – for the human flag.',
+      'ab-wheel': 'Ab roller with two handles – for rollouts, kneeling and standing.',
     },
   },
   days: {

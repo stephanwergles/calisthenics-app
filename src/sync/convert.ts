@@ -170,7 +170,7 @@ export function isPhase(p: any): p is Phase {
     && (p.equipment === undefined || (Array.isArray(p.equipment) && p.equipment.every((e: any) => EQUIPMENT.includes(e))))
     && isNote(p.note)
 }
-const EQUIPMENT = ['bar', 'rings', 'parallettes', 'dip-bars', 'band', 'box', 'weight', 'pole', 'floor', 'wall']
+const EQUIPMENT = ['bar', 'rings', 'parallettes', 'dip-bars', 'band', 'box', 'weight', 'pole', 'ab-wheel', 'floor', 'wall']
 export function isProfile(p: any): p is Profile {
   return !!p && Array.isArray(p.goals) && p.goals.length <= MAX_GOALS && p.goals.every(isId)
     && Array.isArray(p.equipment) && p.equipment.every((e: any) => EQUIPMENT.includes(e))

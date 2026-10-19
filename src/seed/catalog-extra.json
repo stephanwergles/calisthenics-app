@@ -1833,7 +1833,7 @@
     "setup": "Im Kniestand, Hände auf Ringen auf Hüfthöhe oder auf einem Handtuch am glatten Boden.",
     "execution": "Den Körper nach vorn ausrollen, bis die Arme über dem Kopf sind, der Rücken bleibt flach (kein Hohlkreuz). Aus dem Bauch zurückziehen.",
     "faults": "Hohlkreuz · Hüfte bleibt hinten · zu weit ohne Kontrolle",
-    "scaling": "Leichter: kürzerer Weg. Schwerer: Ringe tiefer, stehender Rollout."
+    "scaling": "Leichter: kürzerer Weg. Schwerer: mit dem Ab-Roller, Ringe tiefer."
    },
    "media": {
     "videoQuery": "ring rollout kneeling"
@@ -1842,6 +1842,32 @@
     "Rippen nach unten",
     "Becken leicht einrollen",
     "Nur so weit wie flach geht"
+   ],
+   "muscles": [
+    "Bauch",
+    "Latissimus",
+    "Schultern"
+   ]
+  },
+  {
+   "id": "ab-wheel-rollout",
+   "name": "Ab-Wheel-Rollout kniend",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im Kniestand, beide Hände am Ab-Roller unter den Schultern, Knie auf einer weichen Unterlage.",
+    "execution": "Den Roller langsam nach vorn schieben, bis der Körper fast gestreckt ist – Becken eingerollt, Rücken flach. Aus dem Bauch zurückziehen, nicht aus der Hüfte.",
+    "faults": "Hohlkreuz · Hüfte knickt ein · Arme beugen sich",
+    "scaling": "Leichter: kürzerer Weg, gegen eine Wand rollen. Schwerer: weiter ausrollen, stehender Rollout."
+   },
+   "media": {
+    "videoQuery": "ab wheel rollout kneeling"
+   },
+   "cues": [
+    "Becken einrollen",
+    "Rippen nach unten",
+    "Arme lang"
    ],
    "muscles": [
     "Bauch",
@@ -1873,6 +1899,33 @@
     "Bauch",
     "Latissimus",
     "Serratus"
+   ]
+  },
+  {
+   "id": "ab-wheel-rollout-standing",
+   "name": "Ab-Wheel-Rollout stehend",
+   "unit": "reps",
+   "weighted": false,
+   "perSide": false,
+   "technique": {
+    "setup": "Im Stand, Beine gestreckt, Hände am Ab-Roller vor den Füßen.",
+    "execution": "Mit gestreckten Beinen kontrolliert ausrollen, bis der Körper fast parallel zum Boden ist, und aus dem Bauch zurück in den Stand ziehen.",
+    "faults": "Hohlkreuz · Hüfte bleibt oben · Schwung beim Zurückziehen",
+    "scaling": "Leichter: gegen eine Wand rollen (kürzerer Weg), Ring-Rollout. Schwerer: langsamer, Pause in der Streckung."
+   },
+   "media": {
+    "videoQuery": "standing ab wheel rollout"
+   },
+   "cues": [
+    "Hollow-Position halten",
+    "Gesäß fest",
+    "Langsam zurück"
+   ],
+   "muscles": [
+    "Bauch",
+    "Latissimus",
+    "Serratus",
+    "Hüftbeuger"
    ]
   },
   {
@@ -2722,13 +2775,13 @@
    "id": "russian-twist",
    "name": "Russian Twists",
    "unit": "reps",
-   "weighted": false,
+   "weighted": true,
    "perSide": true,
    "technique": {
     "setup": "Im Sitz, Oberkörper leicht zurückgelehnt, Füße am Boden oder angehoben.",
     "execution": "Oberkörper kontrolliert von Seite zu Seite drehen, Hände zum Boden neben der Hüfte.",
     "faults": "Nur die Arme bewegen · Rundrücken · zu schnell",
-    "scaling": "Leichter: Füße am Boden. Schwerer: Füße angehoben, Gewicht in den Händen."
+    "scaling": "Leichter: Füße am Boden. Schwerer: Füße angehoben, Hantelscheibe oder Kettlebell in den Händen."
    },
    "media": {
     "videoQuery": "russian twist"
@@ -4010,6 +4063,17 @@
      }
     },
     {
+     "exercise": "ab-wheel-rollout",
+     "target": {
+      "label": "3 × 6–10",
+      "sets": 3,
+      "restSec": 90,
+      "unlockAt": 10,
+      "min": 6,
+      "max": 10
+     }
+    },
+    {
      "exercise": "ring-rollout",
      "target": {
       "label": "3 × 5–8",
@@ -4018,6 +4082,17 @@
       "unlockAt": 8,
       "min": 5,
       "max": 8
+     }
+    },
+    {
+     "exercise": "ab-wheel-rollout-standing",
+     "target": {
+      "label": "3 × 3–6",
+      "sets": 3,
+      "restSec": 120,
+      "unlockAt": 6,
+      "min": 3,
+      "max": 6
      }
     }
    ]

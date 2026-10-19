@@ -180,6 +180,7 @@ export const profile = {
       'box': 'Box, Bank oder Stuhl – zum Erhöhen und Absichern.',
       'weight': 'Gewichtsweste oder Gürtel – für mehr Last bei Klimmzug und Dip.',
       'pole': 'Senkrechte Stange – für die Human Flag.',
+      'ab-wheel': 'Bauchroller mit zwei Griffen – für Rollouts, kniend und stehend.',
     },
   },
   days: {
