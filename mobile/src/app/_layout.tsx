@@ -59,7 +59,7 @@ function Root({ fonts }: { fonts: boolean }) {
             headerShown: true, headerTransparent: true, headerShadowVisible: false, title: '', headerTitle: () => null, headerBackVisible: false }} />
           {/* Aufgaben-Sheets */}
           <Stack.Screen name="set" options={formSheet([0.62, 1])} />
-          <Stack.Screen name="exercise" options={formSheet([0.6, 1])} />
+          <Stack.Screen name="exercise" options={formSheet([0.75, 1])} />
           <Stack.Screen name="activity" options={formSheet([0.7, 1])} />
           <Stack.Screen name="phase" options={formSheet([0.62, 1])} />
           <Stack.Screen name="swap" options={formSheet([0.55, 1])} />

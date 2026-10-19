@@ -1,12 +1,12 @@
 /* Technik & Optionen einer Übung (Web: ExerciseSheet/exerciseSheetSpec) – Param pid.
-   Voller Technik-Text, Tutorial, Stufe wechseln, heute überspringen, dauerhaft pausieren. */
+   Bewegung (3D-Clip/Skizze), voller Technik-Text, Tutorial, Stufe wechseln, heute überspringen, dauerhaft pausieren. */
 import { View } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
 import * as L from '@lever/core/logic.ts'
 import { t as tr } from '@lever/core/i18n/index.ts'
 import { useApp } from '@/state/app'
-import { Button, color, font, Text } from '@/ui'
+import { Button, color, ExerciseMedia, font, radius, Text } from '@/ui'
 import { FormSheet } from '@/screens/training/parts'
 
 export default function ExerciseRoute() {
@@ -27,6 +27,10 @@ export default function ExerciseRoute() {
   const video = ex.media.videoQuery
   return (
     <FormSheet title={ex.name} sub={sub}>
+      {/* Bewegung zuerst: 3D-Clip bzw. Skizze, wie im Training */}
+      <View style={{ width: '100%', aspectRatio: 1.25, borderRadius: radius.card, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: color.card }}>
+        <ExerciseMedia exercise={ex} label={tr('training.focus.movement', { name: ex.name })} style={{ width: '100%', height: '100%', borderRadius: 0 }} />
+      </View>
       {sections.map(s => (
         <View key={s.title} style={{ gap: 4 }}>
           <Text variant="small" accessibilityRole="header"
