@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { View } from 'react-native'
 import { router, usePathname } from 'expo-router'
 import { useApp } from '@/state/app'
+import { trainingOpen } from '@/state/live-link'
 import { useSetSheet } from '@/state/set-sheet'
 import { color } from '@/ui'
 import { AllDone, FocusExercise, FocusTop } from '@/screens/training/focus'
@@ -12,6 +13,8 @@ import { RestScreen } from '@/screens/training/rest'
 
 export default function TrainingScreen() {
   const { t, slots, focusSlot, rest, restView } = useApp()
+  // für +native-intent: Link aus der Live Activity nicht noch einmal öffnen, solange das Training offen ist
+  useEffect(() => { trainingOpen.current = true; return () => { trainingOpen.current = false } }, [])
   // verlassen, ohne zu starten: vorgemerktes „Nochmal trainieren“ verfällt (Home zeigt wieder „erledigt“)
   const cancelAgain = t.cancelAgain
   useEffect(() => () => cancelAgain(), [cancelAgain])
