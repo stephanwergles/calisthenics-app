@@ -398,7 +398,7 @@ def l_sit_floor(): return lsit_ex()
 def l_sit_parallettes(): return lsit_ex(par=True)
 def v_sit_prep(): return lsit_ex(par=True, v=True)
 TPL = sym({"spine": (0, -0.3, 1), "chest": (0, -0.15, 1), "neck": (0, -0.3, 1), "head": (0, -0.5, 1),
-           "clavicle.L": (1, -0.25, -0.1), **leg_angles(140, 145, abd=8, ankle=35)})
+           "clavicle.L": (1, -0.25, -0.1), **leg_angles(140, 145, abd=-6, ankle=35)})   # Knie zwischen den Armen, nicht hindurch
 def tuck_planche():
     """Schultern weit vor die Hände, Füße heben ab, Knie eng zur Brust."""
     H = floor_hands(0.25, 0.0, (0.35, -1, 0), (0.15, 1, 0.1))
@@ -594,11 +594,14 @@ def planche_key(pitch, pose, h, H):
     k = dict(rot=(pitch, 0, 0), pose={**pose, **PL_SH}, place=("hang", dict(ext=STRAIGHT, up=True, dy=-0.2)), hands=H)
     solve(k, set_place(1, "dy"), -0.75, 0.25, lambda k: mesh_np()[:, 1].mean(), 0.0)
     return hang_sz(k)
-def planche_ex(pose):
+def planche_ex(pose, via=None):
+    """via: Zwischenpose der Beine – Grätsche aus der Hocke erst nach hinten strecken, dann öffnen (sonst gehen die
+    Oberschenkel durch die Arme)."""
     h = 0.17; parallettes(0.25, 0.0, h); H = pbar_grip(h, 0.25, (0.15, 1, 0))
-    return dict(keys=[planche_key(68, TPL, h, H), planche_key(88, pose, h, H)], timing="hold", view=(-30, 10))
+    mid = [planche_key(80, via, h, H)] if via else []
+    return dict(keys=[planche_key(68, TPL, h, H), *mid, planche_key(88, pose, h, H)], timing="hold", view=(-30, 10))
 def adv_tuck_planche(): return planche_ex(ADV_TUCK)
-def straddle_planche(): return planche_ex(STRADDLE)
+def straddle_planche(): return planche_ex(STRADDLE, via=STRAIGHT_LEGS)
 def full_planche(): return planche_ex(STRAIGHT_LEGS)
 
 # ── Einarmiger Klimmzug ─────────────────────────────────────────────────────
@@ -741,7 +744,7 @@ def flag_ex(stages, timing="hold", hands_z=(1.88, 0.95)):
     return dict(keys=keys, timing=timing, view=(-72, 8))
 STAND_FLAG = sym({"thigh.L": (-0.03, 0, -1), "shin.L": (-0.02, 0, -1)})
 def vertical_flag(): return flag_ex([(0, STAND_FLAG, 0.3), (-180, STRAIGHT_LEGS, 0.42)], timing=(0.38, 0.2, 0.38))   # 180° Rolle
-def tuck_flag(): return flag_ex([(-180, TUCKED, 0.42), (-90, TUCKED, 0.5)])
+def tuck_flag(): return dict(flag_ex([(-180, TUCKED, 0.42), (-90, TUCKED, 0.5)]), glieder=0.02)   # Knie liegen kopfüber am unteren Arm an
 def straddle_flag(): return flag_ex([(-180, STRADDLE, 0.42), (-90, STRADDLE, 0.5)])
 def human_flag(): return flag_ex([(-180, STRAIGHT_LEGS, 0.42), (-90, STRAIGHT_LEGS, 0.5)])
 
@@ -1264,11 +1267,12 @@ def russian_twist():
                       **sym({"arm.L": (0.1, -1, 0.2), "forearm.L": (0.1, -1, 0.2)})},
                   legs=feet, twist={"spine": s * 20, "chest": s * 34})   # Arme/Beine nur zum Aufsetzen nach vorn (sonst sitzt das Gesäß in der Luft)
         pose_key(k, limbs=False); H = pt("hip.L" if s >= 0 else "hip.R")   # Ziel an der gedrehten Figur: neben und vor der Hüfte
-        h = lambda n, dx, dy, dz: dict(k=(H.x + s * (0.2 + dx), H.y - 0.12 + dy, 0.16 + dz), palm=(0, 0, -1), flex=10,
+        # Hände außen neben der Hüfte, die obere Hand darüber – beide außerhalb des Oberschenkels (Regel „Arm durch Bein“)
+        h = lambda n, dx, dy, dz: dict(k=(H.x + s * (0.24 + dx), H.y - 0.06 + dy, 0.12 + dz), palm=(0, 0, -1), flex=10,
                                        hint=(0.6 if n == "L" else -0.6, 0.5, 0.2))   # Ellbogen bleibt auf seiner Seite (kein Umklappen)
         a, c = ("L", "R") if s > 0 else ("R", "L")
-        k["hands"] = {a: h(a, 0, 0, 0), c: h(c, -0.08, -0.04, 0.12)}       # gegenüberliegende Hand liegt darüber
-        if s == 0: k["hands"] = symh(dict(k=(0.06, -0.3, 0.4), palm=(0, 0, -1), flex=10, hint=(0.6, 0.5, 0.2)))   # Mitte: Hände vor dem Bauch
+        k["hands"] = {a: h(a, 0, 0, 0), c: h(c, -0.02, -0.03, 0.17)}       # gegenüberliegende Hand liegt darüber
+        if s == 0: k["hands"] = symh(dict(k=(0.06, -0.18, 0.58), palm=(0, 0, -1), flex=10, hint=(0.6, 0.5, 0.2)))   # Mitte: über den Oberschenkeln   # Mitte: Hände vor dem Bauch
         return k
     return dict(keys=[key(1), key(0), key(-1)], view=(-60, 20), arme="vorn")
 def flutter_kick():

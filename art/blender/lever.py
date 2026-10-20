@@ -232,7 +232,7 @@ STRAIGHT = 0.985
 OVER = [0.0]          # größte Überdehnung eines IK-Ziels (Hand/Fuß erreicht ihr Ziel nicht) im Bild
 # gelenk: Grad über der Gelenkgrenze · sprung: Grad je Bild (Sprung und Kippen) · griff, selbst, eindringen, auflage: m
 # symmetrie: Grad links ↔ rechts
-RULES = dict(gelenk=25, sprung=15, griff=0.03, selbst=0.05, symmetrie=8, eindringen=0.03, auflage=0.045, schulter=15)
+RULES = dict(gelenk=25, sprung=15, griff=0.03, selbst=0.05, symmetrie=8, eindringen=0.03, auflage=0.045, schulter=15, glieder=0.02)
 RAW = []              # Gelenkverstöße der Rohpose im zuletzt gesetzten Bild (vor dem Begrenzen)
 HINGE_OUT = {}        # Scharnierachsen (Körperraum) der zuletzt gesetzten Pose, je Unterarm/Unterschenkel
 
@@ -444,7 +444,8 @@ for n in "LR":
     CAPS.update({f"oberarm.{n}": ((f"arm.{n}", "head"), (f"arm.{n}", "tail"), 0.042),
                  f"unterarm.{n}": ((f"forearm.{n}", "head"), (f"forearm.{n}", "tail"), 0.035),
                  f"oberschenkel.{n}": ((f"thigh.{n}", "head"), (f"thigh.{n}", "tail"), 0.065),
-                 f"unterschenkel.{n}": ((f"shin.{n}", "head"), (f"shin.{n}", "tail"), 0.045)})
+                 f"unterschenkel.{n}": ((f"shin.{n}", "head"), (f"shin.{n}", "tail"), 0.045),
+                 f"hand.{n}": ((f"hand.{n}", "head"), (f"hand.{n}", "tail"), 0.03)})
 CAP_PAIRS = [(f"unterarm.{n}", "rumpf") for n in "LR"] + [(f"unterarm.{n}", "kopf") for n in "LR"] + \
             [("oberschenkel.L", "oberschenkel.R"), ("unterschenkel.L", "unterschenkel.R"),
              ("unterschenkel.L", "oberschenkel.R"), ("unterschenkel.R", "oberschenkel.L"), ("unterarm.L", "unterarm.R")] + \
@@ -462,6 +463,19 @@ def _seg_dist(p1, q1, p2, q2):
     if t < 0: t, sp = 0.0, min(max(-c / a, 0), 1)
     elif t > 1: t, sp = 1.0, min(max((b - c) / a, 0), 1)
     return ((p1 + d1 * sp) - (p2 + d2 * t)).length
+# Glieder durch Glieder: Unterarm/Hand ↔ Ober-/Unterschenkel. Die Kapseln sind hier eng am Modell (anders als der
+# runde Rumpf), daher harte Regel statt Warnung – Arme dürfen nicht durch die Beine gehen (Russian Twist).
+LIMB_PAIRS = [(f"{a}.{n}", f"{b}.{m}") for a in ("unterarm", "hand") for b in ("oberschenkel", "unterschenkel")
+              for n in "LR" for m in "LR"]
+def limb_overlap():
+    """Tiefste Überlappung Arm ↔ Bein (m) und das Paar."""
+    pos = {k: (world(getattr(PB[b0], e0)), world(getattr(PB[b1], e1)), r) for k, ((b0, e0), (b1, e1), r) in CAPS.items()}
+    worst = (0.0, "")
+    for a, b in LIMB_PAIRS:
+        (p0, p1, ra), (q0, q1, rb) = pos[a], pos[b]
+        depth = ra + rb - _seg_dist(p0, p1, q0, q1)
+        if depth > worst[0]: worst = (depth, f"{a}/{b}")
+    return worst
 def self_overlap():
     """Tiefste Überlappung zweier Körperkapseln (m) und das Paar."""
     pos = {}
@@ -956,7 +970,7 @@ else:
         cam.location, target.location = Vector(c[:3]), Vector(c[3:])
     if MODE == "check":                    # ohne Rendern: Durchdringungen, Bodenkontakt, Reichweite pro Bild
         worst = {}; prev = {}; gelenk = {}; griff = [0.0, 0]; steps = {}
-        selbst = [0.0, 0, ""]; symm = [0.0, 0, ""]; schulter = [-99.0, 0, ""]
+        selbst = [0.0, 0, ""]; symm = [0.0, 0, ""]; schulter = [-99.0, 0, ""]; glieder = [0.0, 0, ""]
         # Symmetrie nur prüfen, wenn die Schlüsselposen selbst beidseitig gleich sind (Archer, Pistol … sind es nicht)
         key_sym = 0.0
         for kk_ in keys:
@@ -978,6 +992,8 @@ else:
             if i == len(S_OF): break
             ov = self_overlap()
             if ov[0] > selbst[0]: selbst[:] = [ov[0], i, ov[1]]
+            lo_ = limb_overlap()
+            if lo_[0] > glieder[0]: glieder[:] = [lo_[0], i, lo_[1]]
             sg = symmetry_gap()
             if sg[0] > symm[0]: symm[:] = [sg[0], i, sg[1]]
             for n in "LR":                   # Oberarm hinter dem Rumpf (Schulter überstreckt)
@@ -1016,6 +1032,9 @@ else:
         tmax = max(twists.items(), key=lambda x: x[1][0], default=(None, (0, 0)))
         if tmax[1][0] > EX.get("tempo", RULES["sprung"]): fails.append(f"Kippen {tmax[0]} {tmax[1][0]:.0f}° je Bild @{tmax[1][1]}")
         if griff[0] > RULES["griff"]: fails.append(f"Griff {griff[0] * 100:.1f} cm daneben")
+        print("GLIEDER", ARG, f"{glieder[0] * 100:.1f}cm@{glieder[1]}({glieder[2]})")
+        if glieder[0] > RULES["glieder"] + EX.get("glieder", 0):   # Arm durch Bein (Ausnahme nur begründet, z. B. Hände auf den Knien)
+            fails.append(f"Arm durch Bein {glieder[2]} {glieder[0] * 100:.1f} cm @{glieder[1]}")
         print("SCHULTER", ARG, f"{schulter[0]:+.0f}°@{schulter[1]} {schulter[2]}")      # Abstand zur Grenze (negativ = Reserve)
         if schulter[0] > RULES["schulter"] + EX.get("schulter", 0):   # schulter: begründete Ausnahme (Skin the Cat, Back Lever …)
             fails.append(f"Schulter +{schulter[0]:.0f}° @{schulter[1]} ({schulter[2]})")
@@ -1036,7 +1055,8 @@ else:
             pose_key(keys[i])
             if CAM: frame_camera(view, mesh_np()[::5], fit, lens, dist=CAM["d"])
             render(os.path.join(OUT, f"{ARG}_k{i}.png"))
-    elif MODE == "gltf":                   # Echtzeit-3D: Figur + Geräte + Skelett-Animation (gleiche Bilder wie der Clip) als .glb
+    elif MODE == "gltf":                   # Echtzeit-3D (.glb). LEVER_GLTF_PART: "figure" (nur Figur + Skelett, Ruhepose),
+        part = os.environ.get("LEVER_GLTF_PART", "all")   # "anim" (Skelett-Animation + Geräte, ohne Figur), sonst alles
         lv = int(os.environ.get("LEVER_GLTF_SUBDIV", 1))
         for m in body.modifiers:
             if m.type == "MULTIRES": m.levels = m.render_levels = min(lv, m.total_levels)
@@ -1045,31 +1065,58 @@ else:
         props = [o for o in scene.objects if o.type == "MESH" and o is not body and o not in eyes
                  and not getattr(o, "is_shadow_catcher", False)]   # Geräte (auch mitbewegte)
         for o in props: o.rotation_mode = "QUATERNION"
-        # Erst alle Bilder posieren und merken, dann schlüsseln: eine vorhandene Aktion würde beim Auswerten
-        # (Bildwechsel/Update) die frisch gesetzte Pose wieder überschreiben
-        frames = []
-        for s in S_OF + S_OF[:1]:                     # letztes Bild = erstes: nahtloser Loop
-            pose_key(key_at(keys, s))
-            frames.append((rig.location.copy(), rig.rotation_euler.copy(),
-                           {pb.name: pb.matrix_basis.decompose() for pb in PB},
-                           {o.name: o.matrix_world.decompose() for o in props}))
-        for o in props: o.parent = None
-        for i, (rl, rr, bones, objs) in enumerate(frames):
-            rig.location, rig.rotation_euler = rl, rr
-            rig.keyframe_insert("location", frame=i); rig.keyframe_insert("rotation_euler", frame=i)
-            for pb in PB:
-                pb.location, pb.rotation_quaternion, pb.scale = bones[pb.name]
-                for path in ("location", "rotation_quaternion", "scale"): pb.keyframe_insert(path, frame=i)
-            for o in props:
-                o.location, o.rotation_quaternion, o.scale = objs[o.name]
-                for path in ("location", "rotation_quaternion", "scale"): o.keyframe_insert(path, frame=i)
+        if part == "figure":
+            reset(); [bpy.data.objects.remove(o, do_unlink=True) for o in props]
+            target = int(os.environ.get("LEVER_GLTF_VERTS", 20000))
+            dg = bpy.context.evaluated_depsgraph_get(); n0 = len(body.evaluated_get(dg).data.vertices)
+            if n0 > target:                    # dezimieren vor dem Skelett-Modifier (Gewichte werden mit reduziert)
+                dm = body.modifiers.new("decimate", "DECIMATE"); dm.ratio = target / n0
+                bpy.context.view_layer.objects.active = body
+                bpy.ops.object.modifier_move_to_index(modifier="decimate", index=[m.type for m in body.modifiers].index("ARMATURE"))
+        else:
+            # Erst alle Bilder posieren und merken, dann schlüsseln: eine vorhandene Aktion würde beim Auswerten
+            # (Bildwechsel/Update) die frisch gesetzte Pose wieder überschreiben
+            frames, pts = [], []
+            for s in S_OF + S_OF[:1]:                 # letztes Bild = erstes: nahtloser Loop
+                pose_key(key_at(keys, s)); pts.append(mesh_np()[::5])
+                frames.append((rig.location.copy(), rig.rotation_euler.copy(),
+                               {pb.name: pb.matrix_basis.decompose() for pb in PB},
+                               {o.name: o.matrix_world.decompose() for o in props}))
+            for o in props: o.parent = None
+            for i, (rl, rr, bones, objs) in enumerate(frames):
+                rig.location, rig.rotation_euler = rl, rr
+                rig.keyframe_insert("location", frame=i); rig.keyframe_insert("rotation_euler", frame=i)
+                for pb in PB:
+                    pb.location, pb.rotation_quaternion, pb.scale = bones[pb.name]
+                    for path in ("location", "rotation_quaternion", "scale"): pb.keyframe_insert(path, frame=i)
+                for o in props:
+                    o.location, o.rotation_quaternion, o.scale = objs[o.name]
+                    for path in ("location", "rotation_quaternion", "scale"): o.keyframe_insert(path, frame=i)
+            # Kamera-Vorschlag wie im Clip (Blickwinkel der Übung, alles im Bild), in glTF-Koordinaten (Y oben, Z = −Y Blender)
+            P = np.vstack(pts + ([np.array([list(p) for p in FRAME])] if FRAME else []))
+            view, fit, lens = EX.get("view", (AZ0, 4)), EX.get("fit", 0.86), EX.get("lens", 60)
+            ctr, dist = frame_camera(view, P, fit, lens)
+            az, el = (math.radians(a) for a in view)
+            off = Vector((math.cos(el) * math.cos(az), math.cos(el) * math.sin(az), math.sin(el)))
+            g = lambda v: [round(v[0], 4), round(v[2], 4), round(-v[1], 4)]
+            # fov = vertikaler Öffnungswinkel (Grad) bei 4:3 wie der Clip; position = target + Blickrichtung · distance
+            meta = {"id": ARG, "file": f"anim/{ARG}.glb", "duration": len(S_OF) / 24, "frames": len(S_OF),
+                    "camera": {"target": g(ctr), "position": g(ctr + off * dist), "distance": round(dist, 4),
+                               "fov": round(2 * math.degrees(math.atan(18 / lens * 0.75)), 2), "view": list(view)},
+                    "bounds": {"min": [min(x, y) for x, y in zip(g(Vector(P.min(0))), g(Vector(P.max(0))))],
+                               "max": [max(x, y) for x, y in zip(g(Vector(P.min(0))), g(Vector(P.max(0))))]}}
+            if part == "anim":
+                for o in [body, *eyes]: bpy.data.objects.remove(o, do_unlink=True)
+            import json as _json
+            with open(os.path.join(OUT, f"{ARG}.json"), "w") as fh: _json.dump(meta, fh, indent=1)
         for o in list(scene.objects):          # Licht, Kamera und Schattenfänger-Boden baut der Viewer selbst
             if o.type in ("LIGHT", "CAMERA") or getattr(o, "is_shadow_catcher", False): bpy.data.objects.remove(o, do_unlink=True)
-        path = os.path.join(OUT, f"{ARG}.glb")
-        bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_apply=True, export_animations=True,
+            elif o.type == "EMPTY": bpy.data.objects.remove(o, do_unlink=True)
+        path = os.path.join(OUT, f"{'figure' if part == 'figure' else ARG}.glb")
+        bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_apply=True, export_animations=part != "figure",
                                   export_force_sampling=True, export_frame_range=True, export_anim_single_armature=True,
-                                  export_yup=True)
-        print("GLTF", path, os.path.getsize(path), "Bytes")
+                                  export_yup=True, export_texcoords=False)   # keine Texturen: UV-Nähte würden Eckpunkte verdoppeln
+        print("GLTF", part, path, os.path.getsize(path), "Bytes")
     elif MODE == "clip":
         for i, s in enumerate(S_OF):
             pose_key(key_at(keys, s))
