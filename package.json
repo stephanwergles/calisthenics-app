@@ -21,19 +21,19 @@
     "clips:stills": "node scripts/clip-stills.mjs"
   },
   "dependencies": {
-    "@payloadcms/db-postgres": "3.90.2",
-    "@payloadcms/email-resend": "3.90.2",
-    "@payloadcms/next": "3.90.2",
-    "@payloadcms/translations": "3.90.2",
-    "@payloadcms/ui": "3.90.2",
+    "@payloadcms/db-postgres": "3.92.0",
+    "@payloadcms/email-resend": "3.92.0",
+    "@payloadcms/next": "3.92.0",
+    "@payloadcms/translations": "3.92.0",
+    "@payloadcms/ui": "3.92.0",
     "cross-env": "^7.0.3",
     "dotenv": "16.6.1",
     "graphql": "^16.8.1",
     "jose": "5.10.0",
-    "next": "16.4.0",
-    "payload": "3.90.2",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "next": "16.4.2",
+    "payload": "3.92.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
