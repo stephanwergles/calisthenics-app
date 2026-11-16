@@ -127,6 +127,14 @@ export function takeRemote(local: { updatedAt?: number } | undefined, remote: { 
   return !local || !localDirty || (remote.updatedAt ?? 0) > (local.updatedAt ?? 0)
 }
 
+/** Trainingsstand vom Server übernehmen? Nicht, wenn der Server unseren abgelehnt hat (ältere Server
+    melden das nur als Text) – dann bliebe sonst der alte Stand und die lokale Änderung wäre weg. */
+type StateReply = { state: { updatedAt?: number }; rejected: string[]; stateRejected?: boolean }
+export const stateRejected = (res: StateReply) => !!res.stateRejected || res.rejected.some(r => r.startsWith('Trainingsstand'))
+export function takeRemoteState(local: { updatedAt?: number }, res: StateReply, localDirty: boolean): boolean {
+  return !stateRejected(res) && takeRemote(local, res.state, localDirty) && (res.state.updatedAt ?? 0) > 0
+}
+
 export interface Outbox { sessions: string[]; activities: string[]; deletedActivities: string[]; state: boolean; plan?: boolean }
 export const EMPTY_OUTBOX: Outbox = { sessions: [], activities: [], deletedActivities: [], state: false, plan: false }
 export const pendingCount = (o: Outbox) => o.sessions.length + o.activities.length + o.deletedActivities.length + (o.state ? 1 : 0) + (o.plan ? 1 : 0)

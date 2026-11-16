@@ -911,22 +911,57 @@ export function splitWeek(ix: Index, user: UserState, skills: Skill[], split: Sp
   return days.map(day => ({ day, theme: themeOf.get(day)! }))
 }
 
+/** Warm-up/Cool-down-Vorlage je erzeugtem Tag: das Katalog-Workout, dessen Hauptregion die meisten
+    Übungen des Tages trifft – bei Gleichstand (Ganzkörper-Tage) das bisher seltener vergebene, damit
+    die Tage sich unterscheiden. Früher zählte nur die Zahl gemeinsamer Regionen: „Lower“ (Beine,
+    Rumpf, Zug) gewann damit fast jeden Tag, auch Pull. */
+function routineSources(ix: Index, days: { progression: ProgressionId }[][]): (Workout | undefined)[] {
+  const regionOf = (pid: ProgressionId) => ix.progressions.get(pid)?.region
+  const main = (w: Workout) => {
+    const n = new Map<string, number>()
+    for (const s of w.slots) { const r = regionOf(s.progression); if (r) n.set(r, (n.get(r) ?? 0) + 1) }
+    return [...n].sort((a, b) => b[1] - a[1])[0]?.[0]
+  }
+  // nur Katalog-Workouts – erzeugte (`auto-…`) aus einem früheren Vorschlag nicht als Vorlage nehmen
+  const pool = [...ix.workouts.values()].filter(w => !w.custom && !w.id.startsWith('auto-') && w.warmup.length)
+    .map((w, i) => ({ w, i, region: main(w) }))
+  const used = new Map<WorkoutId, number>()
+  return days.map(slots => {
+    const mine = slots.map(s => regionOf(s.progression))
+    const like = pool.map(p => ({ ...p, n: mine.filter(r => r === p.region).length - (used.get(p.w.id) ?? 0) }))
+      .sort((a, b) => b.n - a.n || a.i - b.i)[0]?.w
+    if (like) used.set(like.id, (used.get(like.id) ?? 0) + 1)
+    return like
+  })
+}
+const routineOf = (like: Workout | undefined) =>
+  ({ warmup: like ? structuredClone(like.warmup) : [], cooldown: like ? structuredClone(like.cooldown) : [] })
+
+/** Einmalige Korrektur erzeugter Pläne aus der Zeit vor `routineSources`: Warm-up/Cool-down der
+    aktiven `auto-…`-Workouts neu zuordnen. Übungen, Sätze und Wochenplan bleiben unverändert.
+    Gibt denselben Plan zurück, wenn sich nichts ändert. */
+export function withMatchedRoutines(ix: Index, plan: Plan): Plan {
+  if (plan.source !== 'generated') return plan
+  const autos = plan.workouts.filter(w => w.id.startsWith('auto-') && !w.archived)
+  const src = routineSources(ix, autos.map(w => w.slots))
+  const fixed = new Map(autos.map((w, i) => [w.id, routineOf(src[i])]))
+  const changed = autos.some(w => JSON.stringify([w.warmup, w.cooldown]) !== JSON.stringify([fixed.get(w.id)!.warmup, fixed.get(w.id)!.cooldown]))
+  return changed ? { ...plan, workouts: plan.workouts.map(w => (fixed.has(w.id) ? { ...w, ...fixed.get(w.id)! } : w)) } : plan
+}
+
 /** Erzeugten Plan in einen Nutzerplan übersetzen. Keys `auto-<tag>` bleiben über Vorschläge hinweg
-    stabil; Warm-up/Cool-down vom Katalog-Workout mit den meisten gemeinsamen Körperregionen.
+    stabil; Warm-up/Cool-down über `routineSources`. 
     Bisherige Workouts bleiben erhalten (eigene aktiv, andere als gelöscht markiert – Verlauf). */
 export function planFromGenerated(ix: Index, base: Plan, g: GeneratedPlan, input: GeneratorInput): Plan {
-  const regionsOf = (pids: ProgressionId[]) => new Set(pids.map(pid => ix.progressions.get(pid)?.region).filter(Boolean))
-  const workouts: Workout[] = g.days.map(d => {
-    const slots = d.slots.map(s => ({ block: s.block, progression: s.progression, sets: s.sets, reason: s.reason }))
-    const mine = regionsOf(slots.map(s => s.progression))
-    const like = [...ix.workouts.values()].filter(w => !w.custom && w.warmup.length)
-      .map(w => ({ w, n: [...regionsOf(w.slots.map(s => s.progression))].filter(r => mine.has(r)).length }))
-      .sort((a, b) => b.n - a.n)[0]?.w
+  const days = g.days.map(d => d.slots.map(s => ({ block: s.block, progression: s.progression, sets: s.sets, reason: s.reason })))
+  const src = routineSources(ix, days)
+  const workouts: Workout[] = g.days.map((d, i) => {
+    const slots = days[i]
     // schlicht „Upper“, „Lower“, „Ganzkörper“ – auch wenn es zwei davon gibt; unterschieden werden sie
     // über den Wochentag, nicht über angehängte Buchstaben
     return {
       id: `auto-${d.day}`, name: d.theme ?? t('logic.fullBody'),
-      focus: focusOf(ix, slots), slots, warmup: like ? structuredClone(like.warmup) : [], cooldown: like ? structuredClone(like.cooldown) : [],
+      focus: focusOf(ix, slots), slots, ...routineOf(src[i]),
     }
   })
   const fresh = new Set(workouts.map(w => w.id))

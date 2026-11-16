@@ -31,6 +31,7 @@ export const syncHandler: PayloadHandler = async req => {
   const user = req.user.id
   const serverTime = new Date().toISOString()
   const rejected: string[] = []
+  let stateRejected = false
   const list = <T>(v: unknown): T[] => (Array.isArray(v) ? v.slice(0, MAX_DOCS) : [])
   const mine = (key: string): Where => ({ and: [{ user: { equals: user } }, { key: { equals: key } }] })
   // Alle Zugriffe mit den Rechten der anfragenden Person (die Local API übergeht sie sonst):
@@ -90,7 +91,7 @@ export const syncHandler: PayloadHandler = async req => {
   const me = await payload.findByID({ ...asUser, collection: 'users', id: user, depth: 0 })
   let state = C.docToState((me as { state?: Record<string, unknown> }).state)
   if (body.state) {
-    if (!C.isState(body.state)) rejected.push('Trainingsstand: ungültig')
+    if (!C.isState(body.state)) { rejected.push('Trainingsstand: ungültig'); stateRejected = true }
     else if ((body.state.updatedAt ?? 0) > (state.updatedAt ?? 0)) {
       const next = { current: body.state.current, paused: body.state.paused, profile: body.state.profile ?? null, phases: body.state.phases ?? null, challenges: body.state.challenges ?? null, clientUpdatedAt: body.state.updatedAt ?? Date.now() }
       await payload.update({ ...asUser, collection: 'users', id: user, data: { state: next } as never, depth: 0 })
@@ -125,7 +126,7 @@ export const syncHandler: PayloadHandler = async req => {
   const planDoc = (await payload.find({ ...asUser, collection: 'plans', where: mine('main'), limit: 1, depth: 0, pagination: false })).docs[0]
   const res: C.SyncResponse = {
     plan: planDoc ? C.docToPlan(planDoc as unknown as Record<string, unknown>) : null,
-    serverTime, rejected, state, catalogVersion,
+    serverTime, rejected, ...(stateRejected ? { stateRejected } : {}), state, catalogVersion,
     sessions: sessions.docs.map(d => C.docToSession(d as unknown as Record<string, unknown>)),
     activities: activities.docs.map(d => C.docToActivity(d as unknown as Record<string, unknown>)),
     ...(catalog ? { catalog } : {}),

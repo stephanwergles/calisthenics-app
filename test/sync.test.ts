@@ -108,6 +108,16 @@ test('Konfliktregel: wann ersetzt die Server-Fassung die lokale?', async () => {
   assert.equal(takeRemote({ updatedAt: 1 }, { updatedAt: 9 }, true), true, 'Server jünger: gewinnt')
 })
 
+test('Trainingsstand: abgelehnter Stand wird nicht durch den älteren Server-Stand ersetzt', async () => {
+  const { takeRemoteState, stateRejected } = await import('../src/core/api.ts')
+  const local = { updatedAt: 9 }, older = { updatedAt: 5 }
+  assert.equal(takeRemoteState(local, { state: older, rejected: [] }, false), true, 'angenommen: Server-Stand gilt')
+  assert.equal(takeRemoteState(local, { state: older, rejected: ['Trainingsstand: ungültig'], stateRejected: true }, false), false, 'abgelehnt: lokal bleibt')
+  assert.equal(takeRemoteState(local, { state: older, rejected: ['Trainingsstand: ungültig'] }, false), false, 'älterer Server ohne Flag')
+  assert.equal(stateRejected({ state: older, rejected: ['Einheit x: ungültig'] }), false, 'andere Ablehnungen betreffen den Stand nicht')
+  assert.equal(takeRemoteState(local, { state: {}, rejected: [] }, false), false, 'leerer Server-Stand überschreibt nichts')
+})
+
 test('Einheit: Plan-Schlüssel statt Katalog-Verknüpfung, ältere Einheiten weiter lesbar', () => {
   const custom = { ...session, id: '2026-09-30-mein-oberkoerper', workout: 'mein-oberkoerper' }
   const doc = C.sessionToDoc(custom)

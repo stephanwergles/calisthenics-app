@@ -312,6 +312,9 @@ export interface SyncResponse {
   catalogVersion: string
   catalog?: Catalog
   rejected: string[]
+  /** Trainingsstand abgelehnt (ungültig) – das Gerät behält dann seinen Stand und schickt ihn erneut,
+      statt den älteren Server-Stand zu übernehmen (sonst verschwinden z. B. gewählte Ziele still) */
+  stateRejected?: boolean
   /** eigener Plan (null = es gilt der Katalog-Plan) */
   plan?: Plan | null
 }

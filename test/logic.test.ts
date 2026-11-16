@@ -587,6 +587,23 @@ test('Planvorschlag: Generator → Nutzerplan, Diff, gleicher Plan = kein Vorsch
   assert.ok(Object.values(plan.weekplan).every(id => id!.startsWith('auto-')))
   assert.equal(plan.source, 'generated')
   assert.ok(plan.workouts.filter(w => w.id.startsWith('auto-')).every(w => w.warmup.length > 0), 'Warm-up aus dem Katalog übernommen')
+  const autos = plan.workouts.filter(w => w.id.startsWith('auto-'))
+  assert.ok(new Set(autos.map(w => w.warmup[0].id)).size > 1, 'Ganzkörper-Tage bekommen nicht alle dasselbe Warm-up')
+  // Pull / Push / Lower: jeder Tag das Warm-up/Cool-down seines Katalog-Gegenstücks (früher gewann „Lower“ auch Pull)
+  const pplInput = { ...input, split: 'ppl-3' }
+  const ppl = L.planFromGenerated(ix, L.planFromCatalog(catalog), generatePlan({ catalog, meta, skills, splits }, pplInput), pplInput)
+  const twin: Record<string, string> = { Pull: 'pull', Push: 'push', Lower: 'legs' }
+  for (const w of ppl.workouts.filter(x => x.id.startsWith('auto-'))) {
+    assert.deepEqual(w.warmup, ix.workouts.get(twin[w.name])!.warmup, `${w.name}: Warm-up`)
+    assert.deepEqual(w.cooldown, ix.workouts.get(twin[w.name])!.cooldown, `${w.name}: Cool-down`)
+  }
+  // einmalige Korrektur alter erzeugter Pläne: nur Routinen, Übungen bleiben; korrekter Plan bleibt dasselbe Objekt
+  const legs = ix.workouts.get('legs')!
+  const old = { ...ppl, workouts: ppl.workouts.map(w => (w.id.startsWith('auto-') ? { ...w, warmup: legs.warmup, cooldown: legs.cooldown } : w)) }
+  const fixed = L.withMatchedRoutines(ix, old)
+  assert.deepEqual(fixed, ppl, 'alte Routinen neu zugeordnet, sonst nichts geändert')
+  assert.equal(L.withMatchedRoutines(ix, ppl), ppl, 'stimmt schon → unverändert')
+  assert.equal(L.withMatchedRoutines(ix, { ...old, source: 'custom' }).workouts, old.workouts, 'nur erzeugte Pläne')
   assert.ok(plan.workouts.find(w => w.id === 'pull')!.archived, 'alte Workouts bleiben als gelöscht (Verlauf)')
   assert.equal(plan.workouts.find(w => w.id === 'eigen')!.archived, undefined, 'eigene bleiben aktiv')
   assert.equal(L.samePlan(ix, plan), false)

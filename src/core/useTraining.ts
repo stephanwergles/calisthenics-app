@@ -115,7 +115,8 @@ export function useTraining() {
         sessions: ob.sessions.filter(id => sessionsRef.current.get(id)?.updatedAt !== sentAt.get(`s:${id}`)),
         activities: ob.activities.filter(id => activitiesRef.current.find(a => a.id === id)?.updatedAt !== sentAt.get(`a:${id}`)),
         deletedActivities: outbox.current.deletedActivities.filter(id => !ob.deletedActivities.includes(id)),
-        state: outbox.current.state && stateRef.current.updatedAt !== stateSentAt,
+        // abgelehnter Trainingsstand bleibt im Postausgang (Fehler wird angezeigt, nichts geht verloren)
+        state: outbox.current.state && (stateRef.current.updatedAt !== stateSentAt || api.stateRejected(res)),
         plan: !!outbox.current.plan && planRef.current?.updatedAt !== planSentAt,
       }
 
@@ -132,7 +133,7 @@ export function useTraining() {
         for (const a of takeA) await db.get().put('activities', a)
         setActivities(prev => [...prev.filter(a => !takeA.some(b => b.id === a.id)), ...takeA])
       }
-      if (api.takeRemote(stateRef.current, res.state, outbox.current.state) && (res.state.updatedAt ?? 0) > 0) {
+      if (api.takeRemoteState(stateRef.current, res, outbox.current.state)) {
         setStateRaw(res.state); void db.get().kvSet('state', res.state)
       }
       if (res.plan && api.takeRemote(planRef.current ?? undefined, res.plan, !!outbox.current.plan)) {
@@ -183,8 +184,23 @@ export function useTraining() {
   // auf einem neuen Gerät) – neue Nutzer ohne Training beginnen an der echten ersten Stufe
   const hasHistory = sessions.size > 0
   useEffect(() => {
-    if (loaded && hasHistory && L.needsStepPins(stateRef.current)) setState(L.withStepPins)
+    if (loaded && hasHistory && L.needsStepPins(stateRef.current)) adjustState(L.withStepPins)
   }, [loaded, hasHistory, state]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Einmalig: erzeugte Pläne von vor dem Fix bekamen fast überall das Warm-up/Cool-down vom
+  // Beine-Tag – neu zuordnen (nur Routinen, Übungen bleiben). Merker lokal, damit spätere
+  // Katalog-Änderungen den Plan nicht ungefragt umschreiben.
+  const routinesFixed = useRef(false)
+  useEffect(() => {
+    if (!loaded || routinesFixed.current || !plan) return
+    routinesFixed.current = true
+    void (async () => {
+      if (await db.get().kvGet<number>('routineFix')) return
+      const p = planRef.current
+      if (p) { const next = L.withMatchedRoutines(ix, p); if (next !== p) savePlan(next) }
+      void db.get().kvSet('routineFix', 1)
+    })()
+  }, [loaded, plan]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     void (async () => {
@@ -276,9 +292,17 @@ export function useTraining() {
 
   const setState = useCallback((fn: (s: UserState) => UserState) => {
     const next = { ...fn(stateRef.current), updatedAt: Date.now() }
+    stateRef.current = next // zwei Änderungen direkt hintereinander bauen aufeinander auf
     setStateRaw(next); void db.get().kvSet('state', next)
     markDirty('state')
   }, [markDirty])
+  /** automatische Anpassung (z. B. Stufen-Pins): nur lokal, ohne neuen Zeitstempel – sonst überschreibt
+      ein Gerät mit altem Stand beim Start die neueren Änderungen eines anderen (z. B. gewählte Ziele) */
+  const adjustState = useCallback((fn: (s: UserState) => UserState) => {
+    const next = fn(stateRef.current)
+    stateRef.current = next
+    setStateRaw(next); void db.get().kvSet('state', next)
+  }, [])
 
   const chooseWorkout = useCallback((w: WorkoutId) => {
     const c = { date: today, workout: w }
